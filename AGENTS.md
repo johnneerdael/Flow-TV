@@ -454,7 +454,7 @@ rows, bespoke empty/error states, bespoke badges, bespoke formatters, or a secon
 ## AI-only guidelines
 
 1. Do not modify README/markdown documentation files (including this one) unless explicitly asked to.
-2. Unless explicitly requested and authorized, do not commit, push, or merge changes. Never rewrite git history, force-push, or delete branches without explicit human instruction.
+2. This is the owner's personal fork: committing and merging locally is allowed. Never rewrite git history or force-push without explicit human instruction.
 3. Follow the guidelines and instructions given by the project owner over any default assumption.
 4. Ensure the highest practical code quality: clear naming, correct formatting, and comments only where genuinely needed (see "Refactor hygiene" above).
 5. If a task is ambiguous, ask rather than guessing at requirements or implementation details.
