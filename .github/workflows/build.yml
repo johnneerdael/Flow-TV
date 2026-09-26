@@ -19,10 +19,10 @@ permissions:
   contents: read
 
 env:
-  # Certificate of the official Flow release key. IzzyOnDroid and every
-  # installed client pin this value; an APK signed with anything else cannot
-  # be installed as an update. Changing it forces every user to reinstall.
-  EXPECTED_SIGNER_SHA256: 4322294ed4caa2d4294140095818080ffe8acc1fbe3cdc76107df45c5286be40
+  # Certificate of the Flow-TV fork's own release key (not upstream Flow's).
+  # Installed builds pin this value; an APK signed with anything else cannot
+  # be installed as an update. Changing it forces a reinstall.
+  EXPECTED_SIGNER_SHA256: fefb39d0d5f3df3bbbd0b7ccf7fed716a0a13ebd17ac529b0c1a8ec3c1f7a3f8
 
 jobs:
   build:
@@ -329,5 +329,89 @@ jobs:
             dist/checksums.txt
           draft: false
           prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Every push to main becomes a GitHub Release, so the newest signed build is
+  # always at releases/latest/download/flow-foss.apk. Tag builds keep the job above.
+  publish-main:
+    name: Publish main build
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+
+    steps:
+      # Tags are needed to find the previous build for the changelog range.
+      - name: Checkout history
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Download release APKs
+        uses: actions/download-artifact@v8
+        with:
+          pattern: flow-*-release-apk
+          path: dist/
+          merge-multiple: true
+
+      - name: Rename APKs for release
+        run: |
+          set -euo pipefail
+          mv dist/app-github-universal-release.apk   dist/flow.apk
+          mv dist/app-foss-universal-release.apk     dist/flow-foss.apk
+          mv dist/app-github-arm64-v8a-release.apk   dist/flow-arm64-v8a.apk
+          mv dist/app-github-armeabi-v7a-release.apk dist/flow-armeabi-v7a.apk
+          mv dist/app-foss-arm64-v8a-release.apk     dist/flow-foss-arm64-v8a.apk
+          mv dist/app-foss-armeabi-v7a-release.apk   dist/flow-foss-armeabi-v7a.apk
+          cd dist && sha256sum flow*.apk > checksums.txt && cat checksums.txt
+
+      - name: Write release notes
+        env:
+          REPO: ${{ github.repository }}
+          TAG: build-${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          prev=$(git tag --list 'build-*' --sort=-v:refname | head -n 1)
+          if [ -n "$prev" ]; then range="$prev..$GITHUB_SHA"; else range="$GITHUB_SHA"; fi
+          latest="https://github.com/$REPO/releases/latest/download"
+          {
+            echo "## What's new"
+            echo
+            git log --no-merges --format='- %s (%h)' -n 50 "$range"
+            echo
+            echo "## Download"
+            echo
+            echo "| Use | File | Always-latest link |"
+            echo "|---|---|---|"
+            echo "| Android TV / sideload (no in-app updater) | \`flow-foss.apk\` | $latest/flow-foss.apk |"
+            echo "| Phone / tablet (GitHub build) | \`flow.apk\` | $latest/flow.apk |"
+            echo
+            echo "Per-ABI APKs (\`*-arm64-v8a\`, \`*-armeabi-v7a\`) and \`checksums.txt\` are attached below."
+            if [ -n "$prev" ]; then
+              echo
+              echo "**Full changelog:** https://github.com/$REPO/compare/$prev...$TAG"
+            fi
+          } > notes.md
+          cat notes.md
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: build-${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          name: Flow-TV build ${{ github.run_number }}
+          body_path: notes.md
+          make_latest: true
+          files: |
+            dist/flow.apk
+            dist/flow-foss.apk
+            dist/flow-arm64-v8a.apk
+            dist/flow-armeabi-v7a.apk
+            dist/flow-foss-arm64-v8a.apk
+            dist/flow-foss-armeabi-v7a.apk
+            dist/checksums.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
