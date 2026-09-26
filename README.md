@@ -51,13 +51,36 @@
   </p>
   
   <p>
-    <a href="https://github.com/A-EDev/Flow/releases"><b>Download APK</b></a> · 
+    <a href="#-flow-tv-this-fork"><b>Install on Android TV</b></a> · 
     <a href="https://github.com/A-EDev/Flow/wiki"><b>Documentation</b></a> · 
     <a href="https://www.reddit.com/r/Flow_Official/"><b>Subreddit</b></a> · 
     <a href="#support--donations"><b>Donate</b></a> .
     <a href="#translate"><b>Translations</b></a>
   </p>
 </div>
+
+---
+
+## 📺 Flow-TV (this fork)
+
+Flow-TV is an Android TV–focused fork of [A-EDev/Flow](https://github.com/A-EDev/Flow). It ships only the TV build (the FOSS flavor, without the in-app updater), signed with this fork's own key.
+
+### Install on Android TV
+
+| Method | How |
+|---|---|
+| **Downloader app** (Google TV, Fire TV, NVIDIA SHIELD) | Install [Downloader](https://www.aftvnews.com/downloader/) and enter code **`7746081`** |
+| **Direct link** (always the latest build) | https://github.com/johnneerdael/Flow-TV/releases/latest/download/flow-foss.apk |
+| **All builds** | [Releases](https://github.com/johnneerdael/Flow-TV/releases) — every push to `main` is published automatically with release notes |
+
+Per-ABI APKs (`flow-foss-arm64-v8a.apk`, `flow-foss-armeabi-v7a.apk`) are attached to each release if you prefer a smaller download.
+
+> Flow-TV uses the same package name as official Flow but a different signing key. Uninstall official Flow from the TV before installing Flow-TV (and vice versa).
+
+### What's different from upstream
+
+- **Sign in with your phone:** Settings → Account → *Sign in with phone* shows a QR code; scan it on a phone on the same network and type your Google login there. Home, Subscriptions, Music and Library then show your own YouTube and YouTube Music feeds. Playback stays anonymous — the account is only used to read feeds, and plays are not added to your history.
+- **TV-only builds:** CI builds, signs and publishes the TV (FOSS) APK only.
 
 ---
 
@@ -156,39 +179,7 @@ Flow gives you both. The recommendation engine learns what you like by analyzing
 ---
 ## Download
 
-### Stable Release
-
-<div align="center">
-  <table border="0">
-    <tr>
-      <td align="center" style="vertical-align: middle; padding: 10px;">
-        <a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://add/https://github.com/A-EDev/Flow/">
-          <img src="https://github.com/ImranR98/Obtainium/blob/main/assets/graphics/badge_obtainium.png" alt="Obtainium" height="60">
-        </a>
-      </td>
-      <td align="center" style="vertical-align: middle; padding: 10px;">
-        <a href="https://github.com/A-EDev/Flow/releases/latest">
-          <img src="https://github.com/machiav3lli/oandbackupx/blob/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png" alt="GitHub" height="90">
-        </a>
-      </td>
-      <td align="center" style="vertical-align: middle; padding: 10px;">
-        <a href="https://apt.izzysoft.de/packages/io.github.aedev.flow">
-          <img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" alt="IzzyOnDroid" height="90">
-        </a>
-      </td>
-    </tr>
-  </table>
-</div>
-
-### Nightly / Debug Build
-> ⚠️ Nightly builds are unstable and may contain bugs. Use at your own risk.
-
-<div align="center">
-  <a href="https://nightly.link/A-EDev/Flow/workflows/build/main/flow-nightly-apk.zip">
-    <img src="https://github.com/machiav3lli/oandbackupx/blob/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png" alt="Download from GitHub" height="75">
-  </a>
-  <p><b>No GitHub account required</b> — powered by <a href="https://nightly.link">nightly.link</a></p>
-</div>
+Flow-TV builds are published on this fork's [Releases](https://github.com/johnneerdael/Flow-TV/releases) page — see [Install on Android TV](#-flow-tv-this-fork). For the official phone builds of Flow, use [A-EDev/Flow](https://github.com/A-EDev/Flow/releases).
 
 ### Requirements 
 **Minimum Requirement:** Android 8.0+
@@ -196,8 +187,10 @@ Flow gives you both. The recommendation engine learns what you like by analyzing
 ### Verifying Authenticity
 To ensure the authenticity of the APK and verify it has not been tampered with, you can check the signing certificate fingerprint using tools like [AppVerifier](https://github.com/soupslurpr/AppVerifier).
 
-**Release Certificate SHA-256 Fingerprint:**
-`43:22:29:4E:D4:CA:A2:D4:29:41:40:09:58:18:08:0F:FE:8A:CC:1F:BE:3C:DC:76:10:7D:F4:5C:52:86:BE:40`
+**Flow-TV Release Certificate SHA-256 Fingerprint:**
+`FE:FB:39:D0:D5:F3:DF:3B:BB:D0:B7:CC:F7:FE:D7:16:A0:A1:3E:BD:17:AC:52:9B:0C:1A:8E:C3:C1:F7:A3:F8`
+
+(Official upstream Flow builds use `43:22:29:4E:D4:CA:A2:D4:29:41:40:09:58:18:08:0F:FE:8A:CC:1F:BE:3C:DC:76:10:7D:F4:5C:52:86:BE:40`.)
 
 ---
 
