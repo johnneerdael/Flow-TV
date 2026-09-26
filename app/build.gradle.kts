@@ -254,6 +254,7 @@ dependencies {
     implementation(libs.ktor.server.cio)
     implementation(libs.ktor.server.websockets)
     implementation(libs.zxing.core)
+    implementation(libs.androidx.webkit)
     implementation(libs.androidx.camera.core)
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
@@ -317,6 +318,7 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.truth)
     testImplementation(libs.turbine)
+    testImplementation(libs.ktor.client.mock)
     testImplementation(libs.hilt.android.testing)
     kspTest(libs.hilt.android.compiler)
 

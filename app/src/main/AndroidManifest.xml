@@ -64,6 +64,8 @@
     <application
         android:name=".FlowApplication"
         android:allowBackup="true"
+        android:dataExtractionRules="@xml/account_data_extraction_rules"
+        android:fullBackupContent="@xml/account_backup_rules"
         android:banner="@drawable/tv_banner"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"

@@ -36,12 +36,13 @@ import java.util.concurrent.atomic.AtomicBoolean
 fun QrCodeImage(
     text: String,
     modifier: Modifier = Modifier,
+    contentDescription: String = stringResource(R.string.sync_qr_content_description),
 ) {
     val bitmap = remember(text) { generateQrBitmap(text, 640) }
     if (bitmap != null) {
         Image(
             bitmap = bitmap.asImageBitmap(),
-            contentDescription = stringResource(R.string.sync_qr_content_description),
+            contentDescription = contentDescription,
             modifier = modifier,
         )
     }

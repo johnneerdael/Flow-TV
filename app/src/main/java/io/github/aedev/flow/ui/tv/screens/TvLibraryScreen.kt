@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,6 +34,7 @@ import io.github.aedev.flow.data.model.Playlist
 import io.github.aedev.flow.data.model.PlaylistInfo
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.music.model.MusicTrack
+import io.github.aedev.flow.ui.screens.account.sharedAccountFeedsViewModel
 import io.github.aedev.flow.ui.tv.components.TvFilterChip
 import io.github.aedev.flow.ui.tv.components.TvMediaRow
 import io.github.aedev.flow.ui.tv.components.TvMessageState
@@ -43,6 +45,8 @@ import io.github.aedev.flow.ui.tv.components.TvScreenScaffold
 import io.github.aedev.flow.ui.tv.components.TvVideoCard
 import io.github.aedev.flow.ui.tv.focus.ProvideTvColumnPivot
 import io.github.aedev.flow.ui.tv.focus.tvRowFocus
+import io.github.aedev.flow.ui.tv.screens.account.TvAccountLibraryContent
+import io.github.aedev.flow.ui.tv.screens.account.TvAccountLibrarySection
 import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 import io.github.aedev.flow.ui.tv.toTvMusicTrack
 import io.github.aedev.flow.ui.tv.toTvVideo
@@ -93,10 +97,18 @@ fun TvLibraryScreen(
         .collectAsStateWithLifecycle(initialValue = emptyList())
     var selectedSection by rememberSaveable { mutableStateOf(TvLibrarySection.HISTORY) }
     val dimens = LocalTvDimens.current
+    val accountFeeds = sharedAccountFeedsViewModel()
+    val signedIn by accountFeeds.isSignedIn.collectAsStateWithLifecycle()
+    val accountExpired by accountFeeds.isExpired.collectAsStateWithLifecycle()
+    var selectedAccountSection by rememberSaveable { mutableStateOf<TvAccountLibrarySection?>(null) }
+    LaunchedEffect(signedIn) {
+        selectedAccountSection = if (signedIn) selectedAccountSection ?: TvAccountLibrarySection.YOUTUBE_HISTORY else null
+    }
 
     TvScreenScaffold(
         title = stringResource(R.string.library),
         modifier = modifier,
+        subtitle = if (accountExpired) stringResource(R.string.tv_account_session_expired) else null,
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -110,72 +122,96 @@ fun TvLibraryScreen(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 contentPadding = PaddingValues(horizontal = dimens.overscanHorizontal),
             ) {
+                if (signedIn) {
+                    items(TvAccountLibrarySection.entries, key = { "account-${it.name}" }) { section ->
+                        TvFilterChip(
+                            label = stringResource(section.titleRes),
+                            selected = selectedAccountSection == section,
+                            onClick = { selectedAccountSection = section },
+                        )
+                    }
+                }
                 items(TvLibrarySection.entries, key = TvLibrarySection::name) { section ->
                     TvFilterChip(
                         label = stringResource(section.titleRes),
-                        selected = selectedSection == section,
-                        onClick = { selectedSection = section },
+                        selected = selectedAccountSection == null && selectedSection == section,
+                        onClick = {
+                            selectedAccountSection = null
+                            selectedSection = section
+                        },
                     )
                 }
             }
 
-            when (selectedSection) {
-                TvLibrarySection.HISTORY -> {
-                    TvLibraryMixedContent(
-                        musicTracks = history.filter { it.isMusic }.map { it.toTvMusicTrack() },
-                        musicSource = stringResource(TvLibrarySection.HISTORY.titleRes),
-                        videos =
-                            history
-                                .filterNot { it.isMusic }
-                                .map { entry -> entry.toTvVideo() to entry.tvWatchProgress() },
-                        onVideoClick = onVideoClick,
-                        onPlayTrack = onPlayTrack,
-                    )
-                }
+            val accountSection = selectedAccountSection
+            if (accountSection != null) {
+                TvAccountLibraryContent(
+                    section = accountSection,
+                    viewModel = accountFeeds,
+                    onVideoClick = onVideoClick,
+                    onPlayTrack = onPlayTrack,
+                )
+            } else {
+                when (selectedSection) {
+                    TvLibrarySection.HISTORY -> {
+                        TvLibraryMixedContent(
+                            musicTracks = history.filter { it.isMusic }.map { it.toTvMusicTrack() },
+                            musicSource = stringResource(TvLibrarySection.HISTORY.titleRes),
+                            videos =
+                                history
+                                    .filterNot { it.isMusic }
+                                    .map { entry -> entry.toTvVideo() to entry.tvWatchProgress() },
+                            onVideoClick = onVideoClick,
+                            onPlayTrack = onPlayTrack,
+                        )
+                    }
 
-                TvLibrarySection.LIKES -> {
-                    TvLibraryMixedContent(
-                        musicTracks = liked.filter { it.isMusic }.map(LikedVideoInfo::toTvMusicTrack),
-                        musicSource = stringResource(TvLibrarySection.LIKES.titleRes),
-                        videos =
-                            liked
-                                .filterNot { it.isMusic }
-                                .map { info -> info.toTvVideo() to null },
-                        onVideoClick = onVideoClick,
-                        onPlayTrack = onPlayTrack,
-                    )
-                }
+                    TvLibrarySection.LIKES -> {
+                        TvLibraryMixedContent(
+                            musicTracks = liked.filter { it.isMusic }.map(LikedVideoInfo::toTvMusicTrack),
+                            musicSource = stringResource(TvLibrarySection.LIKES.titleRes),
+                            videos =
+                                liked
+                                    .filterNot { it.isMusic }
+                                    .map { info -> info.toTvVideo() to null },
+                            onVideoClick = onVideoClick,
+                            onPlayTrack = onPlayTrack,
+                        )
+                    }
 
-                TvLibrarySection.WATCH_LATER -> {
-                    TvLibraryMixedContent(
-                        musicTracks = watchLater.filter { it.isMusic }.map(Video::toTvMusicTrack),
-                        musicSource = stringResource(TvLibrarySection.WATCH_LATER.titleRes),
-                        videos = watchLater.filterNot { it.isMusic }.map { it to null },
-                        onVideoClick = onVideoClick,
-                        onPlayTrack = onPlayTrack,
-                    )
-                }
+                    TvLibrarySection.WATCH_LATER -> {
+                        TvLibraryMixedContent(
+                            musicTracks = watchLater.filter { it.isMusic }.map(Video::toTvMusicTrack),
+                            musicSource = stringResource(TvLibrarySection.WATCH_LATER.titleRes),
+                            videos = watchLater.filterNot { it.isMusic }.map { it to null },
+                            onVideoClick = onVideoClick,
+                            onPlayTrack = onPlayTrack,
+                        )
+                    }
 
-                TvLibrarySection.PLAYLISTS -> {
-                    TvLibraryPlaylists(
-                        videoPlaylists =
-                            videoPlaylists
-                                .filterNot { it.id == PlaylistRepository.WATCH_LATER_ID || it.id == PlaylistRepository.SAVED_SHORTS_ID }
-                                .map { info ->
-                                    Playlist(
-                                        id = info.id,
-                                        name = info.name,
-                                        thumbnailUrl = info.thumbnailUrl,
-                                        videoCount = info.videoCount,
-                                        description = info.description,
-                                    )
-                                },
-                        musicPlaylists =
-                            musicPlaylists
-                                .filterNot { it.id == PlaylistRepository.WATCH_LATER_ID || it.id == PlaylistRepository.SAVED_SHORTS_ID },
-                        onOpenPlaylist = onOpenPlaylist,
-                        onOpenMusicCollection = onOpenMusicCollection,
-                    )
+                    TvLibrarySection.PLAYLISTS -> {
+                        TvLibraryPlaylists(
+                            videoPlaylists =
+                                videoPlaylists
+                                    .filterNot { it.id == PlaylistRepository.WATCH_LATER_ID || it.id == PlaylistRepository.SAVED_SHORTS_ID }
+                                    .map { info ->
+                                        Playlist(
+                                            id = info.id,
+                                            name = info.name,
+                                            thumbnailUrl = info.thumbnailUrl,
+                                            videoCount = info.videoCount,
+                                            description = info.description,
+                                        )
+                                    },
+                            musicPlaylists =
+                                musicPlaylists
+                                    .filterNot {
+                                        it.id == PlaylistRepository.WATCH_LATER_ID || it.id == PlaylistRepository.SAVED_SHORTS_ID
+                                    },
+                            onOpenPlaylist = onOpenPlaylist,
+                            onOpenMusicCollection = onOpenMusicCollection,
+                        )
+                    }
                 }
             }
         }

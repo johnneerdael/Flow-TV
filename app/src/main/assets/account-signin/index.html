@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Flow TV sign-in</title>
+  <style>
+    :root { color-scheme: light dark; --bg: #fdfcff; --fg: #1b1b1f; --muted: #46464f; --surface: #efedf1; --primary: #3f5aa9; --on-primary: #ffffff; }
+    @media (prefers-color-scheme: dark) { :root { --bg: #1b1b1f; --fg: #e4e1e6; --muted: #c6c5d0; --surface: #2a292d; --primary: #b3c5ff; --on-primary: #0f2c6e; } }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 24px 16px; font: 16px/1.45 system-ui, sans-serif; background: var(--bg); color: var(--fg); }
+    main { max-width: 480px; margin: 0 auto; display: grid; gap: 16px; }
+    h1 { font-size: 22px; margin: 0; }
+    p { margin: 0; color: var(--muted); }
+    #step { font-weight: 600; color: var(--fg); }
+    input { width: 100%; font-size: 18px; padding: 14px; border-radius: 12px; border: 1px solid var(--muted); background: var(--surface); color: var(--fg); }
+    .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    button { font-size: 16px; padding: 14px; border-radius: 12px; border: 0; background: var(--surface); color: var(--fg); }
+    button.primary { background: var(--primary); color: var(--on-primary); font-weight: 600; }
+    label { display: flex; gap: 8px; align-items: center; color: var(--muted); }
+    body.done .controls { display: none; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Sign in to Flow on your TV</h1>
+    <p>TV is showing: <span id="step">…</span></p>
+    <p id="status">Type here, then press Send. Use Enter to continue on the TV.</p>
+    <div class="controls">
+      <input id="text" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Text to send to the TV">
+      <label><input id="show" type="checkbox" style="width:auto"> Show text</label>
+      <div class="row" style="margin-top:8px">
+        <button id="send" class="primary">Send</button>
+        <button id="enter">Enter</button>
+        <button id="tab">Tab</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button id="backspace">⌫</button>
+        <button id="sendEnter" class="primary" style="grid-column: span 2">Send + Enter</button>
+      </div>
+    </div>
+  </main>
+  <script src="/noble-ciphers.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -2,6 +2,7 @@ package io.github.aedev.flow.ui.tv.screens.settings
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Devices
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Palette
@@ -9,8 +10,8 @@ import androidx.compose.material.icons.outlined.PlayCircleOutline
 import androidx.compose.material.icons.outlined.Psychology
 import androidx.compose.material.icons.outlined.SettingsRemote
 import androidx.compose.material.icons.outlined.Shield
-import androidx.compose.material.icons.outlined.Tv
 import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.material.icons.outlined.Tv
 import androidx.compose.ui.graphics.vector.ImageVector
 import io.github.aedev.flow.R
 
@@ -19,6 +20,7 @@ enum class TvSettingsCategory(
     @StringRes val labelRes: Int,
     val icon: ImageVector,
 ) {
+    ACCOUNT(R.string.tv_settings_account, Icons.Outlined.AccountCircle),
     PLAYBACK(R.string.playback_header, Icons.Outlined.PlayCircleOutline),
     QUALITY(R.string.quality, Icons.Outlined.Tune),
     CONTENT(R.string.settings_header_content_playback, Icons.Outlined.Shield),

@@ -18,6 +18,7 @@ import io.github.aedev.flow.R
 import io.github.aedev.flow.data.music.model.MusicItemType
 import io.github.aedev.flow.data.music.model.MusicPlaylist
 import io.github.aedev.flow.data.music.model.MusicTrack
+import io.github.aedev.flow.ui.screens.account.sharedAccountFeedsViewModel
 import io.github.aedev.flow.ui.screens.music.MusicViewModel
 import io.github.aedev.flow.ui.tv.components.TvArtistCard
 import io.github.aedev.flow.ui.tv.components.TvMediaRow
@@ -27,6 +28,7 @@ import io.github.aedev.flow.ui.tv.components.TvMusicCollectionCard
 import io.github.aedev.flow.ui.tv.components.TvScreenScaffold
 import io.github.aedev.flow.ui.tv.components.TvShimmerRow
 import io.github.aedev.flow.ui.tv.focus.ProvideTvColumnPivot
+import io.github.aedev.flow.ui.tv.screens.account.TvAccountMusicScreen
 import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 
 /**
@@ -42,6 +44,18 @@ fun TvMusicScreen(
     onOpenArtist: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val accountFeeds = sharedAccountFeedsViewModel()
+    val signedIn by accountFeeds.isSignedIn.collectAsStateWithLifecycle()
+    val accountExpired by accountFeeds.isExpired.collectAsStateWithLifecycle()
+    if (signedIn) {
+        TvAccountMusicScreen(
+            viewModel = accountFeeds,
+            onTrackClick = onTrackClick,
+            onOpenCollection = onOpenCollection,
+            modifier = modifier,
+        )
+        return
+    }
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val dimens = LocalTvDimens.current
 
@@ -82,6 +96,7 @@ fun TvMusicScreen(
     TvScreenScaffold(
         title = stringResource(R.string.screen_title_music),
         modifier = modifier,
+        subtitle = if (accountExpired) stringResource(R.string.tv_account_session_expired) else null,
     ) {
         ProvideTvColumnPivot {
             LazyColumn(

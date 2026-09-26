@@ -8,8 +8,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -28,9 +28,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.flow.distinctUntilChanged
 import io.github.aedev.flow.R
 import io.github.aedev.flow.data.model.Video
+import io.github.aedev.flow.ui.screens.account.AccountVideoSurface
+import io.github.aedev.flow.ui.screens.account.sharedAccountFeedsViewModel
 import io.github.aedev.flow.ui.screens.home.HomeViewModel
 import io.github.aedev.flow.ui.tv.components.TvButton
 import io.github.aedev.flow.ui.tv.components.TvMediaRow
@@ -40,9 +41,11 @@ import io.github.aedev.flow.ui.tv.components.TvSectionHeader
 import io.github.aedev.flow.ui.tv.components.TvShimmerRow
 import io.github.aedev.flow.ui.tv.components.TvVideoCard
 import io.github.aedev.flow.ui.tv.focus.ProvideTvColumnPivot
+import io.github.aedev.flow.ui.tv.screens.account.TvAccountVideoFeedScreen
 import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 import io.github.aedev.flow.ui.tv.toTvVideo
 import io.github.aedev.flow.ui.tv.tvWatchProgress
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 private const val HOME_GRID_COLUMNS = 3
 
@@ -52,6 +55,19 @@ fun TvHomeScreen(
     onVideoClick: (Video) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val accountFeeds = sharedAccountFeedsViewModel()
+    val signedIn by accountFeeds.isSignedIn.collectAsStateWithLifecycle()
+    val accountExpired by accountFeeds.isExpired.collectAsStateWithLifecycle()
+    if (signedIn) {
+        TvAccountVideoFeedScreen(
+            surface = AccountVideoSurface.HOME,
+            title = stringResource(R.string.tv_home_title),
+            viewModel = accountFeeds,
+            onVideoClick = onVideoClick,
+            modifier = modifier,
+        )
+        return
+    }
     val context = LocalContext.current
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val dimens = LocalTvDimens.current
@@ -66,8 +82,11 @@ fun TvHomeScreen(
     // index so HomeViewModel keeps extending the Flow feed while scrolling.
     LaunchedEffect(listState, hasContinueWatching) {
         val fixedItemsBefore = (if (hasContinueWatching) 1 else 0) + 1
-        snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1 }
-            .distinctUntilChanged()
+        snapshotFlow {
+            listState.layoutInfo.visibleItemsInfo
+                .lastOrNull()
+                ?.index ?: -1
+        }.distinctUntilChanged()
             .collect { lastItem ->
                 val rowIndex = lastItem - fixedItemsBefore
                 if (rowIndex >= 0) {
@@ -83,6 +102,7 @@ fun TvHomeScreen(
     TvScreenScaffold(
         title = stringResource(R.string.tv_home_title),
         modifier = modifier,
+        subtitle = if (accountExpired) stringResource(R.string.tv_account_session_expired) else null,
         action = {
             TvButton(
                 text = stringResource(R.string.action_refresh),
@@ -94,8 +114,11 @@ fun TvHomeScreen(
         ProvideTvColumnPivot {
             BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
                 // One shared card width so shelf and grid cards line up exactly.
-                val cardWidth = (maxWidth - dimens.overscanHorizontal * 2 -
-                    dimens.itemSpacing * (HOME_GRID_COLUMNS - 1)) / HOME_GRID_COLUMNS
+                val cardWidth =
+                    (
+                        maxWidth - dimens.overscanHorizontal * 2 -
+                            dimens.itemSpacing * (HOME_GRID_COLUMNS - 1)
+                    ) / HOME_GRID_COLUMNS
                 LazyColumn(
                     state = listState,
                     modifier = Modifier.fillMaxSize(),
@@ -121,22 +144,31 @@ fun TvHomeScreen(
                     }
 
                     when {
-                        state.isLoading && state.videos.isEmpty() -> item(key = "home-loading") {
-                            TvShimmerRow()
-                        }
-                        state.error != null && state.videos.isEmpty() -> item(key = "home-error") {
-                            Box(Modifier.fillMaxWidth().padding(horizontal = dimens.overscanHorizontal)) {
-                                TvMessageState(
-                                    title = stringResource(R.string.tv_error_loading),
-                                    message = state.error,
-                                )
+                        state.isLoading && state.videos.isEmpty() -> {
+                            item(key = "home-loading") {
+                                TvShimmerRow()
                             }
                         }
-                        state.videos.isEmpty() -> item(key = "home-empty") {
-                            Box(Modifier.fillMaxWidth().padding(horizontal = dimens.overscanHorizontal)) {
-                                TvMessageState(title = stringResource(R.string.tv_no_recommendations))
+
+                        state.error != null && state.videos.isEmpty() -> {
+                            item(key = "home-error") {
+                                Box(Modifier.fillMaxWidth().padding(horizontal = dimens.overscanHorizontal)) {
+                                    TvMessageState(
+                                        title = stringResource(R.string.tv_error_loading),
+                                        message = state.error,
+                                    )
+                                }
                             }
                         }
+
+                        state.videos.isEmpty() -> {
+                            item(key = "home-empty") {
+                                Box(Modifier.fillMaxWidth().padding(horizontal = dimens.overscanHorizontal)) {
+                                    TvMessageState(title = stringResource(R.string.tv_no_recommendations))
+                                }
+                            }
+                        }
+
                         else -> {
                             item(key = "recommended-header") {
                                 TvSectionHeader(
@@ -149,9 +181,10 @@ fun TvHomeScreen(
                                 key = { rowVideos -> rowVideos.first().id },
                             ) { rowVideos ->
                                 Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = dimens.overscanHorizontal),
+                                    modifier =
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = dimens.overscanHorizontal),
                                     horizontalArrangement = Arrangement.spacedBy(dimens.itemSpacing),
                                 ) {
                                     rowVideos.forEach { video ->
@@ -166,9 +199,10 @@ fun TvHomeScreen(
                             if (state.isLoadingMore) {
                                 item(key = "home-loading-more") {
                                     Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(24.dp),
+                                        modifier =
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .padding(24.dp),
                                         contentAlignment = Alignment.Center,
                                     ) {
                                         CircularProgressIndicator(modifier = Modifier.size(32.dp))

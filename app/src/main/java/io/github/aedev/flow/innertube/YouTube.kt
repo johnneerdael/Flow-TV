@@ -1975,10 +1975,13 @@ object YouTube {
             }
         }
 
-    suspend fun playlist(playlistId: String): Result<PlaylistPage> =
+    suspend fun playlist(
+        playlistId: String,
+        via: InnerTube = innerTube,
+    ): Result<PlaylistPage> =
         runCatching {
             val response =
-                innerTube
+                via
                     .browse(
                         client = WEB_REMIX,
                         browseId = "VL$playlistId",
@@ -2144,13 +2147,14 @@ object YouTube {
     suspend fun home(
         continuation: String? = null,
         params: String? = null,
+        via: InnerTube = innerTube,
     ): Result<HomePage> =
         runCatching {
             if (continuation != null) {
-                return@runCatching homeContinuation(continuation).getOrThrow()
+                return@runCatching homeContinuation(continuation, via).getOrThrow()
             }
 
-            val response = innerTube.browse(WEB_REMIX, browseId = "FEmusic_home", params = params).body<BrowseResponse>()
+            val response = via.browse(WEB_REMIX, browseId = "FEmusic_home", params = params).body<BrowseResponse>()
             val continuation =
                 response.contents
                     ?.singleColumnBrowseResultsRenderer
@@ -2184,10 +2188,13 @@ object YouTube {
             HomePage(chips, sections, continuation)
         }
 
-    private suspend fun homeContinuation(continuation: String): Result<HomePage> =
+    private suspend fun homeContinuation(
+        continuation: String,
+        via: InnerTube,
+    ): Result<HomePage> =
         runCatching {
             val response =
-                innerTube.browse(WEB_REMIX, continuation = continuation).body<BrowseResponse>()
+                via.browse(WEB_REMIX, continuation = continuation).body<BrowseResponse>()
             val continuation =
                 response.continuationContents
                     ?.sectionListContinuation
@@ -2360,9 +2367,10 @@ object YouTube {
     suspend fun library(
         browseId: String,
         tabIndex: Int = 0,
+        via: InnerTube = innerTube,
     ) = runCatching {
         val response =
-            innerTube
+            via
                 .browse(
                     client = WEB_REMIX,
                     browseId = browseId,
@@ -2498,10 +2506,10 @@ object YouTube {
             ChartsPage.fromBrowseResponse(response, country)
         }
 
-    suspend fun musicHistory() =
+    suspend fun musicHistory(via: InnerTube = innerTube) =
         runCatching {
             val response =
-                innerTube
+                via
                     .browse(
                         client = WEB_REMIX,
                         browseId = "FEmusic_history",
@@ -2999,9 +3007,9 @@ object YouTube {
                 }.jsonPrimitive.content
         }
 
-    suspend fun accountInfo(): Result<AccountInfo> =
+    suspend fun accountInfo(via: InnerTube = innerTube): Result<AccountInfo> =
         runCatching {
-            innerTube
+            via
                 .accountMenu(WEB_REMIX)
                 .body<AccountMenuResponse>()
                 .actions[0]

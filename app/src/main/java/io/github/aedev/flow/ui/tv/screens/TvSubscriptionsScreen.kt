@@ -28,6 +28,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.aedev.flow.R
 import io.github.aedev.flow.data.model.Channel
 import io.github.aedev.flow.data.model.Video
+import io.github.aedev.flow.ui.screens.account.AccountVideoSurface
+import io.github.aedev.flow.ui.screens.account.sharedAccountFeedsViewModel
 import io.github.aedev.flow.ui.screens.subscriptions.SubscriptionsViewModel
 import io.github.aedev.flow.ui.tv.components.TvButton
 import io.github.aedev.flow.ui.tv.components.TvChannelCard
@@ -40,6 +42,7 @@ import io.github.aedev.flow.ui.tv.components.TvShimmerRow
 import io.github.aedev.flow.ui.tv.components.TvVideoCard
 import io.github.aedev.flow.ui.tv.focus.ProvideTvColumnPivot
 import io.github.aedev.flow.ui.tv.focus.tvRowFocus
+import io.github.aedev.flow.ui.tv.screens.account.TvAccountVideoFeedScreen
 import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 
 private const val SUBS_GRID_COLUMNS = 3
@@ -56,6 +59,19 @@ fun TvSubscriptionsScreen(
     modifier: Modifier = Modifier,
     onChannelClick: (String) -> Unit = {},
 ) {
+    val accountFeeds = sharedAccountFeedsViewModel()
+    val signedIn by accountFeeds.isSignedIn.collectAsStateWithLifecycle()
+    val accountExpired by accountFeeds.isExpired.collectAsStateWithLifecycle()
+    if (signedIn) {
+        TvAccountVideoFeedScreen(
+            surface = AccountVideoSurface.SUBSCRIPTIONS,
+            title = stringResource(R.string.tv_subscriptions_title),
+            viewModel = accountFeeds,
+            onVideoClick = onVideoClick,
+            modifier = modifier,
+        )
+        return
+    }
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val dimens = LocalTvDimens.current
 
@@ -66,7 +82,7 @@ fun TvSubscriptionsScreen(
     TvScreenScaffold(
         title = stringResource(R.string.tv_subscriptions_title),
         modifier = modifier,
-        subtitle = state.lastRefreshText,
+        subtitle = if (accountExpired) stringResource(R.string.tv_account_session_expired) else state.lastRefreshText,
         action = {
             TvButton(
                 text = stringResource(R.string.action_refresh),

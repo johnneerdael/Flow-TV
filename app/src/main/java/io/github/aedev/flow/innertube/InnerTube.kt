@@ -43,7 +43,9 @@ private const val TAG = "InnerTube"
  * Provide access to InnerTube endpoints.
  * For making HTTP requests, not parsing response.
  */
-class InnerTube {
+class InnerTube(
+    private val endpointPolicy: AccountEndpointPolicy? = null,
+) {
     private var httpClient = createClient()
 
     var locale =
@@ -118,6 +120,9 @@ class InnerTube {
     private fun createClient() =
         HttpClient(OkHttp) {
             expectSuccess = true
+            endpointPolicy?.let { guardPolicy ->
+                install(AccountEndpointGuard) { policy = guardPolicy }
+            }
 
             install(ContentNegotiation) {
                 json(
@@ -638,6 +643,25 @@ class InnerTube {
                     params = params,
                     continuation = continuation,
                     formData = formData,
+                ),
+            )
+        }
+    }
+
+    suspend fun accountWebBrowse(
+        client: YouTubeClient,
+        browseId: String? = null,
+        continuation: String? = null,
+    ) = withRetry {
+        httpClient.post("${YouTubeClient.API_URL_YOUTUBE}browse") {
+            // WEB is declared login-unsupported for the anonymous paths; only this account call opts in.
+            ytClient(client.copy(loginSupported = true), setLogin = true, apiUrl = YouTubeClient.API_URL_YOUTUBE)
+            setBody(
+                BrowseBody(
+                    context = client.toContext(locale, visitorData, dataSyncId),
+                    browseId = if (continuation == null) browseId else null,
+                    params = null,
+                    continuation = continuation,
                 ),
             )
         }

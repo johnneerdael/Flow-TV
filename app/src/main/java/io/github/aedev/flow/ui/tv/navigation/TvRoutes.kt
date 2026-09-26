@@ -18,14 +18,14 @@ object TvRoutes {
 
     const val SYNC = "sync"
     const val REMOTE_GUIDE = "remoteGuide"
+    const val ACCOUNT_SIGN_IN = "accountSignIn"
 
     /** [channelRef] is a full channel URL (preferred) or a bare channel id. */
     fun channel(channelRef: String): String = "channel?ref=${Uri.encode(channelRef)}"
 
     fun playlist(playlistId: String): String = "playlist/${Uri.encode(playlistId)}"
 
-    fun musicCollection(collectionId: String): String =
-        "musicCollection/${Uri.encode(collectionId)}"
+    fun musicCollection(collectionId: String): String = "musicCollection/${Uri.encode(collectionId)}"
 
     fun musicArtist(channelId: String): String = "musicArtist/${Uri.encode(channelId)}"
 }
