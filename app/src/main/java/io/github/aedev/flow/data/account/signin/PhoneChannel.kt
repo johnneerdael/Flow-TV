@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import java.security.GeneralSecurityException
+import java.security.ProviderException
 import java.util.Base64
 
 enum class PhoneKey { ENTER, TAB, BACKSPACE }
@@ -70,8 +71,14 @@ class PhoneChannel(
         boundHost?.let { if (it != remoteHost) throw PhoneChannelRejected("bound to another device") }
         val plain =
             try {
-                SyncCrypto.open(key, decode(envelope.n), decode(envelope.c), aad(CLIENT_TO_HOST))
+                val nonce = decode(envelope.n)
+                val sealed = decode(envelope.c)
+                // Providers differ on malformed input (JDK 17 throws ProviderException), so reject it up front.
+                if (nonce.size != SyncCrypto.NONCE_LEN || sealed.size < SyncCrypto.TAG_LEN) throw PhoneChannelRejected("bad size")
+                SyncCrypto.open(key, nonce, sealed, aad(CLIENT_TO_HOST))
             } catch (e: GeneralSecurityException) {
+                throw PhoneChannelRejected("bad seal")
+            } catch (e: ProviderException) {
                 throw PhoneChannelRejected("bad seal")
             } catch (e: IllegalArgumentException) {
                 throw PhoneChannelRejected("bad encoding")

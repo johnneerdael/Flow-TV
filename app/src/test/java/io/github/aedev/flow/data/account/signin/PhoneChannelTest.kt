@@ -95,4 +95,15 @@ class PhoneChannelTest {
     fun `typed text is not exposed by toString`() {
         assertThat(PhoneInput.Text("hunter2").toString()).doesNotContain("hunter2")
     }
+
+    @Test
+    fun `a malformed envelope is rejected rather than crashing`() {
+        listOf(
+            PhoneEnvelope(n = "AAAA", c = "AAAA"),
+            PhoneEnvelope(n = "oKGio6Slpqeoqaqr", c = "AAAA"),
+            PhoneEnvelope(n = "", c = ""),
+        ).forEach { bad ->
+            assertThrows(PhoneChannelRejected::class.java) { channel().open(bad, "192.168.1.20") }
+        }
+    }
 }
