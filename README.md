@@ -1,11 +1,11 @@
 <div align="center">
 
-# MusicViz
+<img src="docs/banner.jpg" alt="MusicViz" width="720">
 
 **A music-first YouTube Music client for Android TV.**
 
 <a href="https://github.com/johnneerdael/MusicViz/releases/latest">
-  <img src="https://img.shields.io/github/v/release/johnneerdael/MusicViz?style=for-the-badge&color=crimson&label=Latest%20build">
+  <img src="https://img.shields.io/github/v/release/johnneerdael/MusicViz?style=for-the-badge&color=8355FB&label=Latest%20build">
 </a>
 <img src="https://img.shields.io/badge/Platform-Android_TV_8.0+-3DDC84?style=for-the-badge&logo=android&logoColor=white">
 <a href="License">
@@ -25,6 +25,17 @@ music.youtube.com — built for the remote with Jetpack Compose and Material 3.
 
 Search starts on music (songs, artists, albums) and can switch to videos, so live sets and
 concert recordings are one press away.
+
+<table>
+  <tr>
+    <td><img src="docs/screenshots/home.jpg" alt="Music home with mood chips and shelves"></td>
+    <td><img src="docs/screenshots/now-playing.jpg" alt="Full-screen now playing"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/quick-picks.jpg" alt="Quick picks and more shelves"></td>
+    <td><img src="docs/screenshots/search.jpg" alt="Music search"></td>
+  </tr>
+</table>
 
 ## Install on Android TV
 
@@ -48,7 +59,8 @@ attached to each release if you prefer a smaller download.
 - **Sign in with your phone:** Settings → Account → *Sign in with phone* shows a QR code; scan
   it on a phone on the same network and log in there. Music and Library then show your own
   YouTube Music feeds. Without signing in you get the regular YouTube Music home.
-- Full-screen now playing with synchronized lyrics and an editable queue
+- Pick a song and the full-screen player opens straight away, with synchronized lyrics and an
+  editable queue
 - Artist, album and playlist pages; a mini player that follows you through the app
 - Background playback on by default, so audio keeps going when you leave the app
 
