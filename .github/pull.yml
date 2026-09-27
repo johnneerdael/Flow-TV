@@ -1,0 +1,8 @@
+# The Pull app syncs a fork from its parent (A-EDev/Flow) whenever this file is absent.
+# MusicViz no longer tracks upstream automatically: the only rule points main at itself,
+# so there is never anything to pull. Uninstalling the app removes it entirely.
+version: "1"
+rules:
+  - base: main
+    upstream: johnneerdael:main
+    mergeMethod: none

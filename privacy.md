@@ -1,10 +1,12 @@
 # Privacy and Permissions
 
-MusicViz has no account system, no analytics or telemetry SDK, no crash reporting service, and no
-advertising identifier. Nothing is uploaded to a server operated by the project. Watch history,
-subscriptions, playlists, downloads, and recommendation data are stored in a local Room database
-and in local DataStore preferences on the device. They leave the device only if the user explicitly
-starts a backup export or a device-to-device sync over their own local network.
+MusicViz has no account system of its own, no analytics or telemetry SDK, no crash reporting
+service, and no advertising identifier. Nothing is uploaded to a server operated by the project.
+Watch history, subscriptions, playlists, downloads, and recommendation data are stored in a local
+Room database and in local DataStore preferences on the device. They leave the device only if the
+user explicitly starts a backup export or a device-to-device sync over their own local network.
+
+Signing in with a Google account is optional; see [Google account sign-in](#google-account-sign-in).
 
 This document lists every permission that appears in the built APK, why it is declared, when it is
 requested, and whether the app still works without it.
@@ -95,6 +97,25 @@ Checked at: `app/src/main/java/io/github/aedev/flow/player/PictureInPictureHelpe
 
 Window created at: `app/src/main/java/io/github/aedev/flow/player/PopupPlayerWindow.kt`
 
+## Google account sign-in
+
+On Android TV, Settings > Account > Sign in with phone lets the user sign in to their own Google
+account so the Music tab and Library show that account's YouTube Music and YouTube feeds. Without
+it, the app shows the regular signed-out YouTube Music home.
+
+- Google's own sign-in page runs on the TV in a WebView with its own isolated profile, separate from
+  the storage used for playback. What the user types on the phone, the password included, is
+  decrypted on the TV and inserted straight into that page; it is not stored or logged.
+- The phone reaches the TV through a small web page served by the TV on the local network, only while
+  the sign-in screen is open. Everything between them is encrypted (AES-256-GCM) with a key that is
+  only in the QR code's URL fragment, which browsers never send over the network. The page lists the
+  sign-in page's buttons so they can be tapped from the phone.
+- After sign-in, only the resulting session cookie is kept, encrypted with a key in the Android
+  Keystore and excluded from backups and device transfers. It is sent only to YouTube and YouTube
+  Music, and only to read feeds (the YouTube Music home, library and history, and the YouTube watch
+  history). Playback stays anonymous and plays are not added to the account's history.
+- Settings > Account > Sign out deletes the stored session.
+
 ## The remaining permissions
 
 ### Network
@@ -104,9 +125,10 @@ Window created at: `app/src/main/java/io/github/aedev/flow/player/PopupPlayerWin
 `ACCESS_NETWORK_STATE` backs the offline banner, the retry and backoff logic in the extractor, and
 the "download on Wi-Fi only" constraint.
 
-`ACCESS_WIFI_STATE` reads the device's own address on the local network. Two features need it:
+`ACCESS_WIFI_STATE` reads the device's own address on the local network. Three features need it:
 DLNA casting, where the app runs a small local HTTP proxy and has to tell the TV which address to
-pull the stream from, and Device Sync, which puts the host's LAN address into the QR code. It does
+pull the stream from, Device Sync, which puts the host's LAN address into the QR code, and phone
+sign-in on the TV, which does the same for the sign-in page. It does
 not scan for or list nearby networks, which on modern Android would require the location permission
 that MusicViz does not declare.
 
@@ -197,6 +219,7 @@ project-operated proxy or relay in between.
 - YouTube and Google: `www.youtube.com`, `m.youtube.com`, `music.youtube.com`, `i.ytimg.com`,
   `img.youtube.com`, `*.googlevideo.com`, `s.youtube.com`, `suggestqueries.google.com`,
   `suggestqueries-clients6.youtube.com`. Content, metadata, thumbnails, search suggestions.
+- `accounts.google.com` and Google's sign-in pages: only while the user signs in on the TV.
 - `api.pipepipe.dev`: remote signature helper, used only as a fallback when both local decoders
   fail on a given video.
 - Lyrics providers, tried in order until one answers, and only when the user opens lyrics:
@@ -205,16 +228,18 @@ project-operated proxy or relay in between.
   `lyrics-api.binimum.org`, `amp-api.music.apple.com`, `beta.music.apple.com`.
 - `amp.shazam.com`: song recognition, only on an explicit user request, and it receives an audio
   fingerprint rather than the recording.
-- `sponsor.ajay.app` and `dearrow-thumb.ajay.app`: SponsorBlock and DeArrow, only if the user turns
-  them on.
+- `sponsor.ajay.app`: SponsorBlock segments for videos, on by default and switchable off in
+  settings. `dearrow-thumb.ajay.app`: DeArrow, only if the user turns it on.
 - `returnyoutubedislikeapi.com`: Return YouTube Dislike, only if the user turns it on.
 - `api.github.com` and `github.com`: release check and changelog, `github` flavor only.
 - `discord.com`: rich presence, `github` flavor only, and only after the user links an account.
-- Local network addresses: DLNA renderers on the LAN, and the peer device during Device Sync.
+- Local network addresses: DLNA renderers on the LAN, the peer device during Device Sync, and the
+  user's phone during TV sign-in.
 
 ## What MusicViz does not do
 
-- No account, login, or user identifier of any kind.
+- No account or user identifier of its own. The optional Google sign-in is used only to read the
+  account's feeds, and its session stays on the device.
 - No analytics, telemetry, crash reporting, or advertising SDK.
 - No background microphone, camera, or location access. MusicViz declares no location permission.
 - No reading or uploading of contacts, call logs, SMS, or the installed app list.
