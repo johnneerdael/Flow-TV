@@ -58,4 +58,22 @@ class SignInCaptureTest {
         assertThat(script).contains(".focus()")
         assertThat(script).doesNotContain("insertText")
     }
+
+    @Test
+    fun `page actions are unwrapped from evaluateJavascript output and capped`() {
+        val raw = "\"[\\\"Resend it\\\",\\\"Try another way\\\"]\""
+        assertThat(SignInCapture.parsePageActions(raw)).containsExactly("Resend it", "Try another way").inOrder()
+        assertThat(SignInCapture.parsePageActions("null")).isEmpty()
+        assertThat(SignInCapture.parsePageActions("\"not json\"")).isEmpty()
+
+        val many = (1..20).joinToString(",") { "\\\"b$it\\\"" }
+        assertThat(SignInCapture.parsePageActions("\"[$many]\"")).hasSize(MAX_PAGE_ACTIONS)
+    }
+
+    @Test
+    fun `a click targets only the marked element with that index`() {
+        val script = SignInCapture.clickActionScript(4)
+        assertThat(script).contains("[data-mv-action=\"4\"]")
+        assertThat(SignInCapture.pageActionsScript()).contains("removeAttribute('data-mv-action')")
+    }
 }

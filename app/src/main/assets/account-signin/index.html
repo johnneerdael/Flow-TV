@@ -20,6 +20,10 @@
     button.primary { background: var(--primary); color: var(--on-primary); font-weight: 600; }
     label { display: flex; gap: 8px; align-items: center; color: var(--muted); }
     body.done .controls { display: none; }
+    #actions { display: grid; gap: 8px; }
+    #actions:empty, h2:has(+ #actions:empty) { display: none; }
+    h2 { font-size: 16px; margin: 8px 0 0; }
+    #actions button { text-align: left; }
   </style>
 </head>
 <body>
@@ -39,6 +43,8 @@
         <button id="backspace">⌫</button>
         <button id="sendEnter" class="primary" style="grid-column: span 2">Send + Enter</button>
       </div>
+      <h2>Buttons on the TV page</h2>
+      <div id="actions"></div>
     </div>
   </main>
   <script src="/noble-ciphers.js"></script>

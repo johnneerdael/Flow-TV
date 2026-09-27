@@ -36,6 +36,7 @@ import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 import kotlinx.coroutines.delay
 
 private const val SIGNED_IN_DISMISS_MS = 1_500L
+private const val PAGE_ACTIONS_REFRESH_MS = 1_500L
 
 @Composable
 fun TvAccountSignInScreen(
@@ -57,7 +58,20 @@ fun TvAccountSignInScreen(
             when (input) {
                 is PhoneInput.Text -> login.typeText(input.value)
                 is PhoneInput.Key -> login.pressKey(input.key)
+                is PhoneInput.Click -> login.clickAction(input.index)
             }
+            viewModel.onPageActions(login.pageActions())
+        }
+    }
+    // Google's sign-in is a single-page app with no navigation callback for its steps, so the page's
+    // buttons are re-read on the phone's own polling cadence while it is waiting for this screen.
+    val waitingForPhone = state is AccountSignInState.Ready
+    LaunchedEffect(controller, waitingForPhone) {
+        val login = controller ?: return@LaunchedEffect
+        if (!waitingForPhone) return@LaunchedEffect
+        while (true) {
+            viewModel.onPageActions(login.pageActions())
+            delay(PAGE_ACTIONS_REFRESH_MS)
         }
     }
     LaunchedEffect(state) {

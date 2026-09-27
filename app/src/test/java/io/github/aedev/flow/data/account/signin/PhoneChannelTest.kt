@@ -88,7 +88,7 @@ class PhoneChannelTest {
                 decoder.decode(envelope.c),
                 VECTOR_SESSION_ID + "s2c".encodeToByteArray(),
             )
-        assertThat(plain.decodeToString()).isEqualTo("""{"step":"Enter your password","done":false}""")
+        assertThat(plain.decodeToString()).isEqualTo("""{"step":"Enter your password","done":false,"actions":[]}""")
     }
 
     @Test
@@ -104,6 +104,21 @@ class PhoneChannelTest {
             PhoneEnvelope(n = "", c = ""),
         ).forEach { bad ->
             assertThrows(PhoneChannelRejected::class.java) { channel().open(bad, "192.168.1.20") }
+        }
+    }
+
+    @Test
+    fun `clicks on the page's buttons are decoded`() {
+        val input = channel().open(phoneSeal(VECTOR_SESSION_ID, VECTOR_KEY, 1, "click", "3"), "192.168.1.20")
+        assertThat(input).isEqualTo(PhoneInput.Click(3))
+    }
+
+    @Test
+    fun `a click outside the offered buttons is rejected`() {
+        listOf("-1", "$MAX_PAGE_ACTIONS", "first").forEach { value ->
+            assertThrows(PhoneChannelRejected::class.java) {
+                channel().open(phoneSeal(VECTOR_SESSION_ID, VECTOR_KEY, 1, "click", value), "192.168.1.20")
+            }
         }
     }
 }

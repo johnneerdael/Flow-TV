@@ -82,6 +82,8 @@ class AccountSignInViewModel
 
         @Volatile private var done = false
 
+        @Volatile private var actions = emptyList<String>()
+
         fun start(loginSupported: Boolean) {
             if (_state.value != AccountSignInState.Starting || channel != null) return
             if (!loginSupported) {
@@ -97,7 +99,7 @@ class AccountSignInViewModel
             viewModelScope.launch {
                 val handle =
                     try {
-                        launcher.launch(phoneChannel, host, { PhoneStatus(step, done) }) { inputChannel.send(it) }
+                        launcher.launch(phoneChannel, host, { PhoneStatus(step, done, actions) }) { inputChannel.send(it) }
                     } catch (e: IOException) {
                         Log.w(TAG, "Phone sign-in server could not start", e)
                         stopServer()
@@ -119,6 +121,10 @@ class AccountSignInViewModel
             step = title
         }
 
+        fun onPageActions(labels: List<String>) {
+            actions = labels
+        }
+
         fun onSessionCaptured(session: AccountSession) {
             viewModelScope.launch {
                 done = true
@@ -136,6 +142,7 @@ class AccountSignInViewModel
             stopServer()
             done = false
             step = ""
+            actions = emptyList()
             _state.value = AccountSignInState.Starting
         }
 

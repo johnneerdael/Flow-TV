@@ -69,9 +69,19 @@ internal class LoginWebViewController(
         hideKeyboard()
     }
 
-    private suspend fun evaluate(script: String) =
+    suspend fun pageActions(): List<String> = SignInCapture.parsePageActions(evaluateForResult(SignInCapture.pageActionsScript()))
+
+    suspend fun clickAction(index: Int) {
+        evaluate(SignInCapture.clickActionScript(index))
+    }
+
+    private suspend fun evaluate(script: String) {
+        evaluateForResult(script)
+    }
+
+    private suspend fun evaluateForResult(script: String): String? =
         suspendCancellableCoroutine { continuation ->
-            webView.evaluateJavascript(script) { continuation.resume(Unit) }
+            webView.evaluateJavascript(script) { continuation.resume(it) }
         }
 
     suspend fun pressKey(key: PhoneKey) {

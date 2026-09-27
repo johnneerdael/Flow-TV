@@ -67,6 +67,21 @@
   $('show').addEventListener('change', (e) => { $('text').type = e.target.checked ? 'text' : 'password'; });
   $('text').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); $('sendEnter').click(); } });
 
+  let shownActions = '';
+
+  function renderActions(actions) {
+    const key = JSON.stringify(actions);
+    if (key === shownActions) return;
+    shownActions = key;
+    const list = $('actions');
+    list.replaceChildren(...actions.map((label, index) => {
+      const button = document.createElement('button');
+      button.textContent = label;
+      button.addEventListener('click', () => run(() => send('click', String(index))));
+      return button;
+    }));
+  }
+
   async function poll() {
     try {
       const res = await fetch('/status', { cache: 'no-store' });
@@ -74,6 +89,7 @@
         const env = await res.json();
         const status = JSON.parse(dec.decode(gcm(key, b64u.dec(env.n), aad('s2c')).decrypt(b64u.dec(env.c))));
         $('step').textContent = status.step || '…';
+        renderActions(Array.isArray(status.actions) ? status.actions : []);
         if (status.done) {
           $('status').textContent = 'Signed in. You can close this page.';
           document.body.classList.add('done');

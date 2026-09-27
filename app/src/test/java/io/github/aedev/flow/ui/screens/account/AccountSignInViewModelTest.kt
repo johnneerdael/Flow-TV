@@ -38,6 +38,7 @@ class AccountSignInViewModelTest {
         }
     private var launches = 0
     private var stops = 0
+    private var lastStatus: () -> PhoneStatus = { PhoneStatus("") }
     private val launcher =
         object : PhoneServerLauncher {
             override suspend fun launch(
@@ -47,6 +48,7 @@ class AccountSignInViewModelTest {
                 onInput: suspend (PhoneInput) -> Unit,
             ): PhoneServerHandle {
                 launches++
+                lastStatus = status
                 return object : PhoneServerHandle {
                     override val port = 4321
 
@@ -146,5 +148,23 @@ class AccountSignInViewModelTest {
             vm.start(loginSupported = true)
             runCurrent()
             assertThat(vm.state.value).isEqualTo(AccountSignInState.NoNetwork)
+        }
+
+    @Test
+    fun `the page's buttons reach the phone status and a retry clears them`() =
+        runTest(dispatcher) {
+            val vm = viewModel()
+            vm.start(loginSupported = true)
+            runCurrent()
+            vm.onPageTitle("2-Step Verification")
+            vm.onPageActions(listOf("Resend it", "Try another way"))
+            assertThat(
+                lastStatus(),
+            ).isEqualTo(PhoneStatus("2-Step Verification", done = false, actions = listOf("Resend it", "Try another way")))
+
+            vm.retry()
+            vm.start(loginSupported = true)
+            runCurrent()
+            assertThat(lastStatus().actions).isEmpty()
         }
 }

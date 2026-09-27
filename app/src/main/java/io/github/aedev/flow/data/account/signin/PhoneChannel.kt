@@ -10,6 +10,9 @@ import java.util.Base64
 
 enum class PhoneKey { ENTER, TAB, BACKSPACE }
 
+/** The most page buttons and links the phone is offered at once. */
+const val MAX_PAGE_ACTIONS = 12
+
 sealed interface PhoneInput {
     data class Text(
         val value: String,
@@ -19,6 +22,11 @@ sealed interface PhoneInput {
 
     data class Key(
         val key: PhoneKey,
+    ) : PhoneInput
+
+    /** Clicks the [index]th entry of the [PhoneStatus.actions] the phone was last sent. */
+    data class Click(
+        val index: Int,
     ) : PhoneInput
 }
 
@@ -32,6 +40,7 @@ data class PhoneEnvelope(
 data class PhoneStatus(
     val step: String,
     val done: Boolean = false,
+    val actions: List<String> = emptyList(),
 )
 
 @Serializable
@@ -102,6 +111,12 @@ class PhoneChannel(
                     PhoneInput.Key(PhoneKey.entries.firstOrNull { it.name == payload.value } ?: throw PhoneChannelRejected("unknown key"))
                 }
 
+                TYPE_CLICK -> {
+                    PhoneInput.Click(
+                        payload.value.toIntOrNull()?.takeIf { it in 0 until MAX_PAGE_ACTIONS } ?: throw PhoneChannelRejected("bad action"),
+                    )
+                }
+
                 else -> {
                     throw PhoneChannelRejected("unknown type")
                 }
@@ -134,6 +149,7 @@ class PhoneChannel(
         private const val HOST_TO_CLIENT = "s2c"
         private const val TYPE_TEXT = "text"
         private const val TYPE_KEY = "key"
+        private const val TYPE_CLICK = "click"
         private const val SESSION_ID_BYTES = 16
         private const val KEY_BYTES = 32
         private val encoder = Base64.getUrlEncoder().withoutPadding()
