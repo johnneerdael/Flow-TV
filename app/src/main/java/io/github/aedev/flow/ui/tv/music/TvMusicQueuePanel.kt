@@ -19,6 +19,8 @@ import io.github.aedev.flow.ui.tv.components.TvMusicTrackRow
 import io.github.aedev.flow.ui.tv.components.TvSidePanel
 import io.github.aedev.flow.ui.tv.focus.tvInitialFocus
 
+private const val QUEUE_PANEL_ALPHA = 0.5f
+
 /** Music queue side panel: current queue plus the automix (radio) continuation. */
 @Composable
 fun BoxScope.TvMusicQueuePanel(
@@ -34,6 +36,7 @@ fun BoxScope.TvMusicQueuePanel(
         visible = visible,
         title = stringResource(R.string.tv_player_queue),
         onClose = onClose,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = QUEUE_PANEL_ALPHA),
     ) {
         if (queue.isEmpty() && automix.isEmpty()) {
             Text(
