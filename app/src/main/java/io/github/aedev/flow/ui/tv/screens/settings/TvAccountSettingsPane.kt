@@ -45,13 +45,15 @@ fun TvAccountSettingsPane(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             item(key = "status") { TvAccountStatusCard(session) }
-            item(key = "sign-in") {
-                TvNavRow(
-                    label = stringResource(R.string.tv_account_sign_in_with_phone),
-                    supportingText = stringResource(R.string.tv_account_sign_in_with_phone_summary),
-                    leadingIcon = Icons.Outlined.QrCode2,
-                    onClick = onSignIn,
-                )
+            if (session == null || session?.expired == true) {
+                item(key = "sign-in") {
+                    TvNavRow(
+                        label = stringResource(R.string.tv_account_sign_in_with_phone),
+                        supportingText = stringResource(R.string.tv_account_sign_in_with_phone_summary),
+                        leadingIcon = Icons.Outlined.QrCode2,
+                        onClick = onSignIn,
+                    )
+                }
             }
             if (session != null) {
                 item(key = "sign-out") {
