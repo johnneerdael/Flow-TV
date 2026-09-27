@@ -22,19 +22,22 @@ internal data class GlitchFrame(
 )
 
 /**
- * The hand-over from the playing track to the next over the last [WINDOW_MS] of a track: glitch bursts
- * grow more frequent and mix old and new slices, the calm frames between them lean more and more to
- * the next track, and the corner settles on the next track as it starts.
+ * The hand-over from one track to the next, from [LEAD_MS] before the track change to [TAIL_MS] after
+ * it: glitch bursts grow more frequent and mix old and new slices, the calm frames between them lean
+ * more and more to the new track, and the corner settles on it as the window closes.
  */
 internal object CornerGlitch {
-    const val WINDOW_MS = 10_000L
+    const val LEAD_MS = 7_000L
+    const val TAIL_MS = 3_000L
+    private const val WINDOW_MS = LEAD_MS + TAIL_MS
 
     // A glitch image holds for a few frames; bursts start and stop on a coarser grid.
     private const val JITTER_MS = 50L
     private const val BURST_MS = 250L
     private const val SETTLED = 0.97f
 
-    fun progress(remainingMs: Long): Float = (1f - remainingMs.toFloat() / WINDOW_MS).coerceIn(0f, 1f)
+    /** How far the hand-over is, given the time since the track change (negative before it). */
+    fun progress(msFromChange: Long): Float = ((msFromChange + LEAD_MS).toFloat() / WINDOW_MS).coerceIn(0f, 1f)
 
     fun frame(
         progress: Float,

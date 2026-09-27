@@ -132,8 +132,17 @@ fun TvMusicNowPlayingScreen(
     var panel by rememberSaveable { mutableStateOf(TvMusicPanel.NONE) }
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     val upcoming = remember(queue, queueIndex, automix, repeatMode) { upcomingTrack(queue, queueIndex, automix, repeatMode) }
-    val handingOver = isHandingOver(playerState.isPlaying, upcoming != null, playerState.duration, playerState.position)
-    val glitch = rememberCornerGlitch(handingOver, track?.videoId) { manager.getDuration() - manager.getCurrentPosition() }
+    val handOver =
+        rememberCornerHandOver(
+            current = CornerTrack(track?.artist.orEmpty(), track?.title.orEmpty(), artworkUrl),
+            trackKey = track?.videoId,
+            upcoming = upcoming?.let { CornerTrack(it.artist, it.title, it.highResThumbnailUrl ?: it.thumbnailUrl) },
+            isPlaying = playerState.isPlaying,
+            positionMs = playerState.position,
+            durationMs = playerState.duration,
+            positionNow = manager::getCurrentPosition,
+            durationNow = manager::getDuration,
+        )
     val overlay = remember { TvPlayerOverlayController(System::currentTimeMillis) }
     val overlayState by overlay.state.collectAsStateWithLifecycle()
     val controlsVisible = overlayState.mode != TvOverlayMode.HIDDEN
@@ -295,9 +304,9 @@ fun TvMusicNowPlayingScreen(
         }
 
         TvNowPlayingTrackCorner(
-            current = CornerTrack(track?.artist.orEmpty(), track?.title.orEmpty(), artworkUrl),
-            next = upcoming?.takeIf { handingOver }?.let { CornerTrack(it.artist, it.title, it.highResThumbnailUrl ?: it.thumbnailUrl) },
-            glitch = { glitch.value },
+            current = handOver.shown,
+            next = handOver.incoming,
+            glitch = { handOver.glitch.value },
             contentColor = palette.onBase,
             maxWidth =
                 if (panel == TvMusicPanel.NONE) {

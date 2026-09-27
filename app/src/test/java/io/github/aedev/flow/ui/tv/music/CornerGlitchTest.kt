@@ -13,11 +13,13 @@ class CornerGlitchTest {
     private fun GlitchFrame.allBands() = cover + artist + title
 
     @Test
-    fun `progress runs over the last ten seconds`() {
-        assertThat(CornerGlitch.progress(10_000L)).isEqualTo(0f)
-        assertThat(CornerGlitch.progress(5_000L)).isEqualTo(0.5f)
-        assertThat(CornerGlitch.progress(0L)).isEqualTo(1f)
-        assertThat(CornerGlitch.progress(30_000L)).isEqualTo(0f)
+    fun `progress runs from seven seconds before the track change to three after it`() {
+        assertThat(CornerGlitch.progress(-7_000L)).isEqualTo(0f)
+        assertThat(CornerGlitch.progress(-2_000L)).isEqualTo(0.5f)
+        assertThat(CornerGlitch.progress(0L)).isEqualTo(0.7f)
+        assertThat(CornerGlitch.progress(3_000L)).isEqualTo(1f)
+        assertThat(CornerGlitch.progress(-30_000L)).isEqualTo(0f)
+        assertThat(CornerGlitch.progress(30_000L)).isEqualTo(1f)
     }
 
     @Test
@@ -68,11 +70,20 @@ class CornerGlitchTest {
     }
 
     @Test
-    fun `the hand-over runs only in the last ten seconds of a playing track with a successor`() {
+    fun `the lead runs only in the last seven seconds of a playing track with a successor`() {
         assertThat(isHandingOver(isPlaying = true, hasUpcoming = true, durationMs = 200_000, positionMs = 195_000)).isTrue()
-        assertThat(isHandingOver(isPlaying = true, hasUpcoming = true, durationMs = 200_000, positionMs = 180_000)).isFalse()
+        assertThat(isHandingOver(isPlaying = true, hasUpcoming = true, durationMs = 200_000, positionMs = 192_000)).isFalse()
         assertThat(isHandingOver(isPlaying = false, hasUpcoming = true, durationMs = 200_000, positionMs = 195_000)).isFalse()
         assertThat(isHandingOver(isPlaying = true, hasUpcoming = false, durationMs = 200_000, positionMs = 195_000)).isFalse()
         assertThat(isHandingOver(isPlaying = true, hasUpcoming = true, durationMs = 0, positionMs = 0)).isFalse()
+    }
+
+    @Test
+    fun `the tail runs only in the first three seconds of a playing track the corner handed over to`() {
+        assertThat(isSettlingIn(isPlaying = true, hasOutgoing = true, positionMs = 0)).isTrue()
+        assertThat(isSettlingIn(isPlaying = true, hasOutgoing = true, positionMs = 2_999)).isTrue()
+        assertThat(isSettlingIn(isPlaying = true, hasOutgoing = true, positionMs = 3_000)).isFalse()
+        assertThat(isSettlingIn(isPlaying = false, hasOutgoing = true, positionMs = 1_000)).isFalse()
+        assertThat(isSettlingIn(isPlaying = true, hasOutgoing = false, positionMs = 1_000)).isFalse()
     }
 }

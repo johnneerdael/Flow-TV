@@ -12,6 +12,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -113,8 +114,9 @@ private fun CornerLayers(
     next: CornerTrack?,
     layer: @Composable (CornerTrack, Boolean) -> Unit,
 ) {
-    layer(current, false)
-    if (next != null) layer(next, true)
+    // Keyed by track so a layer keeps its loaded artwork when the track moves from incoming to shown.
+    key(current) { layer(current, false) }
+    if (next != null) key(next) { layer(next, true) }
 }
 
 @Composable
