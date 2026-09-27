@@ -24,6 +24,7 @@ fun TvCard(
     modifier: Modifier = Modifier,
     selected: Boolean = false,
     shape: Shape = MaterialTheme.shapes.medium,
+    containerAlpha: Float = 1f,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val focusState = rememberTvFocusState()
@@ -41,7 +42,7 @@ fun TvCard(
                         focused -> MaterialTheme.colorScheme.primaryContainer
                         selected -> MaterialTheme.colorScheme.secondaryContainer
                         else -> MaterialTheme.colorScheme.surfaceContainer
-                    },
+                    }.copy(alpha = containerAlpha),
                 contentColor =
                     when {
                         focused -> MaterialTheme.colorScheme.onPrimaryContainer
@@ -55,7 +56,8 @@ fun TvCard(
             } else {
                 null
             },
-        elevation = CardDefaults.cardElevation(defaultElevation = if (focused) 3.dp else 0.dp),
+        // A see-through card would show its own shadow through it.
+        elevation = CardDefaults.cardElevation(defaultElevation = if (focused && containerAlpha == 1f) 3.dp else 0.dp),
         content = content,
     )
 }

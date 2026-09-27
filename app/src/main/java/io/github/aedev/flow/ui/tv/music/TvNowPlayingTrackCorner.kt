@@ -2,41 +2,73 @@ package io.github.aedev.flow.ui.tv.music
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 
-private val CoverSize = 104.dp
+private val CoverSize = 96.dp
 private val CoverFrameWidth = 1.5.dp
-private const val TEXT_MAX_WIDTH_FRACTION = 0.6f
+private const val FRINGE_ALPHA = 0.7f
+
+/** What the corner shows for one track. */
+internal data class CornerTrack(
+    val artist: String,
+    val title: String,
+    val artworkUrl: String?,
+)
 
 /**
- * The always-visible track identity for the now-playing screen: framed cover art with the artist
- * and, below it, the title — kept to one corner so a full-screen visual can own the rest.
+ * The always-visible track identity for the now-playing screen: framed cover art with the artist and,
+ * below it, the title, each on one line. While [next] is set, [glitch] hands the corner over to it
+ * slice by slice; the frames are read in the draw phase, so the hand-over never recomposes.
  */
 @Composable
 internal fun TvNowPlayingTrackCorner(
-    artist: String,
-    title: String,
-    artworkUrl: String?,
+    current: CornerTrack,
+    next: CornerTrack?,
+    glitch: () -> GlitchFrame?,
     contentColor: Color,
+    maxWidth: Dp,
     modifier: Modifier = Modifier,
 ) {
+    val fringe = rememberFringePaints(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary)
+    val coverBands = { glitch()?.cover }
+    val artistBands = { glitch()?.artist }
+    val titleBands = { glitch()?.title }
+    val split = { glitch()?.colorSplit ?: 0f }
+    val artistStyle = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Normal)
+    val titleStyle = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Normal)
+
     Row(
-        modifier = modifier.fillMaxWidth(TEXT_MAX_WIDTH_FRACTION),
-        horizontalArrangement = Arrangement.spacedBy(24.dp),
+        modifier = modifier.widthIn(max = maxWidth),
+        horizontalArrangement = Arrangement.spacedBy(20.dp),
         verticalAlignment = Alignment.Top,
     ) {
         Surface(
@@ -44,28 +76,119 @@ internal fun TvNowPlayingTrackCorner(
             color = MaterialTheme.colorScheme.surfaceContainer,
             border = BorderStroke(CoverFrameWidth, contentColor.copy(alpha = 0.8f)),
         ) {
-            AsyncImage(
-                model = artworkUrl,
-                contentDescription = title,
-                modifier = Modifier.size(CoverSize),
-                contentScale = ContentScale.Crop,
-            )
+            Box(Modifier.size(CoverSize)) {
+                CornerLayers(current, next) { track, showsNext ->
+                    AsyncImage(
+                        model = track.artworkUrl,
+                        contentDescription = track.title.takeUnless { showsNext },
+                        modifier = Modifier.size(CoverSize).glitchLayer(showsNext, coverBands, split, fringe),
+                        contentScale = ContentScale.Crop,
+                    )
+                }
+            }
         }
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(
-                text = artist,
-                style = MaterialTheme.typography.headlineLarge,
-                color = contentColor,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                text = title,
-                style = MaterialTheme.typography.headlineMedium,
-                color = contentColor.copy(alpha = 0.85f),
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
+            Box {
+                CornerLayers(current, next) { track, showsNext ->
+                    CornerLine(track.artist, artistStyle, contentColor, Modifier.glitchLayer(showsNext, artistBands, split, fringe))
+                }
+            }
+            Box {
+                CornerLayers(current, next) { track, showsNext ->
+                    CornerLine(
+                        track.title,
+                        titleStyle,
+                        contentColor.copy(alpha = 0.8f),
+                        Modifier.glitchLayer(showsNext, titleBands, split, fringe),
+                    )
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun CornerLayers(
+    current: CornerTrack,
+    next: CornerTrack?,
+    layer: @Composable (CornerTrack, Boolean) -> Unit,
+) {
+    layer(current, false)
+    if (next != null) layer(next, true)
+}
+
+@Composable
+private fun CornerLine(
+    text: String,
+    style: TextStyle,
+    color: Color,
+    modifier: Modifier,
+) {
+    Text(
+        text = text,
+        style = style,
+        color = color,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        modifier = modifier.fillMaxWidth(),
+    )
+}
+
+private class FringePaints(
+    val left: Paint,
+    val right: Paint,
+)
+
+@Composable
+private fun rememberFringePaints(
+    left: Color,
+    right: Color,
+): FringePaints =
+    remember(left, right) {
+        FringePaints(
+            left = Paint().apply { colorFilter = ColorFilter.tint(left, BlendMode.Modulate) }.also { it.alpha = FRINGE_ALPHA },
+            right = Paint().apply { colorFilter = ColorFilter.tint(right, BlendMode.Modulate) }.also { it.alpha = FRINGE_ALPHA },
+        )
+    }
+
+/**
+ * Draws this layer's share of the glitch: the bands that come from its track, each shifted sideways,
+ * with colour fringes either side. Without a glitch frame only the playing track's layer draws.
+ */
+private fun Modifier.glitchLayer(
+    showsNext: Boolean,
+    bands: () -> List<GlitchBand>?,
+    split: () -> Float,
+    fringe: FringePaints,
+): Modifier =
+    drawWithContent {
+        val active = bands()
+        if (active == null) {
+            if (!showsNext) drawContent()
+            return@drawWithContent
+        }
+        val splitPx = split() * size.width
+        active.forEach { band ->
+            if (band.showsNext != showsNext) return@forEach
+            clipRect(top = band.top * size.height, bottom = band.bottom * size.height) {
+                translate(left = band.shift * size.width) {
+                    if (splitPx > 0f) {
+                        this@drawWithContent.drawFringe(fringe.left, -splitPx)
+                        this@drawWithContent.drawFringe(fringe.right, splitPx)
+                    }
+                    this@drawWithContent.drawContent()
+                }
+            }
+        }
+    }
+
+private fun ContentDrawScope.drawFringe(
+    paint: Paint,
+    dx: Float,
+) {
+    drawIntoCanvas { canvas ->
+        canvas.saveLayer(Rect(-size.width, 0f, size.width * 2f, size.height), paint)
+        translate(left = dx) { this@drawFringe.drawContent() }
+        canvas.restore()
     }
 }

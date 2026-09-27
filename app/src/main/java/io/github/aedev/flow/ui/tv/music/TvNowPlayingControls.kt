@@ -41,7 +41,9 @@ import io.github.aedev.flow.ui.components.musicplayer.controls.PlayerProgressSli
 import io.github.aedev.flow.ui.tv.components.TvIconButton
 import io.github.aedev.flow.ui.tv.components.TvIconButtonColors
 
-private val ControlsWidth = 640.dp
+// Fits beside the open queue panel: screen width minus the panel, the overscan edge and a gap.
+private val ControlsWidth = 480.dp
+private val ControlButtonSize = 48.dp
 
 /** What the controls bar shows; the screen owns the state and the player calls. */
 internal data class TvNowPlayingControlsState(
@@ -108,7 +110,7 @@ internal fun TvNowPlayingControls(
             )
         }
         Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             TvIconButton(
@@ -117,12 +119,14 @@ internal fun TvNowPlayingControls(
                 onClick = actions.onToggleShuffle,
                 active = state.shuffleEnabled,
                 colors = buttonColors,
+                size = ControlButtonSize,
             )
             TvIconButton(
                 icon = Icons.Outlined.SkipPrevious,
                 contentDescription = stringResource(R.string.previous),
                 onClick = actions.onPrevious,
                 colors = buttonColors,
+                size = ControlButtonSize,
             )
             TvIconButton(
                 icon = if (state.isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
@@ -130,6 +134,7 @@ internal fun TvNowPlayingControls(
                 onClick = actions.onTogglePlayPause,
                 active = true,
                 colors = buttonColors,
+                size = ControlButtonSize,
                 focusRequester = playPauseFocusRequester,
             )
             TvIconButton(
@@ -137,6 +142,7 @@ internal fun TvNowPlayingControls(
                 contentDescription = stringResource(R.string.next),
                 onClick = actions.onNext,
                 colors = buttonColors,
+                size = ControlButtonSize,
             )
             TvIconButton(
                 icon = if (state.repeatMode == RepeatMode.ONE) Icons.Outlined.RepeatOne else Icons.Outlined.Repeat,
@@ -144,6 +150,7 @@ internal fun TvNowPlayingControls(
                 onClick = actions.onToggleRepeat,
                 active = state.repeatMode != RepeatMode.OFF,
                 colors = buttonColors,
+                size = ControlButtonSize,
             )
             TvIconButton(
                 icon = if (state.isLiked) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
@@ -151,6 +158,7 @@ internal fun TvNowPlayingControls(
                 onClick = actions.onToggleLike,
                 active = state.isLiked,
                 colors = buttonColors,
+                size = ControlButtonSize,
             )
             TvIconButton(
                 icon = Icons.Outlined.Lyrics,
@@ -158,6 +166,7 @@ internal fun TvNowPlayingControls(
                 onClick = actions.onToggleLyrics,
                 active = state.lyricsOpen,
                 colors = buttonColors,
+                size = ControlButtonSize,
             )
             TvIconButton(
                 icon = Icons.AutoMirrored.Outlined.QueueMusic,
@@ -165,6 +174,7 @@ internal fun TvNowPlayingControls(
                 onClick = actions.onToggleQueue,
                 active = state.queueOpen,
                 colors = buttonColors,
+                size = ControlButtonSize,
             )
         }
     }

@@ -188,11 +188,13 @@ fun TvMusicTrackRow(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     selected: Boolean = false,
+    containerAlpha: Float = 1f,
 ) {
     TvCard(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         selected = selected,
+        containerAlpha = containerAlpha,
     ) {
         Row(
             modifier =

@@ -51,6 +51,7 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -79,6 +80,9 @@ import kotlinx.coroutines.isActive
 
 private enum class TvMusicPanel { NONE, QUEUE, LYRICS }
 
+private const val CORNER_WIDTH_FRACTION = 0.6f
+private val PanelGap = 24.dp
+
 /**
  * Full-screen music now-playing: the track sits in the top-left corner over a full-screen
  * [background] (the artwork backdrop by default; the visualizer plugs in here), and the seek bar and
@@ -99,6 +103,9 @@ fun TvMusicNowPlayingScreen(
     val shuffleEnabled by manager.shuffleEnabled.collectAsStateWithLifecycle()
     val repeatMode by manager.repeatMode.collectAsStateWithLifecycle()
     val isLiked by manager.isLiked.collectAsStateWithLifecycle()
+    val queue by manager.queue.collectAsStateWithLifecycle()
+    val queueIndex by manager.currentQueueIndex.collectAsStateWithLifecycle()
+    val automix by manager.automixItems.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val dimens = LocalTvDimens.current
 
@@ -123,6 +130,10 @@ fun TvMusicNowPlayingScreen(
         }
 
     var panel by rememberSaveable { mutableStateOf(TvMusicPanel.NONE) }
+    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+    val upcoming = remember(queue, queueIndex, automix, repeatMode) { upcomingTrack(queue, queueIndex, automix, repeatMode) }
+    val handingOver = isHandingOver(playerState.isPlaying, upcoming != null, playerState.duration, playerState.position)
+    val glitch = rememberCornerGlitch(handingOver, track?.videoId) { manager.getDuration() - manager.getCurrentPosition() }
     val overlay = remember { TvPlayerOverlayController(System::currentTimeMillis) }
     val overlayState by overlay.state.collectAsStateWithLifecycle()
     val controlsVisible = overlayState.mode != TvOverlayMode.HIDDEN
@@ -284,10 +295,16 @@ fun TvMusicNowPlayingScreen(
         }
 
         TvNowPlayingTrackCorner(
-            artist = track?.artist.orEmpty(),
-            title = track?.title.orEmpty(),
-            artworkUrl = artworkUrl,
+            current = CornerTrack(track?.artist.orEmpty(), track?.title.orEmpty(), artworkUrl),
+            next = upcoming?.takeIf { handingOver }?.let { CornerTrack(it.artist, it.title, it.highResThumbnailUrl ?: it.thumbnailUrl) },
+            glitch = { glitch.value },
             contentColor = palette.onBase,
+            maxWidth =
+                if (panel == TvMusicPanel.NONE) {
+                    screenWidth * CORNER_WIDTH_FRACTION
+                } else {
+                    screenWidth - dimens.sidePanelWidth - dimens.overscanHorizontal - PanelGap
+                },
             modifier =
                 Modifier
                     .align(Alignment.TopStart)

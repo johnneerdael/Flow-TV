@@ -19,6 +19,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /** Color set for [TvIconButton]; defaults come from the active theme. */
@@ -48,6 +49,7 @@ fun TvIconButton(
     active: Boolean = false,
     focusRequester: FocusRequester? = null,
     colors: TvIconButtonColors? = null,
+    size: Dp = 56.dp,
 ) {
     var focused by remember { mutableStateOf(false) }
     val resolved =
@@ -83,13 +85,13 @@ fun TvIconButton(
             },
     ) {
         Box(
-            modifier = Modifier.size(56.dp),
+            modifier = Modifier.size(size),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = contentDescription,
-                modifier = Modifier.size(28.dp),
+                modifier = Modifier.size(size / 2),
             )
         }
     }

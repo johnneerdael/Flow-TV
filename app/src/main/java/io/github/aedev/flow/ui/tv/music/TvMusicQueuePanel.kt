@@ -21,6 +21,9 @@ import io.github.aedev.flow.ui.tv.focus.tvInitialFocus
 
 private const val QUEUE_PANEL_ALPHA = 0.5f
 
+// Rows sit a little more solid than the panel so they stay readable while the visual shows through.
+private const val QUEUE_ROW_ALPHA = 0.6f
+
 /** Music queue side panel: current queue plus the automix (radio) continuation. */
 @Composable
 fun BoxScope.TvMusicQueuePanel(
@@ -55,6 +58,7 @@ fun BoxScope.TvMusicQueuePanel(
                     track = item,
                     selected = index == currentIndex,
                     onClick = { manager.playFromQueue(index) },
+                    containerAlpha = QUEUE_ROW_ALPHA,
                     modifier = if (index == 0) Modifier.tvInitialFocus() else Modifier,
                 )
             }
@@ -70,6 +74,7 @@ fun BoxScope.TvMusicQueuePanel(
                     TvMusicTrackRow(
                         track = item,
                         onClick = { manager.playNext(item) },
+                        containerAlpha = QUEUE_ROW_ALPHA,
                     )
                 }
             }
