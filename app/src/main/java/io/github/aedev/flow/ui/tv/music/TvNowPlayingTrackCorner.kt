@@ -1,10 +1,10 @@
 package io.github.aedev.flow.ui.tv.music
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -33,6 +33,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import io.github.aedev.flow.ui.components.shared.titleMarquee
 
 private val CoverSize = 96.dp
 private val CornerPadding = 12.dp
@@ -47,8 +48,10 @@ internal data class CornerTrack(
 
 /**
  * The always-visible track identity for the now-playing screen: cover art with the artist and, below
- * it, the title, each on one line, on a see-through bar that keeps them readable over any visual. While [next] is set, [glitch] hands the corner over to it
- * slice by slice; the frames are read in the draw phase, so the hand-over never recomposes.
+ * it, the title, each on one line, on a see-through bar that keeps them readable over any visual. The
+ * bar ends just past the longer line, up to [maxWidth]; a line that does not fit scrolls once. While
+ * [next] is set, [glitch] hands the corner over to it slice by slice; the frames are read in the draw
+ * phase, so the hand-over never recomposes.
  */
 @Composable
 internal fun TvNowPlayingTrackCorner(
@@ -74,7 +77,10 @@ internal fun TvNowPlayingTrackCorner(
         tonalElevation = 3.dp,
     ) {
         Row(
-            modifier = Modifier.padding(CornerPadding),
+            modifier =
+                Modifier
+                    .animateContentSize(MaterialTheme.motionScheme.defaultSpatialSpec())
+                    .padding(CornerPadding),
             horizontalArrangement = Arrangement.spacedBy(20.dp),
             verticalAlignment = Alignment.Top,
         ) {
@@ -96,7 +102,13 @@ internal fun TvNowPlayingTrackCorner(
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Box {
                     CornerLayers(current, next) { track, showsNext ->
-                        CornerLine(track.artist, artistStyle, contentColor, Modifier.glitchLayer(showsNext, artistBands, split, fringe))
+                        CornerLine(
+                            track.artist,
+                            artistStyle,
+                            contentColor,
+                            scrolls = !showsNext,
+                            Modifier.glitchLayer(showsNext, artistBands, split, fringe),
+                        )
                     }
                 }
                 Box {
@@ -105,6 +117,7 @@ internal fun TvNowPlayingTrackCorner(
                             track.title,
                             titleStyle,
                             contentColor.copy(alpha = 0.8f),
+                            scrolls = !showsNext,
                             Modifier.glitchLayer(showsNext, titleBands, split, fringe),
                         )
                     }
@@ -130,15 +143,17 @@ private fun CornerLine(
     text: String,
     style: TextStyle,
     color: Color,
+    scrolls: Boolean,
     modifier: Modifier,
 ) {
+    // Only the shown track scrolls: the incoming one is drawn in glitch slices and must not animate unseen.
     Text(
         text = text,
         style = style,
         color = color,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
-        modifier = modifier.fillMaxWidth(),
+        modifier = if (scrolls) modifier.titleMarquee() else modifier,
     )
 }
 
