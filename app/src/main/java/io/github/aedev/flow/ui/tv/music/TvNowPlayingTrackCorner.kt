@@ -1,11 +1,11 @@
 package io.github.aedev.flow.ui.tv.music
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 
 private val CoverSize = 96.dp
-private val CoverFrameWidth = 1.5.dp
+private val CornerPadding = 12.dp
 private const val FRINGE_ALPHA = 0.7f
 
 /** What the corner shows for one track. */
@@ -46,8 +46,8 @@ internal data class CornerTrack(
 )
 
 /**
- * The always-visible track identity for the now-playing screen: framed cover art with the artist and,
- * below it, the title, each on one line. While [next] is set, [glitch] hands the corner over to it
+ * The always-visible track identity for the now-playing screen: cover art with the artist and, below
+ * it, the title, each on one line, on a see-through bar that keeps them readable over any visual. While [next] is set, [glitch] hands the corner over to it
  * slice by slice; the frames are read in the draw phase, so the hand-over never recomposes.
  */
 @Composable
@@ -67,41 +67,47 @@ internal fun TvNowPlayingTrackCorner(
     val artistStyle = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Normal)
     val titleStyle = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Normal)
 
-    Row(
+    Surface(
         modifier = modifier.widthIn(max = maxWidth),
-        horizontalArrangement = Arrangement.spacedBy(20.dp),
-        verticalAlignment = Alignment.Top,
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = NOW_PLAYING_BAR_ALPHA),
+        tonalElevation = 3.dp,
     ) {
-        Surface(
-            shape = MaterialTheme.shapes.extraSmall,
-            color = MaterialTheme.colorScheme.surfaceContainer,
-            border = BorderStroke(CoverFrameWidth, contentColor.copy(alpha = 0.8f)),
+        Row(
+            modifier = Modifier.padding(CornerPadding),
+            horizontalArrangement = Arrangement.spacedBy(20.dp),
+            verticalAlignment = Alignment.Top,
         ) {
-            Box(Modifier.size(CoverSize)) {
-                CornerLayers(current, next) { track, showsNext ->
-                    AsyncImage(
-                        model = track.artworkUrl,
-                        contentDescription = track.title.takeUnless { showsNext },
-                        modifier = Modifier.size(CoverSize).glitchLayer(showsNext, coverBands, split, fringe),
-                        contentScale = ContentScale.Crop,
-                    )
+            Surface(
+                shape = MaterialTheme.shapes.extraSmall,
+                color = MaterialTheme.colorScheme.surfaceContainer,
+            ) {
+                Box(Modifier.size(CoverSize)) {
+                    CornerLayers(current, next) { track, showsNext ->
+                        AsyncImage(
+                            model = track.artworkUrl,
+                            contentDescription = track.title.takeUnless { showsNext },
+                            modifier = Modifier.size(CoverSize).glitchLayer(showsNext, coverBands, split, fringe),
+                            contentScale = ContentScale.Crop,
+                        )
+                    }
                 }
             }
-        }
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Box {
-                CornerLayers(current, next) { track, showsNext ->
-                    CornerLine(track.artist, artistStyle, contentColor, Modifier.glitchLayer(showsNext, artistBands, split, fringe))
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Box {
+                    CornerLayers(current, next) { track, showsNext ->
+                        CornerLine(track.artist, artistStyle, contentColor, Modifier.glitchLayer(showsNext, artistBands, split, fringe))
+                    }
                 }
-            }
-            Box {
-                CornerLayers(current, next) { track, showsNext ->
-                    CornerLine(
-                        track.title,
-                        titleStyle,
-                        contentColor.copy(alpha = 0.8f),
-                        Modifier.glitchLayer(showsNext, titleBands, split, fringe),
-                    )
+                Box {
+                    CornerLayers(current, next) { track, showsNext ->
+                        CornerLine(
+                            track.title,
+                            titleStyle,
+                            contentColor.copy(alpha = 0.8f),
+                            Modifier.glitchLayer(showsNext, titleBands, split, fringe),
+                        )
+                    }
                 }
             }
         }

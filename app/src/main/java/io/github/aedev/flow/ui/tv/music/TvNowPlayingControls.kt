@@ -44,6 +44,11 @@ import io.github.aedev.flow.ui.tv.components.TvIconButtonColors
 // Fits beside the open queue panel: screen width minus the panel, the overscan edge and a gap.
 private val ControlsWidth = 480.dp
 private val ControlButtonSize = 48.dp
+private val ControlsPadding = 12.dp
+
+// The controls bar and the track corner stay see-through so the visual behind them is never lost, but
+// solid enough to read over the brightest presets.
+internal const val NOW_PLAYING_BAR_ALPHA = 0.65f
 
 /** What the controls bar shows; the screen owns the state and the player calls. */
 internal data class TvNowPlayingControlsState(
@@ -83,99 +88,106 @@ internal fun TvNowPlayingControls(
     modifier: Modifier = Modifier,
 ) {
     var seekBarFocused by remember { mutableStateOf(false) }
-    Column(
+    Surface(
         modifier = modifier.width(ControlsWidth),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = NOW_PLAYING_BAR_ALPHA),
+        tonalElevation = 3.dp,
     ) {
-        Surface(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .onFocusChanged {
-                        seekBarFocused = it.isFocused
-                        actions.onSeekBarFocusChanged(it.isFocused)
-                    }.focusable(),
-            shape = MaterialTheme.shapes.large,
-            color = if (seekBarFocused) buttonColors.container else Color.Transparent,
+        Column(
+            modifier = Modifier.padding(ControlsPadding),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            PlayerProgressSlider(
-                positionProvider = positionProvider,
-                duration = durationMs,
-                onSeekTo = actions.onSeekTo,
-                isPlaying = state.isPlaying,
+            Surface(
                 modifier =
                     Modifier
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                        .focusProperties { canFocus = false },
-            )
-        }
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            TvIconButton(
-                icon = Icons.Outlined.Shuffle,
-                contentDescription = stringResource(R.string.shuffle),
-                onClick = actions.onToggleShuffle,
-                active = state.shuffleEnabled,
-                colors = buttonColors,
-                size = ControlButtonSize,
-            )
-            TvIconButton(
-                icon = Icons.Outlined.SkipPrevious,
-                contentDescription = stringResource(R.string.previous),
-                onClick = actions.onPrevious,
-                colors = buttonColors,
-                size = ControlButtonSize,
-            )
-            TvIconButton(
-                icon = if (state.isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
-                contentDescription = stringResource(if (state.isPlaying) R.string.pause else R.string.play),
-                onClick = actions.onTogglePlayPause,
-                active = true,
-                colors = buttonColors,
-                size = ControlButtonSize,
-                focusRequester = playPauseFocusRequester,
-            )
-            TvIconButton(
-                icon = Icons.Outlined.SkipNext,
-                contentDescription = stringResource(R.string.next),
-                onClick = actions.onNext,
-                colors = buttonColors,
-                size = ControlButtonSize,
-            )
-            TvIconButton(
-                icon = if (state.repeatMode == RepeatMode.ONE) Icons.Outlined.RepeatOne else Icons.Outlined.Repeat,
-                contentDescription = stringResource(R.string.loop_video),
-                onClick = actions.onToggleRepeat,
-                active = state.repeatMode != RepeatMode.OFF,
-                colors = buttonColors,
-                size = ControlButtonSize,
-            )
-            TvIconButton(
-                icon = if (state.isLiked) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
-                contentDescription = stringResource(R.string.tv_library_likes),
-                onClick = actions.onToggleLike,
-                active = state.isLiked,
-                colors = buttonColors,
-                size = ControlButtonSize,
-            )
-            TvIconButton(
-                icon = Icons.Outlined.Lyrics,
-                contentDescription = stringResource(R.string.tv_music_lyrics),
-                onClick = actions.onToggleLyrics,
-                active = state.lyricsOpen,
-                colors = buttonColors,
-                size = ControlButtonSize,
-            )
-            TvIconButton(
-                icon = Icons.AutoMirrored.Outlined.QueueMusic,
-                contentDescription = stringResource(R.string.tv_player_queue),
-                onClick = actions.onToggleQueue,
-                active = state.queueOpen,
-                colors = buttonColors,
-                size = ControlButtonSize,
-            )
+                        .fillMaxWidth()
+                        .onFocusChanged {
+                            seekBarFocused = it.isFocused
+                            actions.onSeekBarFocusChanged(it.isFocused)
+                        }.focusable(),
+                shape = MaterialTheme.shapes.large,
+                color = if (seekBarFocused) buttonColors.container else Color.Transparent,
+            ) {
+                PlayerProgressSlider(
+                    positionProvider = positionProvider,
+                    duration = durationMs,
+                    onSeekTo = actions.onSeekTo,
+                    isPlaying = state.isPlaying,
+                    modifier =
+                        Modifier
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                            .focusProperties { canFocus = false },
+                )
+            }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                TvIconButton(
+                    icon = Icons.Outlined.Shuffle,
+                    contentDescription = stringResource(R.string.shuffle),
+                    onClick = actions.onToggleShuffle,
+                    active = state.shuffleEnabled,
+                    colors = buttonColors,
+                    size = ControlButtonSize,
+                )
+                TvIconButton(
+                    icon = Icons.Outlined.SkipPrevious,
+                    contentDescription = stringResource(R.string.previous),
+                    onClick = actions.onPrevious,
+                    colors = buttonColors,
+                    size = ControlButtonSize,
+                )
+                TvIconButton(
+                    icon = if (state.isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
+                    contentDescription = stringResource(if (state.isPlaying) R.string.pause else R.string.play),
+                    onClick = actions.onTogglePlayPause,
+                    active = true,
+                    colors = buttonColors,
+                    size = ControlButtonSize,
+                    focusRequester = playPauseFocusRequester,
+                )
+                TvIconButton(
+                    icon = Icons.Outlined.SkipNext,
+                    contentDescription = stringResource(R.string.next),
+                    onClick = actions.onNext,
+                    colors = buttonColors,
+                    size = ControlButtonSize,
+                )
+                TvIconButton(
+                    icon = if (state.repeatMode == RepeatMode.ONE) Icons.Outlined.RepeatOne else Icons.Outlined.Repeat,
+                    contentDescription = stringResource(R.string.loop_video),
+                    onClick = actions.onToggleRepeat,
+                    active = state.repeatMode != RepeatMode.OFF,
+                    colors = buttonColors,
+                    size = ControlButtonSize,
+                )
+                TvIconButton(
+                    icon = if (state.isLiked) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
+                    contentDescription = stringResource(R.string.tv_library_likes),
+                    onClick = actions.onToggleLike,
+                    active = state.isLiked,
+                    colors = buttonColors,
+                    size = ControlButtonSize,
+                )
+                TvIconButton(
+                    icon = Icons.Outlined.Lyrics,
+                    contentDescription = stringResource(R.string.tv_music_lyrics),
+                    onClick = actions.onToggleLyrics,
+                    active = state.lyricsOpen,
+                    colors = buttonColors,
+                    size = ControlButtonSize,
+                )
+                TvIconButton(
+                    icon = Icons.AutoMirrored.Outlined.QueueMusic,
+                    contentDescription = stringResource(R.string.tv_player_queue),
+                    onClick = actions.onToggleQueue,
+                    active = state.queueOpen,
+                    colors = buttonColors,
+                    size = ControlButtonSize,
+                )
+            }
         }
     }
 }
