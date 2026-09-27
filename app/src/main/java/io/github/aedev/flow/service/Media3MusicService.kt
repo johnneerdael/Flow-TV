@@ -55,6 +55,9 @@ import io.github.aedev.flow.player.MusicRadioPlanner
 import io.github.aedev.flow.player.audio.AudioSessionRegistry
 import io.github.aedev.flow.player.audio.eq.EqualizerAudioProcessor
 import io.github.aedev.flow.player.audio.shouldHandleAudioFocus
+import io.github.aedev.flow.player.audio.visualizer.VisualizerAudioTap
+import io.github.aedev.flow.player.audio.visualizer.VisualizerClockListener
+import io.github.aedev.flow.player.audio.visualizer.VisualizerTapProcessor
 import io.github.aedev.flow.player.factory.LoadControlFactory
 import io.github.aedev.flow.player.sessionArtworkBitmapLoader
 import io.github.aedev.flow.utils.MusicPlayerUtils
@@ -181,6 +184,9 @@ class Media3MusicService : MediaLibraryService() {
 
     @Inject
     lateinit var audioSessions: AudioSessionRegistry
+
+    @Inject
+    lateinit var visualizerTap: VisualizerAudioTap
 
     @OptIn(UnstableApi::class)
     override fun onCreate() {
@@ -331,8 +337,9 @@ class Media3MusicService : MediaLibraryService() {
                 ): androidx.media3.exoplayer.audio.AudioSink? =
                     androidx.media3.exoplayer.audio.DefaultAudioSink
                         .Builder(context)
-                        .setAudioProcessors(arrayOf(equalizer))
-                        .build()
+                        .setAudioProcessors(
+                            arrayOf<androidx.media3.common.audio.AudioProcessor>(equalizer, VisualizerTapProcessor(visualizerTap)),
+                        ).build()
             }.setExtensionRendererMode(androidx.media3.exoplayer.DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
 
         val loadControl = LoadControlFactory.forMusic()
@@ -356,6 +363,7 @@ class Media3MusicService : MediaLibraryService() {
         audioSessions.open(player.audioSessionId, AudioEffect.CONTENT_TYPE_MUSIC)
 
         player.setOffloadEnabled(!equalizerRepository.needsProcessing.value)
+        player.addListener(VisualizerClockListener(visualizerTap))
 
         player.addListener(
             object : Player.Listener {
