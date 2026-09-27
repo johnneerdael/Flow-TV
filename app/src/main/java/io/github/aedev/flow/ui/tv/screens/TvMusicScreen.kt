@@ -1,5 +1,6 @@
 package io.github.aedev.flow.ui.tv.screens
 
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,8 +15,14 @@ import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -48,12 +55,24 @@ fun TvMusicScreen(
     val accountExpired by viewModel.isAccountExpired.collectAsStateWithLifecycle()
     val dimens = LocalTvDimens.current
     LaunchedEffect(viewModel) { viewModel.load() }
+    val firstShelfFocus = remember { FocusRequester() }
+    // The app opens on this tab with only the rail focusable until the feed arrives; move into the
+    // content once, so a later return to the tab from the rail keeps focus where the user put it.
+    var openedOnContent by rememberSaveable { mutableStateOf(false) }
     val shelves =
         remember(state.sections) {
             state.sections
                 .map { it.title to it.tracks.browsable() }
                 .filter { (_, items) -> items.isNotEmpty() }
         }
+    val hasShelves = shelves.isNotEmpty()
+    LaunchedEffect(hasShelves) {
+        if (hasShelves && !openedOnContent) {
+            withFrameNanos { }
+            runCatching { firstShelfFocus.requestFocus() }
+            openedOnContent = true
+        }
+    }
 
     TvScreenScaffold(
         title = stringResource(R.string.screen_title_music),
@@ -119,6 +138,7 @@ fun TvMusicScreen(
                                     items = items,
                                     onTrackClick = onTrackClick,
                                     onOpenCollection = onOpenCollection,
+                                    modifier = if (index == 0) Modifier.focusRequester(firstShelfFocus).focusGroup() else Modifier,
                                 )
                             }
                         }
@@ -138,9 +158,10 @@ private fun TvMusicHomeShelf(
     items: List<MusicTrack>,
     onTrackClick: (MusicTrack, List<MusicTrack>, String) -> Unit,
     onOpenCollection: (String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val songs = remember(items) { items.filter { it.itemType == MusicItemType.SONG } }
-    TvMediaRow(items = items, key = MusicTrack::videoId, title = title) { item ->
+    TvMediaRow(items = items, key = MusicTrack::videoId, modifier = modifier, title = title) { item ->
         if (item.itemType == MusicItemType.SONG) {
             TvMusicCard(track = item, onClick = { onTrackClick(item, songs, title) })
         } else {

@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -58,6 +59,10 @@ fun TvShell(
     var railHasFocus by remember { mutableStateOf(false) }
     val railFocusRequester = remember { FocusRequester() }
 
+    // The first screen has nothing focusable but the rail while it loads, so the window's initial
+    // focus would open the rail; it waits for the content to take focus instead.
+    var contentFocusedOnce by remember { mutableStateOf(false) }
+
     val tabHistory = remember { mutableStateListOf<TvDestination>() }
 
     fun navigateToTab(destination: TvDestination) {
@@ -94,7 +99,8 @@ fun TvShell(
                                 FocusRequester.Default
                             }
                         }
-                    }.focusGroup(),
+                    }.focusGroup()
+                    .onFocusChanged { if (it.hasFocus) contentFocusedOnce = true },
         ) {
             Box(modifier = Modifier.weight(1f)) {
                 TvNavHost(
@@ -119,6 +125,7 @@ fun TvShell(
             onSelected = ::selectTab,
             onFocusChanged = { railHasFocus = it },
             selectedFocusRequester = railFocusRequester,
+            acceptsEnteringFocus = contentFocusedOnce,
             modifier =
                 Modifier
                     .align(Alignment.CenterStart)

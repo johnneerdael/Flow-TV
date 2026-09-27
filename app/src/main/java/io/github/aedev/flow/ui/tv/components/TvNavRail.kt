@@ -58,6 +58,7 @@ fun TvNavRail(
     onFocusChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     selectedFocusRequester: FocusRequester? = null,
+    acceptsEnteringFocus: Boolean = true,
 ) {
     val dimens = LocalTvDimens.current
     var expanded by remember { mutableStateOf(false) }
@@ -88,7 +89,12 @@ fun TvNavRail(
                 Modifier
                     .focusProperties {
                         @OptIn(ExperimentalComposeUiApi::class)
-                        enter = { selectedFocusRequester ?: FocusRequester.Default }
+                        enter = {
+                            when {
+                                !acceptsEnteringFocus -> FocusRequester.Cancel
+                                else -> selectedFocusRequester ?: FocusRequester.Default
+                            }
+                        }
                         @OptIn(ExperimentalComposeUiApi::class)
                         exit = { direction ->
                             if (direction == FocusDirection.Left) {
