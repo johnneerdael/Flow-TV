@@ -27,7 +27,7 @@ class PlaybackSettingsViewModel
         private val overlay = PlayerOverlayPreferences()
         private val lyricsRegistry = LyricsProviderRegistry.default()
 
-        val backgroundPlay = preferences.backgroundPlayEnabled.asState(false)
+        val backgroundPlay = preferences.backgroundPlayEnabled.asState(true)
         val autoplay = preferences.autoplayEnabled.asState(true)
         val queueAutoplay = preferences.queueAutoplayEnabled.asState(true)
         val autoplayCountdown = preferences.autoplayCountdownSeconds.asState(0)

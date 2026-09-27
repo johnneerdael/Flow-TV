@@ -25,7 +25,7 @@ fun TvPlaybackSettingsPane(
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
-    val backgroundPlay by playerPreferences.backgroundPlayEnabled.collectAsStateWithLifecycle(initialValue = false)
+    val backgroundPlay by playerPreferences.backgroundPlayEnabled.collectAsStateWithLifecycle(initialValue = true)
     val autoplay by playerPreferences.autoplayEnabled.collectAsStateWithLifecycle(initialValue = true)
     val skipSilence by playerPreferences.skipSilenceEnabled.collectAsStateWithLifecycle(initialValue = false)
     val stableVolume by playerPreferences.stableVolumeEnabled.collectAsStateWithLifecycle(initialValue = false)

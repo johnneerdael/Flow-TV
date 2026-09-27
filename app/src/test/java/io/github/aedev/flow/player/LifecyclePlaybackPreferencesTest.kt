@@ -12,11 +12,12 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class LifecyclePlaybackPreferencesTest {
     @Test
-    fun `settings default to disabled before the preferences load`() =
+    fun `settings hold their defaults before the preferences load`() =
         runTest {
             val preferences = LifecyclePlaybackPreferences(MutableStateFlow(LifecyclePlaybackSettings()))
 
             assertThat(preferences.settings).isEqualTo(LifecyclePlaybackSettings())
+            assertThat(preferences.settings.backgroundPlayEnabled).isTrue()
         }
 
     @Test
@@ -27,11 +28,11 @@ class LifecyclePlaybackPreferencesTest {
             val activityScope = CoroutineScope(UnconfinedTestDispatcher(testScheduler))
             preferences.observeIn(activityScope)
 
-            source.value = LifecyclePlaybackSettings(backgroundPlayEnabled = true, shortsPipEnabled = true)
+            source.value = LifecyclePlaybackSettings(backgroundPlayEnabled = false, shortsPipEnabled = true)
             // The wallpaper-change relaunch that destroys the activity mid-playback (#817).
             activityScope.cancel()
 
-            assertThat(preferences.settings.backgroundPlayEnabled).isTrue()
+            assertThat(preferences.settings.backgroundPlayEnabled).isFalse()
             assertThat(preferences.settings.shortsPipEnabled).isTrue()
         }
 
