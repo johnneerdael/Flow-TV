@@ -87,7 +87,7 @@ private val PanelGap = 24.dp
  * Full-screen music now-playing: the track sits in the top-left corner over a full-screen
  * [background] (the artwork backdrop by default; the visualizer plugs in here), and the seek bar and
  * transport occupy the bottom-left corner only while the remote is in use — they hide after
- * [TvPlayerOverlayController.AUTO_HIDE_DELAY_MS] without a key press.
+ * [TvPlayerOverlayController.AUTO_HIDE_DELAY_MS] without a key press. While hidden, left and right go to [onPresetStep].
  */
 @Composable
 fun TvMusicNowPlayingScreen(
@@ -95,6 +95,7 @@ fun TvMusicNowPlayingScreen(
     onCollapse: () -> Unit,
     modifier: Modifier = Modifier,
     background: (@Composable () -> Unit)? = null,
+    onPresetStep: ((forward: Boolean) -> Unit)? = null,
 ) {
     val manager = EnhancedMusicPlayerManager
     val context = LocalContext.current
@@ -218,6 +219,13 @@ fun TvMusicNowPlayingScreen(
                 .fillMaxSize()
                 .onPreviewKeyEvent { event ->
                     val keyCode = event.nativeKeyEvent.keyCode
+                    if (event.type == KeyEventType.KeyDown && !controlsVisible && onPresetStep != null) {
+                        val forward = presetStepFor(keyCode)
+                        if (forward != null) {
+                            onPresetStep(forward)
+                            return@onPreviewKeyEvent true
+                        }
+                    }
                     if (event.type == KeyEventType.KeyDown && keyCode != KeyEvent.KEYCODE_BACK) {
                         val wasHidden = !controlsVisible
                         overlay.showTransport()
@@ -307,7 +315,7 @@ fun TvMusicNowPlayingScreen(
             current = handOver.shown,
             next = handOver.incoming,
             glitch = { handOver.glitch.value },
-            contentColor = palette.onBase,
+            contentColor = MaterialTheme.colorScheme.onSurface,
             maxWidth =
                 if (panel == TvMusicPanel.NONE) {
                     screenWidth * CORNER_WIDTH_FRACTION

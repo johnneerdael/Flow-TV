@@ -31,6 +31,8 @@ import io.github.aedev.flow.ui.screens.music.MusicPlayerViewModel
 import io.github.aedev.flow.ui.screens.player.VideoPlayerViewModel
 import io.github.aedev.flow.ui.screens.search.SearchViewModel
 import io.github.aedev.flow.ui.tv.music.TvMusicNowPlayingScreen
+import io.github.aedev.flow.ui.tv.music.TvVisualizerBackground
+import io.github.aedev.flow.ui.tv.music.TvVisualizerViewModel
 import io.github.aedev.flow.ui.tv.screens.TvPlayerScreen
 import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 import io.github.aedev.flow.ui.tv.theme.TvTheme
@@ -48,6 +50,8 @@ fun FlowTvApp(
     val playerViewModel: VideoPlayerViewModel = hiltViewModel(activity)
     val searchViewModel: SearchViewModel = hiltViewModel(activity)
     val musicPlayerViewModel: MusicPlayerViewModel = hiltViewModel(activity)
+    val visualizerViewModel: TvVisualizerViewModel = hiltViewModel(activity)
+    val visualizerActive by visualizerViewModel.active.collectAsStateWithLifecycle()
     val navController = rememberNavController()
     val activeVideo by GlobalPlayerState.currentVideo.collectAsStateWithLifecycle()
     val activeMusicTrack by EnhancedMusicPlayerManager.currentTrack.collectAsStateWithLifecycle()
@@ -138,6 +142,8 @@ fun FlowTvApp(
                     TvMusicNowPlayingScreen(
                         viewModel = musicPlayerViewModel,
                         onCollapse = { musicExpanded = false },
+                        background = if (visualizerActive) ({ TvVisualizerBackground(visualizerViewModel) }) else null,
+                        onPresetStep = if (visualizerActive) visualizerViewModel::stepPreset else null,
                     )
                 } else if (video == null) {
                     TvShell(

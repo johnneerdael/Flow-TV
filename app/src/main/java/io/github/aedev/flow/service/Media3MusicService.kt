@@ -57,6 +57,7 @@ import io.github.aedev.flow.player.audio.eq.EqualizerAudioProcessor
 import io.github.aedev.flow.player.audio.shouldHandleAudioFocus
 import io.github.aedev.flow.player.audio.visualizer.VisualizerAudioTap
 import io.github.aedev.flow.player.audio.visualizer.VisualizerClockListener
+import io.github.aedev.flow.player.audio.visualizer.VisualizerEngine
 import io.github.aedev.flow.player.audio.visualizer.VisualizerTapProcessor
 import io.github.aedev.flow.player.factory.LoadControlFactory
 import io.github.aedev.flow.player.sessionArtworkBitmapLoader
@@ -66,6 +67,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -187,6 +189,9 @@ class Media3MusicService : MediaLibraryService() {
 
     @Inject
     lateinit var visualizerTap: VisualizerAudioTap
+
+    @Inject
+    lateinit var visualizerEngine: VisualizerEngine
 
     @OptIn(UnstableApi::class)
     override fun onCreate() {
@@ -316,12 +321,15 @@ class Media3MusicService : MediaLibraryService() {
 
     /**
      * Offloaded audio bypasses every audio processor, so offload stays on only while the equalizer
-     * leaves the sound untouched. Compare does not count: toggling offload reselects tracks.
+     * leaves the sound untouched and no visualizer needs to hear it. Compare does not count: toggling
+     * offload reselects tracks.
      */
     private fun observeEqualizer() {
         lifecycleScope.launch { equalizerRepository.processingSpec.collect(equalizer::setSpec) }
         lifecycleScope.launch {
-            equalizerRepository.needsProcessing.collect { processing -> player.setOffloadEnabled(!processing) }
+            combine(equalizerRepository.needsProcessing, visualizerEngine.active) { processing, visualizing -> processing || visualizing }
+                .distinctUntilChanged()
+                .collect { needsProcessors -> player.setOffloadEnabled(!needsProcessors) }
         }
     }
 

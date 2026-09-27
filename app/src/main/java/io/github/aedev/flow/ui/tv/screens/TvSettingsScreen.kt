@@ -39,6 +39,7 @@ import io.github.aedev.flow.ui.tv.screens.settings.TvFlowEngineSettingsPane
 import io.github.aedev.flow.ui.tv.screens.settings.TvPlaybackSettingsPane
 import io.github.aedev.flow.ui.tv.screens.settings.TvQualitySettingsPane
 import io.github.aedev.flow.ui.tv.screens.settings.TvSettingsCategory
+import io.github.aedev.flow.ui.tv.screens.settings.TvVisualizerSettingsPane
 import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 
 /**
@@ -93,6 +94,7 @@ fun TvSettingsScreen(
                 when (selectedCategory) {
                     TvSettingsCategory.ACCOUNT -> TvAccountSettingsPane(onSignIn = onOpenAccountSignIn)
                     TvSettingsCategory.PLAYBACK -> TvPlaybackSettingsPane(playerPreferences)
+                    TvSettingsCategory.VISUALIZATIONS -> TvVisualizerSettingsPane()
                     TvSettingsCategory.QUALITY -> TvQualitySettingsPane(playerPreferences)
                     TvSettingsCategory.CONTENT -> TvContentSettingsPane(playerPreferences)
                     TvSettingsCategory.FLOW_ENGINE -> TvFlowEngineSettingsPane(playerPreferences)

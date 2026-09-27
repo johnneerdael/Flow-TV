@@ -2754,6 +2754,10 @@
     <string name="tv_music_expand">Open full player</string>
     <string name="tv_music_radio">Radio</string>
     <string name="tv_settings_flow_engine">MusicViz Engine</string>
+    <string name="tv_settings_visualizations">Visualizations</string>
+    <string name="visualizer_enabled">Enable visualizations</string>
+    <string name="visualizer_enabled_subtitle">projectM visuals that move with the music behind now playing</string>
+    <string name="visualizer_unavailable">This device can\'t run the visualizer</string>
     <string name="tv_settings_account">Account</string>
     <string name="tv_account_not_signed_in">Not signed in</string>
     <string name="tv_account_signed_in">Signed in</string>
