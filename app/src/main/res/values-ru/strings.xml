@@ -310,8 +310,6 @@
     <string name="notif_interval_12h">12 часов</string>
     <string name="notif_interval_24h">24 часа</string>
     <string name="settings_item_theme">Тема</string>
-    <string name="settings_item_app_icon">Иконка приложения</string>
-    <string name="settings_item_app_icon_subtitle">Настройте иконку в меню приложений</string>
     <string name="settings_item_content_prefs">Предпочтения контента</string>
     <string name="settings_item_content_prefs_subtitle">Блокируйте темы, которые не хотите видеть</string>
     <string name="settings_item_player">Настройки плеера</string>
@@ -346,14 +344,6 @@
     <string name="appearance_category_dark">Темные</string>
     <string name="appearance_category_special">Особые</string>
     <string name="appearance_applied_toast">Применено: %1$s</string>
-    <string name="app_icon_picker_subtitle">Выберите стиль значка. Изменения вступят в силу сразу, а рабочий стол перезапустится.</string>
-    <string name="app_icon_picker_warning">Внимание: смена значка использует системный механизм Android, который может временно удалить ярлык приложения с главного экрана. Зажмите свободное место на рабочем столе, чтобы добавить его снова при необходимости.</string>
-    <string name="app_icon_apply_toast">Иконка обновлена - рабочий стол обновится</string>
-    <string name="icon_name_flow_red">MusicViz Red</string>
-    <string name="icon_name_amoled">AMOLED Dark</string>
-    <string name="icon_name_monochrome">Монохром</string>
-    <string name="icon_name_ghost">Призрак</string>
-    <string name="icon_name_dynamic">Material You</string>
     <string name="player_appearance_title">Внешний вид плеера</string>
     <string name="player_appearance_header">Настройка элементов управления плеером</string>
     <string name="player_appearance_style_title">Стиль прогресс-бара музыки</string>
@@ -762,9 +752,6 @@
     <string name="appearance_system_defaults_subtitle">Выберите, какая тема будет использоваться при переключении устройства между светлым и темным режимами.</string>
     <string name="appearance_system_light_theme">Тема в светлом режиме</string>
     <string name="appearance_system_dark_theme">Тема в темном режиме</string>
-    <string name="icon_name_flow_light">MusicViz Light</string>
-    <string name="icon_name_material_sky">Material Sky</string>
-    <string name="icon_name_material_mint">Material Mint</string>
     <string name="player_appearance_brightness_gesture_title">Жест яркости</string>
     <string name="player_appearance_brightness_gesture_subtitle">В полноэкранном режиме проведите пальцем по левому краю, чтобы настроить яркость</string>
     <string name="player_appearance_volume_gesture_title">Жест громкости</string>
@@ -1590,7 +1577,6 @@
     <string name="appearance_color_alpha">Прозрачность</string>
     <string name="appearance_navigate_back">Вернуться назад</string>
     <string name="appearance_selected">Выбрано</string>
-    <string name="icon_name_flow_play">MusicViz Play</string>
     <string name="player_fullscreen_seekbar_width_value">%1$d dp</string>
     <string name="lyrics_provider_lyrics_plus">LyricsPlus</string>
     <string name="currently_blocked">В данный момент заблокировано</string>

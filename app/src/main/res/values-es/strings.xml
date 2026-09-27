@@ -197,9 +197,6 @@
     <string name="appearance_role_on_error">Sobre error</string>
     <string name="appearance_role_outline">Contorno</string>
     <string name="appearance_role_scrim">Superposición</string>
-    <string name="app_icon_picker_subtitle">Elige un estilo de icono para el launcher.El cambio se aplica inmediatamente y el launcher se actualizará brevemente.</string>
-    <string name="app_icon_picker_warning">Atención: Al cambiar los iconos, Android puede eliminar temporalmente el acceso directo del launcher de tu pantalla de inicio. Si desaparece, mantén pulsado sobre el launcher y agrégalo de nuevo.</string>
-    <string name="app_icon_apply_toast">Icono actualizado - tu launcher se refrescará</string>
     <string name="app_logo_desc">Icono de la App</string>
     <string name="artist">Artista</string>
     <string name="comments">Comentarios</string>
@@ -384,7 +381,6 @@
     <string name="notif_check_interval">Nuevo intervalo de verificación de video</string>
     <string name="notif_interval_30m">30 minutos</string>
     <string name="settings_item_quality">Calidad de vídeo y música</string>
-    <string name="icon_name_amoled">AMOLED Oscuro</string>
     <string name="settings_item_player_appearance">Apariencia del reproductor</string>
     <string name="mini_player_normal">Normal</string>
     <string name="lyrics_provider_better_lyrics">Better Lyrics</string>
@@ -501,8 +497,6 @@
     <string name="notif_interval_12h">12 horas</string>
     <string name="notif_interval_24h">24 horas</string>
     <string name="settings_item_theme">Tema</string>
-    <string name="settings_item_app_icon">Icono de aplicación</string>
-    <string name="settings_item_app_icon_subtitle">Personaliza el icono de tu lanzador</string>
     <string name="settings_item_player_subtitle">Reproducción automática, reproducción en segundo plano, SponsorBlock</string>
     <string name="settings_item_quality_subtitle">Resolución de vídeo y calidad de audio de música</string>
     <string name="settings_item_content_display">Visualización de contenido</string>
@@ -514,10 +508,6 @@
     <string name="settings_item_region">Región de tendencia</string>
     <string name="settings_item_search_history">Búsqueda e historial</string>
     <string name="settings_item_search_history_subtitle">Borrar historial, gestionar sugerencias</string>
-    <string name="icon_name_flow_red">MusicViz Rojo</string>
-    <string name="icon_name_monochrome">Monocromo</string>
-    <string name="icon_name_ghost">Fantasma</string>
-    <string name="icon_name_dynamic">Material You</string>
     <string name="player_appearance_title">Apariencia del reproductor</string>
     <string name="player_appearance_header">Personaliza los controles del reproductor</string>
     <string name="player_appearance_style_title">Estilo de barra de progreso musical</string>
@@ -1473,9 +1463,6 @@
     <string name="appearance_system_dark_theme">Tema del modo oscuro</string>
     <string name="theme_desc_material_you">Colores de fondo de pantalla en Android 12+</string>
     <string name="appearance_system_defaults_title">Temas predeterminados del sistema</string>
-    <string name="icon_name_flow_light">MusicViz Claro</string>
-    <string name="icon_name_material_sky">Material Sky</string>
-    <string name="icon_name_material_mint">Material Mint</string>
     <string name="content_settings_subs_show_videos_title">Vídeos de suscripciones</string>
     <string name="content_settings_subs_show_videos_subtitle">Mostrar videos regulares en el feed de suscripciones</string>
     <string name="content_settings_subs_show_shorts_title">Shorts de suscripciones</string>
@@ -1646,7 +1633,6 @@
     <string name="appearance_color_alpha">Alfa</string>
     <string name="appearance_navigate_back">Volver atrás</string>
     <string name="appearance_selected">Seleccionado</string>
-    <string name="icon_name_flow_play">MusicViz Play</string>
     <string name="player_appearance_hide_music_artwork_title">Ocultar la portada del reproductor de música</string>
     <string name="player_appearance_hide_music_artwork_subtitle">Mostrar el icono de la aplicación con el color extraído de la portada</string>
     <string name="subscriptions_sort_label">Ordenar canales</string>

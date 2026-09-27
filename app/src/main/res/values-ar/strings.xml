@@ -203,8 +203,6 @@
     <string name="notif_interval_12h">12 ساعة</string>
     <string name="notif_interval_24h">24 ساعة</string>
     <string name="settings_item_theme">النمط</string>
-    <string name="settings_item_app_icon">أيقونة التطبيق</string>
-    <string name="settings_item_app_icon_subtitle">خصص أيقونة التطبيق</string>
     <string name="settings_item_content_prefs">تفضيلات المحتوي</string>
     <string name="settings_item_content_prefs_subtitle">إحجب المواضيع التي لا ترغب في رؤيتها</string>
     <string name="settings_item_player">إعدادات المشغل</string>
@@ -236,11 +234,6 @@
     <string name="appearance_category_dark">غامق</string>
     <string name="appearance_category_special">خاص</string>
     <string name="appearance_applied_toast">محدد: %1$s</string>
-    <string name="app_icon_picker_subtitle">اختر نمط أيقونة المشغل. سيتم تطبيق التغيير فورًا وسيتم تحديث المشغل لفترة وجيزة.</string>
-    <string name="app_icon_picker_warning">قد يؤدي تغيير الأيقونة إلى إزالة MusicViz من الشاشة الرئيسية مؤقتًا. أعد إضافته من درج التطبيقات إذا لزم الأمر.</string>
-    <string name="icon_name_amoled">AMOLED مظلم</string>
-    <string name="icon_name_monochrome">أُحادي اللون</string>
-    <string name="icon_name_ghost">شبحي</string>
     <string name="player_appearance_title">مظهر المشغل</string>
     <string name="player_appearance_header">خصص عناصر تحكم المشغل</string>
     <string name="player_appearance_style_title">نمط شريط تقدم الموسيقى</string>
@@ -1054,9 +1047,6 @@
     <string name="settings_item_search_history_subtitle">مسح السجل، إدارة الاقتراحات</string>
     <string name="settings_item_time_management">إدارة الوقت</string>
     <string name="settings_item_time_management_subtitle">إحصائيات الاستخدام، تذكيرات وقت النوم</string>
-    <string name="app_icon_apply_toast">تم تحديث الأيقونة - سيتم تحديث مشغل التطبيقات الخاص بك</string>
-    <string name="icon_name_flow_red">MusicViz أحمر</string>
-    <string name="icon_name_dynamic">نمط Material You</string>
     <string name="player_nav_btn_subtitle">إظهار أزرار الفيديو التالي و السابق في المشغل المصغر</string>
     <string name="lyrics_provider_title">مُقدّم كلمات الأغاني</string>
     <string name="lyrics_provider_subtitle">اختر مصدرك المفضل لكلمات الأغاني</string>
@@ -1417,9 +1407,6 @@
     <string name="appearance_system_defaults_subtitle">إختر السمة التي سيتم استخدامها عند تبديل جهازك بين الوضع الفاتح والوضع الداكن.</string>
     <string name="appearance_system_light_theme">الوضع الفاتح</string>
     <string name="appearance_system_dark_theme">الوضع الداكن</string>
-    <string name="icon_name_flow_light">MusicViz فاتح</string>
-    <string name="icon_name_material_sky">سماوي Material</string>
-    <string name="icon_name_material_mint">نعناع Material</string>
     <string name="theme_name_material_you">الألوان الديناميكية</string>
     <string name="theme_desc_material_you">ألوان مستوحاة من خلفية جهازك في أندرويد 12 والإصدارات الأحدث.</string>
     <string name="content_settings_comments_preview_title">معاينة التعليقات</string>
@@ -1617,7 +1604,6 @@
     <string name="content_settings_share_without_text_subtitle">شارك فقط رابط الفيديو، بدون رسالة \"شاهد هذا الفيديو\"</string>
     <string name="deep_flow_save_history_title">حفظ إلي سجل المشاهدة</string>
     <string name="deep_flow_save_history_subtitle">الاحتفاظ بسجل المشاهدة دون استخدامه لتحسين التوصيات</string>
-    <string name="icon_name_flow_play">تشغيل MusicViz</string>
     <string name="player_appearance_controls_while_loading_subtitle">إظهار عناصر التحكم قبل اكتمال تحميل الفيديو</string>
     <string name="content_settings_watched_threshold_90">تم تشغيل 90%</string>
     <string name="content_settings_watched_threshold_95">تم تشغيل 95%</string>

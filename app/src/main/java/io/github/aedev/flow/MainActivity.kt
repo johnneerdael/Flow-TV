@@ -36,7 +36,6 @@ import io.github.aedev.flow.data.playlist.PlaylistTransfer
 import io.github.aedev.flow.data.recommendation.FlowNeuroEngine
 import io.github.aedev.flow.discord.DiscordPresenceRuntime
 import io.github.aedev.flow.notification.NotificationHelper
-import io.github.aedev.flow.platform.AppIconController
 import io.github.aedev.flow.platform.AppUiMode
 import io.github.aedev.flow.platform.AppUiRoot
 import io.github.aedev.flow.platform.DeviceFormFactorDetector
@@ -92,9 +91,6 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var lifecyclePlaybackPreferences: LifecyclePlaybackPreferences
-
-    @Inject
-    lateinit var appIconController: AppIconController
 
     @Inject
     lateinit var playlistTransfer: dagger.Lazy<PlaylistTransfer>
@@ -242,7 +238,7 @@ class MainActivity : ComponentActivity() {
             FlowTheme(theme) {
                 val splashTone =
                     if (appUiRoot == AppUiRoot.TV) SplashTone.BLACK else splashTone(MaterialTheme.colorScheme.background)
-                LaunchedEffect(splashTone) { splashController.rememberTheme(splashTone, appIconController.activeSuffix()) }
+                LaunchedEffect(splashTone) { splashController.rememberTheme(splashTone) }
 
                 // Date preferences: five DataStore flows used to be opened per video card,
                 // metadata line, info section, description sheet and info dialog.

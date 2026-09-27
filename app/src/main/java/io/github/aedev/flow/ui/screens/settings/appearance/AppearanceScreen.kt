@@ -2,7 +2,6 @@ package io.github.aedev.flow.ui.screens.settings.appearance
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ViewList
-import androidx.compose.material.icons.outlined.AppShortcut
 import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Tv
@@ -49,7 +48,6 @@ internal fun AppearanceScreen(
     val themeVariant by viewModel.themeVariant.collectAsStateWithLifecycle()
     val customThemeName by viewModel.customThemeName.collectAsStateWithLifecycle()
     val interfaceMode by viewModel.interfaceMode.collectAsStateWithLifecycle()
-    val appIcon by viewModel.appIcon.collectAsStateWithLifecycle()
     val homeViewMode by viewModel.homeViewMode.collectAsStateWithLifecycle()
     val homeColumns by viewModel.homeColumns.collectAsStateWithLifecycle()
     val gridItemSize by viewModel.gridItemSize.collectAsStateWithLifecycle()
@@ -59,10 +57,7 @@ internal fun AppearanceScreen(
     val cardLikeButtons by viewModel.cardLikeButtons.collectAsStateWithLifecycle()
     val cardMarkWatched by viewModel.cardMarkWatched.collectAsStateWithLifecycle()
 
-    val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    val iconAppliedMessage = stringResource(R.string.app_icon_apply_toast)
-    var showIconDialog by rememberSaveable { mutableStateOf(false) }
     var showInterfaceDialog by rememberSaveable { mutableStateOf(false) }
 
     val themeSummary =
@@ -75,7 +70,6 @@ internal fun AppearanceScreen(
                 stringResource(themeVariantLabel(themeVariant)),
             )
         }
-    val iconSummary = stringResource(appIconOption(appIcon).nameRes)
     val interfaceSummary = stringResource(interfaceModeLabel(interfaceMode))
     val viewModeOptions =
         listOf(
@@ -113,13 +107,6 @@ internal fun AppearanceScreen(
                 onClick = { onNavigate(SettingsTarget(SettingsDestination.THEME)) },
             )
             nav(
-                AppearanceIndex.appIcon,
-                value = iconSummary,
-                icon = Icons.Outlined.AppShortcut,
-                showChevron = false,
-                onClick = { showIconDialog = true },
-            )
-            nav(
                 AppearanceIndex.interfaceMode,
                 value = interfaceSummary,
                 icon = Icons.Outlined.Tv,
@@ -150,17 +137,6 @@ internal fun AppearanceScreen(
                 nav(DestinationIndex.entry(destination), onClick = { onNavigate(SettingsTarget(destination)) })
             }
         }
-    }
-
-    if (showIconDialog) {
-        AppIconDialog(
-            selected = appIcon,
-            onApply = { suffix ->
-                viewModel.setAppIcon(suffix)
-                scope.launch { snackbarHostState.showSnackbar(iconAppliedMessage) }
-            },
-            onDismiss = { showIconDialog = false },
-        )
     }
 
     if (showInterfaceDialog) {

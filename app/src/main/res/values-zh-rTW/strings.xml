@@ -438,18 +438,6 @@
     <string name="appearance_system_defaults_subtitle">選擇裝置在淺色與深色模式之間切換時使用的主題。</string>
     <string name="appearance_system_light_theme">淺色模式主題</string>
     <string name="appearance_system_dark_theme">深色模式主題</string>
-    <string name="app_icon_picker_subtitle">選擇啟動器圖示樣式。變更會立即生效，啟動器將短暫重新整理。</string>
-    <string name="app_icon_picker_warning">變更圖示可能會暫時將 MusicViz 從主畫面移除。如有需要，請從應用程式抽屜將它加回主畫面。</string>
-    <string name="app_icon_apply_toast">圖示已更新－啟動器將重新整理</string>
-    <string name="icon_name_flow_red">MusicViz Red</string>
-    <string name="icon_name_flow_light">MusicViz Light</string>
-    <string name="icon_name_flow_play">MusicViz Play</string>
-    <string name="icon_name_amoled">AMOLED Dark</string>
-    <string name="icon_name_monochrome">單色</string>
-    <string name="icon_name_ghost">幽靈</string>
-    <string name="icon_name_dynamic">Material You</string>
-    <string name="icon_name_material_sky">Material Sky</string>
-    <string name="icon_name_material_mint">Material Mint</string>
     <string name="player_appearance_title">播放器外觀</string>
     <string name="player_appearance_header">自訂播放器控制項</string>
     <string name="player_appearance_style_title">音樂進度條樣式</string>
@@ -780,8 +768,6 @@
     <string name="scheduled_for_prefix">排定於 %1$s 發布</string>
     <string name="live_in_prefix">直播將於 %1$s 開始</string>
     <string name="filter_timed">有時間軸</string>
-    <string name="settings_item_app_icon">應用程式圖示</string>
-    <string name="settings_item_app_icon_subtitle">自訂啟動器圖示</string>
     <string name="content_settings_show_app_logo_title">顯示應用程式標誌圖示</string>
     <string name="content_settings_show_app_logo_subtitle">在首頁頂端列的應用程式名稱旁顯示 MusicViz 標誌圖示</string>
     <string name="player_appearance_shorts_ui_subtitle">選擇 Shorts 疊加介面的顯示程度</string>

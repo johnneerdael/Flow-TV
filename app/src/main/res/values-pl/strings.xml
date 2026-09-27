@@ -388,8 +388,6 @@
     <string name="notif_interval_12h">12 godzin</string>
     <string name="notif_interval_24h">24 godziny</string>
     <string name="settings_item_theme">Motyw</string>
-    <string name="settings_item_app_icon">Ikona Aplikacji</string>
-    <string name="settings_item_app_icon_subtitle">Dostosuj swoją ikonę aplikacji</string>
     <string name="settings_item_content_prefs">Preferencje Treści</string>
     <string name="settings_item_content_prefs_subtitle">Zablokuj tematy, których nie chcesz widzieć</string>
     <string name="settings_item_player">Ustawienia Odtwarzacza</string>
@@ -456,17 +454,6 @@
     <string name="appearance_system_defaults_subtitle">Wybierz który motyw jest używany kiedy Twoje urządzenie przełącza się między motywem jasnym a ciemnym.</string>
     <string name="appearance_system_light_theme">Motyw trybu jasnego</string>
     <string name="appearance_system_dark_theme">Motyw trybu ciemnego</string>
-    <string name="app_icon_picker_subtitle">Wybierz styl ikony aplikacji. Po zmianie aplikacja uruchomi się ponownie.</string>
-    <string name="app_icon_picker_warning">Uwaga: Zmiana ikony wykorzystuje mechanizm systemu Android, który może tymczasowo usunąć skrót z ekranu głównego. Jeśli tak się stanie, wystarczy dodać go ponownie z listy aplikacji.</string>
-    <string name="app_icon_apply_toast">Ikona zaktualizowana - aplikacja się włączy ponownie</string>
-    <string name="icon_name_flow_red">MusicViz Czerwony</string>
-    <string name="icon_name_flow_light">MusicViz Jasny</string>
-    <string name="icon_name_amoled">Czarny AMOLED</string>
-    <string name="icon_name_monochrome">Monochromatyczny</string>
-    <string name="icon_name_ghost">Duch</string>
-    <string name="icon_name_dynamic">Material You</string>
-    <string name="icon_name_material_sky">Material Sky</string>
-    <string name="icon_name_material_mint">Material Miętowy</string>
     <string name="player_appearance_title">Wygląd Odtwarzacza</string>
     <string name="player_appearance_header">Dostosuj Przyciski Odtwarzacza</string>
     <string name="player_appearance_style_title">Styl Paska Postępu Muzyki</string>
@@ -1528,7 +1515,6 @@
     <string name="appearance_color_alpha">Alfa</string>
     <string name="appearance_navigate_back">Nawiguj wstecz</string>
     <string name="appearance_selected">Zaznaczono</string>
-    <string name="icon_name_flow_play">MusicViz Play</string>
     <string name="shorts_saved">Short został zapisany</string>
     <string name="shorts_unsaved">Short nie został zapisany</string>
     <string name="autoplay_countdown_up_next">Następny</string>

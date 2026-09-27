@@ -17,45 +17,11 @@ fun splashTone(background: Color): SplashTone =
         else -> SplashTone.LIGHT
     }
 
-/**
- * The starting style for a launcher alias on a tone. The ghost icon is a white outline, so on a
- * light splash it falls back to the Flow badge rather than vanish.
- */
+/** The starting style for a tone: the splash opens on the app theme's background family. */
 @StyleRes
-fun splashThemeFor(
-    iconSuffix: String,
-    tone: SplashTone,
-): Int =
+fun splashThemeFor(tone: SplashTone): Int =
     when (tone) {
-        SplashTone.LIGHT -> {
-            when (iconSuffix) {
-                ".IconFlowPlay" -> R.style.Theme_Flow_Starting_Light_Play
-                ".IconAmoled" -> R.style.Theme_Flow_Starting_Light_Amoled
-                ".IconMonochrome" -> R.style.Theme_Flow_Starting_Light_Monochrome
-                ".IconDynamic" -> R.style.Theme_Flow_Starting_Light_Dynamic
-                else -> R.style.Theme_Flow_Starting_Light
-            }
-        }
-
-        SplashTone.DARK -> {
-            when (iconSuffix) {
-                ".IconFlowPlay" -> R.style.Theme_Flow_Starting_Dark_Play
-                ".IconAmoled" -> R.style.Theme_Flow_Starting_Dark_Amoled
-                ".IconMonochrome" -> R.style.Theme_Flow_Starting_Dark_Monochrome
-                ".IconGhost" -> R.style.Theme_Flow_Starting_Dark_Ghost
-                ".IconDynamic" -> R.style.Theme_Flow_Starting_Dark_Dynamic
-                else -> R.style.Theme_Flow_Starting_Dark
-            }
-        }
-
-        SplashTone.BLACK -> {
-            when (iconSuffix) {
-                ".IconFlowPlay" -> R.style.Theme_Flow_Starting_Black_Play
-                ".IconAmoled" -> R.style.Theme_Flow_Starting_Black_Amoled
-                ".IconMonochrome" -> R.style.Theme_Flow_Starting_Black_Monochrome
-                ".IconGhost" -> R.style.Theme_Flow_Starting_Black_Ghost
-                ".IconDynamic" -> R.style.Theme_Flow_Starting_Black_Dynamic
-                else -> R.style.Theme_Flow_Starting_Black
-            }
-        }
+        SplashTone.LIGHT -> R.style.Theme_Flow_Starting_Light
+        SplashTone.DARK -> R.style.Theme_Flow_Starting_Dark
+        SplashTone.BLACK -> R.style.Theme_Flow_Starting_Black
     }

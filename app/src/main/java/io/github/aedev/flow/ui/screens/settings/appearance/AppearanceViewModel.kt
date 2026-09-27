@@ -7,14 +7,12 @@ import io.github.aedev.flow.data.local.HomeFeedColumns
 import io.github.aedev.flow.data.local.HomeViewMode
 import io.github.aedev.flow.data.local.LocalDataManager
 import io.github.aedev.flow.data.local.PlayerPreferences
-import io.github.aedev.flow.platform.AppIconController
 import io.github.aedev.flow.platform.AppUiMode
 import io.github.aedev.flow.ui.components.layout.navigation.NavigationVisibility
 import io.github.aedev.flow.ui.screens.settings.SettingsViewModel
 import io.github.aedev.flow.ui.theme.GridItemSize
 import io.github.aedev.flow.ui.theme.ThemeMode
 import io.github.aedev.flow.ui.theme.ThemeVariant
-import io.github.aedev.flow.util.AppIcons
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,7 +27,6 @@ class AppearanceViewModel
     constructor(
         private val preferences: PlayerPreferences,
         private val uiModePreferences: AppUiModePreferences,
-        private val appIconController: AppIconController,
         localDataManager: LocalDataManager,
     ) : SettingsViewModel() {
         val themeMode = localDataManager.themeMode.asState(ThemeMode.SYSTEM)
@@ -64,20 +61,7 @@ class AppearanceViewModel
         val navTabOrder = preferences.navTabOrder.asState(DEFAULT_NAV_TAB_ORDER)
         val defaultNavTabIndex = preferences.defaultNavTabIndex.asState(0)
 
-        private val _appIcon = MutableStateFlow(AppIcons.DEFAULT_SUFFIX)
-        val appIcon: StateFlow<String> = _appIcon.asStateFlow()
-
-        init {
-            write { _appIcon.value = appIconController.activeSuffix() }
-        }
-
         fun setInterfaceMode(mode: AppUiMode) = write { uiModePreferences.setMode(mode) }
-
-        fun setAppIcon(suffix: String) =
-            write {
-                appIconController.apply(suffix)
-                _appIcon.value = suffix
-            }
 
         fun setHomeViewMode(mode: HomeViewMode) = write { preferences.setHomeViewMode(mode) }
 

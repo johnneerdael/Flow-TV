@@ -310,8 +310,6 @@
     <string name="notif_interval_12h">12 ore</string>
     <string name="notif_interval_24h">24 ore</string>
     <string name="settings_item_theme">Tema</string>
-    <string name="settings_item_app_icon">Icona dell\'app</string>
-    <string name="settings_item_app_icon_subtitle">Personalizza l\'icona del launcher</string>
     <string name="settings_item_content_prefs">Preferenze dei contenuti</string>
     <string name="settings_item_content_prefs_subtitle">Blocca gli argomenti che non vuoi vedere</string>
     <string name="settings_item_player">Impostazioni del player</string>
@@ -369,14 +367,6 @@
     <string name="appearance_role_on_error">Su errore</string>
     <string name="appearance_role_outline">Contorno</string>
     <string name="appearance_role_scrim">Scrim</string>
-    <string name="app_icon_picker_subtitle">Scegli uno stile per l\'icona del launcher. La modifica ha effetto immediato e il launcher si aggiornerà brevemente.</string>
-    <string name="app_icon_picker_warning">Attenzione: il cambio dell\'icona utilizza un meccanismo di sistema Android che potrebbe rimuovere brevemente il collegamento dell\'app dalla schermata home. Tieni premuto sul launcher per aggiungerlo nuovamente se necessario.</string>
-    <string name="app_icon_apply_toast">Icona aggiornata - il tuo launcher si aggiornerà</string>
-    <string name="icon_name_flow_red">Rosso MusicViz</string>
-    <string name="icon_name_amoled">AMOLED scuro</string>
-    <string name="icon_name_monochrome">Monocromatica</string>
-    <string name="icon_name_ghost">Ghost</string>
-    <string name="icon_name_dynamic">Material You</string>
     <string name="player_appearance_title">Aspetto del player</string>
     <string name="player_appearance_header">Personalizza i controlli del player</string>
     <string name="player_appearance_style_title">Stile della barra di avanzamento musicale</string>
@@ -1430,9 +1420,6 @@
     <string name="appearance_system_defaults_subtitle">Scegli quale tema viene utilizzato quando il dispositivo passa dalla modalità chiara a quella scura.</string>
     <string name="appearance_system_light_theme">Tema modalità chiara</string>
     <string name="appearance_system_dark_theme">Tema modalità scura</string>
-    <string name="icon_name_flow_light">MusicViz Light</string>
-    <string name="icon_name_material_sky">Material Sky</string>
-    <string name="icon_name_material_mint">Material Mint</string>
     <string name="theme_name_material_you">Material You</string>
     <string name="theme_desc_material_you">Colori dello sfondo su Android 12+</string>
     <string name="content_settings_comments_preview_title">Anteprima dei commenti</string>
@@ -1619,7 +1606,6 @@
     <string name="player_settings_autoplay_countdown_title">Ritardo della riproduzione automatica</string>
     <string name="player_settings_autoplay_countdown_none">Nessuno (cambia immediatamente)</string>
     <string name="player_settings_autoplay_countdown_dialog_body">Mostra un conto alla rovescia prima del passaggio automatico al video successivo. Durante il conto alla rovescia puoi ricominciare il video attuale, annullare il passaggio, oppure riprodurre il video successivo immediatamente.</string>
-    <string name="icon_name_flow_play">MusicViz Play</string>
     <string name="autoplay_countdown_up_next">A seguire</string>
     <string name="autoplay_countdown_next_video">Prossimo video</string>
     <string name="autoplay_countdown_cancel">Annulla</string>

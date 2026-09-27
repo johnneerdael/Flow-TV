@@ -324,8 +324,6 @@
     <string name="notif_interval_12h">12 sati</string>
     <string name="notif_interval_24h">24 sata</string>
     <string name="settings_item_theme">Tema</string>
-    <string name="settings_item_app_icon">Ikona Aplikacije</string>
-    <string name="settings_item_app_icon_subtitle">Prilagodite ikonu pokretača</string>
     <string name="settings_item_content_prefs">Preferencije sadržaja</string>
     <string name="settings_item_content_prefs_subtitle">Blokirajte teme koje ne želite vidjeti</string>
     <string name="settings_item_player">Postavke Pleyera</string>
@@ -399,14 +397,6 @@
     <string name="appearance_role_error">Greška</string>
     <string name="appearance_role_outline">Pregled</string>
     <string name="appearance_role_scrim">Zastor</string>
-    <string name="app_icon_picker_subtitle">Odaberite stil ikone pokretača. Promjena stupa na snagu odmah i pokretač će se nakratko osvježiti.</string>
-    <string name="app_icon_picker_warning">⚠ Oprez: promjena ikona koristi mehanizam Android sistema koji može nakratko ukloniti prečac aplikacije s početnog ekrana. Dugo pritisnite launcher da ga vratite ako je potrebno.</string>
-    <string name="app_icon_apply_toast">Ikona je ažurirana — vaš launcher će se osvježiti</string>
-    <string name="icon_name_flow_red">MusicViz Crvena</string>
-    <string name="icon_name_amoled">AMOLED Tamna</string>
-    <string name="icon_name_monochrome">Monochrome</string>
-    <string name="icon_name_ghost">Duh</string>
-    <string name="icon_name_dynamic">Material You</string>
     <string name="player_appearance_title">Izgled Plejera</string>
     <string name="player_appearance_header">Prilagodi Kontrole Plejera</string>
     <string name="player_appearance_style_title">Stil Muzičke Trake Napretka</string>

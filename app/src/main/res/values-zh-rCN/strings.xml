@@ -449,8 +449,6 @@
     <string name="notif_interval_12h">12小时</string>
     <string name="notif_interval_24h">24小时</string>
     <string name="settings_item_theme">主题</string>
-    <string name="settings_item_app_icon">应用程序图标</string>
-    <string name="settings_item_app_icon_subtitle">自定义您的启动器图标</string>
     <string name="settings_item_content_prefs">内容偏好</string>
     <string name="settings_item_content_prefs_subtitle">屏蔽您不想看到的主题</string>
     <string name="settings_item_player">播放器设置</string>
@@ -550,18 +548,6 @@
     <string name="appearance_system_defaults_subtitle">选择当您的设备在浅色和深色模式之间切换时使用的主题。</string>
     <string name="appearance_system_light_theme">浅色模式主题</string>
     <string name="appearance_system_dark_theme">深色模式主题</string>
-    <string name="app_icon_picker_subtitle">选择启动器图标样式。更改立即生效，启动器将短暂刷新。</string>
-    <string name="app_icon_picker_warning">注意：切换图标使用 Android 系统机制，可能会暂时从主屏幕上删除应用程序快捷方式。如果需要，长按启动器可将其添加回来。</string>
-    <string name="app_icon_apply_toast">图标已更新 - 您的启动器将刷新</string>
-    <string name="icon_name_flow_red">MusicViz 红色</string>
-    <string name="icon_name_flow_light">MusicViz Light</string>
-    <string name="icon_name_flow_play">MusicViz Play</string>
-    <string name="icon_name_amoled">AMOLED 深色</string>
-    <string name="icon_name_monochrome">单色</string>
-    <string name="icon_name_ghost">幽灵</string>
-    <string name="icon_name_dynamic">Material You</string>
-    <string name="icon_name_material_sky">Material Sky</string>
-    <string name="icon_name_material_mint">Material Mint</string>
     <string name="player_appearance_title">播放器外观</string>
     <string name="player_appearance_header">自定义播放器控件</string>
     <string name="player_appearance_style_title">音乐进度条风格</string>

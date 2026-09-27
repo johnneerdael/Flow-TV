@@ -885,8 +885,6 @@
     <string name="notif_interval_6h">6 heures (par défaut)</string>
     <string name="notif_interval_12h">12 heures</string>
     <string name="notif_interval_24h">24 heures</string>
-    <string name="settings_item_app_icon">Icône de l’application</string>
-    <string name="settings_item_app_icon_subtitle">Personnalisez l\'icône de votre lanceur</string>
     <string name="appearance_category_custom">Personnalisation</string>
     <string name="appearance_customize_theme">Personnaliser le thème</string>
     <string name="appearance_customizer_title">Éditeur de thèmes personnalisés</string>
@@ -903,8 +901,6 @@
     <string name="deep_flow_duration_never">Jamais</string>
     <string name="appearance_role_secondary">Secondaire</string>
     <string name="appearance_role_tertiary">Tertiaire</string>
-    <string name="app_icon_picker_subtitle">Choisissez un style d\'icône pour le lanceur. La modification prend effet immédiatement et le lanceur s\'actualise brièvement.</string>
-    <string name="app_icon_picker_warning">Attention : la modification des icônes fait appel à un mécanisme du système Android qui peut temporairement faire disparaître le raccourci de l\'application de votre écran d\'accueil. Appuyez longuement sur le lanceur d\'applications pour le rajouter si nécessaire.</string>
     <string name="content_settings_explore_region_picker_title">Sélection rapide de la région dans Explorer</string>
     <string name="content_settings_explore_region_picker_subtitle">Afficher une icône représentant un globe terrestre dans la barre supérieure de l\'écran « Explorer » pour changer instantanément la région en vogue.</string>
     <string name="categories_region_picker_desc">Changer la région en vogue (actuellement : %1$s)</string>
@@ -1039,11 +1035,6 @@
     <string name="settings_item_app_language_subtitle">Utilisez la langue de votre appareil ou sélectionnez-en une manuellement</string>
     <string name="settings_language_dialog_title">Sélectionner la langue de l\'application</string>
     <string name="settings_language_system_default">Paramètres par défaut du système</string>
-    <string name="app_icon_apply_toast">L\'icône a été mise à jour – votre lanceur va s\'actualiser</string>
-    <string name="icon_name_flow_red">MusicViz Rouge</string>
-    <string name="icon_name_monochrome">Monochrome</string>
-    <string name="icon_name_ghost">Fantôme</string>
-    <string name="icon_name_dynamic">Material You</string>
     <string name="player_appearance_brightness_gesture_title">Geste de réglage de la luminosité</string>
     <string name="player_appearance_brightness_gesture_subtitle">En mode plein écran, balayez le bord gauche pour régler la luminosité</string>
     <string name="player_appearance_volume_gesture_title">Geste de volume</string>
@@ -1249,7 +1240,6 @@
     <string name="this_week">Cette semaine</string>
     <string name="appearance_role_outline">Plan</string>
     <string name="appearance_role_scrim">Toile de protection</string>
-    <string name="icon_name_amoled">AMOLED sombre</string>
     <string name="proxy_settings_port">Port</string>
     <string name="total_hours_template">Total : %s heures</string>
     <string name="bedtime_reminder_title">Rappel de l\'heure du coucher</string>
@@ -1476,9 +1466,6 @@
     <string name="appearance_system_defaults_subtitle">Choisissez le thème à utiliser lorsque votre appareil passe du mode clair au mode sombre.</string>
     <string name="appearance_system_light_theme">Thème en mode clair</string>
     <string name="appearance_system_dark_theme">Thème en mode sombre</string>
-    <string name="icon_name_flow_light">MusicViz clair</string>
-    <string name="icon_name_material_sky">Material Sky</string>
-    <string name="icon_name_material_mint">Material Mint</string>
     <string name="theme_name_material_you">Material You</string>
     <string name="theme_desc_material_you">Couleurs des fonds d\'écran sur Android 12 et versions ultérieures</string>
     <string name="content_settings_comments_enabled_title">Commentaires</string>
@@ -1654,7 +1641,6 @@
     <string name="share_link_only_template">https://youtube.com/watch?v=%1$s</string>
     <string name="content_settings_share_without_text_title">Partager des liens sans texte</string>
     <string name="content_settings_share_without_text_subtitle">Partagez uniquement le lien vers la vidéo, sans le message « Regardez cette vidéo »</string>
-    <string name="icon_name_flow_play">MusicViz Lecture</string>
     <string name="player_appearance_controls_while_loading_title">Commandes pendant le chargement</string>
     <string name="player_appearance_controls_while_loading_subtitle">Affichez les commandes de lecture avant la fin du chargement de la vidéo afin de pouvoir régler le volume immédiatement</string>
     <string name="player_settings_autoplay_countdown_title">Délai de lecture automatique</string>

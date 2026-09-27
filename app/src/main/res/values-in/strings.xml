@@ -99,7 +99,6 @@
     <string name="notif_interval_12h">12 jam</string>
     <string name="notif_interval_24h">24 jam</string>
     <string name="settings_item_theme">Tema</string>
-    <string name="settings_item_app_icon">Ikon Aplikasi</string>
     <string name="settings_item_content_prefs">Preferensi Konten</string>
     <string name="settings_item_quality">Kualitas Video &amp; Musik</string>
     <string name="settings_item_quality_subtitle">Resolusi video dan kualitas audio musik</string>
@@ -119,12 +118,6 @@
     <string name="appearance_category_light">Terang</string>
     <string name="appearance_category_dark">Gelap</string>
     <string name="appearance_category_special">Spesial</string>
-    <string name="app_icon_apply_toast">Ikon diperbarui - launcher Anda akan disegarkan</string>
-    <string name="icon_name_flow_red">MusicViz Merah</string>
-    <string name="icon_name_amoled">AMOLED Gelap</string>
-    <string name="icon_name_monochrome">Monokrom</string>
-    <string name="icon_name_ghost">Hantu</string>
-    <string name="icon_name_dynamic">Material You</string>
     <string name="player_appearance_swipe_gestures_title">Gestur Kecerahan &amp; Volume</string>
     <string name="mini_player_small">Kecil</string>
     <string name="mini_player_large">Besar</string>
@@ -388,7 +381,6 @@
     <string name="notif_check_interval_disabled">Pemeriksaan notifikasi latar belakang dinonaktifkan</string>
     <string name="notif_check_interval_dialog_title">Interval Pemeriksaan</string>
     <string name="notif_check_interval_dialog_body">Seberapa sering MusicViz memeriksa video baru dari saluran yang Anda langgan.</string>
-    <string name="settings_item_app_icon_subtitle">Sesuaikan ikon peluncur Anda</string>
     <string name="settings_item_content_prefs_subtitle">Blokir topik yang tidak ingin Anda lihat</string>
     <string name="settings_item_player">Pengaturan Pemutar</string>
     <string name="settings_item_player_subtitle">Putar Otomatis, Putar Latar Belakang, SponsorBlock</string>
@@ -433,8 +425,6 @@
     <string name="appearance_role_on_error">Di Atas Kesalahan</string>
     <string name="appearance_role_outline">Garis Tepi</string>
     <string name="appearance_role_scrim">Penutup Layar</string>
-    <string name="app_icon_picker_subtitle">Pilih gaya ikon peluncur. Perubahan langsung berlaku dan peluncur akan sebentar menyegarkan tampilan.</string>
-    <string name="app_icon_picker_warning">Perhatian: mengganti ikon menggunakan mekanisme sistem Android yang dapat menghapus pintasan aplikasi dari layar utama Anda untuk sementara. Tekan lama launcher untuk menambahkannya kembali jika perlu.</string>
     <string name="player_appearance_title">Tampilan Pemutar</string>
     <string name="player_appearance_header">Sesuaikan Kontrol Pemutar</string>
     <string name="player_appearance_style_title">Gaya Bilah Progres Musik</string>
@@ -1430,9 +1420,6 @@
     <string name="appearance_system_defaults_subtitle">Pilih tema yang digunakan saat perangkat Anda beralih antara mode terang dan gelap.</string>
     <string name="appearance_system_light_theme">Tema mode terang</string>
     <string name="appearance_system_dark_theme">Tema mode gelap</string>
-    <string name="icon_name_flow_light">MusicViz Light</string>
-    <string name="icon_name_material_sky">Material Sky</string>
-    <string name="icon_name_material_mint">Material Mint</string>
     <string name="player_adaptive_size_title">Ukuran Pemutar Adaptif</string>
     <string name="player_adaptive_size_subtitle">Gunakan format video untuk tinggi pemutar. Nonaktifkan untuk rasio tetap 16:9.</string>
     <string name="theme_name_material_you">Material You</string>
@@ -1610,7 +1597,6 @@
     <string name="content_settings_share_without_text_subtitle">Bagikan hanya tautan video, tanpa pesan “Check out this video”</string>
     <string name="deep_flow_save_history_title">Simpan untuk melihat riwayat tontonan</string>
     <string name="deep_flow_save_history_subtitle">Terus menonton video dalam riwayat (dengan kemajuan). Mesin masih tidak akan belajar dari mereka. Off = tidak ada yang disimpan.</string>
-    <string name="icon_name_flow_play">MusicViz mainkan</string>
     <string name="player_appearance_controls_while_loading_title">Kontrol Saat Memuat</string>
     <string name="player_appearance_controls_while_loading_subtitle">Tampilkan kontrol pemutar sebelum video selesai memuat sehingga Anda dapat menyesuaikan volume segera</string>
     <string name="player_settings_autoplay_countdown_title">Jeda putar otomatis</string>

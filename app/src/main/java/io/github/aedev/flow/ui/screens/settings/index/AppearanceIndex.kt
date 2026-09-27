@@ -8,15 +8,6 @@ import io.github.aedev.flow.ui.components.settings.SettingsDestination
 internal object AppearanceIndex {
     private val page = SettingsDestination.APPEARANCE
 
-    val appIcon =
-        SettingEntry(
-            key = "appearance.app_icon",
-            title = R.string.settings_item_app_icon,
-            summary = R.string.settings_item_app_icon_subtitle,
-            keywords = R.string.settings_keywords_app_icon,
-            section = R.string.settings_section_style,
-            destination = page,
-        )
     val interfaceMode =
         SettingEntry(
             key = "appearance.interface_mode",
@@ -93,7 +84,6 @@ internal object AppearanceIndex {
 
     val all =
         listOf(
-            appIcon,
             interfaceMode,
             homeViewMode,
             homeColumns,

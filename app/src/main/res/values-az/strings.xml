@@ -449,8 +449,6 @@
     <string name="notif_interval_12h">12 saat</string>
     <string name="notif_interval_24h">24 saat</string>
     <string name="settings_item_theme">Tema</string>
-    <string name="settings_item_app_icon">Tətbiq nişanı</string>
-    <string name="settings_item_app_icon_subtitle">Başladıcı nişanını fərdiləşdirin</string>
     <string name="settings_item_content_prefs">Məzmun seçimləri</string>
     <string name="settings_item_content_prefs_subtitle">Görmək istəmədiyiniz mövzuları bloklayın</string>
     <string name="settings_item_player">Pleyer parametrləri</string>
@@ -550,18 +548,6 @@
     <string name="appearance_system_defaults_subtitle">Cihazınız açıq və tünd rejim arasında keçid etdikdə istifadə olunacaq temanı seçin.</string>
     <string name="appearance_system_light_theme">Açıq rejim teması</string>
     <string name="appearance_system_dark_theme">Tünd rejim teması</string>
-    <string name="app_icon_picker_subtitle">Başladıcı nişanının üslubunu seçin. Dəyişiklik dərhal qüvvəyə minəcək və başladıcı qısa müddətə yenilənəcək.</string>
-    <string name="app_icon_picker_warning">Diqqət: nişan dəyişdirilərkən Android sistem mexanizmi tətbiq qısayolunu əsas ekrandan qısa müddətə silə bilər. Lazım gələrsə, başladıcıya basıb saxlayaraq onu yenidən əlavə edin.</string>
-    <string name="app_icon_apply_toast">Nişan yeniləndi — başladıcı yenilənəcək</string>
-    <string name="icon_name_flow_red">MusicViz qırmızısı</string>
-    <string name="icon_name_flow_light">MusicViz açıq</string>
-    <string name="icon_name_flow_play">MusicViz Play</string>
-    <string name="icon_name_amoled">AMOLED tünd</string>
-    <string name="icon_name_monochrome">Monoxrom</string>
-    <string name="icon_name_ghost">Ruh</string>
-    <string name="icon_name_dynamic">Material You</string>
-    <string name="icon_name_material_sky">Material səma</string>
-    <string name="icon_name_material_mint">Material nanə</string>
     <string name="player_appearance_title">Pleyer görünüşü</string>
     <string name="player_appearance_header">Pleyer idarəetmələrini fərdiləşdirin</string>
     <string name="player_appearance_style_title">Musiqi irəliləyiş çubuğunun üslubu</string>

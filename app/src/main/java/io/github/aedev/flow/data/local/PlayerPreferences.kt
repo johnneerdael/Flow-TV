@@ -300,7 +300,6 @@ class PlayerPreferences(
         // Explore screen quick region picker
 
         // App icon — stores the component suffix of the currently selected launcher icon
-        val APP_ICON_SUFFIX = stringPreferencesKey("app_icon_suffix")
         val PLAYLIST_SORT_ORDER = stringPreferencesKey("playlist_sort_order")
         val PLAYLIST_SORT_ORDERS = stringSetPreferencesKey("playlist_sort_orders")
 
@@ -2294,19 +2293,6 @@ class PlayerPreferences(
     }
 
     // Show region picker globe icon in CategoriesScreen top bar
-    // Selected app icon — component suffix string saved on each icon switch so it can be backed up/restored
-    val selectedAppIcon: Flow<String?> =
-        context.playerPreferencesDataStore.data
-            .map { preferences ->
-                preferences[Keys.APP_ICON_SUFFIX]
-            }
-
-    suspend fun setSelectedAppIcon(suffix: String) {
-        context.playerPreferencesDataStore.edit { preferences ->
-            preferences[Keys.APP_ICON_SUFFIX] = suffix
-        }
-    }
-
     // Video title max lines in the player info section — 0 means no limit (Int.MAX_VALUE)
 
     /**

@@ -664,8 +664,6 @@
     <string name="notif_interval_12h">12 hours</string>
     <string name="notif_interval_24h">24 hours</string>
     <string name="settings_item_theme">Theme</string>
-    <string name="settings_item_app_icon">App Icon</string>
-    <string name="settings_item_app_icon_subtitle">Customize your launcher icon</string>
     <string name="settings_item_content_prefs">Content Preferences</string>
     <string name="settings_item_content_prefs_subtitle">Block topics you don\'t want to see</string>
     <string name="settings_item_player">Player Settings</string>
@@ -771,18 +769,6 @@
     <string name="appearance_system_light_theme">Light mode theme</string>
     <string name="appearance_system_dark_theme">Dark mode theme</string>
     <!-- App Icon Picker -->
-    <string name="app_icon_picker_subtitle">Choose a launcher icon style. The change takes effect immediately and the launcher will briefly refresh.</string>
-    <string name="app_icon_picker_warning">Changing the icon may remove MusicViz from your home screen for a moment. Add it back from the app drawer if needed.</string>
-    <string name="app_icon_apply_toast">Icon updated - your launcher will refresh</string>
-    <string name="icon_name_flow_red">MusicViz Red</string>
-    <string name="icon_name_flow_light">MusicViz Light</string>
-    <string name="icon_name_flow_play">MusicViz Play</string>
-    <string name="icon_name_amoled">AMOLED Dark</string>
-    <string name="icon_name_monochrome">Monochrome</string>
-    <string name="icon_name_ghost">Ghost</string>
-    <string name="icon_name_dynamic">Material You</string>
-    <string name="icon_name_material_sky">Material Sky</string>
-    <string name="icon_name_material_mint">Material Mint</string>
     <!-- Player Appearance -->
     <string name="player_appearance_title">Player Appearance</string>
     <string name="player_appearance_header">Customize Player Controls</string>
@@ -3240,7 +3226,6 @@
     <string name="settings_theme_edit_custom">Edit custom theme</string>
     <string name="settings_keywords_theme">dark mode, night mode, light mode, colours, palette, accent</string>
     <string name="settings_keywords_style">dark mode, night mode, light mode, amoled, pure black, oled</string>
-    <string name="settings_keywords_app_icon">launcher, home screen icon, logo</string>
     <string name="settings_keywords_interface_mode">tv, television, leanback, tablet layout</string>
     <string name="settings_keywords_nav_bar">bottom bar, tabs, navigation rail</string>
     <string name="settings_apply">Apply</string>

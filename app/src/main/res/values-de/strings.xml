@@ -339,8 +339,6 @@
     <string name="notif_interval_12h">12 Stunden</string>
     <string name="notif_interval_24h">24 Stunden</string>
     <string name="settings_item_theme">Thema</string>
-    <string name="settings_item_app_icon">App-Symbol</string>
-    <string name="settings_item_app_icon_subtitle">Passe dein Startprogramm-Symbol an</string>
     <string name="settings_item_content_prefs">Inhaltliche Einstellungen</string>
     <string name="settings_item_content_prefs_subtitle">Blockieren Sie Themen, die Sie nicht sehen möchten</string>
     <string name="settings_item_player">Player-Einstellungen</string>
@@ -420,14 +418,6 @@
     <string name="appearance_role_on_error">Bei einem Fehler</string>
     <string name="appearance_role_outline">Übersicht</string>
     <string name="appearance_role_scrim">Gitter</string>
-    <string name="app_icon_picker_subtitle">Wählen Sie einen Launcher-Symbol-Stil. Die Änderung wird sofort wirksam und der Launcher wird kurz aktualisiert.</string>
-    <string name="app_icon_picker_warning">Achtung: Beim Wechseln der Symbole wird ein Android-Systemmechanismus verwendet, der die App-Verknüpfung möglicherweise kurzzeitig von deinem Startbildschirm entfernt. Halte den Launcher bei Bedarf lange gedrückt, um sie wieder hinzuzufügen.</string>
-    <string name="app_icon_apply_toast">Symbol aktualisiert - Ihr Launcher wird neu geladen</string>
-    <string name="icon_name_flow_red">MusicViz Rot</string>
-    <string name="icon_name_amoled">AMOLED Dunkel</string>
-    <string name="icon_name_monochrome">Monochrom</string>
-    <string name="icon_name_ghost">Geist</string>
-    <string name="icon_name_dynamic">Material You</string>
     <string name="player_appearance_title">Player-Erscheinungsbild</string>
     <string name="player_appearance_header">Player-Steuerung anpassen</string>
     <string name="mini_player_small">Klein</string>
@@ -599,13 +589,11 @@
     <string name="empty_liked_music">Keine gelikte Musik</string>
     <string name="like">Gefällt mir</string>
     <string name="resume">Wieder aufnehmen</string>
-    <string name="icon_name_material_mint">Material: Minze</string>
     <string name="skip_button_title">Schaltflächen „Überspringen“ anzeigen</string>
     <string name="player_adaptive_size_title">Anpassung der Player-Größe</string>
     <string name="player_adaptive_size_subtitle">Verwende das Videoformat für die Höhe des Players. Deaktiviere diese Option für ein festes 16:9-Seitenverhältnis.</string>
     <string name="appearance_system_light_theme">Helles Design</string>
     <string name="appearance_system_dark_theme">Dunkles Design</string>
-    <string name="icon_name_material_sky">Material Sky</string>
     <string name="player_fullscreen_seekbar_width_subtitle">%1$d Dezimalstellen auf jeder Seite</string>
     <string name="player_fullscreen_seekbar_width_full">Volle Breite</string>
     <string name="player_fullscreen_seekbar_width_default">Standard</string>
@@ -638,7 +626,6 @@
     <string name="categories_switch_to_list">Zur Listenansicht wechseln</string>
     <string name="category_all">Alle</string>
     <string name="category_trending">Im Trend</string>
-    <string name="icon_name_flow_light">MusicViz hell</string>
     <string name="lyrics_provider_lyrics_plus">LyricsPlus</string>
     <string name="content_settings_subs_show_shorts_subtitle">„Shorts“ im Abonnement-Feed anzeigen</string>
     <string name="content_settings_subs_show_live_title">Live-Streams im Abonnement</string>

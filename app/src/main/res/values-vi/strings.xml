@@ -448,8 +448,6 @@
     <string name="notif_interval_12h">12 giờ</string>
     <string name="notif_interval_24h">24 giờ</string>
     <string name="settings_item_theme">Chủ đề</string>
-    <string name="settings_item_app_icon">Biểu tượng ứng dụng</string>
-    <string name="settings_item_app_icon_subtitle">Tùy chỉnh biểu tượng trên màn hình chính</string>
     <string name="settings_item_content_prefs">Tùy chọn nội dung</string>
     <string name="settings_item_content_prefs_subtitle">Chặn chủ đề không muốn thấy</string>
     <string name="settings_item_player">Cài đặt trình phát</string>
@@ -549,14 +547,6 @@
     <string name="appearance_system_defaults_subtitle">Chọn chủ đề khi thiết bị chuyển đổi sáng/tối.</string>
     <string name="appearance_system_light_theme">Chủ đề sáng</string>
     <string name="appearance_system_dark_theme">Chủ đề tối</string>
-    <string name="app_icon_picker_subtitle">Chọn kiểu biểu tượng. Thay đổi áp dụng ngay, màn hình chính sẽ làm mới.</string>
-    <string name="app_icon_picker_warning">Lưu ý: chuyển biểu tượng có thể tạm thời xóa biểu tượng khỏi màn hình chính. Giữ biểu tượng để thêm lại nếu cần.</string>
-    <string name="app_icon_apply_toast">Đã cập nhật biểu tượng - màn hình chính sẽ làm mới</string>
-    <string name="icon_name_flow_red">MusicViz Đỏ</string>
-    <string name="icon_name_flow_light">MusicViz Sáng</string>
-    <string name="icon_name_flow_play">MusicViz Phát</string>
-    <string name="icon_name_amoled">AMOLED Tối</string>
-    <string name="icon_name_monochrome">Đơn sắc</string>
     <string name="player_appearance_title">Giao diện trình phát</string>
     <string name="player_appearance_header">Tùy chỉnh điều khiển</string>
     <string name="player_appearance_style_title">Kiểu thanh tiến trình nhạc</string>
@@ -606,10 +596,6 @@
     <string name="skip_button_title">Hiện nút tua</string>
     <string name="skip_button_subtitle">Hiện nút tua 10s trên trình phát thu nhỏ</string>
     <string name="player_nav_btn_title">Hiện nút Tiếp/Trước</string>
-    <string name="icon_name_ghost">Bóng ma</string>
-    <string name="icon_name_dynamic">Material You</string>
-    <string name="icon_name_material_sky">Material Bầu trời</string>
-    <string name="icon_name_material_mint">Material Bạc hà</string>
     <string name="player_nav_btn_subtitle">Hiện nút video tiếp/trước trên trình phát thu nhỏ</string>
     <string name="player_appearance_fullscreen_header">Toàn màn hình</string>
     <string name="player_adaptive_size_title">Kích thước trình phát thích ứng</string>

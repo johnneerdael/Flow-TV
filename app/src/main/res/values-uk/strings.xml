@@ -196,11 +196,6 @@
     <string name="time_today">Сьогодні</string>
     <string name="time_yesterday">Вчора</string>
     <string name="time_earlier">Раніше</string>
-    <string name="icon_name_flow_red">Червоний MusicViz</string>
-    <string name="icon_name_amoled">Темний AMOLED</string>
-    <string name="icon_name_monochrome">Монохром</string>
-    <string name="icon_name_ghost">Привид</string>
-    <string name="icon_name_dynamic">Material You</string>
     <string name="player_appearance_header">Налаштування керування програвачем</string>
     <string name="player_appearance_style_subtitle">Виберіть візуальний стиль панелі пошуку</string>
     <string name="settings_item_player_appearance">Зовнішній вигляд програвача</string>
@@ -243,8 +238,6 @@
     <string name="notif_interval_12h">12 годин</string>
     <string name="notif_interval_24h">24 години</string>
     <string name="settings_item_theme">Тема</string>
-    <string name="settings_item_app_icon">Значок застосунку</string>
-    <string name="settings_item_app_icon_subtitle">Налаштуйте значок запускача</string>
     <string name="settings_item_content_prefs">Налаштування контенту</string>
     <string name="library_music_playlists_label">Списки музики</string>
     <string name="empty_description">Опис відсутній</string>
@@ -407,7 +400,6 @@
     <string name="appearance_role_on_surface">На поверхні</string>
     <string name="appearance_role_surface_variant">Варіант поверхні</string>
     <string name="appearance_role_error">Помилка</string>
-    <string name="app_icon_picker_subtitle">Виберіть значок застосунку. Зміни застосуються негайно й застосунок буде перезапущено.</string>
     <string name="player_appearance_title">Вигляд програвача</string>
     <string name="player_appearance_style_title">Стиль часової шкали пісні</string>
     <string name="settings_item_player_appearance_subtitle">Налаштуйте стиль часової шкали</string>
@@ -607,8 +599,6 @@
     <string name="notif_type_general_subtitle">Інші сповіщення та анонси</string>
     <string name="appearance_customizer_subtitle">Налаштовуйте кожну колірну роль Material 3 та миттєво переглядайте зміни</string>
     <string name="appearance_customizer_format_hint">Формат HEX: #RRGGBB або #AARRGGBB</string>
-    <string name="app_icon_picker_warning">Зміна значка може на мить прибрати MusicViz з головного екрана. За потреби додайте його знову з меню застосунків.</string>
-    <string name="app_icon_apply_toast">Значок змінено — ваш запускач оновиться</string>
     <string name="player_nav_btn_title">Показати кнопки «Наступне» та «Попереднє»</string>
     <string name="content_settings_home_layout_subtitle">Режим показу відео на головній</string>
     <string name="content_settings_layout_grid">Сітка</string>
@@ -1231,9 +1221,6 @@
     <string name="appearance_system_defaults_subtitle">Виберіть тему, яка використовуватиметься під час перемикання пристрою між світлим і темним режимами.</string>
     <string name="appearance_system_light_theme">Світла тема</string>
     <string name="appearance_system_dark_theme">Темна тема</string>
-    <string name="icon_name_flow_light">Світлий MusicViz</string>
-    <string name="icon_name_material_sky">Material Sky</string>
-    <string name="icon_name_material_mint">Material Mint</string>
     <string name="player_adaptive_size_subtitle">Підігнати розмір програвача під відео. У вимкненому режимі зберігається формат 16:9.</string>
     <string name="theme_name_material_you">Material You</string>
     <string name="theme_desc_material_you">Кольори, підібрані з ваших шпалер на Android 12 і новіших версіях.</string>
@@ -1615,7 +1602,6 @@
     <string name="content_settings_share_without_text_subtitle">Поділіться лише посиланням на відео, без повідомлення «Подивись це відео»</string>
     <string name="deep_flow_save_history_title">Зберегти в історію переглядів</string>
     <string name="deep_flow_save_history_subtitle">Зберігати історію переглядів без рекомендацій на основі навчання</string>
-    <string name="icon_name_flow_play">MusicViz Play</string>
     <string name="player_appearance_controls_while_loading_title">Керування під час завантаження</string>
     <string name="player_appearance_controls_while_loading_subtitle">Показувати елементи керування до завершення завантаження відео</string>
     <string name="player_settings_autoplay_countdown_title">Затримка автовідтворення</string>

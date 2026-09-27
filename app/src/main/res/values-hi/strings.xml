@@ -308,8 +308,6 @@
     <string name="notif_interval_12h">12 घंटे</string>
     <string name="notif_interval_24h">24 घंटे</string>
     <string name="settings_item_theme">थीम</string>
-    <string name="settings_item_app_icon">ऐप आइकन</string>
-    <string name="settings_item_app_icon_subtitle">अपने लॉन्चर आइकन को अनुकूलित करें</string>
     <string name="settings_item_content_prefs">सामग्री प्राथमिकताएँ</string>
     <string name="settings_item_content_prefs_subtitle">उन विषयों को ब्लॉक करें जिन्हें आप नहीं देखना चाहते</string>
     <string name="settings_item_player">प्लेयर सेटिंग्स</string>
@@ -344,14 +342,6 @@
     <string name="appearance_category_dark">गहरा</string>
     <string name="appearance_category_special">विशेष</string>
     <string name="appearance_applied_toast">लागू किया गया: %1$s</string>
-    <string name="app_icon_picker_subtitle">लॉन्चर आइकन शैली चुनें। परिवर्तन तुरंत प्रभावी होगा और लॉन्चर संक्षेप में ताज़ा होगा।</string>
-    <string name="app_icon_picker_warning">⚠ ध्यान दें: आइकन बदलने पर Android सिस्टम तंत्र का उपयोग होता है जो होम स्क्रीन से ऐप शॉर्टकट को अस्थायी रूप से हटा सकता है। यदि आवश्यक हो तो इसे वापस जोड़ने के लिए लॉन्चर को लंबे समय तक दबाएँ।</string>
-    <string name="app_icon_apply_toast">आइकन अपडेट किया गया — आपका लॉन्चर ताज़ा होगा</string>
-    <string name="icon_name_flow_red">फ्लो लाल</string>
-    <string name="icon_name_amoled">AMOLED गहरा</string>
-    <string name="icon_name_monochrome">एकवर्णी</string>
-    <string name="icon_name_ghost">प्रेत</string>
-    <string name="icon_name_dynamic">मटेरियल यू</string>
     <string name="player_appearance_title">प्लेयर दिखावट</string>
     <string name="player_appearance_header">प्लेयर नियंत्रण अनुकूलित करें</string>
     <string name="player_appearance_style_title">संगीत प्रगति पट्टी शैली</string>

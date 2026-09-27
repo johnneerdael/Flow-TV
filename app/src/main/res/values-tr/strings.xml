@@ -278,7 +278,6 @@
     <string name="notif_interval_12h">12 saat</string>
     <string name="notif_interval_24h">24 saat</string>
     <string name="settings_item_theme">Tema</string>
-    <string name="settings_item_app_icon">Uygulama Simgesi</string>
     <string name="video_quality_title">Video Kalitesi</string>
     <string name="video_quality_warning">Yüksek kalite daha fazla veri kullanır</string>
     <string name="video_quality_wifi_header">Wi-Fi Kalitesi</string>
@@ -418,7 +417,6 @@
     <string name="notif_check_interval_disabled">Arka plan bildirim denetimleri kapalı</string>
     <string name="notif_check_interval_dialog_title">Kontrol sıklığı</string>
     <string name="notif_check_interval_dialog_body">MusicViz\'un, abone olduğun kanallardaki yeni videoları ne sıklıkla kontrol edeceğini seç.</string>
-    <string name="settings_item_app_icon_subtitle">Başlatıcı simgesini özelleştir</string>
     <string name="settings_item_content_display">İçerik Görüntüleme</string>
     <string name="settings_item_content_display_subtitle">Izgara boyutu, önizlemeler, düzen</string>
     <string name="settings_item_app_language">Uygulama Dili</string>
@@ -609,17 +607,6 @@
     <string name="appearance_system_defaults_subtitle">Cihazın aydınlık ve karanlık mod arasında geçiş yaptığında kullanılacak temayı seç.</string>
     <string name="appearance_system_light_theme">Aydınlık mod teması</string>
     <string name="appearance_system_dark_theme">Karanlık mod teması</string>
-    <string name="app_icon_picker_subtitle">Uygulama simgesi stilini seç. Değişiklik anında uygulanır ve ekran kısa süreliğine yenilenir.</string>
-    <string name="app_icon_picker_warning">Uyarı: Simge değişikliği, uygulama kısayolunu ana ekranından kısa bir süreliğine kaldırabilir. Gerekirse kısayolu tekrar ekle.</string>
-    <string name="app_icon_apply_toast">Simge değiştirildi - Ana ekranın yenilenecek</string>
-    <string name="icon_name_flow_red">MusicViz Kırmızısı</string>
-    <string name="icon_name_flow_light">MusicViz Aydınlık</string>
-    <string name="icon_name_amoled">Derin Amoled</string>
-    <string name="icon_name_monochrome">Siyah Beyaz</string>
-    <string name="icon_name_ghost">Hayalet</string>
-    <string name="icon_name_dynamic">Dinamik</string>
-    <string name="icon_name_material_sky">Gökyüzü</string>
-    <string name="icon_name_material_mint">Nane</string>
     <string name="player_appearance_title">Oynatıcı Görünümü</string>
     <string name="player_appearance_header">Oynatıcı Kontrollerini Özelleştir</string>
     <string name="player_appearance_style_title">Müzik İlerleme Çubuğu Stili</string>
@@ -1675,7 +1662,6 @@
     <string name="appearance_color_alpha">Saydamlık</string>
     <string name="appearance_navigate_back">Geri dön</string>
     <string name="appearance_selected">Seçili</string>
-    <string name="icon_name_flow_play">MusicViz Play</string>
     <string name="player_appearance_hide_music_artwork_title">Müzik oynatıcı kapağını gizle</string>
     <string name="player_appearance_hide_music_artwork_subtitle">Kapak yerine, kapaktan alınan rengin üzerinde uygulama simgesini göster</string>
     <string name="player_appearance_shorts_ui_title">Shorts oynatıcı arayüzü</string>

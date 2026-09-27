@@ -364,7 +364,6 @@
     <string name="deep_flow_duration_12h">12 horas</string>
     <string name="deep_flow_duration_24h">24 horas</string>
     <string name="settings_header_content_playback">Conteúdo &amp; Reprodução</string>
-    <string name="settings_item_app_icon">Ícone do Aplicativo</string>
     <string name="settings_item_content_prefs_subtitle">Bloqueie os tópicos que você não quer ver</string>
     <string name="settings_item_player">Configurações do reprodutor</string>
     <string name="settings_item_quality">Qualidade de Vídeo &amp; Música</string>
@@ -390,8 +389,6 @@
     <string name="appearance_system_defaults_subtitle">Escolha qual tema será usado quando o seu dispositivo alternar entre o modo claro e o modo escuro.</string>
     <string name="appearance_system_light_theme">Tema do modo claro</string>
     <string name="appearance_system_dark_theme">Tema do modo escuro</string>
-    <string name="icon_name_monochrome">Monocromático</string>
-    <string name="icon_name_ghost">Fanstasma</string>
     <string name="player_appearance_title">Aparência do Reprodutor</string>
     <string name="player_background_style_blur_gradient">Desfoque + Degradê</string>
     <string name="player_background_style_default">Superfície padrão</string>
@@ -460,8 +457,6 @@
     <string name="appearance_role_secondary">Secundário</string>
     <string name="appearance_role_background">Plano de fundo</string>
     <string name="appearance_role_outline">Contorno</string>
-    <string name="icon_name_flow_red">MusicViz Vermelho</string>
-    <string name="icon_name_amoled">Preto AMOLED</string>
     <string name="settings_item_player_appearance_subtitle">Personalizar o estilo da barra de progresso</string>
     <string name="player_fullscreen_seekbar_width_full">Largura total</string>
     <string name="player_fullscreen_seekbar_width_default">Padrão</string>
@@ -674,7 +669,6 @@
     <string name="notif_type_reminders_subtitle">Lembretes de hora de dormir e de pausas do recurso de Gerenciamento de Tempo</string>
     <string name="notif_master_toggle_subtitle">Permitir que o MusicViz verifique por novos vídeos em segundo plano</string>
     <string name="notif_check_interval_disabled">As verificações de notificação em segundo plano estão desativadas</string>
-    <string name="settings_item_app_icon_subtitle">Personalize o ícone do app</string>
     <string name="settings_item_player_subtitle">Reproduzir automaticamente, Reproduzir em segundo plano, SponsorBlock</string>
     <string name="settings_item_proxy">Configurações do Proxy</string>
     <string name="settings_item_proxy_subtitle">Encaminhar o tráfego remoto por HTTP ou SOCKS5</string>
@@ -724,14 +718,6 @@
     <string name="appearance_color_alpha">Alfa</string>
     <string name="appearance_navigate_back">Voltar</string>
     <string name="appearance_selected">Selecionado</string>
-    <string name="app_icon_picker_subtitle">Escolha o estilo de ícone para o aplicativo. A alteração entra em vigor imediatamente e o launcher será atualizado em seguida.</string>
-    <string name="app_icon_picker_warning">Alterar o ícone pode remover o MusicViz da sua tela inicial por um momento. Adicione-o de volta da gaveta de aplicativos, se necessário.</string>
-    <string name="app_icon_apply_toast">Ícone atualizado - o launcher será atualizado</string>
-    <string name="icon_name_flow_light">MusicViz Claro</string>
-    <string name="icon_name_flow_play">Play MusicViz</string>
-    <string name="icon_name_dynamic">Material You</string>
-    <string name="icon_name_material_sky">Material Sky</string>
-    <string name="icon_name_material_mint">Material Mint</string>
     <string name="player_appearance_header">Personalizar os Controles do Reprodutor</string>
     <string name="player_appearance_style_title">Estilo da Barra de Progresso Musical</string>
     <string name="player_appearance_style_subtitle">Selecione o estilo visual da barra de progresso</string>

@@ -26,13 +26,10 @@ class SplashController(
         splash.setKeepOnScreenCondition { !contentReady && SystemClock.uptimeMillis() - startedAt < MAX_HOLD_MS }
     }
 
-    /** Opens the next launch on [tone] with the art of [iconSuffix]; Android 13 and later only. */
-    fun rememberTheme(
-        tone: SplashTone,
-        iconSuffix: String,
-    ) {
+    /** Opens the next launch on [tone]; Android 13 and later only. */
+    fun rememberTheme(tone: SplashTone) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            activity.splashScreen.setSplashScreenTheme(splashThemeFor(iconSuffix, tone))
+            activity.splashScreen.setSplashScreenTheme(splashThemeFor(tone))
         }
     }
 }
