@@ -13,8 +13,9 @@ import androidx.compose.ui.unit.dp
 data class TvDimens(
     val overscanHorizontal: Dp = 48.dp,
     val overscanVertical: Dp = 24.dp,
-    val railCollapsedWidth: Dp = 72.dp,
-    val railExpandedWidth: Dp = 280.dp,
+    val railEdgePadding: Dp = 32.dp,
+    val railCollapsedWidth: Dp = 92.dp,
+    val railExpandedWidth: Dp = 300.dp,
     val videoCardWidth: Dp = 260.dp,
     val musicCardWidth: Dp = 180.dp,
     val rowSpacing: Dp = 36.dp,

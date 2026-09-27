@@ -104,7 +104,12 @@ fun TvNavRail(
                             }
                         }
                     }.focusGroup()
-                    .padding(horizontal = 12.dp, vertical = dimens.overscanVertical),
+                    .padding(
+                        start = dimens.railEdgePadding,
+                        end = 12.dp,
+                        top = dimens.overscanVertical,
+                        bottom = dimens.overscanVertical,
+                    ),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Row(
