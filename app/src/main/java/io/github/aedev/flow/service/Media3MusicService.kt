@@ -49,12 +49,15 @@ import io.github.aedev.flow.data.recommendation.music.MusicBrainEngine
 import io.github.aedev.flow.extensions.setOffloadEnabled
 import io.github.aedev.flow.innertube.YouTube
 import io.github.aedev.flow.innertube.models.WatchEndpoint
+import io.github.aedev.flow.platform.DeviceFormFactor
+import io.github.aedev.flow.platform.DeviceFormFactorDetector
 import io.github.aedev.flow.player.MusicPlaybackRecoveryPlanner
 import io.github.aedev.flow.player.MusicQueuePlanner
 import io.github.aedev.flow.player.MusicRadioPlanner
 import io.github.aedev.flow.player.audio.AudioSessionRegistry
 import io.github.aedev.flow.player.audio.eq.EqualizerAudioProcessor
 import io.github.aedev.flow.player.audio.shouldHandleAudioFocus
+import io.github.aedev.flow.player.audio.shouldOffloadAudio
 import io.github.aedev.flow.player.audio.visualizer.VisualizerAudioTap
 import io.github.aedev.flow.player.audio.visualizer.VisualizerClockListener
 import io.github.aedev.flow.player.audio.visualizer.VisualizerEngine
@@ -128,6 +131,8 @@ class Media3MusicService : MediaLibraryService() {
             .setUsage(C.USAGE_MEDIA)
             .build()
     private var handlesAudioFocus = true
+
+    private val isTv by lazy { DeviceFormFactorDetector.detect(this) == DeviceFormFactor.TV }
     private lateinit var connectivityObserver: NetworkConnectivityObserver
 
     private var wakeLock: PowerManager.WakeLock? = null
@@ -320,16 +325,15 @@ class Media3MusicService : MediaLibraryService() {
     }
 
     /**
-     * Offloaded audio bypasses every audio processor, so offload stays on only while the equalizer
-     * leaves the sound untouched and no visualizer needs to hear it. Compare does not count: toggling
-     * offload reselects tracks.
+     * Offload follows [shouldOffloadAudio]: the processors are needed while the equalizer changes the
+     * sound or a visualizer listens. Compare does not count: toggling offload reselects tracks.
      */
     private fun observeEqualizer() {
         lifecycleScope.launch { equalizerRepository.processingSpec.collect(equalizer::setSpec) }
         lifecycleScope.launch {
             combine(equalizerRepository.needsProcessing, visualizerEngine.active) { processing, visualizing -> processing || visualizing }
                 .distinctUntilChanged()
-                .collect { needsProcessors -> player.setOffloadEnabled(!needsProcessors) }
+                .collect { needsProcessors -> player.setOffloadEnabled(shouldOffloadAudio(isTv, needsProcessors)) }
         }
     }
 
@@ -370,7 +374,7 @@ class Media3MusicService : MediaLibraryService() {
         Log.i(TAG, "Audio session initialized - Session ID: $currentAudioSessionId")
         audioSessions.open(player.audioSessionId, AudioEffect.CONTENT_TYPE_MUSIC)
 
-        player.setOffloadEnabled(!equalizerRepository.needsProcessing.value)
+        player.setOffloadEnabled(shouldOffloadAudio(isTv, equalizerRepository.needsProcessing.value))
         player.addListener(VisualizerClockListener(visualizerTap))
 
         player.addListener(
