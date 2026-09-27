@@ -75,7 +75,7 @@ fun TvMusicScreen(
     }
 
     TvScreenScaffold(
-        title = stringResource(R.string.screen_title_music),
+        title = null,
         modifier = modifier,
         subtitle = if (accountExpired) stringResource(R.string.tv_account_session_expired) else null,
         action = {

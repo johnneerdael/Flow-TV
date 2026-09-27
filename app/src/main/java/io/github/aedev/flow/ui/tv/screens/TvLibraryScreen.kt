@@ -106,7 +106,7 @@ fun TvLibraryScreen(
     }
 
     TvScreenScaffold(
-        title = stringResource(R.string.library),
+        title = null,
         modifier = modifier,
         subtitle = if (accountExpired) stringResource(R.string.tv_account_session_expired) else null,
     ) {

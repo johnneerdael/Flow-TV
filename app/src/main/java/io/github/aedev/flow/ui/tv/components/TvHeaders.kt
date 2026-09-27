@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun TvScreenHeader(
-    title: String,
+    title: String?,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
     action: (@Composable RowScope.() -> Unit)? = null,
@@ -28,10 +28,12 @@ fun TvScreenHeader(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.headlineLarge,
-            )
+            title?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.headlineLarge,
+                )
+            }
             subtitle?.let {
                 Text(
                     text = it,

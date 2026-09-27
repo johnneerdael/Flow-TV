@@ -57,7 +57,7 @@ fun TvSettingsScreen(
     val dimens = LocalTvDimens.current
 
     TvScreenScaffold(
-        title = stringResource(R.string.settings),
+        title = null,
         modifier = modifier,
     ) {
         Row(

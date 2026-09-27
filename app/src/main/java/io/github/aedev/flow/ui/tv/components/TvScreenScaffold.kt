@@ -19,7 +19,7 @@ import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
  */
 @Composable
 fun TvScreenScaffold(
-    title: String,
+    title: String?,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
     action: (@Composable RowScope.() -> Unit)? = null,
@@ -27,17 +27,22 @@ fun TvScreenScaffold(
 ) {
     val dimens = LocalTvDimens.current
     Column(modifier = modifier.fillMaxSize()) {
-        TvScreenHeader(
-            title = title,
-            subtitle = subtitle,
-            action = action,
-            modifier = Modifier.padding(
-                start = dimens.overscanHorizontal,
-                end = dimens.overscanHorizontal,
-                top = dimens.overscanVertical,
-            ),
-        )
-        Spacer(Modifier.height(20.dp))
+        if (title != null || subtitle != null || action != null) {
+            TvScreenHeader(
+                title = title,
+                subtitle = subtitle,
+                action = action,
+                modifier =
+                    Modifier.padding(
+                        start = dimens.overscanHorizontal,
+                        end = dimens.overscanHorizontal,
+                        top = dimens.overscanVertical,
+                    ),
+            )
+            Spacer(Modifier.height(20.dp))
+        } else {
+            Spacer(Modifier.height(dimens.overscanVertical))
+        }
         Box(Modifier.weight(1f)) {
             content()
         }
