@@ -1597,6 +1597,8 @@
     <string name="github_subtitle">Source code &amp; Issues</string>
     <string name="newpipe_extractor_title">NewPipe Extractor</string>
     <string name="newpipe_extractor_subtitle">Core extraction library</string>
+    <string name="about_projectm_title">projectM visualizer</string>
+    <string name="about_projectm_subtitle">libprojectM and the ProjectM-TV engine under the LGPL-2.1; presets and textures CC0-1.0. Source and license texts on GitHub, and in the app under assets/licenses.</string>
     <string name="about_license">License</string>
     <string name="about_license_name">GNU GPL v3</string>
     <string name="about_changelog">Changelog</string>

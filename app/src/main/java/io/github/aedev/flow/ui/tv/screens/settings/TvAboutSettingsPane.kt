@@ -20,6 +20,7 @@ import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Extension
 import androidx.compose.material.icons.outlined.ForkRight
+import androidx.compose.material.icons.outlined.GraphicEq
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Tv
@@ -45,6 +46,7 @@ private const val CREATOR_URL = "https://github.com/johnneerdael"
 private const val UPSTREAM_URL = "https://github.com/A-EDev/Flow"
 private const val LICENSE_URL = "https://www.gnu.org/licenses/gpl-3.0.html"
 private const val NEWPIPE_EXTRACTOR_URL = "https://github.com/TeamNewPipe/NewPipeExtractor"
+private const val PROJECTM_TV_URL = "https://github.com/johnneerdael/ProjectM-TV"
 
 /** TV counterpart of the mobile About screen, adapted for remote focus and scrolling. */
 @Composable
@@ -118,6 +120,14 @@ fun TvAboutSettingsPane(modifier: Modifier = Modifier) {
                     supportingText = stringResource(R.string.newpipe_extractor_subtitle),
                     leadingIcon = Icons.Outlined.Extension,
                     onClick = { context.openUrl(NEWPIPE_EXTRACTOR_URL) },
+                )
+            }
+            item(key = "projectm") {
+                TvNavRow(
+                    label = stringResource(R.string.about_projectm_title),
+                    supportingText = stringResource(R.string.about_projectm_subtitle),
+                    leadingIcon = Icons.Outlined.GraphicEq,
+                    onClick = { context.openUrl(PROJECTM_TV_URL) },
                 )
             }
 
