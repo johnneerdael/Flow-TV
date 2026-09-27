@@ -69,6 +69,7 @@ fun EnhancedMusicScreen(
     viewModel: MusicViewModel = sharedMusicViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    LaunchedEffect(viewModel) { viewModel.ensureHomeLoaded() }
     val musicListState = rememberLazyListState()
     val quickPicksGridState = rememberLazyGridState()
 

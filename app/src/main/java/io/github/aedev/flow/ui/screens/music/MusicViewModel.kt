@@ -109,7 +109,7 @@ class MusicViewModel
                     initialValue = _uiState.value.withUniqueLazyContent(),
                 )
 
-        private fun isUiVisible(): Boolean = _uiState.subscriptionCount.value > 0
+        private fun isUiVisible(): Boolean = homeRequested && _uiState.subscriptionCount.value > 0
 
         private fun MusicTrack.isAudioMusicCandidate(): Boolean {
             val usableDuration = duration == 0 || duration in 30..1200
@@ -119,8 +119,6 @@ class MusicViewModel
         private fun List<MusicTrack>.audioMusicOnly(): List<MusicTrack> = filter { it.isAudioMusicCandidate() }.distinctBy { it.videoId }
 
         init {
-            loadMusicContent()
-
             viewModelScope.launch(PerformanceDispatcher.parsing) {
                 downloadManager.downloadedTracks.collect { tracks ->
                     _uiState.update { state ->
@@ -152,6 +150,7 @@ class MusicViewModel
 
             viewModelScope.launch(PerformanceDispatcher.networkIO) {
                 _uiState.subscriptionCount.collect { count ->
+                    if (!homeRequested) return@collect
                     if (count > 0 && homeStale) {
                         homeStale = false
                         shelvesStale = false
@@ -169,6 +168,7 @@ class MusicViewModel
                     .distinctUntilChanged()
                     .drop(1)
                     .collect {
+                        if (!homeRequested) return@collect
                         if (isUiVisible()) refresh() else homeStale = true
                     }
             }
@@ -194,6 +194,17 @@ class MusicViewModel
 
         @Volatile
         private var shelvesStale = false
+
+        // Artist, album and TV screens share this ViewModel for their own details; only the music home
+        // needs the home feed, so it asks for it instead of every first use paying for the whole load.
+        @Volatile
+        private var homeRequested = false
+
+        fun ensureHomeLoaded() {
+            if (homeRequested) return
+            homeRequested = true
+            loadMusicContent()
+        }
 
         @Volatile
         private var homeStale = false
