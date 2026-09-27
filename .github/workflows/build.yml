@@ -37,6 +37,7 @@ jobs:
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
+          submodules: recursive
 
       # Every published build is the next patch of the major.minor line in gradle.properties:
       # one past the highest existing vX.Y.* tag, or .0 for a new line.

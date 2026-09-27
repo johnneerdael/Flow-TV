@@ -121,6 +121,7 @@ android {
                 "proguard-rules.pro",
             )
             signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += "release"
         }
         release {
             isDebuggable = false
@@ -201,6 +202,7 @@ composeCompiler {
 }
 
 dependencies {
+    implementation(project(":projectm-core"))
     // --- Core Android ---
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
