@@ -17,8 +17,7 @@ Always update to the newest release before reporting a security issue.
 **Do not report security vulnerabilities through public GitHub issues.**
 
 Report privately through
-[GitHub Security Advisories](https://github.com/A-EDev/Flow/security/advisories/new).
-If you cannot use that form, email <flow.aedev@gmail.com>.
+[GitHub Security Advisories](https://github.com/johnneerdael/MusicViz/security/advisories/new).
 
 Please include:
 
@@ -35,24 +34,23 @@ Please do not disclose the issue publicly until a fix has shipped.
 
 ## Verifying release APKs
 
-Official Flow builds are signed with a single release key. Any APK that does
+Official MusicViz builds are signed with a single release key. Any APK that does
 not match the fingerprint below is not an official build, regardless of where
 it was downloaded.
 
 ```
-SHA-256: 43:22:29:4E:D4:CA:A2:D4:29:41:40:09:58:18:08:0F:FE:8A:CC:1F:BE:3C:DC:76:10:7D:F4:5C:52:86:BE:40
+SHA-256: FE:FB:39:D0:D5:F3:DF:3B:BB:D0:B7:CC:F7:FE:D7:16:A0:A1:3E:BD:17:AC:52:9B:0C:1A:8E:C3:C1:F7:A3:F8
 ```
 
 Verify a downloaded APK with the Android SDK build tools:
 
 ```bash
-apksigner verify --print-certs flow-foss.apk
+apksigner verify --print-certs musicviz-universal.apk
 ```
 
 The reported `Signer #1 certificate SHA-256 digest` must equal the fingerprint
 above (lower case, without colons).
 
-Official distribution channels are the
-[GitHub Releases page](https://github.com/A-EDev/Flow/releases) and
-[IzzyOnDroid](https://apt.izzysoft.de/packages/io.github.aedev.flow). Builds
+The official distribution channel is the
+[GitHub Releases page](https://github.com/johnneerdael/MusicViz/releases). Builds
 obtained anywhere else are unverified.

@@ -1,280 +1,102 @@
 <div align="center">
-  <img src="Assets/logo.png" alt="Flow Logo" width="140" height="140">
-  <br><br>
-  
-  <div align="center">
-  
-<a href="https://trendshift.io/repositories/22545" target="_blank"><img src="https://trendshift.io/api/badge/repositories/22545" alt="A-EDev%2FFlow | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 
-<br>
-<img src="https://img.shields.io/badge/Status-Active_Development-success?style=for-the-badge&logo=github-actions">
-<br>
-<!-- Downloads & Version -->
-<a href="https://github.com/A-EDev/Flow/releases">
-  <img src="https://img.shields.io/github/downloads/A-EDev/Flow/total?style=for-the-badge&color=orange&logo=github&label=Downloads">
+# MusicViz
+
+**A music-first YouTube Music client for Android TV.**
+
+<a href="https://github.com/johnneerdael/MusicViz/releases/latest">
+  <img src="https://img.shields.io/github/v/release/johnneerdael/MusicViz?style=for-the-badge&color=crimson&label=Latest%20build">
 </a>
-<a href="https://github.com/A-EDev/Flow/releases">
-  <img src="https://img.shields.io/github/v/release/A-EDev/Flow?style=for-the-badge&color=crimson&label=Latest%20Version">
-</a>
-
-<br>
-
-<!-- Tech Stack -->
-<img src="https://img.shields.io/badge/Platform-Android_8.0+-3DDC84?style=for-the-badge&logo=android&logoColor=white">
-<img src="https://img.shields.io/badge/Kotlin-100%25-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white">
-<img src="https://img.shields.io/badge/Compose-Material_3-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white">
-
-<br>
-
-<!-- Community & License -->
-<a href="https://www.reddit.com/r/Flow_Official/">
-  <img src="https://img.shields.io/badge/Reddit-r%2FFlow__Official-FF4500?style=for-the-badge&logo=reddit&logoColor=white">
-</a>
-<img src="https://img.shields.io/github/stars/A-EDev/Flow?style=for-the-badge&logo=star&color=gold">
-<img src="https://img.shields.io/github/forks/A-EDev/Flow?style=for-the-badge&logo=git&color=silver">
-<a href="LICENSE">
+<img src="https://img.shields.io/badge/Platform-Android_TV_8.0+-3DDC84?style=for-the-badge&logo=android&logoColor=white">
+<a href="License">
   <img src="https://img.shields.io/badge/License-GPL_v3.0-blue?style=for-the-badge&logo=gnu-bash&logoColor=white">
 </a>
-<img src="https://img.shields.io/github/last-commit/A-EDev/Flow?style=for-the-badge&color=red">
 <a href="#cert">
   <img src="https://img.shields.io/badge/Security-Verified_SHA--256-blue?style=for-the-badge&logo=security&logoColor=white">
 </a>
 
 </div>
 
-  <br><br>
-  
-  <h3>A privacy-respecting YouTube and YouTube Music client for Android with a local recommendation engine.</h3>
-  <p>
-    Flow is a YouTube client built with Jetpack Compose and Material 3.<br>
-    It includes FlowNeuro, a recommendation engine that runs entirely on your device — no accounts, no tracking, no data leaves your phone.
-  </p>
-  
-  <p>
-    <a href="#-flow-tv-this-fork"><b>Install on Android TV</b></a> · 
-    <a href="https://github.com/A-EDev/Flow/wiki"><b>Documentation</b></a> · 
-    <a href="https://www.reddit.com/r/Flow_Official/"><b>Subreddit</b></a> · 
-    <a href="#support--donations"><b>Donate</b></a> .
-    <a href="#translate"><b>Translations</b></a>
-  </p>
-</div>
-
 ---
 
-## 📺 Flow-TV (this fork)
+MusicViz turns your TV into a music player for YouTube Music. It opens straight on your
+YouTube Music home — the same mood chips and shelves, in the same order as
+music.youtube.com — built for the remote with Jetpack Compose and Material 3.
 
-Flow-TV is an Android TV–focused fork of [A-EDev/Flow](https://github.com/A-EDev/Flow). It ships only the TV build (the FOSS flavor, without the in-app updater), signed with this fork's own key.
+Search starts on music (songs, artists, albums) and can switch to videos, so live sets and
+concert recordings are one press away.
 
-### Install on Android TV
+## Install on Android TV
 
 | Method | How |
 |---|---|
-| **Downloader app** (Google TV, Fire TV, NVIDIA SHIELD) | Install [Downloader](https://www.aftvnews.com/downloader/) and enter code **`7746081`** |
-| **Direct link** (always the latest build) | https://github.com/johnneerdael/Flow-TV/releases/latest/download/flow-foss.apk |
-| **All builds** | [Releases](https://github.com/johnneerdael/Flow-TV/releases) — every push to `main` is published automatically with release notes |
+| **Downloader app** (Google TV, Fire TV, NVIDIA SHIELD) | Install [Downloader](https://www.aftvnews.com/downloader/) and enter code **`4718521`** |
+| **Direct link** (always the latest build) | https://github.com/johnneerdael/MusicViz/releases/latest/download/musicviz-universal.apk |
+| **All builds** | [Releases](https://github.com/johnneerdael/MusicViz/releases) — every push to `main` is published automatically with release notes |
 
-Per-ABI APKs (`flow-foss-arm64-v8a.apk`, `flow-foss-armeabi-v7a.apk`) are attached to each release if you prefer a smaller download.
+Per-ABI APKs (`musicviz-arm64-v8a.apk`, `musicviz-armeabi-v7a.apk`) are
+attached to each release if you prefer a smaller download.
 
-> Flow-TV uses the same package name as official Flow but a different signing key. Uninstall official Flow from the TV before installing Flow-TV (and vice versa).
-
-### What's different from upstream
-
-- **Sign in with your phone:** Settings → Account → *Sign in with phone* shows a QR code; scan it on a phone on the same network and type your Google login there. Home, Subscriptions, Music and Library then show your own YouTube and YouTube Music feeds. Playback stays anonymous — the account is only used to read feeds, and plays are not added to your history.
-- **TV-only builds:** CI builds, signs and publishes the TV (FOSS) APK only.
-
----
-
-## Why Flow?
-
-Most open-source YouTube clients give you playback but no way to discover new content. You either use the official app and get tracked, or you use an alternative and lose recommendations entirely.
-
-Flow gives you both. The recommendation engine learns what you like by analyzing your watch behavior locally. It never leaves your devices. You can inspect everything it knows about you, adjust it, or wipe it at any time.
-
----
+**Requirements:** Android TV / Google TV / Fire TV running Android 8.0 or newer.
 
 ## Features
 
-### Video
-- High-quality playback via ExoPlayer (Media3) with resolution switching (1080p, 720p, 480p, 360p)
-- SponsorBlock — automatically skips sponsors, intros, outros, and filler
-- DeArrow — replaces clickbait thumbnails and titles with community-sourced alternatives
-- Return Youtube Dislike (RYD)
-- Background playback — listen to audio with the screen off
-- Picture-in-Picture — keep watching while using other apps
-- Casting to smart TVs and streaming devices
-- Playback speed control (0.25x to 2x)
-- Video chapters with seek jumping
-- Gesture controls for brightness, volume, and seeking
-- Subtitles with customizable font size, color, and background
-- Downloads with VP9, AV1, and standard format support
-- Resume playback from where you left off
-
 ### Music
-- Dedicated music player with album art and audio visualizations
-- Queue management with add, remove, and reorder
-- Shuffle and repeat (single/all)
-- Persistent mini player across the app
-- Synchronized lyrics display
-- Fetches tracks from YouTube Music
-- Playback speed control for music playback
+- **Your YouTube Music home on the TV:** mood chips, then every shelf YouTube Music shows you
+  (Quick picks, Long listens, mixes, albums, new releases, music videos, …) in its order,
+  loaded all the way to the end
+- **Sign in with your phone:** Settings → Account → *Sign in with phone* shows a QR code; scan
+  it on a phone on the same network and log in there. Music and Library then show your own
+  YouTube Music feeds. Without signing in you get the regular YouTube Music home.
+- Full-screen now playing with synchronized lyrics and an editable queue
+- Artist, album and playlist pages; a mini player that follows you through the app
+- Background playback on by default, so audio keeps going when you leave the app
 
-### Recommendations (FlowNeuro Engine)
-- Runs 100% on-device — no server, no telemetry, no account needed
-- Learns from what you watch, skip, like, dislike, search for, and how long you watch
-- Distinguishes weekday and weekend patterns, morning and night preferences
-- Detects when you're getting bored of a topic and mixes in new content
-- Prevents your feed from collapsing into the same 2-3 topics
-- Surfaces related videos from your recent watches to create natural topic transitions
-- Uses engagement signals (like-to-view ratios) to filter out low-quality content
-- Full transparency dashboard — see what the algorithm knows and why it recommended something
-- Export/import your entire recommendation profile as a file
+### Search
+- Opens on **Music** every time, with songs / artists / albums filters
+- **Videos** for everything else, with channel, playlist and live filters — handy for DJ sets
+  and live recordings
 
 ### Library
-- Local watch history
-- Favorites and custom playlists
-- Shorts feed with bookmarking
-- Continue watching shelf
-- Subscription management with cached feeds
+- History, likes, watch later and playlists, plus your account's library when signed in
 
 ### Privacy
-- No Google account required
-- No ads, analytics, or tracking
-- All data stored locally on your device
-- Import subscriptions and history from NewPipe
-- Export or delete everything at any time
+- Playback stays anonymous: a signed-in account is only used to read your feeds, and plays are
+  not added to your YouTube history
+- An on-device recommendation engine; nothing is sent to a server
+- No ads, analytics or tracking
 
-### Appearance
-- 11 themes: Light, Dark, OLED Black, Ocean Blue, Forest Green, Sunset Orange, Purple Nebula, Midnight Black, Rose Gold, Arctic Ice, Crimson Red
-- Built entirely with Jetpack Compose and Material 3
-
----
-
-## Screenshots
-
-<div align="center">
-  <table>
-    <tr>
-      <td align="center"><b>Home Feed</b><br><img src="Assets/Home.jpeg" width="240"></td>
-      <td align="center"><b>Video Player</b><br><img src="Assets/VideoPlayer.jpeg" width="240"></td>
-      <td align="center"><b>Personality Screen</b><br><img src="Assets/Personality.jpeg" width="240"></td>
-    </tr>
-    <tr>
-      <td align="center"><b>Music Player</b><br><img src="Assets/MusicPlayer.jpeg" width="240"></td>
-      <td align="center"><b>Music Hub</b><br><img src="Assets/Music.jpeg" width="240"></td>
-      <td align="center"><b>Your Library</b><br><img src="Assets/Library.jpeg" width="240"></td>
-    </tr>
-    <tr>
-      <td align="center"><b>Shorts</b><br><img src="Assets/Shorts.jpeg" width="240"></td>
-      <td align="center"><b>Subscriptions</b><br><img src="Assets/Subscriptions.jpeg" width="240"></td>
-      <td align="center"><b>Channel View</b><br><img src="Assets/Channel.jpeg" width="240"></td>
-    </tr>
-    <tr>
-      <td align="center"><b>Artist Page</b><br><img src="Assets/Artist.jpeg" width="240"></td>
-      <td align="center"></td>
-      <td align="center"></td>
-    </tr>
-  </table>
-</div>
-
----
-## Download
-
-Flow-TV builds are published on this fork's [Releases](https://github.com/johnneerdael/Flow-TV/releases) page — see [Install on Android TV](#-flow-tv-this-fork). For the official phone builds of Flow, use [A-EDev/Flow](https://github.com/A-EDev/Flow/releases).
-
-### Requirements 
-**Minimum Requirement:** Android 8.0+
+## Verifying authenticity
 <a id="cert"></a>
-### Verifying Authenticity
-To ensure the authenticity of the APK and verify it has not been tampered with, you can check the signing certificate fingerprint using tools like [AppVerifier](https://github.com/soupslurpr/AppVerifier).
 
-**Flow-TV Release Certificate SHA-256 Fingerprint:**
+Check the signing certificate of a downloaded APK with a tool such as
+[AppVerifier](https://github.com/soupslurpr/AppVerifier).
+
+**MusicViz release certificate SHA-256 fingerprint:**
 `FE:FB:39:D0:D5:F3:DF:3B:BB:D0:B7:CC:F7:FE:D7:16:A0:A1:3E:BD:17:AC:52:9B:0C:1A:8E:C3:C1:F7:A3:F8`
 
-(Official upstream Flow builds use `43:22:29:4E:D4:CA:A2:D4:29:41:40:09:58:18:08:0F:FE:8A:CC:1F:BE:3C:DC:76:10:7D:F4:5C:52:86:BE:40`.)
+## Built on Flow
 
----
+MusicViz is a fork of [Flow](https://github.com/A-EDev/Flow) by A-EDev, which provides the
+groundwork this app is built on: its player, YouTube and YouTube Music extraction, and its
+on-device recommendation engine.
 
-<a id="support--donations"></a>
-## 💰 Support Development
+Flow in turn builds on these projects:
 
-Flow is a free and open-source project. As an independent developer without traditional banking access, keeping this project alive relies entirely on community support. 
+- **[NewPipeExtractor](https://github.com/TeamNewPipe/NewPipeExtractor)** and
+  **[NewPipe](https://github.com/TeamNewPipe/NewPipe)** — YouTube data extraction
+- **[PipePipe](https://codeberg.org/NullPointerException/PipePipe)** and its
+  [developer docs](https://priveetee.github.io/Docs-PipePipe/) — SABR and InnerTube playback
+- **[Metrolist](https://github.com/MetrolistGroup/Metrolist)** — hybrid music fetching and lyrics
+- **[LibreTube](https://github.com/LibreTube/LibreTube)** — SponsorBlock and DeArrow handling
+- **[Media3 / ExoPlayer](https://github.com/androidx/media)**,
+  **[Jetpack Compose](https://developer.android.com/jetpack/compose)** and
+  **[Material Design 3](https://m3.material.io/)**
 
-**You can now easily support the project using a Credit Card, Apple Pay, or PayPal via Patreon!** (You can choose to support monthly, or just leave a simple one-time tip in the shop).
+## License
 
-<a href="https://patreon.com/A_EDev" target="_blank" rel="noreferrer noopener">
-  <img src="https://img.shields.io/badge/Patreon-Support_Flow-FF424D?style=for-the-badge&amp;logo=patreon&amp;logoColor=white" alt="Support Flow on Patreon">
-</a>
+MusicViz is free software under the **GNU General Public License v3** — see [License](License).
+Any project that uses this source code, including the recommendation engine, must also be
+released under the GPLv3.
 
-<br>
-
-**Prefer to send Crypto directly?**
-If you already use crypto, you can send it directly to my wallets below:
-
-| Coin | Network | Address |
-| :--- | :--- | :--- |
-| **USDT** | TRC20 (Tron) | `TRz7VDrTWwCLCfQmYBEJakqcZgbFNWfUMP` |
-| **Bitcoin** | BTC | `bc1qgmkkxxvzvsymtpfazqfl93jw6k4jgy0xmrtnv8` |
-| **Ethereum** | ERC-20 | `0xfbac6f464fec7fe458e318971a42ba45b305b70e` |
-| **Solana** | SOL | `7b3SLgiVPb8qQUvERSPGRWoFoiGEDvkFuY98M1GEngug` |
-| **Monero** | XMR | `8AgaxZnpEvT8VXJpczpL7BQejwSEw97saJmKYqq4zKErbe9bkYSwUhJ813msPPbdYhF11oz4N7tfEj4Zi6k27fKD83ca1if` |
-
-*Your support helps me maintain the project and add amazing new features!*
-
----
-
-## 🙏 Acknowledgments
-
-Flow stands on the shoulders of giants. Special thanks to:
-
-*   **[NewPipeExtractor](https://github.com/TeamNewPipe/NewPipeExtractor):** The backbone of our data extraction.
-*   **[NewPipe](https://github.com/TeamNewPipe/NewPipe):** For inspiration from their solid foundation for YouTube data handling.
-*   **[PipePipe](https://codeberg.org/NullPointerException/PipePipe):** For their SABR and InnerTube playback implementation, which guided Flow's YouTube streaming pipeline.
-*   **[PipePipe Developer Docs](https://priveetee.github.io/Docs-PipePipe/):** For their reference documentation on SABR, BotGuard/PoToken attestation, and InnerTube extraction internals.
-*   **[MetroList](https://github.com/MetrolistGroup/Metrolist):** Inspiration for the Hybrid Music fetching approach, Lyrics handling and some icons design references.
-*   **[LibreTube](https://github.com/LibreTube/LibreTube):** Inspiration for SponsorBlock and DeArrow handling and some icons design references.
-*   **[ExoPlayer](https://github.com/google/ExoPlayer):** The gold standard for Android media playback.
-*   **[Jetpack Compose](https://developer.android.com/jetpack/compose):** For enabling the beautiful, modern UI.
-*   **[Material Design 3](https://m3.material.io/):** For the design system and guidelines.
-
----
-
-<div align="center">
-
-<a id="translate"></a>
-## Translations
-Help translate Flow into your language! 
-
-[![Translation status](https://hosted.weblate.org/widget/flow/strings/287x66-grey.png)](https://hosted.weblate.org/engage/flow/)
-
-[![Translation status](https://hosted.weblate.org/widget/flow/strings/horizontal-auto.svg)](https://hosted.weblate.org/engage/flow/)
-</div>
-
----
-
-## 📄 License & Copyright
-
-**Flow** is Free Software: You can use, study, share, and improve it at your will.
-It is distributed under the **GNU General Public License v3 (GPLv3)**.
-
-**Copyright © 2025-2026 A-EDev**
-
-> 🚨 **For Developers:**
-> This license requires that any project using Flow's source code (including the `FlowNeuroEngine` algorithm) must also be **Open Source** under the GPLv3 license. You may not use this code in a proprietary or closed-source application.
-
----
-
-## Star History
-
-<a href="https://star-history.dera.page/#A-EDev/Flow&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=A-EDev/Flow&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/svg?repos=A-EDev/Flow&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=A-EDev/Flow&type=date&legend=top-left" />
- </picture>
-</a>
-
----
-
-<div align="center">
-  <sub>Made with ❤️ by A-EDev</sub>
-</div>
+Copyright © 2025-2026 A-EDev (Flow) · Copyright © 2026 John Neerdael (MusicViz changes)

@@ -1,1 +1,1 @@
-Privacy-respecting YouTube and Music client with local recommendations.
+A music-first YouTube Music client for Android TV.

@@ -19,14 +19,13 @@ permissions:
   contents: read
 
 env:
-  # Certificate of the Flow-TV fork's own release key (not upstream Flow's).
+  # Certificate of MusicViz's own release key (not upstream Flow's).
   # Installed builds pin this value; an APK signed with anything else cannot
   # be installed as an update. Changing it forces a reinstall.
   EXPECTED_SIGNER_SHA256: fefb39d0d5f3df3bbbd0b7ccf7fed716a0a13ebd17ac529b0c1a8ec3c1f7a3f8
 
-# This fork ships the Android TV build only: the foss flavor (no in-app updater,
-# which would point at upstream Flow). The github and nightly variants are not
-# built or published here.
+# MusicViz ships the Android TV build only: the foss flavor (no in-app updater).
+# The github and nightly variants are not built or published here.
 jobs:
   build:
     name: Build TV APK
@@ -167,7 +166,7 @@ jobs:
       - name: Upload TV universal APK
         uses: actions/upload-artifact@v7
         with:
-          name: flow-foss-universal-release-apk
+          name: musicviz-universal-release-apk
           path: app/build/outputs/apk/foss/release/app-foss-universal-release*.apk
           if-no-files-found: error
           retention-days: 14
@@ -176,7 +175,7 @@ jobs:
       - name: Upload TV ARM64 APK
         uses: actions/upload-artifact@v7
         with:
-          name: flow-foss-arm64-release-apk
+          name: musicviz-arm64-release-apk
           path: app/build/outputs/apk/foss/release/app-foss-arm64-v8a-release*.apk
           if-no-files-found: error
           retention-days: 14
@@ -185,7 +184,7 @@ jobs:
       - name: Upload TV ARMv7 APK
         uses: actions/upload-artifact@v7
         with:
-          name: flow-foss-armeabi-v7a-release-apk
+          name: musicviz-armeabi-v7a-release-apk
           path: app/build/outputs/apk/foss/release/app-foss-armeabi-v7a-release*.apk
           if-no-files-found: error
           retention-days: 14
@@ -207,23 +206,23 @@ jobs:
       - name: Download release APKs
         uses: actions/download-artifact@v8
         with:
-          pattern: flow-foss-*-release-apk
+          pattern: musicviz-*-release-apk
           path: dist/
           merge-multiple: true
 
-      # flow-foss.apk is a public contract: the Downloader code 7746081 and the
-      # README link to releases/latest/download/flow-foss.apk. Do not rename it.
+      # musicviz-universal.apk is a public contract: the Downloader code 4718521 and
+      # the README link to releases/latest/download/musicviz-universal.apk.
       - name: Rename APKs for release
         run: |
           set -euo pipefail
-          mv dist/app-foss-universal-release.apk     dist/flow-foss.apk
-          mv dist/app-foss-arm64-v8a-release.apk     dist/flow-foss-arm64-v8a.apk
-          mv dist/app-foss-armeabi-v7a-release.apk   dist/flow-foss-armeabi-v7a.apk
+          mv dist/app-foss-universal-release.apk     dist/musicviz-universal.apk
+          mv dist/app-foss-arm64-v8a-release.apk     dist/musicviz-arm64-v8a.apk
+          mv dist/app-foss-armeabi-v7a-release.apk   dist/musicviz-armeabi-v7a.apk
 
       - name: Generate checksums
         run: |
           cd dist
-          sha256sum flow*.apk > checksums.txt
+          sha256sum musicviz*.apk > checksums.txt
           cat checksums.txt
 
       - name: Get version from tag
@@ -235,19 +234,19 @@ jobs:
           RELEASE_VERSION: ${{ steps.get_version.outputs.VERSION }}
         run: |
           test -s release-notes.md
-          grep -Fqx "# Flow ${RELEASE_VERSION}" release-notes.md
+          grep -Fqx "# MusicViz ${RELEASE_VERSION}" release-notes.md
 
       - name: Create Release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.get_version.outputs.VERSION }}
-          name: Flow ${{ steps.get_version.outputs.VERSION }}
+          name: MusicViz ${{ steps.get_version.outputs.VERSION }}
           body_path: release-notes.md
           generate_release_notes: false
           files: |
-            dist/flow-foss.apk
-            dist/flow-foss-arm64-v8a.apk
-            dist/flow-foss-armeabi-v7a.apk
+            dist/musicviz-universal.apk
+            dist/musicviz-arm64-v8a.apk
+            dist/musicviz-armeabi-v7a.apk
             dist/checksums.txt
           draft: false
           prerelease: false
@@ -255,7 +254,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # Every push to main becomes a GitHub Release, so the newest signed build is
-  # always at releases/latest/download/flow-foss.apk (Downloader code 7746081).
+  # always at releases/latest/download/musicviz-universal.apk (Downloader code 4718521).
   publish-main:
     name: Publish main build
     needs: build
@@ -275,17 +274,17 @@ jobs:
       - name: Download release APKs
         uses: actions/download-artifact@v8
         with:
-          pattern: flow-foss-*-release-apk
+          pattern: musicviz-*-release-apk
           path: dist/
           merge-multiple: true
 
       - name: Rename APKs for release
         run: |
           set -euo pipefail
-          mv dist/app-foss-universal-release.apk     dist/flow-foss.apk
-          mv dist/app-foss-arm64-v8a-release.apk     dist/flow-foss-arm64-v8a.apk
-          mv dist/app-foss-armeabi-v7a-release.apk   dist/flow-foss-armeabi-v7a.apk
-          cd dist && sha256sum flow*.apk > checksums.txt && cat checksums.txt
+          mv dist/app-foss-universal-release.apk     dist/musicviz-universal.apk
+          mv dist/app-foss-arm64-v8a-release.apk     dist/musicviz-arm64-v8a.apk
+          mv dist/app-foss-armeabi-v7a-release.apk   dist/musicviz-armeabi-v7a.apk
+          cd dist && sha256sum musicviz*.apk > checksums.txt && cat checksums.txt
 
       - name: Write release notes
         env:
@@ -303,10 +302,10 @@ jobs:
             echo
             echo "## Install on Android TV"
             echo
-            echo "- **Downloader app:** enter code \`7746081\`"
-            echo "- **Direct link (always the latest):** $latest/flow-foss.apk"
+            echo "- **Downloader app:** enter code \`4718521\`"
+            echo "- **Direct link (always the latest):** $latest/musicviz-universal.apk"
             echo
-            echo "Per-ABI APKs (\`flow-foss-arm64-v8a.apk\`, \`flow-foss-armeabi-v7a.apk\`) and \`checksums.txt\` are attached below."
+            echo "Per-ABI APKs (\`musicviz-arm64-v8a.apk\`, \`musicviz-armeabi-v7a.apk\`) and \`checksums.txt\` are attached below."
             if [ -n "$prev" ]; then
               echo
               echo "**Full changelog:** https://github.com/$REPO/compare/$prev...$TAG"
@@ -319,13 +318,13 @@ jobs:
         with:
           tag_name: build-${{ github.run_number }}
           target_commitish: ${{ github.sha }}
-          name: Flow-TV build ${{ github.run_number }}
+          name: MusicViz build ${{ github.run_number }}
           body_path: notes.md
           make_latest: true
           files: |
-            dist/flow-foss.apk
-            dist/flow-foss-arm64-v8a.apk
-            dist/flow-foss-armeabi-v7a.apk
+            dist/musicviz-universal.apk
+            dist/musicviz-arm64-v8a.apk
+            dist/musicviz-armeabi-v7a.apk
             dist/checksums.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

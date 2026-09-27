@@ -1,8 +1,8 @@
-# Contributing to Flow
+# Contributing to MusicViz
 
-Thank you for your interest in contributing to Flow! We welcome contributions from the community.
+Thank you for your interest in contributing to MusicViz! We welcome contributions from the community.
 
-Flow (`io.github.aedev.flow`) is an Android music/video app written in Kotlin with Jetpack Compose,
+MusicViz (`nl.neerdael.musicviz`, sources under `io.github.aedev.flow`) is an Android TV music app forked from [Flow](https://github.com/A-EDev/Flow), an Android music/video app written in Kotlin with Jetpack Compose,
 Hilt, and Media3/ExoPlayer. It plays YouTube content via a native InnerTube client with a
 NewPipe-based fallback extraction path, and supports local media playback, offline downloads,
 casting, lyrics, device-to-device sync, and an on-device recommendation engine (FlowNeuroEngine).
@@ -14,7 +14,7 @@ AI assistant, point it at `AGENTS.md`.
 
 ## ❓ Asking Questions About the Codebase
 
-**Use [GitHub Discussions](https://github.com/A-EDev/Flow/discussions) — that is the right place, and
+**Use [GitHub Discussions](https://github.com/johnneerdael/MusicViz/discussions) — that is the right place, and
 questions are welcome.** The codebase is deliberately light on comments (see "Comments" below), so
 asking is expected rather than a sign you missed something.
 
@@ -55,11 +55,11 @@ Feature suggestions are welcome! Please:
 
 ```bash
 # Clone your fork
-git clone https://github.com/YOUR_USERNAME/Flow.git
-cd Flow
+git clone https://github.com/YOUR_USERNAME/MusicViz.git
+cd MusicViz
 
 # Add upstream remote
-git remote add upstream https://github.com/A-EDev/Flow.git
+git remote add upstream https://github.com/johnneerdael/MusicViz.git
 
 # Create a feature branch
 git checkout -b feature/your-feature-name
@@ -69,7 +69,7 @@ Always pull the latest `main` before starting work, to minimize merge conflicts.
 
 ### Product Flavors
 
-Flow builds two flavors: `github` (default, in-app updater enabled) and `foss` (no updater).
+MusicViz builds two flavors: `github` (default, in-app updater enabled) and `foss` (no updater).
 **Always use flavor-prefixed Gradle tasks** — `assembleGithubDebug`, `compileFossDebugKotlin` —
 never bare `assembleDebug` or `compileDebugKotlin`.
 
@@ -195,7 +195,7 @@ than one feature uses it, and duplicate no behaviour the library already provide
 
 ## ⚡ Performance, Battery, and Thermals — Non-Negotiable
 
-Flow is a media player that runs for hours at a time. Jank, dropped frames, playback stutter, device
+MusicViz is a media player that runs for hours at a time. Jank, dropped frames, playback stutter, device
 heat, and battery drain are **critical bugs, not cosmetic issues**. Every rule below is anchored in a
 real shipped regression that had to be found and fixed on-device.
 
@@ -264,7 +264,7 @@ real shipped regression that had to be found and fixed on-device.
 13. Sustained heat while the app is open = per-frame work; drain with the screen off = CPU/network
     loops. Diagnose in that order: (a) run the rule-2 audit over every composed-but-hidden tree;
     (b) count fetches per user action in logcat — any unexplained second fetch is the bug;
-    (c) check `adb shell dumpsys gfxinfo io.github.aedev.flow` for continuous frame production while
+    (c) check `adb shell dumpsys gfxinfo nl.neerdael.musicviz` for continuous frame production while
     the UI should be idle; (d) only then suspect the player path. Do not "fix" heat by degrading
     visible design, motion, or update smoothness — find the invisible work instead.
 
@@ -407,7 +407,7 @@ empty/error states, badges, formatters, or a second copy of a `shared/` componen
 
 ### Dependency injection
 
-Flow uses Hilt, but some legacy app-owned classes are still reached through static `getInstance()`
+MusicViz uses Hilt, but some legacy app-owned classes are still reached through static `getInstance()`
 calls. Treat those as migration debt, not as a pattern to copy.
 
 1. **Use constructor injection by default** for new ViewModels, repositories, use cases, workers,
@@ -564,8 +564,7 @@ bump takes three times as long to review and is three times as likely to be reve
 
 ## 🔐 Release and Signing Invariants
 
-Flow is distributed through GitHub Releases and
-[IzzyOnDroid](https://apt.izzysoft.de/packages/io.github.aedev.flow). Both pin properties of the
+MusicViz is distributed through GitHub Releases, which pins properties of the
 published artifacts, so the following are hard constraints. Breaking one of them cannot be fixed by a
 follow-up release — it forces every installed user to uninstall and reinstall, losing their local
 data.
@@ -610,14 +609,14 @@ a `v*` tag build when the keystore secret is missing rather than publishing them
 
 ## ❓ Questions?
 
-- Open a [discussion](https://github.com/A-EDev/Flow/discussions) — including questions about how the
+- Open a [discussion](https://github.com/johnneerdael/MusicViz/discussions) — including questions about how the
   codebase works
 - Comment on existing issues
 - Reach out to maintainers
 
 ## 🙏 Thank You!
 
-Every contribution helps make Flow better. Thank you for being part of the community!
+Every contribution helps make MusicViz better. Thank you for being part of the community!
 
 ---
 

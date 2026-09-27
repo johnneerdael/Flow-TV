@@ -15,6 +15,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Flow"
+rootProject.name = "MusicViz"
 include(":app")
 include(":benchmark")
