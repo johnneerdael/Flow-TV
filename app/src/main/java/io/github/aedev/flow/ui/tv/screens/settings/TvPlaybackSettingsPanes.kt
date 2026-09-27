@@ -142,7 +142,7 @@ fun TvContentSettingsPane(
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
-    val sponsorBlock by playerPreferences.sponsorBlockEnabled.collectAsStateWithLifecycle(initialValue = false)
+    val sponsorBlock by playerPreferences.sponsorBlockEnabled.collectAsStateWithLifecycle(initialValue = true)
     val deArrow by playerPreferences.deArrowEnabled.collectAsStateWithLifecycle(initialValue = false)
 
     LazyColumn(

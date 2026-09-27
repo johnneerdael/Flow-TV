@@ -31,7 +31,7 @@ class IntegrationsViewModel
         private val preferences: PlayerPreferences,
         private val discord: DiscordPresenceController,
     ) : SettingsViewModel() {
-        val sponsorBlock = preferences.sponsorBlockEnabled.asState(false)
+        val sponsorBlock = preferences.sponsorBlockEnabled.asState(true)
         val submitButton = preferences.sbSubmitEnabled.asState(false)
         val userId = preferences.sbUserId.asState(null)
         val deArrow = preferences.deArrowEnabled.asState(false)

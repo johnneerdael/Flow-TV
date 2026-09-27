@@ -1404,7 +1404,7 @@ class PlayerPreferences(
     val sponsorBlockEnabled: Flow<Boolean> =
         context.playerPreferencesDataStore.data
             .map { preferences ->
-                preferences[Keys.SPONSOR_BLOCK_ENABLED] ?: false
+                preferences[Keys.SPONSOR_BLOCK_ENABLED] ?: true
             }
 
     suspend fun setSponsorBlockEnabled(enabled: Boolean) {
