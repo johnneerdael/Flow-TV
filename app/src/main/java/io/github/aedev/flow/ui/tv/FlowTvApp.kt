@@ -1,15 +1,22 @@
 package io.github.aedev.flow.ui.tv
 
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -25,7 +32,9 @@ import io.github.aedev.flow.ui.screens.player.VideoPlayerViewModel
 import io.github.aedev.flow.ui.screens.search.SearchViewModel
 import io.github.aedev.flow.ui.tv.music.TvMusicNowPlayingScreen
 import io.github.aedev.flow.ui.tv.screens.TvPlayerScreen
+import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 import io.github.aedev.flow.ui.tv.theme.TvTheme
+import kotlinx.coroutines.flow.collectLatest
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
@@ -52,6 +61,24 @@ fun FlowTvApp(
         if (musicPlayerState.isPlaying) musicSessionActive = true
     }
 
+    // A track the user picked counts as a session once it is loaded, even if it never plays,
+    // so its playback warning shows over the player instead of nothing happening.
+    var requestedTrackId by rememberSaveable { mutableStateOf<String?>(null) }
+    LaunchedEffect(activeMusicTrack?.videoId, requestedTrackId) {
+        if (requestedTrackId != null && activeMusicTrack?.videoId == requestedTrackId) {
+            musicSessionActive = true
+            requestedTrackId = null
+        }
+    }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(snackbarHostState) {
+        EnhancedMusicPlayerManager.playbackWarnings.collectLatest { message ->
+            snackbarHostState.currentSnackbarData?.dismiss()
+            snackbarHostState.showSnackbar(message = message, duration = SnackbarDuration.Long)
+        }
+    }
+
     fun play(video: Video) {
         EnhancedMusicPlayerManager.pause()
         GlobalPlayerState.setCurrentVideo(video)
@@ -64,6 +91,7 @@ fun FlowTvApp(
         queue: List<MusicTrack>,
         source: String,
     ) {
+        requestedTrackId = track.videoId
         musicPlayerViewModel.loadAndPlayTrack(track, queue, source)
         musicExpanded = true
     }
@@ -103,36 +131,46 @@ fun FlowTvApp(
             color = MaterialTheme.colorScheme.background,
             contentColor = MaterialTheme.colorScheme.onBackground,
         ) {
-            val video = activeVideo
-            val visibleMusicTrack = activeMusicTrack.takeIf { musicSessionActive }
-            if (video == null && musicExpanded && visibleMusicTrack != null) {
-                TvMusicNowPlayingScreen(
-                    viewModel = musicPlayerViewModel,
-                    onCollapse = { musicExpanded = false },
-                )
-            } else if (video == null) {
-                TvShell(
-                    navController = navController,
-                    onPlayTrack = ::playTrack,
-                    searchViewModel = searchViewModel,
-                    onPlayVideo = ::play,
-                    onPlayPlaylist = ::playPlaylist,
-                    activeMusicTrack = visibleMusicTrack,
-                    onExpandMusic = { musicExpanded = true },
-                    onDismissMusic = {
-                        musicExpanded = false
-                        musicSessionActive = false
-                        EnhancedMusicPlayerManager.clearCurrentTrack()
-                    },
-                )
-            } else {
-                TvPlayerScreen(
-                    video = video,
-                    viewModel = playerViewModel,
-                    onClose = {
-                        playerViewModel.clearVideo()
-                        GlobalPlayerState.setCurrentVideo(null)
-                    },
+            Box(modifier = Modifier.fillMaxSize()) {
+                val video = activeVideo
+                val visibleMusicTrack = activeMusicTrack.takeIf { musicSessionActive }
+                if (video == null && musicExpanded && visibleMusicTrack != null) {
+                    TvMusicNowPlayingScreen(
+                        viewModel = musicPlayerViewModel,
+                        onCollapse = { musicExpanded = false },
+                    )
+                } else if (video == null) {
+                    TvShell(
+                        navController = navController,
+                        onPlayTrack = ::playTrack,
+                        searchViewModel = searchViewModel,
+                        onPlayVideo = ::play,
+                        onPlayPlaylist = ::playPlaylist,
+                        activeMusicTrack = visibleMusicTrack,
+                        onExpandMusic = { musicExpanded = true },
+                        onDismissMusic = {
+                            musicExpanded = false
+                            musicSessionActive = false
+                            EnhancedMusicPlayerManager.clearCurrentTrack()
+                        },
+                    )
+                } else {
+                    TvPlayerScreen(
+                        video = video,
+                        viewModel = playerViewModel,
+                        onClose = {
+                            playerViewModel.clearVideo()
+                            GlobalPlayerState.setCurrentVideo(null)
+                        },
+                    )
+                }
+                val dimens = LocalTvDimens.current
+                SnackbarHost(
+                    hostState = snackbarHostState,
+                    modifier =
+                        Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(horizontal = dimens.overscanHorizontal, vertical = dimens.overscanVertical),
                 )
             }
         }
