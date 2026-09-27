@@ -7,10 +7,22 @@
 package io.github.aedev.flow.data.recommendation.music
 
 import com.google.common.truth.Truth.assertThat
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
+import java.util.TimeZone
 
 class MusicBrainRankerTest {
     private val now = 1_700_000_000_000L
+
+    // Time-of-day buckets follow the device zone; weeks-earlier plays must not straddle a DST switch.
+    private val deviceZone = TimeZone.getDefault()
+
+    @Before
+    fun pinZone() = TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
+
+    @After
+    fun restoreZone() = TimeZone.setDefault(deviceZone)
 
     private fun input(
         trackId: String,
