@@ -4,7 +4,7 @@ import java.net.URLEncoder
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-private const val NEW_ISSUE_URL = "https://github.com/A-EDev/Flow/issues/new"
+private const val NEW_ISSUE_URL = "https://github.com/johnneerdael/MusicViz/issues/new"
 private const val APP_PACKAGE = "io.github.aedev.flow"
 private const val MAX_URL_LOG_CHARS = 1_500
 private const val TOP_FRAMES = 6

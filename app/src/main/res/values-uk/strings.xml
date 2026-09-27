@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Flow</string>
+    <string name="app_name">MusicViz</string>
     <string name="subscriptions_search_placeholder">Пошук підписок...</string>
     <string name="top_bar_subscriptions_title">Підписки</string>
     <string name="view_all_button_label">Всі</string>
@@ -105,7 +105,7 @@
     <string name="pinned_by_creator">Закріплено автором</string>
     <string name="new_update_available">Нове оновлення доступне</string>
     <string name="release_notes">ПРИМІТКИ ДО ВИПУСКУ</string>
-    <string name="update_flow">Оновити Flow</string>
+    <string name="update_flow">Оновити MusicViz</string>
     <string name="maybe_later">Можливо пізніше</string>
     <string name="nav_music">Музика</string>
     <string name="nav_library">Бібліотека</string>
@@ -196,7 +196,7 @@
     <string name="time_today">Сьогодні</string>
     <string name="time_yesterday">Вчора</string>
     <string name="time_earlier">Раніше</string>
-    <string name="icon_name_flow_red">Червоний Flow</string>
+    <string name="icon_name_flow_red">Червоний MusicViz</string>
     <string name="icon_name_amoled">Темний AMOLED</string>
     <string name="icon_name_monochrome">Монохром</string>
     <string name="icon_name_ghost">Привид</string>
@@ -213,7 +213,7 @@
     <string name="dismiss">Відхилити</string>
     <string name="peace_and_quiet">Мир і тиша</string>
     <string name="settings_title">Налаштування</string>
-    <string name="settings_flow_engine_header">Рушій Flow</string>
+    <string name="settings_flow_engine_header">Рушій MusicViz</string>
     <string name="settings_active_learning">АКТИВНЕ НАВЧАННЯ</string>
     <string name="settings_reset_everything">Скинути все</string>
     <string name="settings_view_analytics">Переглянути аналітику</string>
@@ -223,13 +223,13 @@
     <string name="settings_header_about">Про нас</string>
     <string name="settings_header_notifications">Сповіщення</string>
     <string name="settings_item_notifications">Налаштування сповіщень</string>
-    <string name="settings_item_notifications_subtitle">Контролюйте, які сповіщення може надсилати Flow</string>
+    <string name="settings_item_notifications_subtitle">Контролюйте, які сповіщення може надсилати MusicViz</string>
     <string name="notif_settings_title">Налаштування сповіщень</string>
     <string name="notif_type_new_videos">Нові відео</string>
     <string name="notif_type_new_videos_subtitle">Повідомляти, коли канали, на які ви підписалися, завантажують нові відео</string>
     <string name="notif_type_reminders">Нагадування про екранний час</string>
     <string name="notif_type_updates">Оновлення застосунку</string>
-    <string name="notif_type_updates_subtitle">Отримувати сповіщення про нові версії Flow</string>
+    <string name="notif_type_updates_subtitle">Отримувати сповіщення про нові версії MusicViz</string>
     <string name="notif_type_general">Основні сповіщення</string>
     <string name="notif_system_settings">Налаштування системних сповіщень</string>
     <string name="notif_check_interval_subtitle_template">Перевіряти кожні %s</string>
@@ -263,7 +263,7 @@
     <string name="filter_discover">Дослідити</string>
     <string name="filter_popular">Популярне</string>
     <string name="filter_workout">Тренування</string>
-    <string name="content_settings_show_app_logo_subtitle">Показувати логотип Flow у верхній панелі головного екрана</string>
+    <string name="content_settings_show_app_logo_subtitle">Показувати логотип MusicViz у верхній панелі головного екрана</string>
     <string name="content_settings_header_content_components">Компоненти контенту</string>
     <string name="content_settings_hide_watched_title">Сховати переглянуті відео</string>
     <string name="content_settings_hide_watched_subtitle">Фільтрувати відео, які ви вже переглянули, зі своєї стрічки та підписок</string>
@@ -331,8 +331,8 @@
     <string name="channel_avatar">Аватарка каналу</string>
     <string name="clear_all_notifications">Очистити сповіщення</string>
     <string name="notifications_empty_body">Ви переглянули все! Нові оновлення з ваших підписок з’являтимуться тут.</string>
-    <string name="settings_reset_brain_title">Скинути персоналізацію Flow?</string>
-    <string name="settings_reset_brain_body">Це видаляє ваш профіль Flow Brain.\n\n• Вивчені теми буде забуто.\n• Риси особистості буде скинуто.\n• Рекомендації повернуться до типових налаштувань.\n\nЦю дію неможливо скасувати.</string>
+    <string name="settings_reset_brain_title">Скинути персоналізацію MusicViz?</string>
+    <string name="settings_reset_brain_body">Це видаляє ваш профіль MusicViz Brain.\n\n• Вивчені теми буде забуто.\n• Риси особистості буде скинуто.\n• Рекомендації повернуться до типових налаштувань.\n\nЦю дію неможливо скасувати.</string>
     <string name="settings_analyzing_interactions">Аналізую ваші взаємодії...</string>
     <string name="notif_type_downloads">Сповіщення завантажень</string>
     <string name="notif_type_downloads_subtitle">Сповіщення про прогрес, завершення та невдачі</string>
@@ -340,7 +340,7 @@
     <string name="notif_system_settings_subtitle">Відкрийте налаштування Android, для керувати дозволами кожного каналу</string>
     <string name="notif_check_interval_section_header">Графік перевірки стрічки</string>
     <string name="notif_check_interval">Інтервал перевірки нових відео</string>
-    <string name="notif_check_interval_dialog_body">Як часто Flow перевіряє наявність нових відео у ваших підписках.</string>
+    <string name="notif_check_interval_dialog_body">Як часто MusicViz перевіряє наявність нових відео у ваших підписках.</string>
     <string name="settings_item_content_prefs_subtitle">Блокуйте теми, які ви не хочете бачити</string>
     <string name="settings_item_player">Налаштування програвача</string>
     <string name="settings_item_player_subtitle">Автоматичне відтворення, фонове відтворення, SponsorBlock</string>
@@ -361,10 +361,10 @@
     <string name="settings_item_export_data_subtitle">Резервне копіювання даних</string>
     <string name="settings_item_import_data">Імпорт даних</string>
     <string name="settings_item_import_data_subtitle">Відновити з резервної копії або імпортувати з інших застосунків</string>
-    <string name="settings_item_about_flow">Про Flow</string>
+    <string name="settings_item_about_flow">Про MusicViz</string>
     <string name="settings_item_about_flow_subtitle">Версія, ліцензія, автори</string>
     <string name="settings_item_support">Підтримка та пожертви</string>
-    <string name="settings_item_support_subtitle">Підтримайте розробку Flow</string>
+    <string name="settings_item_support_subtitle">Підтримайте розробку MusicViz</string>
     <string name="settings_region_dialog_title">Вибрати регіон</string>
     <string name="settings_export_success">Дані успішно експортовано</string>
     <string name="export_newpipe_subs_failed">Не вдалося експортувати підписки NewPipe</string>
@@ -392,7 +392,7 @@
     <string name="settings_language_dialog_title">Вибрати мову застосунку</string>
     <string name="settings_export_failed">Експорт не вдався: %1$s</string>
     <string name="appearance_title">Вигляд</string>
-    <string name="appearance_subtitle">Налаштуйте ваш досвід в Flow</string>
+    <string name="appearance_subtitle">Налаштуйте ваш досвід в MusicViz</string>
     <string name="appearance_current_theme">ПОТОЧНА ТЕМА</string>
     <string name="appearance_category_all">Всі</string>
     <string name="appearance_category_light">Світла</string>
@@ -446,8 +446,8 @@
     <string name="theme_desc_sky_blue">Легка, повітряна палітра з відтінками відкритого неба.</string>
     <string name="theme_name_cream_paper">Кремовий папір</string>
     <string name="theme_desc_cream_paper">Теплі паперові відтінки для затишного читання вдень.</string>
-    <string name="theme_name_classic_dark">Типова Flow</string>
-    <string name="theme_desc_classic_dark">Оригінальна палітра Flow з червоним акцентом YouTube.</string>
+    <string name="theme_name_classic_dark">Типова MusicViz</string>
+    <string name="theme_desc_classic_dark">Оригінальна палітра MusicViz з червоним акцентом YouTube.</string>
     <string name="theme_name_true_black">Справжня чорна</string>
     <string name="theme_desc_true_black">Справжній OLED</string>
     <string name="theme_name_monochrome">Монохром</string>
@@ -609,7 +609,7 @@
     <string name="notif_type_general_subtitle">Інші сповіщення та анонси</string>
     <string name="appearance_customizer_subtitle">Налаштовуйте кожну колірну роль Material 3 та миттєво переглядайте зміни</string>
     <string name="appearance_customizer_format_hint">Формат HEX: #RRGGBB або #AARRGGBB</string>
-    <string name="app_icon_picker_warning">Зміна значка може на мить прибрати Flow з головного екрана. За потреби додайте його знову з меню застосунків.</string>
+    <string name="app_icon_picker_warning">Зміна значка може на мить прибрати MusicViz з головного екрана. За потреби додайте його знову з меню застосунків.</string>
     <string name="app_icon_apply_toast">Значок змінено — ваш запускач оновиться</string>
     <string name="player_nav_btn_title">Показати кнопки «Наступне» та «Попереднє»</string>
     <string name="content_settings_home_layout_subtitle">Режим показу відео на головній</string>
@@ -756,7 +756,7 @@
     <string name="desc_unblock_topic">Розблокувати %1$s</string>
     <string name="time_management_title">Керування часом</string>
     <string name="time_management_subtitle">Відстежуйте й контролюйте кранний час</string>
-    <string name="stats_disclaimer">На основі вашої історії переглядів у Flow. Фактичне використання може відрізнятися.</string>
+    <string name="stats_disclaimer">На основі вашої історії переглядів у MusicViz. Фактичне використання може відрізнятися.</string>
     <string name="tools_to_manage_time">Інструменти для керування часом</string>
     <string name="remind_bedtime">Нагадувати мені про час сну</string>
     <string name="start_time">Час початку</string>
@@ -858,12 +858,12 @@
     <string name="period_six_months">6 місяців</string>
     <string name="period_one_year">1 рік</string>
     <string name="import_data_title">Імпортувати дані</string>
-    <string name="import_flow_backup_success">Резервна копію Flow успішно імпортована</string>
-    <string name="import_flow_backup_failed_template">Не вдалось імпортувтаи резервну копію Flow: %1$s</string>
+    <string name="import_flow_backup_success">Резервна копію MusicViz успішно імпортована</string>
+    <string name="import_flow_backup_failed_template">Не вдалось імпортувтаи резервну копію MusicViz: %1$s</string>
     <string name="import_newpipe_failed_template">Не вдалось імпортувати резервну копію NewPipe: %1$s</string>
     <string name="import_youtube_failed_template">Не вдалось імпортувати резервну копію YouTube: %1$s</string>
-    <string name="import_flow_backup_item_title">Імпортувати резервну копію Flow</string>
-    <string name="import_flow_backup_desc">Відновіть історію, налаштування та підписки з файлу резервної копії Flow.</string>
+    <string name="import_flow_backup_item_title">Імпортувати резервну копію MusicViz</string>
+    <string name="import_flow_backup_desc">Відновіть історію, налаштування та підписки з файлу резервної копії MusicViz.</string>
     <string name="import_from_newpipe">Імпорт з NewPipe</string>
     <string name="import_from_newpipe_desc">Імпортувати підписки з файлу експорту NewPipe (JSON).</string>
     <string name="import_from_libretube">Імпорт з LibreTube</string>
@@ -924,10 +924,10 @@
     <string name="location_dialog_subtitle">Виберіть місце збереження завантажених файлів на вашому пристрої.</string>
     <string name="location_preset_header">Стандартні розташування</string>
     <string name="location_custom_header">Власне розташування</string>
-    <string name="location_downloads_label">Downloads/Flow</string>
-    <string name="location_movies_label">Movies/Flow</string>
+    <string name="location_downloads_label">Downloads/MusicViz</string>
+    <string name="location_movies_label">Movies/MusicViz</string>
     <string name="location_internal_app_label">Внутрішнє сховище застосунку</string>
-    <string name="location_internal_app_desc">Приватне для Flow. Видаляється під час видалення застосунку.</string>
+    <string name="location_internal_app_desc">Приватне для MusicViz. Видаляється під час видалення застосунку.</string>
     <string name="location_custom_saf_label">Огляд…</string>
     <string name="location_custom_saf_desc">Виберіть будь-яку теку за допомогою системного провідника</string>
     <string name="location_custom_manual_label">Ввести шлях вручну</string>
@@ -935,20 +935,19 @@
     <string name="location_badge_active">Активно</string>
     <string name="select_threads_count_desc">Виберіть кількість потоків (1–8):</string>
     <string name="support_donations_title">Підтримка та пожертви</string>
-    <string name="support_flow_dev_title">Підтримайте розробку Flow</string>
-    <string name="support_flow_dev_desc">Якщо Flow вам корисний, ви можете підтримати його на Patreon або криптовалютою нижче. Дякуємо!</string>
-    <string name="support_flow_patreon">Підтримайте Flow на Patreon</string>
+    <string name="support_flow_dev_title">Підтримайте розробку MusicViz</string>
+    <string name="support_flow_dev_desc">Якщо MusicViz вам корисний, ви можете підтримати його на Patreon або криптовалютою нижче. Дякуємо!</string>
+    <string name="support_flow_patreon">Підтримайте MusicViz на Patreon</string>
     <string name="thank_you_support_message">Дякую вам за вашу підтримку! ❤️</string>
     <string name="address_copied_toast">Адреса скопійована до буферу обміну</string>
     <string name="donation_address_clip_label">Адреса для пожертв</string>
     <string name="about_creator">Автор</string>
-    <string name="about_website">Сайт</string>
     <string name="github_subtitle">Вихідний код та помилки</string>
     <string name="newpipe_extractor_title">NewPipe Extractor</string>
     <string name="newpipe_extractor_subtitle">Основна бібліотека витягування</string>
     <string name="about_license">Ліцензія</string>
     <string name="about_changelog">Список змін</string>
-    <string name="whats_new_in_flow">Що нового у Flow</string>
+    <string name="whats_new_in_flow">Що нового у MusicViz</string>
     <string name="about_device_info">Інформація про пристрій</string>
     <string name="gnu_license_full_title">GNU General Public License</string>
     <string name="loading_ellipsis">Завантаження...</string>
@@ -989,7 +988,7 @@
     <string name="playlist_empty_desc">Додавайте відео прямо з програвача,\nщоб створити свій список відтворення</string>
     <string name="delete_playlist_dialog_title">Видалити список відтворення?</string>
     <string name="delete_playlist_dialog_text">Це назавжди видалить «%1$s» і всі його відео.</string>
-    <string name="welcome_to_flow">Вітаємо у Flow</string>
+    <string name="welcome_to_flow">Вітаємо у MusicViz</string>
     <string name="onboarding_subtitle">Розкажіть нам, що вас цікавить</string>
     <string name="onboarding_instructions">Оберіть принаймні 3 теми, щоб персоналізувати досвід</string>
     <string name="btn_skip_for_now">Пропустити</string>
@@ -1006,7 +1005,7 @@
     <string name="category_creative">Творчість</string>
     <string name="category_science_nature">Наука і природа</string>
     <string name="category_news_current_events">Новини та події</string>
-    <string name="flow_control_center">Центр керування Flow</string>
+    <string name="flow_control_center">Центр керування MusicViz</string>
     <string name="action_refresh">Оновити</string>
     <string name="loading_neural_matrix">Завантаження нейронної матриці...</string>
     <string name="neural_interest_map_subtitle">Ваша нейронна карта інтересів</string>
@@ -1030,7 +1029,7 @@
     <string name="stats_topics">Теми</string>
     <string name="empty_bubble_cloud_message">Перегляньте кілька відео, щоб сформувати ваш профіль інтересів!</string>
     <string name="export_profile_data">Експортувати дані профілю</string>
-    <string name="flow_neural_profile_export_subject">Експорт нейронного профілю Flow</string>
+    <string name="flow_neural_profile_export_subject">Експорт нейронного профілю MusicViz</string>
     <string name="screen_title_music_library">Музична бібліотека</string>
     <string name="header_your_collection">Ваша колекція</string>
     <string name="subtitle_liked_music">Вподобані пісні</string>
@@ -1193,17 +1192,17 @@
     <string name="check_for_updates">Перевірити оновлення</string>
     <string name="check_for_updates_subtitle">Натисніть для перевірки оновлень</string>
     <string name="checking_for_updates">Перевірка оновлень…</string>
-    <string name="flow_is_up_to_date">Flow оновлено!</string>
+    <string name="flow_is_up_to_date">MusicViz оновлено!</string>
     <string name="update_check_failed">Не вдалося перевірити оновлення. Перевірте з’єднання.</string>
     <string name="export_engine_data">Експортувати профіль рушія</string>
     <string name="export_engine_data_subtitle">Резервна копія особистості та даних навчання ШІ</string>
     <string name="export_engine_success">Профіль рушія успішно експортовано</string>
     <string name="export_engine_failed">Не вдалось експортувтаи профіль рушія</string>
-    <string name="import_engine_data">Імпортувати дані рушія Flow</string>
+    <string name="import_engine_data">Імпортувати дані рушія MusicViz</string>
     <string name="import_engine_data_desc">Відновити профіль особистості ШІ з файлу резервної копії</string>
     <string name="import_engine_success">Профіль рушія успішно відновлено</string>
     <string name="import_engine_failed">Не вдлаось імпортувати профіль рушія</string>
-    <string name="import_engine_section_title">Рушій Flow</string>
+    <string name="import_engine_section_title">Рушій MusicViz</string>
     <string name="import_engine_section_subtitle">Відновити профіль навчання ШІ</string>
     <string name="master_backup_title">Повна резервна копія</string>
     <string name="master_backup_subtitle">Дані застосунку, відеорушій і музичний рушій в одному файлі</string>
@@ -1222,7 +1221,7 @@
     <string name="download_all">Завантажити все</string>
     <string name="title_copied">Назва скопійована</string>
     <string name="notif_master_toggle">Увімкнути сповіщення</string>
-    <string name="notif_master_toggle_subtitle">Дозволити Flow шукати нові відео у фоновому режимі</string>
+    <string name="notif_master_toggle_subtitle">Дозволити MusicViz шукати нові відео у фоновому режимі</string>
     <string name="notif_check_interval_disabled">Фонові перевірки сповіщень вимкнені</string>
     <string name="player_adaptive_size_title">Адаптивний розмір програвача</string>
     <string name="player_settings_rytd_subtitle">Показувати кількість «Не подобається» із Return YouTube Dislike</string>
@@ -1243,7 +1242,7 @@
     <string name="appearance_system_defaults_subtitle">Виберіть тему, яка використовуватиметься під час перемикання пристрою між світлим і темним режимами.</string>
     <string name="appearance_system_light_theme">Світла тема</string>
     <string name="appearance_system_dark_theme">Темна тема</string>
-    <string name="icon_name_flow_light">Світлий Flow</string>
+    <string name="icon_name_flow_light">Світлий MusicViz</string>
     <string name="icon_name_material_sky">Material Sky</string>
     <string name="icon_name_material_mint">Material Mint</string>
     <string name="player_adaptive_size_subtitle">Підігнати розмір програвача під відео. У вимкненому режимі зберігається формат 16:9.</string>
@@ -1268,7 +1267,7 @@
     <string name="content_settings_subs_show_live_title">Ефіри з підписок</string>
     <string name="content_settings_subs_show_live_subtitle">Показувати в стрічці прямі трансляції та нещодавні стріми</string>
     <string name="content_settings_nav_order_title">Порядок вкладок і типова вкладка</string>
-    <string name="content_settings_nav_order_subtitle">Перетягніть, щоб змінити порядок. Виберіть вкладку, на якій відкриватиметься Flow.</string>
+    <string name="content_settings_nav_order_subtitle">Перетягніть, щоб змінити порядок. Виберіть вкладку, на якій відкриватиметься MusicViz.</string>
     <string name="player_settings_shorts_playback_mode_auto_interval">Автогортання через заданий час</string>
     <string name="player_settings_rytd_title">Return YouTube Dislike</string>
     <string name="import_subscriptions_section_title">Підписки</string>
@@ -1387,7 +1386,7 @@
     <string name="error_captcha">Потрібна CAPTCHA YouTube</string>
     <string name="error_captcha_hint">YouTube запитує перевірку бота. Відкрийте YouTube у браузері та розв’яжіть CAPTCHA, а потім спробуйте ще раз.</string>
     <string name="error_not_supported">Тип контенту не підтримується</string>
-    <string name="error_not_supported_hint">Цей формат контенту неможливо відтворити у Flow.</string>
+    <string name="error_not_supported_hint">Цей формат контенту неможливо відтворити у MusicViz.</string>
     <string name="error_no_internet">Мережа відсутня</string>
     <string name="error_no_internet_hint">Перевірта ваш Wi-Fi або мобільний інтернет та спробуйте знову.</string>
     <string name="error_timeout">Час з’єднання вийшов</string>
@@ -1405,7 +1404,7 @@
     <string name="error_playback_failed">Помилка відтворення</string>
     <string name="error_playback_failed_hint">Сталась неочікувана помилка програвача. Спробуйте ще раз.</string>
     <string name="error_extraction_failed">Невдалось проаналізувати відеоданні</string>
-    <string name="error_extraction_failed_hint">YouTube можливо, оновив свій формат. Flow оновиться найближчим часом, спробуйте пізніше.</string>
+    <string name="error_extraction_failed_hint">YouTube можливо, оновив свій формат. MusicViz оновиться найближчим часом, спробуйте пізніше.</string>
     <string name="error_generic">Не вдалось завантажити відео</string>
     <string name="player_settings_overlay_cc">Кнопка субтитрів</string>
     <string name="player_settings_overlay_cc_subtitle">Показувати кнопку субтитрів на наклаланні програвача</string>
@@ -1578,7 +1577,7 @@
     <string name="shorts_playback_speed">Швидкість відтворення</string>
     <string name="speed_normal">Нормальна</string>
     <string name="export_watch_history_title">Історія перегляду</string>
-    <string name="export_watch_history_desc">Експортувати як JSON історії YouTube (для імпорту в LibreTube та Flow)</string>
+    <string name="export_watch_history_desc">Експортувати як JSON історії YouTube (для імпорту в LibreTube та MusicViz)</string>
     <string name="history_export_failed">Не вдалось експортувати історію перегляду</string>
     <string name="history_delete_shorts">Видалити Shorts з історії</string>
     <string name="history_delete_shorts_title">Видалити Shorts?</string>
@@ -1608,10 +1607,10 @@
     <string name="content_settings_subs_show_checked_count_subtitle">Показувати, скільки відео було перевірено під час оновлення</string>
     <string name="player_settings_video_codec">Типовий відеокодек</string>
     <string name="player_settings_video_codec_dialog_title">Типовий відеокодек</string>
-    <string name="player_settings_video_codec_dialog_body">Flow вибирає кодек автоматично. Ви все одно можете вибрати будь-який кодек у меню якості. H.264 найплавніше відтворюється на більшості пристроїв. AV1 і VP9 споживають менше трафіку, але потребують більшої обчислювальної потужності.</string>
+    <string name="player_settings_video_codec_dialog_body">MusicViz вибирає кодек автоматично. Ви все одно можете вибрати будь-який кодек у меню якості. H.264 найплавніше відтворюється на більшості пристроїв. AV1 і VP9 споживають менше трафіку, але потребують більшої обчислювальної потужності.</string>
     <string name="player_settings_video_codec_auto_desc">Дозволити застосунку вибрати (перевага надається H.264)</string>
-    <string name="donation_prompt_title">Насолоджуєтеся Flow?</string>
-    <string name="donation_prompt_message">Flow — це безплатний проєкт з відкритим вихідним кодом, створений без реклами та відстежувачів. Якщо він став вам у пригоді, будь ласка, підтримайте його розробку — це справді допомагає підтримувати життя проєкта.</string>
+    <string name="donation_prompt_title">Насолоджуєтеся MusicViz?</string>
+    <string name="donation_prompt_message">MusicViz — це безплатний проєкт з відкритим вихідним кодом, створений без реклами та відстежувачів. Якщо він став вам у пригоді, будь ласка, підтримайте його розробку — це справді допомагає підтримувати життя проєкта.</string>
     <string name="donation_prompt_methods">Patreon · Bitcoin · Ethereum · Solana · USDT · Monero</string>
     <string name="donation_prompt_support">Підтримати розробку</string>
     <string name="donation_prompt_later">Можливо пізніше</string>
@@ -1624,7 +1623,7 @@
     <string name="local_media_empty_title">%1$s не знайдено</string>
     <string name="local_media_empty_body">Відео та музика, збережені на цьому пристрої, з’являться тут.</string>
     <string name="local_media_permission_title">Потрібен дозвіл</string>
-    <string name="local_media_permission_body">Надайте доступ до медіафайлів, щоб Flow міг знаходити та відтворювати локальні відео й музику.</string>
+    <string name="local_media_permission_body">Надайте доступ до медіафайлів, щоб MusicViz міг знаходити та відтворювати локальні відео й музику.</string>
     <string name="local_media_grant">Надати доступ</string>
     <string name="history_tab_local_videos">Локальні відео</string>
     <string name="history_tab_local_music">Локальна музика</string>
@@ -1633,7 +1632,7 @@
     <string name="content_settings_share_without_text_subtitle">Поділіться лише посиланням на відео, без повідомлення «Подивись це відео»</string>
     <string name="deep_flow_save_history_title">Зберегти в історію переглядів</string>
     <string name="deep_flow_save_history_subtitle">Зберігати історію переглядів без рекомендацій на основі навчання</string>
-    <string name="icon_name_flow_play">Flow Play</string>
+    <string name="icon_name_flow_play">MusicViz Play</string>
     <string name="player_appearance_controls_while_loading_title">Керування під час завантаження</string>
     <string name="player_appearance_controls_while_loading_subtitle">Показувати елементи керування до завершення завантаження відео</string>
     <string name="player_settings_autoplay_countdown_title">Затримка автовідтворення</string>
@@ -1662,7 +1661,7 @@
     <string name="no_match_found">Збігів не знайдено</string>
     <string name="recognition_error">Не вдалося розпізнати</string>
     <string name="try_again">Спробувати ще раз</string>
-    <string name="search_in_flow">Знайти у Flow</string>
+    <string name="search_in_flow">Знайти у MusicViz</string>
     <string name="recognition_search_history">Пошук розпізнаних пісень</string>
     <string name="recognition_history_empty">Розпізнані пісні з’являться тут</string>
     <string name="recognition_clear_history">Очистити історію?</string>
@@ -1735,7 +1734,7 @@
     <string name="sync_error_peer_also_receive">Інший пристрій також налаштовано на отримання. Переведіть його в режим надсилання та спробуйте знову.</string>
     <string name="sync_error_qr_expired">Термін дії цього сеансу з’єднання закінчився. Попросіть інший пристрій створити новий.</string>
     <string name="sync_error_qr_wrong_version">Версія програми на іншому пристрої несумісна.</string>
-    <string name="sync_error_qr_not_flow">Це не схоже на коректні дані з’єднання Flow.</string>
+    <string name="sync_error_qr_not_flow">Це не схоже на коректні дані з’єднання MusicViz.</string>
     <string name="sync_error_qr_bad_address">У даних з\'єднання відсутня дійсна мережева адреса.</string>
     <string name="player_settings_overlay_comments">Кнопка коментарів</string>
     <string name="player_settings_overlay_comments_subtitle">Відкривати коментарі на бічній панелі на весь екран</string>
@@ -1783,7 +1782,7 @@
     <string name="persona_initiate_title">Початок</string>
     <string name="persona_initiate_description">Тільки почали. Ваш профіль формується.</string>
     <string name="persona_audiophile_title">Аудіофіл</string>
-    <string name="persona_audiophile_description">Ви використовуєте Flow в більшості для музики. Атмосфера – це все.</string>
+    <string name="persona_audiophile_description">Ви використовуєте MusicViz в більшості для музики. Атмосфера – це все.</string>
     <string name="persona_livewire_title">Постійно в ефірі</string>
     <string name="persona_livewire_description">Ви любите живу енергію ефірів та прем\'єр.</string>
     <string name="persona_night_owl_title">Нічна сова</string>
@@ -1843,7 +1842,7 @@
     <string name="copy_logs">Копіювати журнали</string>
     <string name="logs_copied">Журнали скопійовано</string>
     <string name="logs_copy_failed">Не вдалося скопіювати журнали</string>
-    <string name="channel_error_log_clip_label">Журнал помилок Flow</string>
+    <string name="channel_error_log_clip_label">Журнал помилок MusicViz</string>
     <string name="playlist_filter_owned">У власності</string>
     <string name="playlist_creation_menu_open">Створити список відтворення</string>
     <string name="playlist_creation_menu_close">Закрити меню створення списку відтворення</string>
@@ -1892,9 +1891,9 @@
     <string name="subtitle_reset_default">Скинути до типових</string>
     <string name="desc_more">...більше</string>
     <string name="widget_now_playing_label">Зараз відтворюється</string>
-    <string name="widget_now_playing_description">Керуйте музикою, що відтворюється у Flow</string>
+    <string name="widget_now_playing_description">Керуйте музикою, що відтворюється у MusicViz</string>
     <string name="widget_quick_actions_label">Швидкі дії</string>
-    <string name="widget_quick_actions_description">Шукайте у Flow та переходьте до завантажень, історії або розпізнавання</string>
+    <string name="widget_quick_actions_description">Шукайте у MusicViz та переходьте до завантажень, історії або розпізнавання</string>
     <string name="widget_recognize_label">Розпізнати музику</string>
     <string name="widget_recognize_description">Розпізнавайте пісню, що лунає поруч, одним дотиком</string>
     <string name="widget_turntable_label">Платівка</string>
@@ -1941,7 +1940,7 @@
     <string name="discord_presence_connect">Прив’язати обліковий запис Discord</string>
     <string name="discord_presence_connect_action">Прив’язати</string>
     <string name="discord_presence_gateway_warning">Це здійснює вхід за допомогою вашого токена Discord замість офіційного входу. Це порушує Умови використання Discord і може призвести до обмеження або блокування вашого облікового запису.</string>
-    <string name="discord_presence_risk_dialog_body">З’єднання передає Flow ваш токен Discord. Він зберігається в зашифрованому вигляді на цьому пристрої та надсилається лише до Discord. Цей спосіб порушує Умови надання послуг Discord, тож ваш обліковий запис можуть обмежити або заблокувати.</string>
+    <string name="discord_presence_risk_dialog_body">З’єднання передає MusicViz ваш токен Discord. Він зберігається в зашифрованому вигляді на цьому пристрої та надсилається лише до Discord. Цей спосіб порушує Умови надання послуг Discord, тож ваш обліковий запис можуть обмежити або заблокувати.</string>
     <string name="discord_error_not_initialized">Розширену активність Discord не ініціалізовано.</string>
     <string name="discord_presence_disconnect">Відключити та від\'єднати</string>
     <string name="discord_presence_unlink_action">Від\'єднати</string>
@@ -1951,10 +1950,10 @@
     <string name="discord_presence_account">Акаунт Discord</string>
     <string name="discord_presence_privacy_section">Ризик конфіденційності та облікового запису</string>
     <string name="discord_presence_privacy_title">Конфіденційність</string>
-    <string name="discord_presence_privacy_body">Flow показує назву, автора, обкладинку та прогрес того, що ви відтворюєте. По стандарту вимкнено. Ваш токен Discord зашифровано й ніколи не записується в журнали.</string>
+    <string name="discord_presence_privacy_body">MusicViz показує назву, автора, обкладинку та прогрес того, що ви відтворюєте. По стандарту вимкнено. Ваш токен Discord зашифровано й ніколи не записується в журнали.</string>
     <string name="discord_presence_risk_dialog_title">Приймати ризик для облікового запису Discord?</string>
     <string name="discord_presence_risk_accept">Я розумію, під\'єднати</string>
-    <string name="discord_error_open_flow">Відкрийте Flow перед з\'єднанням з Discord.</string>
+    <string name="discord_error_open_flow">Відкрийте MusicViz перед з\'єднанням з Discord.</string>
     <string name="interface_mode_tv">ТВ</string>
     <string name="discord_account_fallback">Користувач Discord</string>
     <string name="settings_item_interface_mode">Режим інтерфейсу</string>
@@ -1980,11 +1979,8 @@
     <string name="ui_queued_for_download">В черзі завантажень</string>
     <string name="ui_downloading">Завантаження</string>
     <string name="ui_in_library">В бібліотеці</string>
-    <string name="ui_flow_logo">Логотип Flow</string>
-    <string name="about_creator_name">A-EDev</string>
-    <string name="about_website_address">flow.aedev.me</string>
-    <string name="about_reddit">Reddit</string>
-    <string name="about_reddit_subtitle">r/Flow_Official</string>
+    <string name="ui_flow_logo">Логотип MusicViz</string>
+    <string name="about_creator_name">John Neerdael</string>
     <string name="about_license_name">GNU GPL v3</string>
     <string name="discord_error_enable_before_connect">Увімкніть Розширену активність у Discord перед прив’язуванням облікового запису.</string>
     <string name="discord_error_unavailable">Розширена активність у Discord недоступна у цій збірці.</string>
@@ -2000,7 +1996,7 @@
     <string name="discord_error_gateway_failed">Не вдалося з’єднатися з Discord Gateway.</string>
     <string name="discord_error_heartbeat_unacknowledged">Сигнал «heartbeat» Discord Gateway не було підтверджено.</string>
     <string name="discord_error_heartbeat_failed">Помилка сигналу «heartbeat» Discord Gateway.</string>
-    <string name="discord_presence_playing_fallback">Відтворюється у Flow</string>
+    <string name="discord_presence_playing_fallback">Відтворюється у MusicViz</string>
     <string name="discord_presence_by_creator">від %1$s</string>
     <string name="interface_mode_automatic_summary">Інтерфейс для телевізорів — на телевізорах, мобільний інтерфейс — на всьому іншому</string>
     <string name="interface_mode_mobile_summary">Завжди використовувати інтерфейс для телефонів та планшетів</string>
@@ -2038,7 +2034,7 @@
     <string name="tv_music_no_lyrics">Текст не знацдео</string>
     <string name="tv_music_radio">Радіо</string>
     <string name="tv_settings_appearance">Вигляд</string>
-    <string name="tv_settings_flow_engine">Flow Engine</string>
+    <string name="tv_settings_flow_engine">MusicViz Engine</string>
     <string name="tv_settings_sync">Синхронізувати пристрої</string>
     <string name="tv_guide_navigation_title">Навігація</string>
     <string name="tv_guide_playback_title">Відтворення</string>
@@ -2060,7 +2056,7 @@
     <string name="tv_music_expand">Розгорнути програвач</string>
     <string name="tv_sync_qr_session_active">Цей код залишається активним, поки цей екран відкрито.</string>
     <string name="tv_remote_guide_title">Інструкція до пульта та клавіатури</string>
-    <string name="tv_remote_guide_subtitle">Короткий довідник для керування Flow, не встаючи з дивана</string>
+    <string name="tv_remote_guide_subtitle">Короткий довідник для керування MusicViz, не встаючи з дивана</string>
     <string name="tv_remote_guide_back">Назад до налаштувань</string>
     <string name="tv_guide_search_title">Пошук і перегляд</string>
     <string name="tv_guide_key_dpad">Хрестовина</string>
@@ -2119,7 +2115,7 @@
     <string name="ui_no_crash_logs">Журнали збоїв відсутні</string>
     <string name="ui_copy_log">Копіювати журнал</string>
     <string name="ui_clear_and_continue">Очистити та продовжити</string>
-    <string name="ui_crashed_last_session">Під час останнього сеансу Flow аварійно закрився</string>
+    <string name="ui_crashed_last_session">Під час останнього сеансу MusicViz аварійно закрився</string>
     <string name="ui_copy_log_description">Скопіюйте наведений нижче журнал і вставте його в GitHub issue, щоб це можна було виправити.</string>
     <string name="ui_search_settings">Знайти налаштування…</string>
     <string name="ui_custom_interest_title">Додати власне зацікавлення</string>
@@ -2127,7 +2123,7 @@
     <string name="ui_custom_interest_hint">Власні захоплення (наприклад, джаз, астрофізика)</string>
     <string name="ui_add_interest">Додати захоплення</string>
     <string name="ui_version">Версія %1$s</string>
-    <string name="update_download_prompt">Доступна нова версія Flow (%1$s). Завантажити останній APK-файл?</string>
+    <string name="update_download_prompt">Доступна нова версія MusicViz (%1$s). Завантажити останній APK-файл?</string>
     <string name="ui_instrumental">І Н С Т Р У М Е Н Т А Л</string>
     <string name="ui_playlist_empty">Список відтворення пустий</string>
     <string name="ui_playlist_saved_to_library">Список відтворення збережено до бібліотеки</string>
@@ -2234,9 +2230,9 @@
     <string name="download_failed_audio_length">Не вдалося отримати довжину аудіоконтенту</string>
     <string name="download_workers_failed">Один або декілька робочих процесів дали збій</string>
     <string name="download_block_failed">Не вдалося заблокувати %1$s: %2$s</string>
-    <string name="import_migrate_description">Переносьте свої підписки та історію з інших платформ у Flow без жодних зусиль.</string>
+    <string name="import_migrate_description">Переносьте свої підписки та історію з інших платформ у MusicViz без жодних зусиль.</string>
     <string name="import_backup_restore">Резервне копіювання та відновлення</string>
-    <string name="import_manage_backups">Керуйте резервними копіями Flow</string>
+    <string name="import_manage_backups">Керуйте резервними копіями MusicViz</string>
     <string name="import_external_services">Зовнішні сервіси</string>
     <string name="import_other_youtube_clients">Імпорт з інших клієнтів YouTube</string>
     <string name="imported_successfully">%1$s успішно імпортовано</string>
@@ -2259,7 +2255,7 @@
     <string name="remove_from_queue_confirmation">Упевнені, що хочете видалити це відео з черги?</string>
     <string name="reorder_queue_item">Змінити порядок елемента в черзі</string>
     <string name="notif_background_restricted_title">Перевірка біографічних даних обмежена</string>
-    <string name="notif_background_restricted_subtitle">Android блокує перевірки, коли Flow закрито. Натисніть, щоби дозволити роботу у фоновому режимі.</string>
+    <string name="notif_background_restricted_subtitle">Android блокує перевірки, коли MusicViz закрито. Натисніть, щоби дозволити роботу у фоновому режимі.</string>
     <plurals name="subscriptions_failed_channels_title">
         <item quantity="one">Не вдалося завантажити %d канал</item>
         <item quantity="few">Не вдалося завантажити %d канали</item>
@@ -2289,7 +2285,7 @@
     <string name="player_appearance_seek_gesture_subtitle">Змахніть убік у повноекранному режимі, щоби перемотати відео</string>
     <string name="player_settings_subtitle_language">Бажана мова субтитрів</string>
     <string name="player_settings_subtitle_language_dialog_title">Мова субтитрів</string>
-    <string name="player_settings_subtitle_language_dialog_body">Субтитри цією мовою будуть показані, якщо доступні. В іншому разі Flow перекладає наявну доріжку.</string>
+    <string name="player_settings_subtitle_language_dialog_body">Субтитри цією мовою будуть показані, якщо доступні. В іншому разі MusicViz перекладає наявну доріжку.</string>
     <string name="player_settings_subtitle_language_none">Не вказано</string>
     <string name="player_settings_subtitle_language_none_desc">Використовуйте першу доріжку субтитрів, яку пропонує відео</string>
     <string name="player_settings_auto_enable_subtitles">Автоматично вмикати субтитри</string>
@@ -2330,7 +2326,7 @@
     <string name="sync_collection_likes_body">Відео та музика, які сподобалися або не сподобалися.</string>
     <string name="sync_collection_subscriptions_body">Канали, на які ви підписані.</string>
     <string name="sync_collection_settings_body">Налаштування відтворення, вигляду та завантаження.</string>
-    <string name="sync_collection_recommendation_profile_body">Що Flow дізнався про те, що ви дивитеся.</string>
+    <string name="sync_collection_recommendation_profile_body">Що MusicViz дізнався про те, що ви дивитеся.</string>
     <string name="sync_waiting_for_peer">Очікування з’єднання з іншим пристроєм…</string>
     <string name="sync_cancel_session">Скасувати синхронізацію</string>
     <string name="sync_expires_label">Термін QR-коду спливає</string>
@@ -2342,7 +2338,7 @@
     <string name="download_size_estimate_mb">~%1$s МБ</string>
     <string name="download_size_estimate_gb">~%1$s ГБ</string>
     <string name="subtitle_load_failed">Не вдалося завантажити субтитри %1$s. Спробуйте ще раз</string>
-    <string name="notification_channel_downloads_name">Завантаження Flow</string>
+    <string name="notification_channel_downloads_name">Завантаження MusicViz</string>
     <string name="notification_download_paused">Призупинено: %1$s</string>
     <string name="notification_download_paused_hint">торкніться, щоби продовжити</string>
     <string name="notification_download_progress">%1$d%% • %2$s / %3$s</string>
@@ -2721,7 +2717,7 @@
     <string name="player_seek_seconds_back">-%1$d</string>
     <string name="player_seek_chevron_forward">&gt;</string>
     <string name="player_seek_chevron_back">&lt;</string>
-    <string name="diagnostics_report_subject">Діагностичний звіт Flow</string>
+    <string name="diagnostics_report_subject">Діагностичний звіт MusicViz</string>
     <plurals name="merge_playlist_success">
         <item quantity="one">Додано %1$d пісню до «%2$s»</item>
         <item quantity="few">Додано %1$d пісні до «%2$s»</item>
@@ -2832,7 +2828,7 @@
         <item quantity="many">Вибрано %1$d з %2$d</item>
         <item quantity="other">Вибрано %1$d з %2$d</item>
     </plurals>
-    <string name="sync_collection_music_profile_body">Що Flow дізнався про те, що ви слухаєте.</string>
+    <string name="sync_collection_music_profile_body">Що MusicViz дізнався про те, що ви слухаєте.</string>
     <string name="player_seek_seconds_forward">+%1$d</string>
     <string name="scheduled_for_prefix">Заплановано на %1$s</string>
     <string name="live_in_prefix">Наживо %1$s</string>
@@ -2937,7 +2933,7 @@
     <string name="content_settings_library_previews_subtitle">Показувати ряд елементів під кожним розділом «Бібліотеки»</string>
     <string name="diagnostics_reset_session">Скинути сеанс YouTube</string>
     <string name="diagnostics_reset_session_confirm_title">Скинути сеанс YouTube?</string>
-    <string name="diagnostics_reset_session_confirm_body">Flow створить нову ідентичність відтворення. Спробуйте це, якщо відео зупиняються за хвилину або не відтворюються.\n\nВідтворення може працювати з перебоями протягом хвилини-двох. Ваші збережені дані не постраждають.</string>
+    <string name="diagnostics_reset_session_confirm_body">MusicViz створить нову ідентичність відтворення. Спробуйте це, якщо відео зупиняються за хвилину або не відтворюються.\n\nВідтворення може працювати з перебоями протягом хвилини-двох. Ваші збережені дані не постраждають.</string>
     <string name="diagnostics_reset_session_done">Сеанс YouTube скинуто. Відкрийте відео знову, щоб повторити спробу.</string>
     <string name="reset">Скинути</string>
     <string name="notifications_group_new">Нова</string>
@@ -2976,7 +2972,7 @@
     <string name="theme_desc_caffeine">Кавові відтінки, збалансовані вершками та еспресо.</string>
     <string name="theme_desc_claude">Теплі глиняні акценти на поверхнях, що нагадують папір.</string>
     <string name="onboarding_channels_results_header">Канали</string>
-    <string name="onboarding_import_source_flow">Резервна копія Flow</string>
+    <string name="onboarding_import_source_flow">Резервна копія MusicViz</string>
     <string name="onboarding_import_source_youtube">YouTube</string>
     <string name="onboarding_import_footnote">Тут усе необов’язкове. У налаштуваннях такий самий список імпортів.</string>
     <string name="onboarding_import_done">Імпортовано</string>
@@ -2997,7 +2993,7 @@
         <item quantity="many">Виберіть ще %d</item>
         <item quantity="other">Виберіть ще %d</item>
     </plurals>
-    <string name="onboarding_welcome_title">Зробіть Flow своїм</string>
+    <string name="onboarding_welcome_title">Зробіть MusicViz своїм</string>
     <string name="onboarding_welcome_subtitle">Відео й музика на теми, які вам подобаються. Налаштування займе хвилину.</string>
     <string name="onboarding_alerts_title">Не пропускати жодного вивантаження</string>
     <string name="onboarding_alerts_subtitle">Отримувати сповіщення, коли публікують дописи на каналах.</string>
@@ -3029,7 +3025,7 @@
         <item quantity="many">%d імпортів</item>
         <item quantity="other">%d імпортів</item>
     </plurals>
-    <string name="crash_title">Flow неочікувано завершився</string>
+    <string name="crash_title">MusicViz неочікувано завершився</string>
     <string name="crash_subtitle">Цей звіт залишатиметься на вашому пристрої, доки ви ним не поділитеся.</string>
     <string name="crash_summary_error">Помилка</string>
     <string name="crash_summary_message">Повідомлення</string>
@@ -3042,10 +3038,10 @@
     <string name="crash_report">Звіт</string>
     <string name="crash_continue">Продовжити</string>
     <string name="crash_report_copied">Повний звіт скопійовано. Вставте його в поле «Журнали».</string>
-    <string name="update_downloading_notification">Завантаження Flow %1$s</string>
-    <string name="update_ready_notification">Flow %1$s готовий</string>
+    <string name="update_downloading_notification">Завантаження MusicViz %1$s</string>
+    <string name="update_ready_notification">MusicViz %1$s готовий</string>
     <string name="update_ready_notification_text">Перевірено. Торкніться, щоби встановити.</string>
-    <string name="update_title">Flow %1$s вже тут</string>
+    <string name="update_title">MusicViz %1$s вже тут</string>
     <string name="update_version_change">%1$s → %2$s</string>
     <string name="update_not_now">Не зараз</string>
     <string name="update_skip_version">Пропустити цю версію</string>
@@ -3057,11 +3053,11 @@
     <string name="update_action_allow">Дозволити встановлення</string>
     <string name="update_action_install">Установити оновлення</string>
     <string name="update_action_installing">Установлення</string>
-    <string name="update_permission_notice">Дозвольте Flow встановлювати оновлення. Android запитує про це один раз.</string>
+    <string name="update_permission_notice">Дозвольте MusicViz встановлювати оновлення. Android запитує про це один раз.</string>
     <string name="update_failed_network">Завантаження зупинилося. Перевірте з\'єднання та спробуйте ще раз.</string>
     <string name="update_failed_storage">Недостатньо місця для оновлення.</string>
     <string name="update_failed_checksum">Файл не відповідав релізу, тому його видалили. Спробуйте ще раз.</string>
-    <string name="update_failed_package">Файл не був оновленням Flow, тому його видалили.</string>
+    <string name="update_failed_package">Файл не був оновленням MusicViz, тому його видалили.</string>
     <string name="update_failed_install">Android не вдалося встановити оновлення. Спробуйте ще раз.</string>
     <string name="settings_navigation_bar_title">Панель навігації</string>
     <string name="settings_language_region_title">Мова та регіон</string>

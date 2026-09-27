@@ -12,9 +12,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Extension
+import androidx.compose.material.icons.outlined.ForkRight
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.Smartphone
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -46,13 +46,12 @@ import io.github.aedev.flow.ui.screens.settings.index.AboutIndex
 
 private enum class AboutDialog { CHANGELOG, DEVICE }
 
-private const val WEBSITE_URL = "https://flow.aedev.me"
-private const val GITHUB_URL = "https://github.com/A-EDev/flow"
-private const val REDDIT_URL = "https://www.reddit.com/r/Flow_Official/"
-private const val CREATOR_URL = "https://github.com/A-EDev"
+private const val GITHUB_URL = "https://github.com/johnneerdael/MusicViz"
+private const val CREATOR_URL = "https://github.com/johnneerdael"
+private const val UPSTREAM_URL = "https://github.com/A-EDev/Flow"
 private const val NEWPIPE_URL = "https://github.com/TeamNewPipe/NewPipeExtractor"
-private const val LICENSE_URL = "https://github.com/A-EDev/Flow/blob/main/License"
-private const val CREATOR_AVATAR_URL = "https://github.com/A-EDev.png?size=144"
+private const val LICENSE_URL = "https://github.com/johnneerdael/MusicViz/blob/main/License"
+private const val CREATOR_AVATAR_URL = "https://github.com/johnneerdael.png?size=144"
 
 private val LogoSize = 72.dp
 private val HeaderPadding = 24.dp
@@ -82,12 +81,11 @@ internal fun AboutScreen(
             nav(AboutIndex.changelog, icon = Icons.Outlined.History, showChevron = false, onClick = { dialog = AboutDialog.CHANGELOG })
         }
         group(key = "about.contact", header = R.string.section_contact) {
-            nav(AboutIndex.website, icon = Icons.Outlined.Public, showChevron = false, onClick = { open(WEBSITE_URL) })
             nav(AboutIndex.github, iconRes = R.drawable.ic_github, showChevron = false, onClick = { open(GITHUB_URL) })
-            nav(AboutIndex.reddit, icon = IconReddit, showChevron = false, onClick = { open(REDDIT_URL) })
         }
         group(key = "about.legal", header = R.string.section_legal) {
             nav(AboutIndex.license, icon = Icons.Outlined.Description, showChevron = false, onClick = { open(LICENSE_URL) })
+            nav(AboutIndex.basedOn, icon = Icons.Outlined.ForkRight, showChevron = false, onClick = { open(UPSTREAM_URL) })
             nav(AboutIndex.newPipe, icon = Icons.Outlined.Extension, showChevron = false, onClick = { open(NEWPIPE_URL) })
         }
         group(key = "about.device", header = R.string.section_device) {

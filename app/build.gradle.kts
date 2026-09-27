@@ -16,7 +16,7 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "io.github.aedev.flow"
+        applicationId = "nl.neerdael.musicviz"
         minSdk = 26
         targetSdk = 36
         versionCode = 18
