@@ -3,17 +3,14 @@ name: Android CI/CD
 on:
   push:
     branches: [ main ]
-    tags:
-      - 'v*'
   pull_request:
     branches: [ main ]
   workflow_dispatch:
 
-# Collapse superseded runs on branches and PRs. Tag runs publish the release
-# artifacts and must never be cancelled by a subsequent push.
+# A newer push supersedes a running build; only the newest commit is released.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -31,6 +28,8 @@ jobs:
     name: Build TV APK
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    outputs:
+      version: ${{ steps.version.outputs.version }}
 
     steps:
       - name: Checkout code
@@ -38,6 +37,19 @@ jobs:
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
+
+      # Every published build is the next patch of the major.minor line in gradle.properties:
+      # one past the highest existing vX.Y.* tag, or .0 for a new line.
+      - name: Resolve release version
+        id: version
+        run: |
+          set -euo pipefail
+          line=$(sed -n 's/^musicvizVersion=//p' gradle.properties)
+          last=$(git tag --list "v$line.*" | sed "s/^v$line\.//" | grep -E '^[0-9]+$' | sort -n | tail -1 || true)
+          patch=$(( ${last:--1} + 1 ))
+          echo "version=$line.$patch" >> "$GITHUB_OUTPUT"
+          echo "ORG_GRADLE_PROJECT_musicvizPatch=$patch" >> "$GITHUB_ENV"
+          echo "Building MusicViz $line.$patch"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v6
@@ -66,7 +78,7 @@ jobs:
             echo "signed=true" >> "$GITHUB_OUTPUT"
             echo "Release keystore decoded."
           elif [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
-            # Main and tag builds are published as releases; unsigned APKs
+            # Main builds are published as releases; unsigned APKs
             # cannot be installed, so refuse rather than publish them.
             echo "::error::RELEASE_KEYSTORE_BASE64 is unavailable. Refusing to build unsigned release APKs."
             exit 1
@@ -190,71 +202,9 @@ jobs:
           retention-days: 14
           compression-level: 0
 
-  release:
-    name: Create Release
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    if: startsWith(github.ref, 'refs/tags/v')
-    permissions:
-      contents: write
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - name: Download release APKs
-        uses: actions/download-artifact@v8
-        with:
-          pattern: musicviz-*-release-apk
-          path: dist/
-          merge-multiple: true
-
-      # musicviz-universal.apk is a public contract: the Downloader code 4718521 and
-      # the README link to releases/latest/download/musicviz-universal.apk.
-      - name: Rename APKs for release
-        run: |
-          set -euo pipefail
-          mv dist/app-foss-universal-release.apk     dist/musicviz-universal.apk
-          mv dist/app-foss-arm64-v8a-release.apk     dist/musicviz-arm64-v8a.apk
-          mv dist/app-foss-armeabi-v7a-release.apk   dist/musicviz-armeabi-v7a.apk
-
-      - name: Generate checksums
-        run: |
-          cd dist
-          sha256sum musicviz*.apk > checksums.txt
-          cat checksums.txt
-
-      - name: Get version from tag
-        id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
-
-      - name: Validate release notes
-        env:
-          RELEASE_VERSION: ${{ steps.get_version.outputs.VERSION }}
-        run: |
-          test -s release-notes.md
-          grep -Fqx "# MusicViz ${RELEASE_VERSION}" release-notes.md
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: ${{ steps.get_version.outputs.VERSION }}
-          name: MusicViz ${{ steps.get_version.outputs.VERSION }}
-          body_path: release-notes.md
-          generate_release_notes: false
-          files: |
-            dist/musicviz-universal.apk
-            dist/musicviz-arm64-v8a.apk
-            dist/musicviz-armeabi-v7a.apk
-            dist/checksums.txt
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # Every push to main becomes a GitHub Release, so the newest signed build is
-  # always at releases/latest/download/musicviz-universal.apk (Downloader code 4718521).
+  # Every push to main becomes a versioned GitHub Release (vX.Y.Z), so the newest
+  # signed build is always at releases/latest/download/musicviz-universal.apk
+  # (Downloader code 4718521).
   publish-main:
     name: Publish main build
     needs: build
@@ -289,10 +239,11 @@ jobs:
       - name: Write release notes
         env:
           REPO: ${{ github.repository }}
-          TAG: build-${{ github.run_number }}
+          TAG: v${{ needs.build.outputs.version }}
         run: |
           set -euo pipefail
-          prev=$(git tag --list 'build-*' --sort=-v:refname | head -n 1)
+          prev=$(git tag --list 'v*' --sort=-v:refname | head -n 1)
+          [ -n "$prev" ] || prev=$(git tag --list 'build-*' --sort=-v:refname | head -n 1)
           if [ -n "$prev" ]; then range="$prev..$GITHUB_SHA"; else range="$GITHUB_SHA"; fi
           latest="https://github.com/$REPO/releases/latest/download"
           {
@@ -316,9 +267,9 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: build-${{ github.run_number }}
+          tag_name: v${{ needs.build.outputs.version }}
           target_commitish: ${{ github.sha }}
-          name: MusicViz build ${{ github.run_number }}
+          name: MusicViz v${{ needs.build.outputs.version }}
           body_path: notes.md
           make_latest: true
           files: |

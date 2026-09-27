@@ -11,6 +11,13 @@ plugins {
     alias(libs.plugins.room)
 }
 
+// Releases are major.minor from gradle.properties plus a patch number CI counts up on every
+// published build (0 for local builds). The version code grows with every release, minor bumps
+// included, as long as a minor line stays under 1000 patches.
+val musicVizMajorMinor = providers.gradleProperty("musicvizVersion").get()
+val musicVizPatch = providers.gradleProperty("musicvizPatch").orNull?.toInt() ?: 0
+val (musicVizMajor, musicVizMinor) = musicVizMajorMinor.split('.').map(String::toInt)
+
 android {
     namespace = "io.github.aedev.flow"
     compileSdk = 37
@@ -19,8 +26,8 @@ android {
         applicationId = "nl.neerdael.musicviz"
         minSdk = 26
         targetSdk = 36
-        versionCode = 18
-        versionName = "2.2.1"
+        versionCode = musicVizMajor * 1_000_000 + musicVizMinor * 1_000 + musicVizPatch
+        versionName = "$musicVizMajorMinor.$musicVizPatch"
 
         testInstrumentationRunner = "io.github.aedev.flow.HiltTestRunner"
         vectorDrawables {

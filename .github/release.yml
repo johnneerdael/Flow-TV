@@ -1,5 +1,5 @@
-# Categories for GitHub's auto-generated release notes. MusicViz currently ships
-# curated notes from release-notes.md, so this only takes effect if a release
+# Categories for GitHub's auto-generated release notes. MusicViz releases carry
+# notes written by the build workflow, so this only takes effect if a release
 # is generated with "Generate release notes". Labels listed here must exist in
 # the repository and are applied by .github/labeler.yml.
 changelog:
