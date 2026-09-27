@@ -27,12 +27,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.github.aedev.flow.R
 import io.github.aedev.flow.data.local.AppUiModePreferences
-import io.github.aedev.flow.data.local.LocalDataManager
 import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.ui.tv.components.TvScreenScaffold
 import io.github.aedev.flow.ui.tv.screens.settings.TvAboutSettingsPane
 import io.github.aedev.flow.ui.tv.screens.settings.TvAccountSettingsPane
-import io.github.aedev.flow.ui.tv.screens.settings.TvAppearanceSettingsPane
 import io.github.aedev.flow.ui.tv.screens.settings.TvContentSettingsPane
 import io.github.aedev.flow.ui.tv.screens.settings.TvFlowEngineSettingsPane
 import io.github.aedev.flow.ui.tv.screens.settings.TvInterfaceSettingsPane
@@ -55,7 +53,6 @@ fun TvSettingsScreen(
     val context = LocalContext.current
     val playerPreferences = remember { PlayerPreferences(context.applicationContext) }
     val modePreferences = remember { AppUiModePreferences(context.applicationContext) }
-    val localDataManager = remember { LocalDataManager(context.applicationContext) }
     var selectedCategory by rememberSaveable { mutableStateOf(TvSettingsCategory.PLAYBACK) }
     val dimens = LocalTvDimens.current
 
@@ -111,8 +108,6 @@ fun TvSettingsScreen(
 
                     TvSettingsCategory.CONTENT -> TvContentSettingsPane(playerPreferences)
 
-                    TvSettingsCategory.APPEARANCE -> TvAppearanceSettingsPane(localDataManager)
-
                     TvSettingsCategory.FLOW_ENGINE -> TvFlowEngineSettingsPane(playerPreferences)
 
                     TvSettingsCategory.INTERFACE -> TvInterfaceSettingsPane(modePreferences)
@@ -147,13 +142,13 @@ private fun TvSettingsCategoryItem(
         shape = MaterialTheme.shapes.medium,
         color =
             when {
-                focused -> MaterialTheme.colorScheme.inverseSurface
+                focused -> MaterialTheme.colorScheme.primary
                 selected -> MaterialTheme.colorScheme.secondaryContainer
                 else -> MaterialTheme.colorScheme.surfaceContainer
             },
         contentColor =
             when {
-                focused -> MaterialTheme.colorScheme.inverseOnSurface
+                focused -> MaterialTheme.colorScheme.onPrimary
                 selected -> MaterialTheme.colorScheme.onSecondaryContainer
                 else -> MaterialTheme.colorScheme.onSurface
             },

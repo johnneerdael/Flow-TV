@@ -6,6 +6,7 @@ import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -66,36 +67,38 @@ fun TvNavRail(
     )
 
     Surface(
-        modifier = modifier
-            .width(width)
-            .fillMaxHeight()
-            .onFocusChanged {
-                expanded = it.hasFocus
-                onFocusChanged(it.hasFocus)
+        modifier =
+            modifier
+                .width(width)
+                .fillMaxHeight()
+                .onFocusChanged {
+                    expanded = it.hasFocus
+                    onFocusChanged(it.hasFocus)
+                },
+        color =
+            if (expanded) {
+                MaterialTheme.colorScheme.surfaceContainer
+            } else {
+                MaterialTheme.colorScheme.surfaceContainerLow
             },
-        color = if (expanded) {
-            MaterialTheme.colorScheme.surfaceContainer
-        } else {
-            MaterialTheme.colorScheme.surfaceContainerLow
-        },
         tonalElevation = if (expanded) 2.dp else 0.dp,
     ) {
         Column(
-            modifier = Modifier
-                .focusProperties {
-                    @OptIn(ExperimentalComposeUiApi::class)
-                    enter = { selectedFocusRequester ?: FocusRequester.Default }
-                    @OptIn(ExperimentalComposeUiApi::class)
-                    exit = { direction ->
-                        if (direction == FocusDirection.Left) {
-                            FocusRequester.Cancel
-                        } else {
-                            FocusRequester.Default
+            modifier =
+                Modifier
+                    .focusProperties {
+                        @OptIn(ExperimentalComposeUiApi::class)
+                        enter = { selectedFocusRequester ?: FocusRequester.Default }
+                        @OptIn(ExperimentalComposeUiApi::class)
+                        exit = { direction ->
+                            if (direction == FocusDirection.Left) {
+                                FocusRequester.Cancel
+                            } else {
+                                FocusRequester.Default
+                            }
                         }
-                    }
-                }
-                .focusGroup()
-                .padding(horizontal = 12.dp, vertical = dimens.overscanVertical),
+                    }.focusGroup()
+                    .padding(horizontal = 12.dp, vertical = dimens.overscanVertical),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Row(
@@ -103,22 +106,11 @@ fun TvNavRail(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(14.dp),
             ) {
-                // Two-layer brand badge (tight crop) tinted from the active
-                // color scheme, so the logo follows all 28 theme modes.
-                Box {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_flow_badge_shape),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(width = 48.dp, height = 36.dp),
-                    )
-                    Icon(
-                        painter = painterResource(R.drawable.ic_flow_badge_glyph),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(width = 48.dp, height = 36.dp),
-                    )
-                }
+                Image(
+                    painter = painterResource(R.drawable.ic_musicviz_logo),
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp),
+                )
                 AnimatedVisibility(
                     visible = expanded,
                     enter = fadeIn() + expandHorizontally(),
@@ -138,11 +130,12 @@ fun TvNavRail(
                     selected = destination == selected,
                     expanded = expanded,
                     onClick = { onSelected(destination) },
-                    modifier = if (destination == selected && selectedFocusRequester != null) {
-                        Modifier.focusRequester(selectedFocusRequester)
-                    } else {
-                        Modifier
-                    },
+                    modifier =
+                        if (destination == selected && selectedFocusRequester != null) {
+                            Modifier.focusRequester(selectedFocusRequester)
+                        } else {
+                            Modifier
+                        },
                 )
             }
         }
@@ -161,20 +154,23 @@ private fun TvRailItem(
 
     Surface(
         onClick = onClick,
-        modifier = modifier
-            .fillMaxWidth()
-            .onFocusChanged { focused = it.isFocused },
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .onFocusChanged { focused = it.isFocused },
         shape = CircleShape,
-        color = when {
-            focused -> MaterialTheme.colorScheme.inverseSurface
-            selected -> MaterialTheme.colorScheme.secondaryContainer
-            else -> Color.Transparent
-        },
-        contentColor = when {
-            focused -> MaterialTheme.colorScheme.inverseOnSurface
-            selected -> MaterialTheme.colorScheme.onSecondaryContainer
-            else -> MaterialTheme.colorScheme.onSurfaceVariant
-        },
+        color =
+            when {
+                focused -> MaterialTheme.colorScheme.primary
+                selected -> MaterialTheme.colorScheme.secondaryContainer
+                else -> Color.Transparent
+            },
+        contentColor =
+            when {
+                focused -> MaterialTheme.colorScheme.onPrimary
+                selected -> MaterialTheme.colorScheme.onSecondaryContainer
+                else -> MaterialTheme.colorScheme.onSurfaceVariant
+            },
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 11.dp, vertical = 12.dp),

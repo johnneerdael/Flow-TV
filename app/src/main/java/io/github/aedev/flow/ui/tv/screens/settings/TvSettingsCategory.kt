@@ -5,7 +5,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Devices
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.PlayCircleOutline
 import androidx.compose.material.icons.outlined.Psychology
 import androidx.compose.material.icons.outlined.SettingsRemote
@@ -24,7 +23,6 @@ enum class TvSettingsCategory(
     PLAYBACK(R.string.playback_header, Icons.Outlined.PlayCircleOutline),
     QUALITY(R.string.quality, Icons.Outlined.Tune),
     CONTENT(R.string.settings_header_content_playback, Icons.Outlined.Shield),
-    APPEARANCE(R.string.tv_settings_appearance, Icons.Outlined.Palette),
     FLOW_ENGINE(R.string.tv_settings_flow_engine, Icons.Outlined.Psychology),
     INTERFACE(R.string.interface_mode_title, Icons.Outlined.Tv),
     REMOTE_GUIDE(R.string.tv_remote_guide_title, Icons.Outlined.SettingsRemote),

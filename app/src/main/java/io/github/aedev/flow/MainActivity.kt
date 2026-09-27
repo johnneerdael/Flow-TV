@@ -55,6 +55,7 @@ import io.github.aedev.flow.ui.screens.crash.CrashReportScreen
 import io.github.aedev.flow.ui.screens.update.UPDATE_ROUTE
 import io.github.aedev.flow.ui.startup.FlowTheme
 import io.github.aedev.flow.ui.startup.SplashController
+import io.github.aedev.flow.ui.startup.SplashTone
 import io.github.aedev.flow.ui.startup.ThemeSettings
 import io.github.aedev.flow.ui.startup.splashTone
 import io.github.aedev.flow.ui.startup.themeSettings
@@ -239,7 +240,8 @@ class MainActivity : ComponentActivity() {
             }
 
             FlowTheme(theme) {
-                val splashTone = splashTone(MaterialTheme.colorScheme.background)
+                val splashTone =
+                    if (appUiRoot == AppUiRoot.TV) SplashTone.BLACK else splashTone(MaterialTheme.colorScheme.background)
                 LaunchedEffect(splashTone) { splashController.rememberTheme(splashTone, appIconController.activeSuffix()) }
 
                 // Date preferences: five DataStore flows used to be opened per video card,
