@@ -104,12 +104,13 @@ fun TvNavRail(
             Row(
                 modifier = Modifier.padding(vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+                // Centred on the rail icons' column, with the app name starting where their labels do.
                 Image(
                     painter = painterResource(R.drawable.ic_musicviz_logo),
                     contentDescription = null,
-                    modifier = Modifier.size(48.dp),
+                    modifier = Modifier.padding(start = 5.dp).size(38.dp),
                 )
                 AnimatedVisibility(
                     visible = expanded,
