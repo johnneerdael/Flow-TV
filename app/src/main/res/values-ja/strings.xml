@@ -55,7 +55,6 @@
     <string name="action_like">高評価</string>
     <string name="action_dislike">低評価</string>
     <string name="player_action_dislike">低評価</string>
-    <string name="tv_library_liked">高く評価した動画</string>
     <string name="tv_library_likes">高く評価した動画</string>
     <string name="widget_like">高評価</string>
     <string name="save">保存</string>
@@ -89,7 +88,6 @@
     <string name="speed_2x">2 倍速</string>
     <string name="continue_watching_title">続きを見る</string>
     <string name="player_mini_player_continue_watching_label">続きを見る</string>
-    <string name="tv_continue_watching">続きを見る</string>
     <string name="library_watch_later_label">後で見る</string>
     <string name="watch_later">後で見る</string>
     <string name="tv_library_watch_later">後で見る</string>

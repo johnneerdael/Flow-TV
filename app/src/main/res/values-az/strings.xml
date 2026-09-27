@@ -478,8 +478,6 @@
     <string name="settings_item_import_data_subtitle">Ehtiyat nüsxədən bərpa edin və ya başqa tətbiqdən idxal edin</string>
     <string name="settings_item_about_flow">MusicViz haqqında</string>
     <string name="settings_item_about_flow_subtitle">Versiya, lisenziya, töhfə verənlər</string>
-    <string name="settings_item_support">Dəstək və ianələr</string>
-    <string name="settings_item_support_subtitle">MusicViz-un hazırlanmasına dəstək olun</string>
     <string name="settings_region_dialog_title">Region seç</string>
     <string name="settings_language_dialog_title">Tətbiq dilini seç</string>
     <string name="settings_language_system_default">Sistem defoltu</string>
@@ -1188,19 +1186,6 @@
     <string name="location_badge_recommended">Tövsiyə olunur</string>
     <string name="location_badge_active">Aktiv</string>
     <string name="select_threads_count_desc">İş axınlarının sayını seçin (1–8):</string>
-    <string name="support_donations_title">Dəstək və ianələr</string>
-    <string name="support_flow_dev_title">MusicViz-un hazırlanmasına dəstək olun</string>
-    <string name="support_flow_dev_desc">MusicViz-u faydalı hesab edir və hazırlanmasına dəstək olmaq istəyirsinizsə, Patreon-da dəstək verə və ya aşağıdakı kriptovalyuta ünvanlarına ianə göndərə bilərsiniz. Dəstəyiniz layihənin yaşamasına kömək edir!</string>
-    <string name="support_flow_patreon">Patreon-da MusicViz-u dəstəklə</string>
-    <string name="thank_you_support_message">Dəstəyiniz üçün təşəkkürlər! ❤️</string>
-    <string name="address_copied_toast">Ünvan mübadilə buferinə kopyalandı</string>
-    <string name="donation_address_clip_label">İanə ünvanı</string>
-    <string name="donation_prompt_title">MusicViz xoşunuza gəlir?</string>
-    <string name="donation_prompt_message">MusicViz pulsuz, açıq mənbəli, reklamsız və izləyicisiz hazırlanıb. Cihazınızda özünə yer tapıbsa, hazırlanmasına dəstək olmağı düşünün — bu, layihənin yaşamasına həqiqətən kömək edir.</string>
-    <string name="donation_prompt_methods">Patreon · Bitcoin · Ethereum · Solana · USDT · Monero</string>
-    <string name="donation_prompt_support">Hazırlanmanı dəstəklə</string>
-    <string name="donation_prompt_later">Bəlkə sonra</string>
-    <string name="donation_prompt_never">Bir daha göstərmə</string>
     <string name="about_creator">Yaradıcı</string>
     <string name="github_subtitle">Mənbə kodu və problemlər</string>
     <string name="newpipe_extractor_title">NewPipe Extractor</string>
@@ -1228,8 +1213,6 @@
     <string name="section_contact">Əlaqə</string>
     <string name="section_legal">Hüquqi məlumat</string>
     <string name="section_device">Cihaz</string>
-    <string name="donate_item_title">İanə</string>
-    <string name="support_dev_subtitle">Hazırlanmanı dəstəklə</string>
     <string name="btn_ok">OK</string>
     <string name="btn_copy">Kopyala</string>
     <string name="github_label">GitHub</string>

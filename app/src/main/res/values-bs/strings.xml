@@ -349,8 +349,6 @@
     <string name="settings_item_import_data_subtitle">Obnovite iz sigurnosne kopije ili uvezite iz drugih aplikacija</string>
     <string name="settings_item_about_flow">O MusicViz-u</string>
     <string name="settings_item_about_flow_subtitle">Verzija, Licenca, Doprinosioci</string>
-    <string name="settings_item_support">Podrška i donacije</string>
-    <string name="settings_item_support_subtitle">Podržite razvoj MusicViz-a</string>
     <string name="settings_region_dialog_title">Odaberite regiju</string>
     <string name="settings_export_success">Podaci uspješno izvezani</string>
     <string name="tap_to_close">Dodirnite da zatvorite</string>

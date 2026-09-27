@@ -333,8 +333,6 @@
     <string name="settings_item_import_data_subtitle">बैकअप से पुनर्स्थापित करें या अन्य ऐप्स से आयात करें</string>
     <string name="settings_item_about_flow">फ्लो के बारे में</string>
     <string name="settings_item_about_flow_subtitle">संस्करण, लाइसेंस, योगदानकर्ता</string>
-    <string name="settings_item_support">सहायता और दान</string>
-    <string name="settings_item_support_subtitle">फ्लो के विकास में सहायता करें</string>
     <string name="settings_region_dialog_title">क्षेत्र चुनें</string>
     <string name="settings_export_success">डेटा सफलतापूर्वक निर्यात किया गया</string>
     <string name="settings_export_failed">निर्यात विफल: %1$s</string>
@@ -776,12 +774,6 @@
     <string name="location_badge_recommended">अनुशंसित</string>
     <string name="location_badge_active">सक्रिय</string>
     <string name="select_threads_count_desc">थ्रेड्स की संख्या चुनें (1-8):</string>
-    <string name="support_donations_title">सहायता और दान</string>
-    <string name="support_flow_dev_title">फ्लो विकास का समर्थन करें</string>
-    <string name="support_flow_dev_desc">यदि आप फ्लो को उपयोगी पाते हैं और इसके विकास का समर्थन करना चाहते हैं, तो आप निम्न पतों पर दान कर सकते हैं। आपका समर्थन परियोजना को जीवित रखने में मदद करता है!</string>
-    <string name="thank_you_support_message">आपके समर्थन के लिए धन्यवाद! ❤️</string>
-    <string name="address_copied_toast">पता क्लिपबोर्ड पर कॉपी किया गया</string>
-    <string name="donation_address_clip_label">दान पता</string>
     <string name="about_creator">निर्माता</string>
     <string name="github_subtitle">स्रोत कोड और मुद्दे</string>
     <string name="newpipe_extractor_title">न्यूपाइप एक्सट्रैक्टर</string>
@@ -809,8 +801,6 @@
     <string name="section_contact">संपर्क करें</string>
     <string name="section_legal">कानूनी</string>
     <string name="section_device">डिवाइस</string>
-    <string name="donate_item_title">दान करें</string>
-    <string name="support_dev_subtitle">विकास का समर्थन करें</string>
     <string name="btn_ok">ठीक है</string>
     <string name="btn_copy">कॉपी करें</string>
     <string name="github_label">GitHub</string>

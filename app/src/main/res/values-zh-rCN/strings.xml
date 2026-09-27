@@ -478,8 +478,6 @@
     <string name="settings_item_import_data_subtitle">从备份恢复或从其他应用程序导入</string>
     <string name="settings_item_about_flow">关于MusicViz</string>
     <string name="settings_item_about_flow_subtitle">版本、许可证、贡献者</string>
-    <string name="settings_item_support">支持与捐赠</string>
-    <string name="settings_item_support_subtitle">帮助支持MusicViz的发展</string>
     <string name="settings_region_dialog_title">选择地区</string>
     <string name="settings_language_dialog_title">选择应用程序语言</string>
     <string name="settings_language_system_default">系统默认</string>
@@ -1188,19 +1186,6 @@
     <string name="location_badge_recommended">推荐</string>
     <string name="location_badge_active">活跃</string>
     <string name="select_threads_count_desc">选择线程数 (1-8)：</string>
-    <string name="support_donations_title">支持与捐赠</string>
-    <string name="support_flow_dev_title">支持MusicViz开发</string>
-    <string name="support_flow_dev_desc">如果您发现 MusicViz 有用并愿意支持其开发，您可以在 Patreon 上支持它或通过下面的加密地址进行捐赠。您的支持有助于使项目保持活力！</string>
-    <string name="support_flow_patreon">在 Patreon 上支持 MusicViz</string>
-    <string name="thank_you_support_message">感谢您的支持！ ❤️</string>
-    <string name="address_copied_toast">地址已复制到剪贴板</string>
-    <string name="donation_address_clip_label">捐款地址</string>
-    <string name="donation_prompt_title">喜欢MusicViz吗？</string>
-    <string name="donation_prompt_message">MusicViz 是免费、开源的，并且没有广告或跟踪器。如果它在您的设备上赢得了一席之地，请考虑支持其开发 - 它确实有助于保持项目的活力。</string>
-    <string name="donation_prompt_methods">Patreon · 比特币 · 以太坊 · Solana · USDT · 门罗币</string>
-    <string name="donation_prompt_support">支持发展</string>
-    <string name="donation_prompt_later">也许稍后</string>
-    <string name="donation_prompt_never">不再显示</string>
     <string name="about_creator">创作者</string>
     <string name="github_subtitle">源代码和问题</string>
     <string name="newpipe_extractor_title">NewPipe 提取器</string>
@@ -1228,8 +1213,6 @@
     <string name="section_contact">联系方式</string>
     <string name="section_legal">法律</string>
     <string name="section_device">设备</string>
-    <string name="donate_item_title">捐赠</string>
-    <string name="support_dev_subtitle">支持发展</string>
     <string name="btn_ok">好的</string>
     <string name="btn_copy">复制</string>
     <string name="github_label">GitHub</string>

@@ -477,8 +477,6 @@
     <string name="settings_item_import_data_subtitle">백업을 복원하거나 다른 앱에서 가져옵니다</string>
     <string name="settings_item_about_flow">MusicViz 정보</string>
     <string name="settings_item_about_flow_subtitle">버전, 라이선스, 기여자</string>
-    <string name="settings_item_support">후원 및 기부</string>
-    <string name="settings_item_support_subtitle">MusicViz 개발을 후원합니다</string>
     <string name="settings_region_dialog_title">지역 선택</string>
     <string name="settings_language_dialog_title">앱 언어 선택</string>
     <string name="settings_language_system_default">시스템 기본값</string>
@@ -1187,19 +1185,6 @@
     <string name="location_badge_recommended">권장</string>
     <string name="location_badge_active">사용 중</string>
     <string name="select_threads_count_desc">스레드 수 선택(1~8):</string>
-    <string name="support_donations_title">후원 및 기부</string>
-    <string name="support_flow_dev_title">MusicViz 개발 후원</string>
-    <string name="support_flow_dev_desc">MusicViz가 유용하고 개발을 후원하고 싶다면 Patreon 또는 아래 암호화폐 주소로 지원할 수 있습니다. 여러분의 후원은 프로젝트를 계속 유지하는 데 큰 도움이 됩니다!</string>
-    <string name="support_flow_patreon">Patreon에서 MusicViz 후원</string>
-    <string name="thank_you_support_message">후원해 주셔서 감사합니다! ❤️</string>
-    <string name="address_copied_toast">주소를 클립보드에 복사했습니다</string>
-    <string name="donation_address_clip_label">기부 주소</string>
-    <string name="donation_prompt_title">MusicViz를 잘 사용하고 계신가요?</string>
-    <string name="donation_prompt_message">MusicViz는 무료 오픈 소스이며 광고와 추적기 없이 만들어졌습니다. 기기에서 유용하게 사용하고 있다면 개발 후원을 고려해 주세요. 프로젝트를 계속 유지하는 데 정말 큰 도움이 됩니다.</string>
-    <string name="donation_prompt_methods">Patreon · Bitcoin · Ethereum · Solana · USDT · Monero</string>
-    <string name="donation_prompt_support">개발 후원</string>
-    <string name="donation_prompt_later">나중에</string>
-    <string name="donation_prompt_never">다시 표시하지 않음</string>
     <string name="about_creator">개발자</string>
     <string name="github_subtitle">소스 코드 및 문제 보고</string>
     <string name="newpipe_extractor_title">NewPipe Extractor</string>
@@ -1227,8 +1212,6 @@
     <string name="section_contact">연락처</string>
     <string name="section_legal">법적 정보</string>
     <string name="section_device">기기</string>
-    <string name="donate_item_title">기부</string>
-    <string name="support_dev_subtitle">개발 후원</string>
     <string name="btn_ok">확인</string>
     <string name="btn_copy">복사</string>
     <string name="github_label">GitHub</string>

@@ -693,8 +693,6 @@
     <string name="settings_item_import_data_subtitle">Restore from backup or import from other apps</string>
     <string name="settings_item_about_flow">About MusicViz</string>
     <string name="settings_item_about_flow_subtitle">Version, License, Contributors</string>
-    <string name="settings_item_support">Support &amp; Donations</string>
-    <string name="settings_item_support_subtitle">Help support the development of MusicViz</string>
     <string name="settings_region_dialog_title">Select Region</string>
     <string name="settings_language_dialog_title">Select App Language</string>
     <string name="settings_language_system_default">System default</string>
@@ -1604,21 +1602,7 @@
         <item quantity="other">%1$d threads</item>
     </plurals>
     <!-- Donations Screen -->
-    <string name="support_donations_title">Support &amp; Donations</string>
-    <string name="support_flow_dev_title">Support MusicViz Development</string>
-    <string name="support_flow_dev_desc">If MusicViz is useful to you, you can support it on Patreon or with crypto below. Thank you!</string>
-    <string name="support_flow_patreon">Support MusicViz on Patreon</string>
-    <string name="thank_you_support_message">Thank you for your support! ❤️</string>
-    <string name="address_copied_toast">Address copied to clipboard</string>
-    <string name="donation_address_clip_label">Donation Address</string>
     <!-- One-time support prompt -->
-    <string name="donation_prompt_title">Enjoying MusicViz?</string>
-    <string name="donation_prompt_message">MusicViz is free, open source and ad-free. If it earned a spot on your phone, a little support keeps it going.</string>
-    <string name="donation_method_patreon" translatable="false">Patreon</string>
-    <string name="donation_prompt_methods">Patreon · Bitcoin · Ethereum · Solana · USDT · Monero</string>
-    <string name="donation_prompt_support">Support development</string>
-    <string name="donation_prompt_later">Maybe later</string>
-    <string name="donation_prompt_never">Don\'t show again</string>
     <!-- About Screen -->
     <string name="about_creator">Creator</string>
     <string name="about_creator_name">John Neerdael</string>
@@ -1651,8 +1635,6 @@
     <string name="section_contact">Contact</string>
     <string name="section_legal">Legal</string>
     <string name="section_device">Device</string>
-    <string name="donate_item_title">Donate</string>
-    <string name="support_dev_subtitle">Support development</string>
     <string name="btn_ok">OK</string>
     <string name="btn_copy">Copy</string>
     <string name="github_label">GitHub</string>
@@ -2751,30 +2733,17 @@
     <string name="interface_mode_mobile_summary">Always use the phone and tablet interface</string>
     <string name="interface_mode_tv">TV</string>
     <string name="interface_mode_tv_summary">Always use the remote-friendly television interface</string>
-    <string name="tv_home_title">Home</string>
-    <string name="tv_continue_watching">Continue watching</string>
-    <string name="tv_home_recommended">Recommended</string>
     <string name="tv_error_loading">Couldn\'t load content</string>
-    <string name="tv_no_recommendations">No recommendations yet</string>
-    <string name="tv_subscriptions_title">Subscriptions</string>
-    <string name="tv_no_subscriptions">No subscription videos yet</string>
-    <string name="tv_search_hint">Search videos</string>
     <string name="tv_search_empty">Search for songs, artists, albums or videos</string>
     <string name="tv_search_no_results">No videos found</string>
     <string name="tv_library_history">History</string>
-    <string name="tv_library_liked">Liked videos</string>
     <string name="tv_library_playlists">Playlists</string>
     <string name="tv_library_empty">Your library is empty</string>
-    <string name="tv_player_rewind">Rewind 10 seconds</string>
-    <string name="tv_player_fast_forward">Forward 10 seconds</string>
     <string name="tv_player_close">Close player</string>
-    <string name="tv_subscriptions_empty">No subscription videos yet</string>
     <string name="tv_search_prompt">Search music and videos</string>
-    <string name="tv_search_action">Search</string>
     <string name="tv_library_likes">Liked videos</string>
     <string name="tv_library_watch_later">Watch later</string>
     <string name="tv_music_empty">No music recommendations yet</string>
-    <string name="tv_music_charts">Charts</string>
     <string name="tv_player_settings">Player settings</string>
     <string name="tv_player_queue">Queue</string>
     <string name="tv_player_play_now">Play now</string>
@@ -2785,27 +2754,20 @@
     <string name="tv_keyboard_delete">Delete</string>
     <string name="tv_keyboard_clear">Clear</string>
     <string name="tv_keyboard_voice">Voice search</string>
-    <string name="tv_filter_all">All</string>
     <string name="tv_filter_videos">Videos</string>
     <string name="tv_filter_channels">Channels</string>
     <string name="tv_filter_playlists">Playlists</string>
     <string name="tv_filter_artists">Artists</string>
     <string name="tv_filter_live">Live</string>
     <string name="tv_channel_videos">Videos</string>
-    <string name="tv_subscriptions_all">All channels</string>
     <plurals name="tv_playlist_video_count">
         <item quantity="one">%1$d video</item>
         <item quantity="other">%1$d videos</item>
     </plurals>
     <string name="tv_music_lyrics">Lyrics</string>
     <string name="tv_music_expand">Open full player</string>
-    <string name="tv_music_no_lyrics">No lyrics found</string>
     <string name="tv_music_radio">Radio</string>
-    <string name="tv_settings_appearance">Appearance</string>
     <string name="tv_settings_flow_engine">MusicViz Engine</string>
-    <string name="tv_settings_sync">Sync devices</string>
-    <string name="tv_sync_qr_session_active">This code stays active while this screen is open.</string>
-    <string name="tv_remote_guide_title">Remote &amp; keypad guide</string>
     <string name="tv_settings_account">Account</string>
     <string name="tv_account_not_signed_in">Not signed in</string>
     <string name="tv_account_signed_in">Signed in</string>
@@ -2825,50 +2787,9 @@
     <string name="tv_account_recently_played">Recently played</string>
     <string name="tv_account_liked_music">Liked music</string>
     <string name="tv_account_playlists">Your playlists</string>
-    <string name="tv_remote_guide_subtitle">A quick reference for navigating MusicViz from the couch</string>
-    <string name="tv_remote_guide_back">Back to settings</string>
-    <string name="tv_guide_navigation_title">Navigation</string>
-    <string name="tv_guide_search_title">Search &amp; browse</string>
-    <string name="tv_guide_playback_title">Playback</string>
-    <string name="tv_guide_key_dpad">D‑pad</string>
-    <string name="tv_guide_key_ok">OK</string>
-    <string name="tv_guide_key_back">Back</string>
-    <string name="tv_guide_key_left_edge">Left edge</string>
-    <string name="tv_guide_key_rail">Rail</string>
-    <string name="tv_guide_key_edit">Edit keys</string>
-    <string name="tv_guide_key_voice">Mic</string>
-    <string name="tv_guide_key_right">Right</string>
-    <string name="tv_guide_key_left_right">Left / Right</string>
-    <string name="tv_guide_key_hold">Hold</string>
-    <string name="tv_guide_key_up">Up</string>
-    <string name="tv_guide_key_down">Down</string>
-    <string name="tv_guide_key_media">Media keys</string>
-    <string name="tv_guide_dpad">Move the focus highlight through rows, grids, buttons, and menus.</string>
-    <string name="tv_guide_ok">Open the focused item, choose an option, or confirm an action.</string>
-    <string name="tv_guide_back">Close the active panel, return to the previous screen, or move toward Home before exiting.</string>
-    <string name="tv_guide_left_edge">Move left from the content boundary to open the navigation rail.</string>
-    <string name="tv_guide_rail">Use Up and Down to choose a destination, OK to open it, and Right to return to content.</string>
-    <string name="tv_guide_search_keyboard">Move across the on-screen keyboard and filter rows.</string>
-    <string name="tv_guide_search_type">Enter the focused letter or activate a filter, suggestion, or result.</string>
-    <string name="tv_guide_search_edit">Use Space, Delete, and Clear on the bottom keyboard row to edit the query.</string>
-    <string name="tv_guide_search_voice">Start voice search when the TV has a supported microphone service.</string>
-    <string name="tv_guide_search_results">Move from the keyboard into filters and results; use Up and Down between sections.</string>
-    <string name="tv_guide_player_toggle">Play or pause and reveal the transport controls.</string>
-    <string name="tv_guide_player_seek">Seek backward or forward; the seek bar shows the pending position.</string>
-    <string name="tv_guide_player_hold">Hold Left or Right to accelerate scrubbing, then release to commit.</string>
-    <string name="tv_guide_player_up">Reveal the controls and focus the Up next row.</string>
-    <string name="tv_guide_player_down">Reveal the transport controls and focus Play/Pause.</string>
-    <string name="tv_guide_player_media">Play, Pause, Previous, Next, Rewind, Fast-forward, and Captions keys work directly.</string>
-    <string name="tv_guide_player_back">Close a panel or the controls first; press again to leave the player.</string>
     <string name="tv_settings_wifi_quality">Default quality (Wi‑Fi)</string>
     <string name="tv_settings_cellular_quality">Default quality (cellular)</string>
     <string name="tv_settings_codec">Preferred codec</string>
-    <string name="tv_theme_mode_title">Theme</string>
-    <string name="tv_theme_variant_title">Variant</string>
-    <string name="tv_theme_variant_light">Light</string>
-    <string name="tv_theme_variant_dark">Dark</string>
-    <string name="tv_theme_variant_amoled">AMOLED</string>
-    <string name="tv_about_version">Version %1$s</string>
     <!-- Home-screen widgets -->
     <string name="widget_now_playing_label">Now Playing</string>
     <string name="widget_now_playing_description">Control the music that\'s playing in MusicViz</string>
@@ -3237,7 +3158,6 @@
     <string name="settings_search_no_results">No settings found for "%1$s"</string>
     <string name="settings_lyrics_provider_order_description">Tried from top to bottom. Drag to reorder.</string>
     <string name="import_running_background">You can leave this screen. The import keeps running.</string>
-    <string name="donations_cryptocurrency">CRYPTOCURRENCY</string>
     <string name="import_no_history_entries">No watch-history entries found in file</string>
     <string name="import_no_videos">No videos found in playlist file</string>
     <string name="import_no_content">No importable content found in this backup</string>
@@ -3447,11 +3367,6 @@
     <string name="settings_diagnostics_share_summary">Send the report to another app</string>
     <string name="settings_diagnostics_reset_summary">Try this if videos stop or won\'t play</string>
     <string name="settings_keywords_diagnostics">logs, crash, bug report, debug, support, logcat</string>
-    <string name="donation_currency_bitcoin" translatable="false">Bitcoin</string>
-    <string name="donation_currency_ethereum" translatable="false">Ethereum</string>
-    <string name="donation_currency_solana" translatable="false">Solana</string>
-    <string name="donation_currency_usdt" translatable="false">USDT (TRC-20)</string>
-    <string name="donation_currency_monero" translatable="false">Monero</string>
     <string name="settings_keywords_about">version, license, open source, github, reddit, contact, changelog</string>
     <string name="settings_changelog_version">Version %1$s</string>
     <string name="settings_changelog_installed">Installed</string>

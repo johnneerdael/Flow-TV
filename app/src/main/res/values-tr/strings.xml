@@ -569,8 +569,6 @@
     <string name="settings_item_import_data_subtitle">Yedekleri geri yükle ya da diğer uygulamadan içe aktar</string>
     <string name="settings_item_about_flow">MusicViz Hakkında</string>
     <string name="settings_item_about_flow_subtitle">Sürüm, Lisans, Katkıda bulunanlar</string>
-    <string name="settings_item_support">Destek &amp; Bağış</string>
-    <string name="settings_item_support_subtitle">MusicViz\'un geliştirilmesine katkıda bulunun</string>
     <string name="settings_region_dialog_title">Bölge Seç</string>
     <string name="settings_language_dialog_title">Uygulama Dilini Seç</string>
     <string name="settings_language_system_default">Sistem Varsayılanı</string>
@@ -1045,13 +1043,6 @@
     <string name="location_badge_recommended">Önerilen</string>
     <string name="location_badge_active">Etkin</string>
     <string name="select_threads_count_desc">İş parçacığı sayısını seç (1-8):</string>
-    <string name="support_donations_title">Destek &amp; Bağışlar</string>
-    <string name="support_flow_dev_title">MusicViz\'un Geliştirilmesine Destek Olun</string>
-    <string name="support_flow_dev_desc">MusicViz\'u yararlı buluyorsan ve projenin geliştirilmesine destek olmak istiyorsan, Patreon üzerinden destek verebilir veya aşağıdaki kripto adreslerine bağışta bulunabilirsin. Desteğin, projenin devam etmesine önayak olur!</string>
-    <string name="support_flow_patreon">Patreon\'da MusicViz\'u destekle</string>
-    <string name="thank_you_support_message">❤️ Desteğin için teşekkürler! ❤️</string>
-    <string name="address_copied_toast">Adres panoya kopyalandı</string>
-    <string name="donation_address_clip_label">Bağış Adresi</string>
     <string name="about_creator">Geliştirici</string>
     <string name="github_subtitle">Kaynak kodu &amp; sorunlar</string>
     <string name="newpipe_extractor_title">NewPipe Extractor</string>
@@ -1079,8 +1070,6 @@
     <string name="section_contact">İletişim</string>
     <string name="section_legal">Yasal</string>
     <string name="section_device">Cihaz</string>
-    <string name="donate_item_title">Bağış</string>
-    <string name="support_dev_subtitle">Geliştirmeye Destek Ol</string>
     <string name="btn_ok">Tamam</string>
     <string name="btn_copy">Kopyala</string>
     <string name="github_label">GitHub</string>
@@ -1602,14 +1591,8 @@
     <string name="player_settings_video_codec">Varsayılan Video Kodeği</string>
     <string name="player_settings_video_codec_dialog_title">Varsayılan Video Kodeği</string>
     <string name="player_settings_video_codec_auto_desc">Uygulamanın seçmesine izin ver (H.264\'ü tercih eder)</string>
-    <string name="donation_prompt_title">MusicViz\'dan keyif alıyor musunuz?</string>
-    <string name="donation_prompt_methods">Patreon · Bitcoin · Ethereum · Solana · USDT · Monero</string>
-    <string name="donation_prompt_support">Geliştirmeyi destekle</string>
-    <string name="donation_prompt_later">Belki sonra</string>
-    <string name="donation_prompt_never">Tekrar gösterme</string>
     <string name="subscriptions_last_refreshed_time_only_template">Son güncelleme %1$s</string>
     <string name="player_settings_video_codec_dialog_body">Seçilen çözünürlükte varsayılan olarak hangi kodeğin kullanılacağını seçin. Bu, listelenen kaliteleri değiştirmez; kalite seçicisinden yine de herhangi bir kodeği seçebilirsiniz. H.264 çoğu cihazda en uyumlu ve en akıcı olanıdır; AV1/VP9 daha yüksek çözünürlüklerde veri tasarrufu sağlar ancak daha fazla kod çözme gücüne ihtiyaç duyar.</string>
-    <string name="donation_prompt_message">MusicViz ücretsiz, açık kaynaklı ve reklam veya izleyici içermeyen bir uygulamadır. Eğer cihazınızda yer edindiyse, lütfen geliştirilmesine destek olmayı düşünün — bu, projenin hayatta kalmasına gerçekten yardımcı olur.</string>
     <string name="library_local_media_label">Yerel medya</string>
     <string name="library_local_media_subtitle">Video ve müziği bu cihazda oynat</string>
     <string name="local_media_title">Yerel medya</string>

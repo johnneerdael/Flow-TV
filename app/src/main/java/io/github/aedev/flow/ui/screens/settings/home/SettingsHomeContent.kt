@@ -27,7 +27,6 @@ internal data class SettingsHomeState(
 
 internal class SettingsHomeActions(
     val onOpen: (SettingsTarget) -> Unit,
-    val onOpenDonations: () -> Unit,
     val onDeepFlowChange: (Boolean) -> Unit,
     val onDurationClick: () -> Unit,
     val onSaveHistoryChange: (Boolean) -> Unit,
@@ -118,6 +117,5 @@ internal fun SettingsListScope.homeContent(
                 icon = HomeRowIcons.Updates,
             )
         }
-        nav(HomeIndex.support, onClick = actions.onOpenDonations, icon = HomeRowIcons.Support)
     }
 }

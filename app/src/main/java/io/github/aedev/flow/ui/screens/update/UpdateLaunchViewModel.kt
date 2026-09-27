@@ -13,7 +13,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.aedev.flow.BuildConfig
 import io.github.aedev.flow.data.update.UpdateAnnouncement
 import io.github.aedev.flow.data.update.UpdateRepository
-import io.github.aedev.flow.ui.startup.LaunchPrompts
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,7 +25,6 @@ class UpdateLaunchViewModel
     @Inject
     constructor(
         private val updates: UpdateRepository,
-        private val prompts: LaunchPrompts,
     ) : ViewModel() {
         private var checked = false
         private val _openUpdate = MutableStateFlow(false)
@@ -35,13 +33,9 @@ class UpdateLaunchViewModel
         fun check() {
             if (checked) return
             checked = true
-            if (BuildConfig.DEBUG || !BuildConfig.UPDATER_ENABLED) {
-                prompts.updateCheckFinished(shownUpdate = false)
-                return
-            }
+            if (BuildConfig.DEBUG || !BuildConfig.UPDATER_ENABLED) return
             viewModelScope.launch {
                 val release = updates.releaseToAnnounce(UpdateAnnouncement.LAUNCH_PAGE)
-                prompts.updateCheckFinished(shownUpdate = release != null)
                 if (release != null) _openUpdate.value = true
             }
         }

@@ -363,8 +363,6 @@
     <string name="settings_item_import_data_subtitle">從備份還原或從其他應用程式匯入</string>
     <string name="settings_item_about_flow">關於 MusicViz</string>
     <string name="settings_item_about_flow_subtitle">版本、授權、貢獻者</string>
-    <string name="settings_item_support">支援與捐款</string>
-    <string name="settings_item_support_subtitle">協助支持 MusicViz 的開發</string>
     <string name="settings_region_dialog_title">選擇地區</string>
     <string name="settings_language_dialog_title">選擇應用程式語言</string>
     <string name="settings_language_system_default">系統預設</string>
@@ -528,7 +526,6 @@
     <string name="import_music_apps_section_title">音樂應用程式</string>
     <string name="default_download_codec_label">預設下載編碼格式</string>
     <string name="notification_channel_music_playback_description">音樂播放控制項</string>
-    <string name="tv_subscriptions_empty">目前尚無訂閱影片</string>
     <string name="theme_desc_monochrome">中性且不易分心的配色，提供最清晰的視覺效果。</string>
     <string name="sb_category_outro">片尾／結尾畫面</string>
     <string name="category_all">全部</string>
@@ -537,7 +534,6 @@
     <string name="files_access_denied_subtitle">尚未授予權限——點選以啟用完整下載清單</string>
     <string name="categories_region_picker_desc">變更熱門內容地區（目前：%1$s）</string>
     <string name="my_playlist_placeholder">我的播放清單</string>
-    <string name="tv_guide_player_hold">按住左鍵或右鍵可加快拖曳速度，放開後套用變更。</string>
     <string name="fallback_downloaded_locally">已下載至本機</string>
     <string name="import_data_title">匯入資料</string>
     <string name="player_settings_autoplay_countdown_title">自動播放延遲</string>
@@ -764,7 +760,6 @@
     <string name="sync_continue">繼續</string>
     <string name="sync_sas_body">繼續之前，請確認兩部裝置上顯示的這組 6 位數驗證碼完全相同。</string>
     <string name="sync_verification_after_connect">連線後，請比較兩部裝置上顯示的驗證碼，再繼續操作。</string>
-    <string name="tv_continue_watching">繼續觀看</string>
     <string name="ui_clear_and_continue">清除並繼續</string>
     <string name="import_running_background">你可以離開此頁面，匯入作業會在背景繼續進行。</string>
     <string name="player_settings_video_codec_dialog_body">選擇所選解析度的預設編碼格式。這不會改變清單中顯示的畫質，你仍可在畫質選擇器中選擇任何編碼格式。H.264 在大多數裝置上相容性最高、播放最流暢；AV1／VP9 在較高解析度下可節省資料用量，但需要更強的解碼效能。</string>
@@ -834,7 +829,6 @@
     <string name="player_appearance_volume_boost_title">允許額外提高音量</string>
     <string name="player_appearance_volume_boost_subtitle">關閉時，滑動調整音量手勢會在系統最大音量處停止。開啟後可讓音訊音量進一步提高。</string>
     <string name="tv_player_chapters">章節</string>
-    <string name="tv_guide_player_media">播放、暫停、上一個、下一個、倒轉、快轉和字幕按鍵可直接使用。</string>
     <string name="content_settings_notes_title">個人備註</string>
     <string name="content_settings_notes_subtitle">在頻道和影片上保留私人備註</string>
     <string name="content_settings_channel_notes_title">頻道備註</string>
@@ -948,8 +942,6 @@
     <string name="blocked_content_title">篩選條件</string>
     <string name="blocked_content_subtitle">從推薦內容中排除的主題與頻道</string>
     <string name="tv_error_loading">無法載入內容</string>
-    <string name="tv_guide_left_edge">從內容邊界向左移動，以開啟導覽列。</string>
-    <string name="tv_guide_rail">使用向上鍵和向下鍵選擇目的地，按下「確定」開啟，按向右鍵返回內容。</string>
     <string name="error_failed_to_load_content">內容載入失敗</string>
     <string name="error_content_protection">內容保護錯誤：%1$s</string>
     <string name="download_failed_video_length">無法取得影片長度</string>
