@@ -20,7 +20,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -53,7 +57,8 @@ fun TvSettingsScreen(
     val context = LocalContext.current
     val playerPreferences = remember { PlayerPreferences(context.applicationContext) }
     val modePreferences = remember { AppUiModePreferences(context.applicationContext) }
-    var selectedCategory by rememberSaveable { mutableStateOf(TvSettingsCategory.PLAYBACK) }
+    var selectedCategory by rememberSaveable { mutableStateOf(TvSettingsCategory.ACCOUNT) }
+    val categoryFocus = remember { TvSettingsCategory.entries.associateWith { FocusRequester() } }
     val dimens = LocalTvDimens.current
 
     TvScreenScaffold(
@@ -72,13 +77,18 @@ fun TvSettingsScreen(
                     Modifier
                         .width(300.dp)
                         .verticalScroll(rememberScrollState())
-                        .focusGroup(),
+                        // Entering from the rail lands on the open category, not whichever row is level with it.
+                        .focusProperties {
+                            @OptIn(ExperimentalComposeUiApi::class)
+                            enter = { categoryFocus.getValue(selectedCategory) }
+                        }.focusGroup(),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 TvSettingsCategory.entries.forEach { category ->
                     TvSettingsCategoryItem(
                         category = category,
                         selected = category == selectedCategory,
+                        focusRequester = categoryFocus.getValue(category),
                         onClick = {
                             when (category) {
                                 TvSettingsCategory.SYNC -> onOpenSync()
@@ -127,6 +137,7 @@ fun TvSettingsScreen(
 private fun TvSettingsCategoryItem(
     category: TvSettingsCategory,
     selected: Boolean,
+    focusRequester: FocusRequester,
     onClick: () -> Unit,
     onFocused: () -> Unit,
 ) {
@@ -135,7 +146,7 @@ private fun TvSettingsCategoryItem(
     Surface(
         onClick = onClick,
         modifier =
-            Modifier.onFocusChanged { state ->
+            Modifier.focusRequester(focusRequester).onFocusChanged { state ->
                 focused = state.isFocused
                 if (state.isFocused) onFocused()
             },
