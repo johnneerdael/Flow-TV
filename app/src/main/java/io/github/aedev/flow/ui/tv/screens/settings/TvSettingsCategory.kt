@@ -3,14 +3,11 @@ package io.github.aedev.flow.ui.tv.screens.settings
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccountCircle
-import androidx.compose.material.icons.outlined.Devices
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.PlayCircleOutline
 import androidx.compose.material.icons.outlined.Psychology
-import androidx.compose.material.icons.outlined.SettingsRemote
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.Tune
-import androidx.compose.material.icons.outlined.Tv
 import androidx.compose.ui.graphics.vector.ImageVector
 import io.github.aedev.flow.R
 
@@ -24,8 +21,5 @@ enum class TvSettingsCategory(
     QUALITY(R.string.quality, Icons.Outlined.Tune),
     CONTENT(R.string.settings_header_content_playback, Icons.Outlined.Shield),
     FLOW_ENGINE(R.string.tv_settings_flow_engine, Icons.Outlined.Psychology),
-    INTERFACE(R.string.interface_mode_title, Icons.Outlined.Tv),
-    REMOTE_GUIDE(R.string.tv_remote_guide_title, Icons.Outlined.SettingsRemote),
-    SYNC(R.string.tv_settings_sync, Icons.Outlined.Devices),
     ABOUT(R.string.about, Icons.Outlined.Info),
 }

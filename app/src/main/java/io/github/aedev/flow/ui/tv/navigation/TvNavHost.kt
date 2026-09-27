@@ -19,10 +19,8 @@ import io.github.aedev.flow.ui.tv.screens.TvLibraryScreen
 import io.github.aedev.flow.ui.tv.screens.TvMusicCollectionScreen
 import io.github.aedev.flow.ui.tv.screens.TvMusicScreen
 import io.github.aedev.flow.ui.tv.screens.TvPlaylistDetailScreen
-import io.github.aedev.flow.ui.tv.screens.TvRemoteGuideScreen
 import io.github.aedev.flow.ui.tv.screens.TvSearchScreen
 import io.github.aedev.flow.ui.tv.screens.TvSettingsScreen
-import io.github.aedev.flow.ui.tv.screens.TvSyncScreen
 import io.github.aedev.flow.ui.tv.screens.account.TvAccountSignInScreen
 
 /** Top-level TV navigation graph plus detail routes (channel, …). */
@@ -101,17 +99,9 @@ fun TvNavHost(
         }
         composable(TvDestination.SETTINGS.route) {
             TvSettingsScreen(
-                onOpenSync = { navController.navigate(TvRoutes.SYNC) },
-                onOpenRemoteGuide = { navController.navigate(TvRoutes.REMOTE_GUIDE) },
                 onOpenAccountSignIn = { navController.navigate(TvRoutes.ACCOUNT_SIGN_IN) },
                 modifier = Modifier.fillMaxSize(),
             )
-        }
-        composable(TvRoutes.SYNC) {
-            TvSyncScreen(onNavigateBack = { navController.popBackStack() })
-        }
-        composable(TvRoutes.REMOTE_GUIDE) {
-            TvRemoteGuideScreen(onNavigateBack = { navController.popBackStack() })
         }
         composable(TvRoutes.ACCOUNT_SIGN_IN) {
             TvAccountSignInScreen(onNavigateBack = { navController.popBackStack() })

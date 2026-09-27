@@ -30,14 +30,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.github.aedev.flow.R
-import io.github.aedev.flow.data.local.AppUiModePreferences
 import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.ui.tv.components.TvScreenScaffold
 import io.github.aedev.flow.ui.tv.screens.settings.TvAboutSettingsPane
 import io.github.aedev.flow.ui.tv.screens.settings.TvAccountSettingsPane
 import io.github.aedev.flow.ui.tv.screens.settings.TvContentSettingsPane
 import io.github.aedev.flow.ui.tv.screens.settings.TvFlowEngineSettingsPane
-import io.github.aedev.flow.ui.tv.screens.settings.TvInterfaceSettingsPane
 import io.github.aedev.flow.ui.tv.screens.settings.TvPlaybackSettingsPane
 import io.github.aedev.flow.ui.tv.screens.settings.TvQualitySettingsPane
 import io.github.aedev.flow.ui.tv.screens.settings.TvSettingsCategory
@@ -45,18 +43,15 @@ import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 
 /**
  * Two-pane TV settings: focusable category list on the left, the selected
- * category's pane on the right. Sync opens the device-sync flow as a route.
+ * category's pane on the right; the pane follows focus.
  */
 @Composable
 fun TvSettingsScreen(
     modifier: Modifier = Modifier,
-    onOpenSync: () -> Unit = {},
-    onOpenRemoteGuide: () -> Unit = {},
     onOpenAccountSignIn: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val playerPreferences = remember { PlayerPreferences(context.applicationContext) }
-    val modePreferences = remember { AppUiModePreferences(context.applicationContext) }
     var selectedCategory by rememberSaveable { mutableStateOf(TvSettingsCategory.ACCOUNT) }
     val categoryFocus = remember { TvSettingsCategory.entries.associateWith { FocusRequester() } }
     val dimens = LocalTvDimens.current
@@ -89,21 +84,7 @@ fun TvSettingsScreen(
                         category = category,
                         selected = category == selectedCategory,
                         focusRequester = categoryFocus.getValue(category),
-                        onClick = {
-                            when (category) {
-                                TvSettingsCategory.SYNC -> onOpenSync()
-                                TvSettingsCategory.REMOTE_GUIDE -> onOpenRemoteGuide()
-                                else -> selectedCategory = category
-                            }
-                        },
-                        onFocused = {
-                            // Route categories need an explicit click; panes follow focus.
-                            if (category != TvSettingsCategory.SYNC &&
-                                category != TvSettingsCategory.REMOTE_GUIDE
-                            ) {
-                                selectedCategory = category
-                            }
-                        },
+                        onSelect = { selectedCategory = category },
                     )
                 }
             }
@@ -111,22 +92,11 @@ fun TvSettingsScreen(
             androidx.compose.foundation.layout.Box(modifier = Modifier.weight(1f)) {
                 when (selectedCategory) {
                     TvSettingsCategory.ACCOUNT -> TvAccountSettingsPane(onSignIn = onOpenAccountSignIn)
-
                     TvSettingsCategory.PLAYBACK -> TvPlaybackSettingsPane(playerPreferences)
-
                     TvSettingsCategory.QUALITY -> TvQualitySettingsPane(playerPreferences)
-
                     TvSettingsCategory.CONTENT -> TvContentSettingsPane(playerPreferences)
-
                     TvSettingsCategory.FLOW_ENGINE -> TvFlowEngineSettingsPane(playerPreferences)
-
-                    TvSettingsCategory.INTERFACE -> TvInterfaceSettingsPane(modePreferences)
-
                     TvSettingsCategory.ABOUT -> TvAboutSettingsPane()
-
-                    TvSettingsCategory.REMOTE_GUIDE,
-                    TvSettingsCategory.SYNC,
-                    -> Unit
                 }
             }
         }
@@ -138,17 +108,16 @@ private fun TvSettingsCategoryItem(
     category: TvSettingsCategory,
     selected: Boolean,
     focusRequester: FocusRequester,
-    onClick: () -> Unit,
-    onFocused: () -> Unit,
+    onSelect: () -> Unit,
 ) {
     var focused by remember { mutableStateOf(false) }
 
     Surface(
-        onClick = onClick,
+        onClick = onSelect,
         modifier =
             Modifier.focusRequester(focusRequester).onFocusChanged { state ->
                 focused = state.isFocused
-                if (state.isFocused) onFocused()
+                if (state.isFocused) onSelect()
             },
         shape = MaterialTheme.shapes.medium,
         color =

@@ -16,8 +16,6 @@ object TvRoutes {
     const val MUSIC_ARTIST_ARG = "artistChannelId"
     const val MUSIC_ARTIST = "musicArtist/{$MUSIC_ARTIST_ARG}"
 
-    const val SYNC = "sync"
-    const val REMOTE_GUIDE = "remoteGuide"
     const val ACCOUNT_SIGN_IN = "accountSignIn"
 
     /** [channelRef] is a full channel URL (preferred) or a bare channel id. */
