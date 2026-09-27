@@ -49,3 +49,6 @@ Flow-desktop/
 
 # macOS Finder metadata
 .DS_Store
+
+# Local network captures and screenshots (may contain live tokens)
+debug/
