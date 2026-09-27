@@ -24,7 +24,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.music.model.MusicTrack
-import io.github.aedev.flow.ui.screens.music.MusicPlayerViewModel
 import io.github.aedev.flow.ui.screens.search.SearchViewModel
 import io.github.aedev.flow.ui.tv.components.TvNavRail
 import io.github.aedev.flow.ui.tv.components.TvNowPlayingStrip
@@ -42,7 +41,7 @@ import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 @Composable
 fun TvShell(
     navController: NavHostController,
-    musicPlayerViewModel: MusicPlayerViewModel,
+    onPlayTrack: (MusicTrack, List<MusicTrack>, String) -> Unit,
     searchViewModel: SearchViewModel,
     onPlayVideo: (Video) -> Unit,
     onPlayPlaylist: (List<Video>, String) -> Unit,
@@ -100,7 +99,7 @@ fun TvShell(
             Box(modifier = Modifier.weight(1f)) {
                 TvNavHost(
                     navController = navController,
-                    musicPlayerViewModel = musicPlayerViewModel,
+                    onPlayTrack = onPlayTrack,
                     searchViewModel = searchViewModel,
                     onPlayVideo = onPlayVideo,
                     onPlayPlaylist = onPlayPlaylist,

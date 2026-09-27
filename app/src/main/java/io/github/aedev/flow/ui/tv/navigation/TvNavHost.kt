@@ -10,7 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import io.github.aedev.flow.data.model.Video
-import io.github.aedev.flow.ui.screens.music.MusicPlayerViewModel
+import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.ui.screens.music.sharedMusicViewModel
 import io.github.aedev.flow.ui.screens.search.SearchViewModel
 import io.github.aedev.flow.ui.tv.screens.TvArtistScreen
@@ -30,7 +30,7 @@ import io.github.aedev.flow.ui.tv.screens.account.TvAccountSignInScreen
 @Composable
 fun TvNavHost(
     navController: NavHostController,
-    musicPlayerViewModel: MusicPlayerViewModel,
+    onPlayTrack: (MusicTrack, List<MusicTrack>, String) -> Unit,
     searchViewModel: SearchViewModel,
     onPlayVideo: (Video) -> Unit,
     onPlayPlaylist: (List<Video>, String) -> Unit,
@@ -47,7 +47,7 @@ fun TvNavHost(
     ) {
         composable(TvDestination.MUSIC.route) {
             TvMusicScreen(
-                onTrackClick = musicPlayerViewModel::loadAndPlayTrack,
+                onTrackClick = onPlayTrack,
                 onOpenCollection = { navController.navigate(TvRoutes.musicCollection(it)) },
                 modifier = Modifier.fillMaxSize(),
             )
@@ -60,7 +60,7 @@ fun TvNavHost(
             TvArtistScreen(
                 channelId = artistChannelId,
                 viewModel = sharedMusicViewModel(),
-                onTrackClick = musicPlayerViewModel::loadAndPlayTrack,
+                onTrackClick = onPlayTrack,
                 onOpenCollection = { navController.navigate(TvRoutes.musicCollection(it)) },
                 onOpenArtist = { navController.navigate(TvRoutes.musicArtist(it)) },
                 modifier = Modifier.fillMaxSize(),
@@ -74,7 +74,7 @@ fun TvNavHost(
             TvMusicCollectionScreen(
                 collectionId = collectionId,
                 viewModel = sharedMusicViewModel(),
-                onTrackClick = musicPlayerViewModel::loadAndPlayTrack,
+                onTrackClick = onPlayTrack,
                 modifier = Modifier.fillMaxSize(),
             )
         }
@@ -84,7 +84,7 @@ fun TvNavHost(
                 onVideoClick = onPlayVideo,
                 onChannelClick = openChannel,
                 onOpenPlaylist = { navController.navigate(TvRoutes.playlist(it)) },
-                onPlayTrack = musicPlayerViewModel::loadAndPlayTrack,
+                onPlayTrack = onPlayTrack,
                 onOpenMusicCollection = { navController.navigate(TvRoutes.musicCollection(it)) },
                 onOpenMusicArtist = { navController.navigate(TvRoutes.musicArtist(it)) },
                 modifier = Modifier.fillMaxSize(),
@@ -94,7 +94,7 @@ fun TvNavHost(
             TvLibraryScreen(
                 onVideoClick = onPlayVideo,
                 onOpenPlaylist = { navController.navigate(TvRoutes.playlist(it)) },
-                onPlayTrack = musicPlayerViewModel::loadAndPlayTrack,
+                onPlayTrack = onPlayTrack,
                 onOpenMusicCollection = { navController.navigate(TvRoutes.musicCollection(it)) },
                 modifier = Modifier.fillMaxSize(),
             )

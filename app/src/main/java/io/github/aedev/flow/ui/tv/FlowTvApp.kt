@@ -17,6 +17,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.compose.rememberNavController
 import io.github.aedev.flow.data.model.Video
+import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.player.EnhancedMusicPlayerManager
 import io.github.aedev.flow.player.GlobalPlayerState
 import io.github.aedev.flow.ui.screens.music.MusicPlayerViewModel
@@ -55,6 +56,16 @@ fun FlowTvApp(
         EnhancedMusicPlayerManager.pause()
         GlobalPlayerState.setCurrentVideo(video)
         playerViewModel.playVideo(video)
+    }
+
+    // Starting music opens the full-screen player; it shows once the new track is loaded.
+    fun playTrack(
+        track: MusicTrack,
+        queue: List<MusicTrack>,
+        source: String,
+    ) {
+        musicPlayerViewModel.loadAndPlayTrack(track, queue, source)
+        musicExpanded = true
     }
 
     fun playPlaylist(
@@ -102,7 +113,7 @@ fun FlowTvApp(
             } else if (video == null) {
                 TvShell(
                     navController = navController,
-                    musicPlayerViewModel = musicPlayerViewModel,
+                    onPlayTrack = ::playTrack,
                     searchViewModel = searchViewModel,
                     onPlayVideo = ::play,
                     onPlayPlaylist = ::playPlaylist,
