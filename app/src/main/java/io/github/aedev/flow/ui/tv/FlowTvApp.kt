@@ -19,12 +19,9 @@ import androidx.navigation.compose.rememberNavController
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.player.EnhancedMusicPlayerManager
 import io.github.aedev.flow.player.GlobalPlayerState
-import io.github.aedev.flow.ui.screens.home.HomeViewModel
 import io.github.aedev.flow.ui.screens.music.MusicPlayerViewModel
-import io.github.aedev.flow.ui.screens.music.MusicViewModel
 import io.github.aedev.flow.ui.screens.player.VideoPlayerViewModel
 import io.github.aedev.flow.ui.screens.search.SearchViewModel
-import io.github.aedev.flow.ui.screens.subscriptions.SubscriptionsViewModel
 import io.github.aedev.flow.ui.tv.music.TvMusicNowPlayingScreen
 import io.github.aedev.flow.ui.tv.screens.TvPlayerScreen
 import io.github.aedev.flow.ui.tv.theme.TvTheme
@@ -38,11 +35,8 @@ fun FlowTvApp(
 ) {
     val context = LocalContext.current
     val activity = context as ComponentActivity
-    val homeViewModel: HomeViewModel = hiltViewModel(activity)
     val playerViewModel: VideoPlayerViewModel = hiltViewModel(activity)
-    val subscriptionsViewModel: SubscriptionsViewModel = hiltViewModel(activity)
     val searchViewModel: SearchViewModel = hiltViewModel(activity)
-    val musicViewModel: MusicViewModel = hiltViewModel(activity)
     val musicPlayerViewModel: MusicPlayerViewModel = hiltViewModel(activity)
     val navController = rememberNavController()
     val activeVideo by GlobalPlayerState.currentVideo.collectAsStateWithLifecycle()
@@ -108,10 +102,7 @@ fun FlowTvApp(
             } else if (video == null) {
                 TvShell(
                     navController = navController,
-                    homeViewModel = homeViewModel,
-                    musicViewModel = musicViewModel,
                     musicPlayerViewModel = musicPlayerViewModel,
-                    subscriptionsViewModel = subscriptionsViewModel,
                     searchViewModel = searchViewModel,
                     onPlayVideo = ::play,
                     onPlayPlaylist = ::playPlaylist,

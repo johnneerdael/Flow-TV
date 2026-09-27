@@ -24,11 +24,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.music.model.MusicTrack
-import io.github.aedev.flow.ui.screens.home.HomeViewModel
 import io.github.aedev.flow.ui.screens.music.MusicPlayerViewModel
-import io.github.aedev.flow.ui.screens.music.MusicViewModel
 import io.github.aedev.flow.ui.screens.search.SearchViewModel
-import io.github.aedev.flow.ui.screens.subscriptions.SubscriptionsViewModel
 import io.github.aedev.flow.ui.tv.components.TvNavRail
 import io.github.aedev.flow.ui.tv.components.TvNowPlayingStrip
 import io.github.aedev.flow.ui.tv.navigation.TvBackAction
@@ -45,10 +42,7 @@ import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 @Composable
 fun TvShell(
     navController: NavHostController,
-    homeViewModel: HomeViewModel,
-    musicViewModel: MusicViewModel,
     musicPlayerViewModel: MusicPlayerViewModel,
-    subscriptionsViewModel: SubscriptionsViewModel,
     searchViewModel: SearchViewModel,
     onPlayVideo: (Video) -> Unit,
     onPlayPlaylist: (List<Video>, String) -> Unit,
@@ -69,7 +63,7 @@ fun TvShell(
 
     fun navigateToTab(destination: TvDestination) {
         navController.navigate(destination.route) {
-            popUpTo(TvDestination.HOME.route) { saveState = true }
+            popUpTo(TvDestination.start.route) { saveState = true }
             launchSingleTop = true
             restoreState = true
         }
@@ -106,10 +100,7 @@ fun TvShell(
             Box(modifier = Modifier.weight(1f)) {
                 TvNavHost(
                     navController = navController,
-                    homeViewModel = homeViewModel,
-                    musicViewModel = musicViewModel,
                     musicPlayerViewModel = musicPlayerViewModel,
-                    subscriptionsViewModel = subscriptionsViewModel,
                     searchViewModel = searchViewModel,
                     onPlayVideo = onPlayVideo,
                     onPlayPlaylist = onPlayPlaylist,
@@ -146,7 +137,7 @@ fun TvShell(
             when (backAction) {
                 TvBackAction.POP_DETAIL -> navController.popBackStack()
                 TvBackAction.POP_TAB -> navigateToTab(tabHistory.removeAt(tabHistory.lastIndex))
-                TvBackAction.GO_HOME -> navigateToTab(TvDestination.HOME)
+                TvBackAction.GO_START -> navigateToTab(TvDestination.start)
                 TvBackAction.FOCUS_RAIL -> runCatching { railFocusRequester.requestFocus() }
                 TvBackAction.EXIT -> Unit
             }

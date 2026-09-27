@@ -22,8 +22,6 @@ import javax.inject.Singleton
 
 const val LIKED_MUSIC_PLAYLIST_ID = "LM"
 private const val LIBRARY_PLAYLISTS_BROWSE_ID = "FEmusic_liked_playlists"
-private const val VIDEO_HOME_BROWSE_ID = "FEwhat_to_watch"
-private const val SUBSCRIPTIONS_BROWSE_ID = "FEsubscriptions"
 private const val WATCH_HISTORY_BROWSE_ID = "FEhistory"
 
 /**
@@ -41,9 +39,12 @@ class AccountFeedClient
         private var verifiedCookie: String? = null
 
         // YouTube Music answers a dead cookie with a generic signed-out home, so check the account first.
-        suspend fun musicHome(continuation: String? = null): Result<HomePage> =
+        suspend fun musicHome(
+            continuation: String? = null,
+            params: String? = null,
+        ): Result<HomePage> =
             withTube { tube ->
-                verifyAccount(tube).mapCatching { YouTube.home(continuation = continuation, via = tube).getOrThrow() }
+                verifyAccount(tube).mapCatching { YouTube.home(continuation = continuation, params = params, via = tube).getOrThrow() }
             }
 
         suspend fun musicHistory(): Result<HistoryPage> = withTube { YouTube.musicHistory(via = it) }
@@ -54,12 +55,7 @@ class AccountFeedClient
 
         suspend fun accountInfo(): Result<AccountInfo> = withTube { YouTube.accountInfo(via = it) }
 
-        suspend fun videoHome(continuation: String? = null): Result<AccountVideoFeed> = videoFeed(VIDEO_HOME_BROWSE_ID, continuation)
-
-        suspend fun subscriptionsFeed(continuation: String? = null): Result<AccountVideoFeed> =
-            videoFeed(SUBSCRIPTIONS_BROWSE_ID, continuation)
-
-        suspend fun watchHistory(continuation: String? = null): Result<AccountVideoFeed> = videoFeed(WATCH_HISTORY_BROWSE_ID, continuation)
+        suspend fun watchHistory(): Result<AccountVideoFeed> = videoFeed(WATCH_HISTORY_BROWSE_ID)
 
         internal suspend fun tube(): InnerTube? = active()?.second
 
@@ -94,13 +90,10 @@ class AccountFeedClient
                 useLoginForBrowse = true
             }
 
-        private suspend fun videoFeed(
-            browseId: String,
-            continuation: String?,
-        ): Result<AccountVideoFeed> =
+        private suspend fun videoFeed(browseId: String): Result<AccountVideoFeed> =
             withTube { tube ->
                 runCatching {
-                    val body = tube.accountWebBrowse(YouTubeClient.WEB, browseId, continuation).bodyAsText()
+                    val body = tube.accountWebBrowse(YouTubeClient.WEB, browseId).bodyAsText()
                     Json.parseToJsonElement(body).toAccountVideoFeed().requireLoggedIn()
                 }
             }

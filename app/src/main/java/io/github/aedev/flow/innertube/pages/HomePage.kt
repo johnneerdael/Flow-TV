@@ -6,6 +6,7 @@ import io.github.aedev.flow.innertube.models.Artist
 import io.github.aedev.flow.innertube.models.ArtistItem
 import io.github.aedev.flow.innertube.models.BrowseEndpoint
 import io.github.aedev.flow.innertube.models.MusicCarouselShelfRenderer
+import io.github.aedev.flow.innertube.models.MusicResponsiveListItemRenderer
 import io.github.aedev.flow.innertube.models.MusicTwoRowItemRenderer
 import io.github.aedev.flow.innertube.models.PlaylistItem
 import io.github.aedev.flow.innertube.models.SectionListRenderer
@@ -14,6 +15,7 @@ import io.github.aedev.flow.innertube.models.YTItem
 import io.github.aedev.flow.innertube.models.filterExplicit
 import io.github.aedev.flow.innertube.models.filterVideoSongs
 import io.github.aedev.flow.innertube.models.oddElements
+import io.github.aedev.flow.innertube.utils.parseTime
 
 data class HomePage(
     val chips: List<Chip>?,
@@ -73,13 +75,30 @@ data class HomePage(
                             ?.browseEndpoint,
                     items =
                         renderer.contents
-                            .mapNotNull {
-                                it.musicTwoRowItemRenderer
-                            }.mapNotNull {
-                                fromMusicTwoRowItemRenderer(it)
+                            .mapNotNull { content ->
+                                content.musicTwoRowItemRenderer?.let(::fromMusicTwoRowItemRenderer)
+                                    ?: content.musicResponsiveListItemRenderer?.let(::fromMusicResponsiveListItemRenderer)
                             }.ifEmpty {
                                 return null
                             },
+                )
+            }
+
+            // List shelves (Quick picks, Long listens, …) carry the duration in a fixed column, which
+            // the shared secondary-line parser would otherwise mistake for a view count.
+            private fun fromMusicResponsiveListItemRenderer(renderer: MusicResponsiveListItemRenderer): SongItem? {
+                val song = RelatedPage.fromMusicResponsiveListItemRenderer(renderer) ?: return null
+                val durationText =
+                    renderer.fixedColumns
+                        ?.firstOrNull()
+                        ?.musicResponsiveListItemFlexColumnRenderer
+                        ?.text
+                        ?.runs
+                        ?.firstOrNull()
+                        ?.text ?: return song
+                return song.copy(
+                    duration = durationText.parseTime(),
+                    viewCountText = song.viewCountText?.takeUnless { it == durationText },
                 )
             }
 

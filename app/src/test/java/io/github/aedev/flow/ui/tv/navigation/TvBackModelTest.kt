@@ -15,7 +15,7 @@ class TvBackModelTest {
                             hasTabHistory = history,
                             currentTab = tab,
                             railHasFocus = rail,
-                        )
+                        ),
                     ).isEqualTo(TvBackAction.POP_DETAIL)
                 }
             }
@@ -23,7 +23,7 @@ class TvBackModelTest {
     }
 
     @Test
-    fun `tab history wins over converging on home`() {
+    fun `tab history wins over converging on the start tab`() {
         TvDestination.entries.forEach { tab ->
             assertThat(
                 TvBackModel.resolve(
@@ -31,15 +31,15 @@ class TvBackModelTest {
                     hasTabHistory = true,
                     currentTab = tab,
                     railHasFocus = false,
-                )
+                ),
             ).isEqualTo(TvBackAction.POP_TAB)
         }
     }
 
     @Test
-    fun `non-home tabs without history converge on home`() {
+    fun `other tabs without history converge on the start tab`() {
         TvDestination.entries
-            .filterNot { it == TvDestination.HOME }
+            .filterNot { it == TvDestination.start }
             .forEach { tab ->
                 listOf(true, false).forEach { rail ->
                     assertThat(
@@ -48,33 +48,33 @@ class TvBackModelTest {
                             hasTabHistory = false,
                             currentTab = tab,
                             railHasFocus = rail,
-                        )
-                    ).isEqualTo(TvBackAction.GO_HOME)
+                        ),
+                    ).isEqualTo(TvBackAction.GO_START)
                 }
             }
     }
 
     @Test
-    fun `home moves focus to the rail before exiting`() {
+    fun `the start tab moves focus to the rail before exiting`() {
         assertThat(
             TvBackModel.resolve(
                 isOnDetailRoute = false,
                 hasTabHistory = false,
-                currentTab = TvDestination.HOME,
+                currentTab = TvDestination.start,
                 railHasFocus = false,
-            )
+            ),
         ).isEqualTo(TvBackAction.FOCUS_RAIL)
     }
 
     @Test
-    fun `home with rail focused exits`() {
+    fun `the start tab with rail focused exits`() {
         assertThat(
             TvBackModel.resolve(
                 isOnDetailRoute = false,
                 hasTabHistory = false,
-                currentTab = TvDestination.HOME,
+                currentTab = TvDestination.start,
                 railHasFocus = true,
-            )
+            ),
         ).isEqualTo(TvBackAction.EXIT)
     }
 }

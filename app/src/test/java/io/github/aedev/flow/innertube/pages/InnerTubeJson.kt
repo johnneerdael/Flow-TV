@@ -76,6 +76,7 @@ internal object InnerTubeJson {
         musicVideoType: String,
         secondary: List<String>,
         album: String? = null,
+        duration: String? = null,
     ): String {
         val columns =
             listOfNotNull(
@@ -87,10 +88,14 @@ internal object InnerTubeJson {
                     flexColumn(it)
                 },
             )
+        val fixedColumns =
+            duration
+                ?.let { ""","fixedColumns":[{"musicResponsiveListItemFixedColumnRenderer":{"text":${runs(run(it))}}}]""" }
+                .orEmpty()
         return """{"musicResponsiveListItemRenderer":{"thumbnail":${thumbnail(
             videoId,
             SQUARE,
-        )},"flexColumns":[${columns.joinToString(",")}],
+        )},"flexColumns":[${columns.joinToString(",")}]$fixedColumns,
             |"playlistItemData":{"videoId":"$videoId"},"overlay":${playOverlay(watchEndpoint(videoId, musicVideoType))}}}
             """.trimMargin()
     }

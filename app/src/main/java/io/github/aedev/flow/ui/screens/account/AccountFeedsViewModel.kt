@@ -12,11 +12,9 @@ import io.github.aedev.flow.data.model.Playlist
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.data.recommendation.MusicRecommendationAlgorithm
-import io.github.aedev.flow.data.recommendation.MusicSection
 import io.github.aedev.flow.innertube.models.PlaylistItem
 import io.github.aedev.flow.innertube.models.YTItem
 import io.github.aedev.flow.innertube.pages.HomePage
-import io.github.aedev.flow.innertube.pages.account.AccountVideoFeed
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -32,18 +30,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-enum class AccountVideoSurface { HOME, SUBSCRIPTIONS, HISTORY }
-
 data class AccountVideoFeedState(
     val videos: List<Video> = emptyList(),
-    val continuation: String? = null,
-    val isLoading: Boolean = false,
-    val error: String? = null,
-    val loadedAtMs: Long = 0L,
-)
-
-data class AccountMusicState(
-    val sections: List<MusicSection> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
     val loadedAtMs: Long = 0L,
@@ -79,11 +67,8 @@ class AccountFeedsViewModel
                 .map { it?.expired == true }
                 .stateIn(viewModelScope, SharingStarted.WhileSubscribed(SUBSCRIPTION_TIMEOUT_MS), false)
 
-        private val videoStates = AccountVideoSurface.entries.associateWith { MutableStateFlow(AccountVideoFeedState()) }
-        val videoFeeds: Map<AccountVideoSurface, StateFlow<AccountVideoFeedState>> = videoStates.mapValues { it.value.asStateFlow() }
-
-        private val _music = MutableStateFlow(AccountMusicState())
-        val music: StateFlow<AccountMusicState> = _music.asStateFlow()
+        private val _history = MutableStateFlow(AccountVideoFeedState())
+        val history: StateFlow<AccountVideoFeedState> = _history.asStateFlow()
 
         private val _musicLibrary = MutableStateFlow(AccountMusicLibraryState())
         val musicLibrary: StateFlow<AccountMusicLibraryState> = _musicLibrary.asStateFlow()
@@ -102,57 +87,18 @@ class AccountFeedsViewModel
             }
         }
 
-        fun loadVideoFeed(
-            surface: AccountVideoSurface,
-            force: Boolean = false,
-        ) {
-            val state = videoStates.getValue(surface)
-            if (!force && state.value.loadedAtMs.isFresh()) return
-            launchOnce("video-$surface") {
-                state.update { it.copy(isLoading = true, error = null) }
-                fetch(surface, null)
-                    .onSuccess { feed ->
-                        Log.d(TAG, "$surface: ${feed.videos.size} videos")
-                        state.value = AccountVideoFeedState(feed.videos, feed.continuation, loadedAtMs = now())
-                    }.onFailure { error ->
-                        Log.w(TAG, "$surface failed", error)
-                        state.update { it.copy(isLoading = false, error = error.message) }
-                    }
-            }
-        }
-
-        fun loadMoreVideoFeed(surface: AccountVideoSurface) {
-            val state = videoStates.getValue(surface)
-            val continuation = state.value.continuation ?: return
-            if (state.value.isLoading) return
-            launchOnce("more-$surface") {
-                state.update { it.copy(isLoading = true) }
-                fetch(surface, continuation)
-                    .onSuccess { feed ->
-                        state.update {
-                            it.copy(
-                                videos = (it.videos + feed.videos).distinctBy(Video::id),
-                                continuation = feed.continuation,
-                                isLoading = false,
-                            )
-                        }
-                    }.onFailure { error -> state.update { it.copy(isLoading = false, error = error.message) } }
-            }
-        }
-
-        fun loadMusicHome(force: Boolean = false) {
-            if (!force && _music.value.loadedAtMs.isFresh()) return
-            launchOnce("music-home") {
-                _music.update { it.copy(isLoading = true, error = null) }
+        fun loadHistory(force: Boolean = false) {
+            if (!force && _history.value.loadedAtMs.isFresh()) return
+            launchOnce("history") {
+                _history.update { it.copy(isLoading = true, error = null) }
                 client
-                    .musicHome()
-                    .onSuccess { home ->
-                        val sections = musicMapper.parseHomeSections(home)
-                        Log.d(TAG, "music home: ${home.sections.size} sections, ${sections.sumOf { it.tracks.size }} tracks")
-                        _music.value = AccountMusicState(sections, loadedAtMs = now())
+                    .watchHistory()
+                    .onSuccess { feed ->
+                        Log.d(TAG, "history: ${feed.videos.size} videos")
+                        _history.value = AccountVideoFeedState(feed.videos, loadedAtMs = now())
                     }.onFailure { error ->
-                        Log.w(TAG, "music home failed", error)
-                        _music.update { it.copy(isLoading = false, error = error.message) }
+                        Log.w(TAG, "history failed", error)
+                        _history.update { it.copy(isLoading = false, error = error.message) }
                     }
             }
         }
@@ -215,20 +161,9 @@ class AccountFeedsViewModel
         private fun resetFeeds() {
             jobs.values.forEach(Job::cancel)
             jobs.clear()
-            videoStates.values.forEach { it.value = AccountVideoFeedState() }
-            _music.value = AccountMusicState()
+            _history.value = AccountVideoFeedState()
             _musicLibrary.value = AccountMusicLibraryState()
         }
-
-        private suspend fun fetch(
-            surface: AccountVideoSurface,
-            continuation: String?,
-        ): Result<AccountVideoFeed> =
-            when (surface) {
-                AccountVideoSurface.HOME -> client.videoHome(continuation)
-                AccountVideoSurface.SUBSCRIPTIONS -> client.subscriptionsFeed(continuation)
-                AccountVideoSurface.HISTORY -> client.watchHistory(continuation)
-            }
 
         private fun tracks(items: List<YTItem>): List<MusicTrack> =
             musicMapper

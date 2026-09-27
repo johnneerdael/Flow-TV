@@ -20,9 +20,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.aedev.flow.R
 import io.github.aedev.flow.data.model.Video
+import io.github.aedev.flow.data.music.model.MusicItemType
 import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.ui.screens.account.AccountFeedsViewModel
-import io.github.aedev.flow.ui.screens.account.AccountVideoSurface
 import io.github.aedev.flow.ui.tv.components.TvMediaRow
 import io.github.aedev.flow.ui.tv.components.TvMessageState
 import io.github.aedev.flow.ui.tv.components.TvMusicCard
@@ -51,14 +51,14 @@ internal fun TvAccountLibraryContent(
     onPlayTrack: (MusicTrack, List<MusicTrack>, String) -> Unit,
 ) {
     val library by viewModel.musicLibrary.collectAsStateWithLifecycle()
-    val history by viewModel.videoFeeds.getValue(AccountVideoSurface.HISTORY).collectAsStateWithLifecycle()
+    val history by viewModel.history.collectAsStateWithLifecycle()
     val dimens = LocalTvDimens.current
     val scope = rememberCoroutineScope()
     val sectionTitle = stringResource(section.titleRes)
     val recentlyPlayedTitle = stringResource(R.string.tv_account_recently_played)
     LaunchedEffect(section) {
         viewModel.loadMusicLibrary()
-        if (section == TvAccountLibrarySection.YOUTUBE_HISTORY) viewModel.loadVideoFeed(AccountVideoSurface.HISTORY)
+        if (section == TvAccountLibrarySection.YOUTUBE_HISTORY) viewModel.loadHistory()
     }
 
     val sectionError =
@@ -148,3 +148,9 @@ internal fun TvAccountLibraryContent(
         }
     }
 }
+
+private fun List<MusicTrack>.accountPlayable(): List<MusicTrack> =
+    asSequence()
+        .filter { it.itemType == MusicItemType.SONG && it.videoId.isNotBlank() }
+        .distinctBy(MusicTrack::videoId)
+        .toList()

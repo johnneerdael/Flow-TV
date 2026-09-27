@@ -45,69 +45,43 @@ class AccountFeedsViewModelTest {
     @After fun tearDown() = Dispatchers.resetMain()
 
     @Test
-    fun `a video feed loads once within its freshness window`() =
+    fun `history loads once within its freshness window`() =
         runTest(dispatcher) {
-            coEvery { client.videoHome(null) } returns Result.success(AccountVideoFeed(listOf(video("a")), "NEXT", true))
+            coEvery { client.watchHistory() } returns Result.success(AccountVideoFeed(listOf(video("a")), "NEXT", true))
             val vm = AccountFeedsViewModel(store, client, mapper)
-            vm.loadVideoFeed(AccountVideoSurface.HOME)
+            vm.loadHistory()
             advanceUntilIdle()
-            vm.loadVideoFeed(AccountVideoSurface.HOME)
+            vm.loadHistory()
             advanceUntilIdle()
             assertThat(
-                vm.videoFeeds
-                    .getValue(AccountVideoSurface.HOME)
-                    .value.videos
+                vm.history.value.videos
                     .map { it.id },
             ).containsExactly("a")
-            coVerify(exactly = 1) { client.videoHome(null) }
-        }
-
-    @Test
-    fun `load more appends new videos only`() =
-        runTest(dispatcher) {
-            coEvery { client.subscriptionsFeed(null) } returns Result.success(AccountVideoFeed(listOf(video("a")), "NEXT", true))
-            coEvery { client.subscriptionsFeed("NEXT") } returns
-                Result.success(AccountVideoFeed(listOf(video("a"), video("b")), null, null))
-            val vm = AccountFeedsViewModel(store, client, mapper)
-            vm.loadVideoFeed(AccountVideoSurface.SUBSCRIPTIONS)
-            advanceUntilIdle()
-            vm.loadMoreVideoFeed(AccountVideoSurface.SUBSCRIPTIONS)
-            advanceUntilIdle()
-            val state = vm.videoFeeds.getValue(AccountVideoSurface.SUBSCRIPTIONS).value
-            assertThat(state.videos.map { it.id }).containsExactly("a", "b").inOrder()
-            assertThat(state.continuation).isNull()
+            coVerify(exactly = 1) { client.watchHistory() }
         }
 
     @Test
     fun `a failure is shown as an error`() =
         runTest(dispatcher) {
-            coEvery { client.watchHistory(null) } returns Result.failure(IllegalStateException("boom"))
+            coEvery { client.watchHistory() } returns Result.failure(IllegalStateException("boom"))
             val vm = AccountFeedsViewModel(store, client, mapper)
-            vm.loadVideoFeed(AccountVideoSurface.HISTORY)
+            vm.loadHistory()
             advanceUntilIdle()
-            assertThat(
-                vm.videoFeeds
-                    .getValue(AccountVideoSurface.HISTORY)
-                    .value.error,
-            ).isEqualTo("boom")
+            assertThat(vm.history.value.error).isEqualTo("boom")
         }
 
     @Test
     fun `sign out discards an in-flight load`() =
         runTest(dispatcher) {
             val gate = CompletableDeferred<Result<AccountVideoFeed>>()
-            coEvery { client.videoHome(null) } coAnswers { gate.await() }
+            coEvery { client.watchHistory() } coAnswers { gate.await() }
             val vm = AccountFeedsViewModel(store, client, mapper)
-            vm.loadVideoFeed(AccountVideoSurface.HOME)
+            vm.loadHistory()
             advanceUntilIdle()
             vm.signOut()
             gate.complete(Result.success(AccountVideoFeed(listOf(video("late")), null, true)))
             advanceUntilIdle()
-            assertThat(
-                vm.videoFeeds
-                    .getValue(AccountVideoSurface.HOME)
-                    .value.videos,
-            ).isEmpty()
+            assertThat(vm.history.value.videos).isEmpty()
             coVerify { store.clear() }
         }
 
@@ -139,16 +113,12 @@ class AccountFeedsViewModelTest {
         runTest(dispatcher) {
             val sessions = kotlinx.coroutines.flow.MutableStateFlow<AccountSession?>(AccountSession(cookie = "SAPISID=a"))
             val switching = mockk<AccountSessionStore> { every { session } returns sessions }
-            coEvery { client.videoHome(null) } returns Result.success(AccountVideoFeed(listOf(video("from-a")), null, true))
+            coEvery { client.watchHistory() } returns Result.success(AccountVideoFeed(listOf(video("from-a")), null, true))
             val vm = AccountFeedsViewModel(switching, client, mapper)
-            vm.loadVideoFeed(AccountVideoSurface.HOME)
+            vm.loadHistory()
             advanceUntilIdle()
             sessions.value = AccountSession(cookie = "SAPISID=b")
             advanceUntilIdle()
-            assertThat(
-                vm.videoFeeds
-                    .getValue(AccountVideoSurface.HOME)
-                    .value.videos,
-            ).isEmpty()
+            assertThat(vm.history.value.videos).isEmpty()
         }
 }

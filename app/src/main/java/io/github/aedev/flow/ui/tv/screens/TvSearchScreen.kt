@@ -77,9 +77,8 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed as gridItemsIndexed
 private enum class TvSearchTop(
     @StringRes val labelRes: Int,
 ) {
-    ALL(R.string.tv_filter_all),
-    VIDEOS(R.string.tv_filter_videos),
     MUSIC(R.string.nav_music),
+    VIDEOS(R.string.tv_filter_videos),
 }
 
 private enum class TvVideoSubFilter(
@@ -108,7 +107,7 @@ private fun TvMusicSubFilter.toYouTubeFilter(): YouTube.SearchFilter =
 
 /**
  * D-pad-first search: grid keyboard on the left, live results on the right.
- * Primary chips select All / Videos / Music; Videos exposes channel/playlist/
+ * Primary chips select Music (always the starting point) / Videos; Videos exposes channel/playlist/
  * live sub-filters and Music exposes song/artist/album sub-filters backed by
  * the shared [MusicSearchViewModel]. Suggestion chips appear while typing.
  */
@@ -127,9 +126,10 @@ fun TvSearchScreen(
     val context = LocalContext.current
     val dimens = LocalTvDimens.current
     var query by rememberSaveable { mutableStateOf("") }
-    var topFilter by rememberSaveable { mutableStateOf(TvSearchTop.ALL) }
-    var videoSubFilter by rememberSaveable { mutableStateOf<TvVideoSubFilter?>(null) }
-    var musicSubFilter by rememberSaveable { mutableStateOf<TvMusicSubFilter?>(null) }
+    // Not saveable on purpose: every visit to Search starts on Music.
+    var topFilter by remember { mutableStateOf(TvSearchTop.MUSIC) }
+    var videoSubFilter by remember { mutableStateOf<TvVideoSubFilter?>(null) }
+    var musicSubFilter by remember { mutableStateOf<TvMusicSubFilter?>(null) }
     val results = viewModel.searchResults.collectAsLazyPagingItems()
     val musicState by musicSearchViewModel.uiState.collectAsStateWithLifecycle()
     var videoSuggestions by remember { mutableStateOf(emptyList<String>()) }
@@ -178,15 +178,11 @@ fun TvSearchScreen(
                 }
             }
 
-            else -> {
+            TvSearchTop.VIDEOS -> {
                 videoSuggestions =
                     runCatching { viewModel.getSearchSuggestions(trimmed).map { it.text } }
                         .getOrDefault(emptyList())
-                val contentType =
-                    when (topFilter) {
-                        TvSearchTop.ALL -> ContentType.ALL
-                        else -> videoSubFilter?.contentType ?: ContentType.VIDEOS
-                    }
+                val contentType = videoSubFilter?.contentType ?: ContentType.VIDEOS
                 viewModel.search(trimmed, SearchFilter(contentType = contentType))
             }
         }
@@ -297,10 +293,6 @@ fun TvSearchScreen(
                             )
                         }
                     }
-                }
-
-                TvSearchTop.ALL -> {
-                    Unit
                 }
             }
 

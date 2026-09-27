@@ -10,14 +10,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import io.github.aedev.flow.data.model.Video
-import io.github.aedev.flow.ui.screens.home.HomeViewModel
 import io.github.aedev.flow.ui.screens.music.MusicPlayerViewModel
-import io.github.aedev.flow.ui.screens.music.MusicViewModel
+import io.github.aedev.flow.ui.screens.music.sharedMusicViewModel
 import io.github.aedev.flow.ui.screens.search.SearchViewModel
-import io.github.aedev.flow.ui.screens.subscriptions.SubscriptionsViewModel
 import io.github.aedev.flow.ui.tv.screens.TvArtistScreen
 import io.github.aedev.flow.ui.tv.screens.TvChannelScreen
-import io.github.aedev.flow.ui.tv.screens.TvHomeScreen
 import io.github.aedev.flow.ui.tv.screens.TvLibraryScreen
 import io.github.aedev.flow.ui.tv.screens.TvMusicCollectionScreen
 import io.github.aedev.flow.ui.tv.screens.TvMusicScreen
@@ -25,7 +22,6 @@ import io.github.aedev.flow.ui.tv.screens.TvPlaylistDetailScreen
 import io.github.aedev.flow.ui.tv.screens.TvRemoteGuideScreen
 import io.github.aedev.flow.ui.tv.screens.TvSearchScreen
 import io.github.aedev.flow.ui.tv.screens.TvSettingsScreen
-import io.github.aedev.flow.ui.tv.screens.TvSubscriptionsScreen
 import io.github.aedev.flow.ui.tv.screens.TvSyncScreen
 import io.github.aedev.flow.ui.tv.screens.account.TvAccountSignInScreen
 
@@ -34,10 +30,7 @@ import io.github.aedev.flow.ui.tv.screens.account.TvAccountSignInScreen
 @Composable
 fun TvNavHost(
     navController: NavHostController,
-    homeViewModel: HomeViewModel,
-    musicViewModel: MusicViewModel,
     musicPlayerViewModel: MusicPlayerViewModel,
-    subscriptionsViewModel: SubscriptionsViewModel,
     searchViewModel: SearchViewModel,
     onPlayVideo: (Video) -> Unit,
     onPlayPlaylist: (List<Video>, String) -> Unit,
@@ -49,22 +42,13 @@ fun TvNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = TvDestination.HOME.route,
+        startDestination = TvDestination.start.route,
         modifier = modifier,
     ) {
-        composable(TvDestination.HOME.route) {
-            TvHomeScreen(
-                viewModel = homeViewModel,
-                onVideoClick = onPlayVideo,
-                modifier = Modifier.fillMaxSize(),
-            )
-        }
         composable(TvDestination.MUSIC.route) {
             TvMusicScreen(
-                viewModel = musicViewModel,
                 onTrackClick = musicPlayerViewModel::loadAndPlayTrack,
                 onOpenCollection = { navController.navigate(TvRoutes.musicCollection(it)) },
-                onOpenArtist = { navController.navigate(TvRoutes.musicArtist(it)) },
                 modifier = Modifier.fillMaxSize(),
             )
         }
@@ -75,7 +59,7 @@ fun TvNavHost(
             val artistChannelId = entry.arguments?.getString(TvRoutes.MUSIC_ARTIST_ARG).orEmpty()
             TvArtistScreen(
                 channelId = artistChannelId,
-                viewModel = musicViewModel,
+                viewModel = sharedMusicViewModel(),
                 onTrackClick = musicPlayerViewModel::loadAndPlayTrack,
                 onOpenCollection = { navController.navigate(TvRoutes.musicCollection(it)) },
                 onOpenArtist = { navController.navigate(TvRoutes.musicArtist(it)) },
@@ -89,16 +73,8 @@ fun TvNavHost(
             val collectionId = entry.arguments?.getString(TvRoutes.MUSIC_COLLECTION_ARG).orEmpty()
             TvMusicCollectionScreen(
                 collectionId = collectionId,
-                viewModel = musicViewModel,
+                viewModel = sharedMusicViewModel(),
                 onTrackClick = musicPlayerViewModel::loadAndPlayTrack,
-                modifier = Modifier.fillMaxSize(),
-            )
-        }
-        composable(TvDestination.SUBSCRIPTIONS.route) {
-            TvSubscriptionsScreen(
-                viewModel = subscriptionsViewModel,
-                onVideoClick = onPlayVideo,
-                onChannelClick = openChannel,
                 modifier = Modifier.fillMaxSize(),
             )
         }

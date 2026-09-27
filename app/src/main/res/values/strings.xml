@@ -2761,7 +2761,7 @@
     <string name="tv_subscriptions_title">Subscriptions</string>
     <string name="tv_no_subscriptions">No subscription videos yet</string>
     <string name="tv_search_hint">Search videos</string>
-    <string name="tv_search_empty">Search for videos to watch</string>
+    <string name="tv_search_empty">Search for songs, artists, albums or videos</string>
     <string name="tv_search_no_results">No videos found</string>
     <string name="tv_library_history">History</string>
     <string name="tv_library_liked">Liked videos</string>
@@ -2771,7 +2771,7 @@
     <string name="tv_player_fast_forward">Forward 10 seconds</string>
     <string name="tv_player_close">Close player</string>
     <string name="tv_subscriptions_empty">No subscription videos yet</string>
-    <string name="tv_search_prompt">Search for videos</string>
+    <string name="tv_search_prompt">Search music and videos</string>
     <string name="tv_search_action">Search</string>
     <string name="tv_library_likes">Liked videos</string>
     <string name="tv_library_watch_later">Watch later</string>
