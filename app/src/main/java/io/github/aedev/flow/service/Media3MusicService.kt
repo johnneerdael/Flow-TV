@@ -407,13 +407,6 @@ class Media3MusicService : MediaLibraryService() {
                     startListenSession(mediaItem?.mediaId)
                     applyLoudnessGain()
 
-                    if (
-                        reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO ||
-                        reason == Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT
-                    ) {
-                        player.seekTo(0L)
-                    }
-
                     mediaItem?.let { item ->
                         val videoId = item.mediaId
                         val title = item.mediaMetadata.title?.toString()
@@ -542,7 +535,7 @@ class Media3MusicService : MediaLibraryService() {
     // ── Listen-session accounting (feeds MusicBrainEngine) ──
     // Hand-rolled instead of Media3's PlaybackStatsListener, whose internal state
     // machine throws IllegalArgumentException on some transition orders (seen on
-    // device with our seekTo(0)-on-transition). Wall-clock time while isPlaying is
+    // device with a former seekTo(0)-on-transition). Wall-clock time while isPlaying is
     // pause-free and seek-immune; a repeat loop finalizes and restarts a session,
     // so relistens still count once each.
 
