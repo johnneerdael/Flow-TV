@@ -57,6 +57,7 @@ fun FlowTvApp(
     val activeMusicTrack by EnhancedMusicPlayerManager.currentTrack.collectAsStateWithLifecycle()
     val musicPlayerState by EnhancedMusicPlayerManager.playerState.collectAsStateWithLifecycle()
     var musicExpanded by rememberSaveable { mutableStateOf(false) }
+    var focusMusicStrip by remember { mutableStateOf(false) }
 
     // The manager restores the last session's track (paused) at startup. Only
     // surface the mini player once something has actually played this session.
@@ -141,7 +142,10 @@ fun FlowTvApp(
                 if (video == null && musicExpanded && visibleMusicTrack != null) {
                     TvMusicNowPlayingScreen(
                         viewModel = musicPlayerViewModel,
-                        onCollapse = { musicExpanded = false },
+                        onCollapse = {
+                            musicExpanded = false
+                            focusMusicStrip = true
+                        },
                         visualizer = rememberTvNowPlayingVisual(visualizerViewModel).takeIf { visualizerActive },
                     )
                 } else if (video == null) {
@@ -158,6 +162,8 @@ fun FlowTvApp(
                             musicSessionActive = false
                             EnhancedMusicPlayerManager.clearCurrentTrack()
                         },
+                        focusMusicStrip = focusMusicStrip,
+                        onMusicStripFocused = { focusMusicStrip = false },
                     )
                 } else {
                     TvPlayerScreen(

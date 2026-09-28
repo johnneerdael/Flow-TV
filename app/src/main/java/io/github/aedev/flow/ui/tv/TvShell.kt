@@ -8,11 +8,13 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -50,6 +52,8 @@ fun TvShell(
     onExpandMusic: () -> Unit,
     onDismissMusic: () -> Unit,
     modifier: Modifier = Modifier,
+    focusMusicStrip: Boolean = false,
+    onMusicStripFocused: () -> Unit = {},
 ) {
     val dimens = LocalTvDimens.current
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -58,6 +62,16 @@ fun TvShell(
     val isOnDetailRoute = currentRoute != null && TvDestination.entries.none { it.route == currentRoute }
     var railHasFocus by remember { mutableStateOf(false) }
     val railFocusRequester = remember { FocusRequester() }
+    val musicStripFocusRequester = remember { FocusRequester() }
+
+    // The shell is rebuilt when now-playing closes, with nothing focused, so every key went nowhere.
+    // Focus returns to the strip the user came from; up leads back into the page.
+    LaunchedEffect(focusMusicStrip, activeMusicTrack != null) {
+        if (!focusMusicStrip || activeMusicTrack == null) return@LaunchedEffect
+        withFrameNanos {}
+        runCatching { musicStripFocusRequester.requestFocus() }
+        onMusicStripFocused()
+    }
 
     // The first screen has nothing focusable but the rail while it loads, so the window's initial
     // focus would open the rail; it waits for the content to take focus instead.
@@ -117,6 +131,7 @@ fun TvShell(
                     track = track,
                     onExpand = onExpandMusic,
                     onDismiss = onDismissMusic,
+                    focusRequester = musicStripFocusRequester,
                 )
             }
         }
