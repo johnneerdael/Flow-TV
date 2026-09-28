@@ -7,8 +7,8 @@ import android.opengl.GLSurfaceView
 import android.os.Handler
 import android.os.Looper
 import io.github.aedev.flow.player.audio.visualizer.VisualizerRenderStats
+import io.github.aedev.flow.player.audio.visualizer.WaveformLeveler
 import nl.neerdael.projectm.core.DisplayInfo
-import nl.neerdael.projectm.core.PcmConverter
 import nl.neerdael.projectm.core.ProjectMJNI
 import nl.neerdael.projectm.core.QualityController
 import nl.neerdael.projectm.core.VisualizerRenderer
@@ -121,6 +121,7 @@ private const val MIN_FPS = 24f
 // projectM 4.1 takes at most this many samples per frame; the engine keeps only the newest.
 private const val WINDOW_SAMPLES = 576
 private const val SILENCE: Byte = -128
+private const val NANOS_PER_SECOND = 1_000_000_000f
 
 private class AudioFedRenderer(
     private val delegate: VisualizerRenderer,
@@ -128,6 +129,8 @@ private class AudioFedRenderer(
 ) : GLSurfaceView.Renderer {
     private val window = ShortArray(WINDOW_SAMPLES)
     private val waveform = ByteArray(WINDOW_SAMPLES)
+    private val leveler = WaveformLeveler()
+    private var lastFrameNanos = 0L
 
     override fun onSurfaceCreated(
         gl: GL10,
@@ -141,7 +144,10 @@ private class AudioFedRenderer(
     ) = delegate.onSurfaceChanged(gl, width, height)
 
     override fun onDrawFrame(gl: GL10) {
-        if (readAudible(window)) PcmConverter.toUnsignedMono8(window, WINDOW_SAMPLES, 1, waveform) else waveform.fill(SILENCE)
+        val now = System.nanoTime()
+        val seconds = if (lastFrameNanos == 0L) 0f else (now - lastFrameNanos) / NANOS_PER_SECOND
+        lastFrameNanos = now
+        if (readAudible(window)) leveler.level(window, waveform, seconds) else waveform.fill(SILENCE)
         ProjectMJNI.addWaveform(waveform, WINDOW_SAMPLES)
         delegate.onDrawFrame(gl)
     }
