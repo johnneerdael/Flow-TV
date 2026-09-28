@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -21,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavHostController
@@ -35,6 +37,10 @@ import io.github.aedev.flow.ui.tv.navigation.TvBackModel
 import io.github.aedev.flow.ui.tv.navigation.TvDestination
 import io.github.aedev.flow.ui.tv.navigation.TvNavHost
 import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
+
+private const val CONTENT_FOCUS_WAIT_MS = 3_000L
 
 /**
  * TV browse shell: content + optional music strip laid out against the collapsed
@@ -63,6 +69,21 @@ fun TvShell(
     var railHasFocus by remember { mutableStateOf(false) }
     val railFocusRequester = remember { FocusRequester() }
     val musicStripFocusRequester = remember { FocusRequester() }
+    val contentFocusRequester = remember { FocusRequester() }
+    var contentFocusRequests by remember { mutableIntStateOf(0) }
+
+    // A rail press, even on the tab already shown, hands focus to the page's first item so the rail
+    // closes and the remote is already on the content. A new tab cross-fades in and may still be
+    // loading, so this waits for the old page to leave and then for something to focus.
+    LaunchedEffect(contentFocusRequests) {
+        if (contentFocusRequests == 0) return@LaunchedEffect
+        withTimeoutOrNull(CONTENT_FOCUS_WAIT_MS) {
+            navController.visibleEntries.first { it.size <= 1 }
+            do {
+                withFrameNanos {}
+            } while (!contentFocusRequester.requestFocus(FocusDirection.Enter))
+        }
+    }
 
     // The shell is rebuilt when now-playing closes, with nothing focused, so every key went nowhere.
     // Focus returns to the strip the user came from; up leads back into the page.
@@ -96,6 +117,7 @@ fun TvShell(
             }
         }
         navigateToTab(destination)
+        contentFocusRequests++
     }
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -104,6 +126,7 @@ fun TvShell(
                 Modifier
                     .fillMaxSize()
                     .padding(start = dimens.railCollapsedWidth)
+                    .focusRequester(contentFocusRequester)
                     .focusProperties {
                         @OptIn(ExperimentalComposeUiApi::class)
                         exit = { direction ->
