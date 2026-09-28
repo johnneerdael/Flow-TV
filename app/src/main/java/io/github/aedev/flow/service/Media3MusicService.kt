@@ -1255,7 +1255,8 @@ class Media3MusicService : MediaLibraryService() {
                     Log.d(
                         TAG,
                         "Radio seeded from ${collectionId ?: seedId} via ${radioEndpoint?.playlistId}: " +
-                            "${station.size} tracks, continuation=${radioContinuation != null}",
+                            "${station.size} tracks, continuation=${radioContinuation != null}, " +
+                            "opening with ${station.take(3).joinToString { it.title }}",
                     )
                     if (station.isNotEmpty()) {
                         manager.updateAutomixItems(station)
@@ -1280,13 +1281,14 @@ class Media3MusicService : MediaLibraryService() {
     }
 
     /**
-     * A collection's watch queue ends in its automix, which [YouTube.next] follows and names as the
-     * page's endpoint. A long playlist leaves no room for one, so its radio is asked for directly.
+     * A collection's similar content, as Metrolist's getAutomix reads it: the collection's watch queue
+     * names its automix playlist, which is then read on its own. Read through the watch queue instead,
+     * the automix opens with the collection's own tracks again under other ids.
      */
     private suspend fun collectionMix(playlistId: String): NextResult? {
         val watch = radioPage(WatchEndpoint(playlistId = playlistId))
-        if (watch != null && watch.endpoint.playlistId != playlistId) return watch
-        return radioPage(WatchEndpoint(playlistId = "RDAMPL$playlistId"))
+        val mixId = watch?.endpoint?.playlistId?.takeIf { it != playlistId } ?: "RDAMPL$playlistId"
+        return radioPage(WatchEndpoint(playlistId = mixId)) ?: watch
     }
 
     /** The account's own mix when signed in, as YouTube Music would queue it; the anonymous one otherwise. */
@@ -1296,11 +1298,11 @@ class Media3MusicService : MediaLibraryService() {
     ): NextResult? {
         signedInPlayback.account()?.let { account ->
             YouTube
-                .next(endpoint, continuation, audioOnly = true, via = account.tube)
+                .next(endpoint, continuation, via = account.tube)
                 .onSuccess { return it }
                 .onFailure { Log.w(TAG, "Signed-in mix unavailable, using the anonymous one: ${it.message}") }
         }
-        return YouTube.next(endpoint, continuation, audioOnly = true).getOrNull()
+        return YouTube.next(endpoint, continuation).getOrNull()
     }
 
     private fun List<SongItem>.toRadioTracks(seedId: String?): List<MusicTrack> =

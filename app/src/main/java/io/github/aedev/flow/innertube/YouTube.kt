@@ -2786,14 +2786,10 @@ object YouTube {
         )
     }
 
-    /**
-     * [audioOnly] asks for what YouTube Music's song mode queues: songs rather than their music videos.
-     * [via] runs the request on another session, such as the signed-in account for its personal mixes.
-     */
+    /** [via] runs the request on another session, such as the signed-in account for its personal mixes. */
     suspend fun next(
         endpoint: WatchEndpoint,
         continuation: String? = null,
-        audioOnly: Boolean = false,
         via: InnerTube = innerTube,
     ): Result<NextResult> =
         runCatching {
@@ -2807,7 +2803,6 @@ object YouTube {
                         endpoint.index,
                         endpoint.params,
                         continuation,
-                        isAudioOnly = audioOnly.takeIf { it },
                     ).body<NextResponse>()
             // YouTube inserts/reorders watch-next tabs (a Comments tab appeared at
             // index 2 in 2026), so lyrics/related must be found by browseId prefix,
@@ -2874,7 +2869,7 @@ object YouTube {
                 ?.navigationEndpoint
                 ?.watchPlaylistEndpoint
                 ?.let { watchPlaylistEndpoint ->
-                    return@runCatching next(watchPlaylistEndpoint, audioOnly = audioOnly, via = via).getOrThrow().let { result ->
+                    return@runCatching next(watchPlaylistEndpoint, via = via).getOrThrow().let { result ->
                         result.copy(
                             title = title,
                             items = songs + result.items,

@@ -12,5 +12,4 @@ data class NextBody(
     val index: Int?,
     val params: String?,
     val continuation: String?,
-    val isAudioOnly: Boolean? = null,
 )

@@ -3,6 +3,7 @@ package io.github.aedev.flow.ui.tv.screens
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -83,68 +84,70 @@ fun TvMusicScreen(
         modifier = modifier,
         subtitle = if (accountExpired) stringResource(R.string.tv_account_session_expired) else null,
     ) {
-        ProvideTvColumnPivot {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(bottom = dimens.overscanVertical),
-            ) {
-                if (state.filters.isNotEmpty()) {
-                    item(key = "music-chips") {
-                        LazyRow(
-                            modifier = Modifier.fillMaxWidth().tvRowFocus(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
-                            contentPadding = PaddingValues(horizontal = dimens.overscanHorizontal, vertical = 4.dp),
-                        ) {
-                            items(state.filters, key = { it.id }) { filter ->
-                                TvFilterChip(
-                                    label = filter.label,
-                                    selected = filter.id == state.selectedFilterId,
-                                    onClick = { viewModel.selectFilter(filter) },
-                                )
-                            }
-                        }
+        // The moods stay pinned above the shelves, as in YouTube Music: in the scrolling list, pivoting a
+        // shelf into place pushed them off the top.
+        Column(Modifier.fillMaxSize()) {
+            if (state.filters.isNotEmpty()) {
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth().tvRowFocus(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    contentPadding = PaddingValues(horizontal = dimens.overscanHorizontal, vertical = 8.dp),
+                ) {
+                    items(state.filters, key = { it.id }) { filter ->
+                        TvFilterChip(
+                            label = filter.label,
+                            selected = filter.id == state.selectedFilterId,
+                            onClick = { viewModel.selectFilter(filter) },
+                        )
                     }
                 }
-                when {
-                    state.isLoading && blocks.isEmpty() -> {
-                        item(key = "music-loading") { TvShimmerRow() }
-                    }
-
-                    state.error != null && blocks.isEmpty() -> {
-                        item(key = "music-error") {
-                            Box(Modifier.fillMaxWidth().padding(horizontal = dimens.overscanHorizontal)) {
-                                TvMessageState(title = stringResource(R.string.tv_error_loading), message = state.error)
-                            }
+            }
+            ProvideTvColumnPivot {
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(bottom = dimens.overscanVertical),
+                ) {
+                    when {
+                        state.isLoading && blocks.isEmpty() -> {
+                            item(key = "music-loading") { TvShimmerRow() }
                         }
-                    }
 
-                    blocks.isEmpty() && !state.isLoadingMore -> {
-                        item(key = "music-empty") {
-                            Box(Modifier.fillMaxWidth().padding(horizontal = dimens.overscanHorizontal)) {
-                                TvMessageState(title = stringResource(R.string.tv_music_empty))
-                            }
-                        }
-                    }
-
-                    else -> {
-                        itemsIndexed(blocks, key = { _, block -> block.id }) { index, block ->
-                            val blockModifier = if (index == 0) Modifier.focusRequester(firstShelfFocus).focusGroup() else Modifier
-                            when (block) {
-                                is CollectionBlock -> {
-                                    TvHomeCollection(
-                                        collection = block,
-                                        trackFor = trackFor,
-                                        onTrackClick = onTrackClick,
-                                        onPlayMix = onPlayMix,
-                                        onOpen = open,
-                                        modifier = blockModifier,
-                                    )
+                        state.error != null && blocks.isEmpty() -> {
+                            item(key = "music-error") {
+                                Box(Modifier.fillMaxWidth().padding(horizontal = dimens.overscanHorizontal)) {
+                                    TvMessageState(title = stringResource(R.string.tv_error_loading), message = state.error)
                                 }
                             }
                         }
-                        if (state.isLoadingMore) {
-                            item(key = "music-loading-more") { TvShimmerRow() }
+
+                        blocks.isEmpty() && !state.isLoadingMore -> {
+                            item(key = "music-empty") {
+                                Box(Modifier.fillMaxWidth().padding(horizontal = dimens.overscanHorizontal)) {
+                                    TvMessageState(title = stringResource(R.string.tv_music_empty))
+                                }
+                            }
+                        }
+
+                        else -> {
+                            itemsIndexed(blocks, key = { _, block -> block.id }) { index, block ->
+                                val blockModifier = if (index == 0) Modifier.focusRequester(firstShelfFocus).focusGroup() else Modifier
+                                when (block) {
+                                    is CollectionBlock -> {
+                                        TvHomeCollection(
+                                            collection = block,
+                                            trackFor = trackFor,
+                                            onTrackClick = onTrackClick,
+                                            onPlayMix = onPlayMix,
+                                            onOpen = open,
+                                            modifier = blockModifier,
+                                        )
+                                    }
+                                }
+                            }
+                            if (state.isLoadingMore) {
+                                item(key = "music-loading-more") { TvShimmerRow() }
+                            }
                         }
                     }
                 }

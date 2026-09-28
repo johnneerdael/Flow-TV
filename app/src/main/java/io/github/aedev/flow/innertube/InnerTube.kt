@@ -703,7 +703,6 @@ class InnerTube(
         index: Int?,
         params: String?,
         continuation: String? = null,
-        isAudioOnly: Boolean? = null,
     ) = withRetry {
         httpClient.post("next") {
             ytClient(client, setLogin = true)
@@ -716,7 +715,6 @@ class InnerTube(
                     index = index,
                     params = params,
                     continuation = continuation,
-                    isAudioOnly = isAudioOnly,
                 ),
             )
         }
