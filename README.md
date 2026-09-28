@@ -81,7 +81,8 @@ link keep working and now bring Milkbeat.
 - Signed in, the Music tab and Library show your YouTube Music feeds, and tracks you listen to for
   30 seconds or more go to your YouTube history so YouTube's recommendations learn your taste
   (Settings > Account can switch that off)
-- Streams still load without the account
+- Playback runs as your account, the way YouTube Music does, and still starts in a fraction of a
+  second
 - An on-device recommendation engine on top; no ads, analytics or tracking
 
 ## Verifying authenticity
