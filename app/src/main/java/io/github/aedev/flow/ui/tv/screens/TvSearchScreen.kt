@@ -43,7 +43,7 @@ import io.github.aedev.flow.innertube.YouTube
 import io.github.aedev.flow.ui.screens.music.MusicSearchViewModel
 import io.github.aedev.flow.ui.screens.search.SearchViewModel
 import io.github.aedev.flow.ui.tv.components.TvFilterChip
-import io.github.aedev.flow.ui.tv.components.TvKeyboard
+import io.github.aedev.flow.ui.tv.components.TvSearchField
 import io.github.aedev.flow.ui.tv.focus.tvRowFocus
 import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 import kotlinx.coroutines.delay
@@ -178,7 +178,7 @@ fun TvSearchScreen(
     // A live search runs on every pause in typing; only acting on a result saves the query.
     val remembered = { viewModel.rememberSearch(query) }
 
-    Row(
+    Column(
         modifier =
             modifier
                 .fillMaxSize()
@@ -187,104 +187,37 @@ fun TvSearchScreen(
                     end = dimens.overscanHorizontal,
                     top = dimens.overscanVertical,
                 ),
-        horizontalArrangement = Arrangement.spacedBy(32.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        Column(
-            modifier = Modifier.width(340.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
+        TvSearchField(
+            query = query,
+            onQueryChange = { query = it },
+            onSearch = remembered,
+            onVoice = if (voiceAvailable) ({ voiceLauncher.launch(voiceIntent) }) else null,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        LazyRow(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .tvRowFocus(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Text(
-                text = query.ifBlank { stringResource(R.string.tv_search_prompt) },
-                style = MaterialTheme.typography.headlineSmall,
-                color =
-                    if (query.isBlank()) {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    } else {
-                        MaterialTheme.colorScheme.onSurface
+            items(TvSearchTop.entries, key = TvSearchTop::name) { top ->
+                TvFilterChip(
+                    label = stringResource(top.labelRes),
+                    selected = topFilter == top,
+                    onClick = {
+                        topFilter = top
+                        videoSubFilter = null
+                        musicSubFilter = null
                     },
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-            TvKeyboard(
-                onInput = { query += it },
-                onDelete = { query = query.dropLast(1) },
-                onClear = { query = "" },
-                onVoice =
-                    if (voiceAvailable) {
-                        { voiceLauncher.launch(voiceIntent) }
-                    } else {
-                        null
-                    },
-            )
+                )
+            }
         }
 
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
-        ) {
-            LazyRow(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .tvRowFocus(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                items(TvSearchTop.entries, key = TvSearchTop::name) { top ->
-                    TvFilterChip(
-                        label = stringResource(top.labelRes),
-                        selected = topFilter == top,
-                        onClick = {
-                            topFilter = top
-                            videoSubFilter = null
-                            musicSubFilter = null
-                        },
-                    )
-                }
-            }
-
-            when (topFilter) {
-                TvSearchTop.VIDEOS -> {
-                    LazyRow(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .tvRowFocus(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    ) {
-                        items(TvVideoSubFilter.entries, key = TvVideoSubFilter::name) { sub ->
-                            TvFilterChip(
-                                label = stringResource(sub.labelRes),
-                                selected = videoSubFilter == sub,
-                                onClick = {
-                                    videoSubFilter = if (videoSubFilter == sub) null else sub
-                                },
-                            )
-                        }
-                    }
-                }
-
-                TvSearchTop.MUSIC -> {
-                    LazyRow(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .tvRowFocus(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    ) {
-                        items(TvMusicSubFilter.entries, key = TvMusicSubFilter::name) { sub ->
-                            TvFilterChip(
-                                label = stringResource(sub.labelRes),
-                                selected = musicSubFilter == sub,
-                                onClick = {
-                                    musicSubFilter = if (musicSubFilter == sub) null else sub
-                                },
-                            )
-                        }
-                    }
-                }
-            }
-
-            if (query.isNotBlank() && suggestions.isNotEmpty()) {
+        when (topFilter) {
+            TvSearchTop.VIDEOS -> {
                 LazyRow(
                     modifier =
                         Modifier
@@ -292,65 +225,105 @@ fun TvSearchScreen(
                             .tvRowFocus(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    items(suggestions, key = { it }) { suggestion ->
+                    items(TvVideoSubFilter.entries, key = TvVideoSubFilter::name) { sub ->
                         TvFilterChip(
-                            label = suggestion,
-                            selected = false,
+                            label = stringResource(sub.labelRes),
+                            selected = videoSubFilter == sub,
                             onClick = {
-                                query = suggestion
-                                viewModel.rememberSearch(suggestion, SearchType.SUGGESTION)
+                                videoSubFilter = if (videoSubFilter == sub) null else sub
                             },
                         )
                     }
                 }
             }
 
-            if (query.isBlank() && recentSearches.isNotEmpty()) {
-                TvRecentSearches(
-                    history = recentSearches,
-                    onPick = { query = it },
-                    onForget = viewModel::forgetSearch,
-                    onClear = viewModel::clearSearchHistory,
-                    modifier = Modifier.weight(1f),
-                )
-            } else if (topFilter == TvSearchTop.MUSIC) {
-                TvMusicSearchResults(
-                    query = query,
-                    state = musicState,
-                    filtered = musicSubFilter != null,
-                    onPlayTrack = { track, queue, source ->
-                        remembered()
-                        onPlayTrack(track, queue, source)
-                    },
-                    onOpenMusicCollection = {
-                        remembered()
-                        onOpenMusicCollection(it)
-                    },
-                    onOpenMusicArtist = {
-                        remembered()
-                        onOpenMusicArtist(it)
-                    },
-                    modifier = Modifier.weight(1f),
-                )
-            } else {
-                TvVideoSearchResults(
-                    query = query,
-                    results = results,
-                    onVideoClick = {
-                        remembered()
-                        onVideoClick(it)
-                    },
-                    onChannelClick = {
-                        remembered()
-                        onChannelClick(it)
-                    },
-                    onOpenPlaylist = {
-                        remembered()
-                        onOpenPlaylist(it)
-                    },
-                    modifier = Modifier.weight(1f),
-                )
+            TvSearchTop.MUSIC -> {
+                LazyRow(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .tvRowFocus(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    items(TvMusicSubFilter.entries, key = TvMusicSubFilter::name) { sub ->
+                        TvFilterChip(
+                            label = stringResource(sub.labelRes),
+                            selected = musicSubFilter == sub,
+                            onClick = {
+                                musicSubFilter = if (musicSubFilter == sub) null else sub
+                            },
+                        )
+                    }
+                }
             }
+        }
+
+        if (query.isNotBlank() && suggestions.isNotEmpty()) {
+            LazyRow(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .tvRowFocus(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                items(suggestions, key = { it }) { suggestion ->
+                    TvFilterChip(
+                        label = suggestion,
+                        selected = false,
+                        onClick = {
+                            query = suggestion
+                            viewModel.rememberSearch(suggestion, SearchType.SUGGESTION)
+                        },
+                    )
+                }
+            }
+        }
+
+        if (query.isBlank() && recentSearches.isNotEmpty()) {
+            TvRecentSearches(
+                history = recentSearches,
+                onPick = { query = it },
+                onForget = viewModel::forgetSearch,
+                onClear = viewModel::clearSearchHistory,
+                modifier = Modifier.weight(1f),
+            )
+        } else if (topFilter == TvSearchTop.MUSIC) {
+            TvMusicSearchResults(
+                query = query,
+                state = musicState,
+                filtered = musicSubFilter != null,
+                onPlayTrack = { track, queue, source ->
+                    remembered()
+                    onPlayTrack(track, queue, source)
+                },
+                onOpenMusicCollection = {
+                    remembered()
+                    onOpenMusicCollection(it)
+                },
+                onOpenMusicArtist = {
+                    remembered()
+                    onOpenMusicArtist(it)
+                },
+                modifier = Modifier.weight(1f),
+            )
+        } else {
+            TvVideoSearchResults(
+                query = query,
+                results = results,
+                onVideoClick = {
+                    remembered()
+                    onVideoClick(it)
+                },
+                onChannelClick = {
+                    remembered()
+                    onChannelClick(it)
+                },
+                onOpenPlaylist = {
+                    remembered()
+                    onOpenPlaylist(it)
+                },
+                modifier = Modifier.weight(1f),
+            )
         }
     }
 }
