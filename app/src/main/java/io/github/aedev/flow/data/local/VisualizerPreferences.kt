@@ -6,6 +6,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -46,7 +47,18 @@ class VisualizerPreferences
             appContext.visualizerDataStore.edit { it[DIAGNOSTICS] = enabled }
         }
 
+        /**
+         * How far ahead of the player's own idea of the audible moment the visualizer listens, in ms, for
+         * audio stacks that report it late (65 ms on an Amlogic AM6). Negative values listen behind it.
+         */
+        val timingOffsetMs: Flow<Int> = appContext.visualizerDataStore.data.map { it[TIMING_OFFSET_MS] ?: 0 }
+
+        suspend fun setTimingOffsetMs(offsetMs: Int) {
+            appContext.visualizerDataStore.edit { it[TIMING_OFFSET_MS] = offsetMs }
+        }
+
         private companion object {
+            val TIMING_OFFSET_MS = intPreferencesKey("timing_offset_ms")
             val ENABLED = booleanPreferencesKey("enabled")
             val DIAGNOSTICS = booleanPreferencesKey("diagnostics")
         }

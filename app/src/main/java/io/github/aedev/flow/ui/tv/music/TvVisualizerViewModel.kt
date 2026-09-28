@@ -24,6 +24,9 @@ class TvVisualizerViewModel
     ) : ViewModel() {
         val active: StateFlow<Boolean> = engine.active.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
+        val timingOffsetMs: StateFlow<Int> =
+            preferences.timingOffsetMs.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
+
         val diagnosticsShown: StateFlow<Boolean> =
             preferences.diagnostics.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
@@ -50,8 +53,11 @@ class TvVisualizerViewModel
 
         fun stopListening() = tap.release()
 
-        /** Called on the render thread every frame. */
-        fun readAudible(out: ShortArray): Boolean = tap.readAudible(out)
+        /** Called on the render thread every frame: the samples heard [leadUs] from now. */
+        fun readAudible(
+            out: ShortArray,
+            leadUs: Long,
+        ): Boolean = tap.readAudible(out, leadUs)
 
         /** Left steps back through the presets shown, right jumps to a random one, as in ProjectM-TV. */
         fun stepPreset(forward: Boolean) {

@@ -3,6 +3,8 @@ package io.github.aedev.flow.ui.tv.music
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -10,6 +12,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 /**
  * The projectM visualizer as the now-playing backdrop. It runs for as long as now-playing is open,
@@ -24,6 +27,8 @@ internal fun TvVisualizerBackground(
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val host = remember(viewModel) { TvVisualizerHost(context, viewModel) }
+    val timingOffsetMs by viewModel.timingOffsetMs.collectAsStateWithLifecycle()
+    SideEffect { host.timingOffsetUs = timingOffsetMs * 1_000L }
     DisposableEffect(lifecycle, host) {
         val observer =
             LifecycleEventObserver { _, event ->

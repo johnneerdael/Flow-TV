@@ -2771,6 +2771,9 @@
     <string name="visualizer_resolution_auto">auto</string>
     <string name="visualizer_resolution_fixed">fixed</string>
     <string name="visualizer_diagnostics_line">%1$.1f of %2$d fps · %3$d×%4$d %5$s · %6$s · audio %7$.2f</string>
+    <string name="visualizer_timing">Visualizer timing</string>
+    <string name="visualizer_timing_subtitle">Raise it if the visuals come after the beat you hear, lower it if they come before. On an Ugoos AM6, +75 ms is about right.</string>
+    <string name="visualizer_timing_value">%1$+d ms</string>
     <string name="tv_settings_account">Account</string>
     <string name="tv_account_not_signed_in">Not signed in</string>
     <string name="tv_account_signed_in">Signed in</string>

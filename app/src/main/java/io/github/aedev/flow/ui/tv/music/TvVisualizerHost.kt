@@ -48,6 +48,10 @@ internal class TvVisualizerHost(
 
     val view = VisualizerView(context)
 
+    /** The user's timing offset; read by the render thread every frame. */
+    @Volatile
+    var timingOffsetUs = 0L
+
     init {
         engine.start()
         val profile = engine.profile
@@ -60,7 +64,8 @@ internal class TvVisualizerHost(
                 setTargetFps(display.refreshRate / divisor)
                 setMode(0, engine.lastAutoHeight)
             }
-        view.start(AudioFedRenderer(renderer, viewModel::readAudible))
+        val displayDelayUs = (DISPLAY_DELAY_VSYNCS * MICROS_PER_SECOND / display.refreshRate).toLong()
+        view.start(AudioFedRenderer(renderer) { window -> viewModel.readAudible(window, displayDelayUs + timingOffsetUs) })
         view.setFrameDivisor(divisor)
         ProjectMJNI.setForceHardCut(false)
     }
@@ -122,6 +127,10 @@ private const val MIN_FPS = 24f
 private const val WINDOW_SAMPLES = 576
 private const val SILENCE: Byte = -128
 private const val NANOS_PER_SECOND = 1_000_000_000f
+private const val MICROS_PER_SECOND = 1_000_000f
+
+// A drawn frame is composited at the next vsync and scanned out at the one after.
+private const val DISPLAY_DELAY_VSYNCS = 2
 
 private class AudioFedRenderer(
     private val delegate: VisualizerRenderer,

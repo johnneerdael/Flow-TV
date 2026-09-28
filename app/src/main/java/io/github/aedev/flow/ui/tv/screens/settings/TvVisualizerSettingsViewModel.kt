@@ -33,6 +33,13 @@ class TvVisualizerSettingsViewModel
             viewModelScope.launch { preferences.setEnabled(enabled) }
         }
 
+        val timingOffsetMs: StateFlow<Int> =
+            preferences.timingOffsetMs.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
+
+        fun setTimingOffsetMs(offsetMs: Int) {
+            viewModelScope.launch { preferences.setTimingOffsetMs(offsetMs) }
+        }
+
         fun setDiagnostics(enabled: Boolean) {
             viewModelScope.launch { preferences.setDiagnostics(enabled) }
         }

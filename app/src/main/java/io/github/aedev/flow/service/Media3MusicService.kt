@@ -62,6 +62,7 @@ import io.github.aedev.flow.player.audio.visualizer.VisualizerAudioTap
 import io.github.aedev.flow.player.audio.visualizer.VisualizerClockListener
 import io.github.aedev.flow.player.audio.visualizer.VisualizerEngine
 import io.github.aedev.flow.player.audio.visualizer.VisualizerTapProcessor
+import io.github.aedev.flow.player.audio.visualizer.followPlayerClock
 import io.github.aedev.flow.player.factory.LoadControlFactory
 import io.github.aedev.flow.player.sessionArtworkBitmapLoader
 import io.github.aedev.flow.utils.MusicPlayerUtils
@@ -376,6 +377,7 @@ class Media3MusicService : MediaLibraryService() {
 
         player.setOffloadEnabled(shouldOffloadAudio(isTv, equalizerRepository.needsProcessing.value))
         player.addListener(VisualizerClockListener(visualizerTap))
+        lifecycleScope.launch { followPlayerClock(visualizerTap, player) }
 
         player.addListener(
             object : Player.Listener {
