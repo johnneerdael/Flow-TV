@@ -41,7 +41,7 @@ concert recordings are one press away.
 
 | Method | How |
 |---|---|
-| **Downloader app** (Google TV, Fire TV, NVIDIA SHIELD) | Install [Downloader](https://www.aftvnews.com/downloader/) and enter code **`4718521`** |
+| **Downloader app** (Google TV, Fire TV, NVIDIA SHIELD) | Install [Downloader](https://www.aftvnews.com/downloader/) and enter code **`7170062`** |
 | **Direct link** (always the latest build) | https://github.com/johnneerdael/Milkbeat/releases/latest/download/milkbeat-universal.apk |
 | **All builds** | [Releases](https://github.com/johnneerdael/Milkbeat/releases) — every push to `main` is published automatically with release notes |
 

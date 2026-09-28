@@ -205,7 +205,7 @@ jobs:
 
   # Every push to main becomes a versioned GitHub Release (vX.Y.Z), so the newest
   # signed build is always at releases/latest/download/milkbeat-universal.apk
-  # (Downloader code 4718521).
+  # (Downloader code 7170062).
   publish-main:
     name: Publish main build
     needs: build
@@ -256,7 +256,7 @@ jobs:
             echo
             echo "## Install on Android TV"
             echo
-            echo "- **Downloader app:** enter code \`4718521\`"
+            echo "- **Downloader app:** enter code \`7170062\`"
             echo "- **Direct link (always the latest):** $latest/milkbeat-universal.apk"
             echo
             echo "Per-ABI APKs (\`milkbeat-arm64-v8a.apk\`, \`milkbeat-armeabi-v7a.apk\`) and \`checksums.txt\` are attached below."
