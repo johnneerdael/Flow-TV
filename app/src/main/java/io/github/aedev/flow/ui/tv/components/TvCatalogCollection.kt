@@ -1,5 +1,6 @@
 package io.github.aedev.flow.ui.tv.components
 
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,7 +12,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
@@ -20,8 +22,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -29,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import io.github.aedev.flow.R
 import io.github.aedev.flow.ui.tv.focus.ProvideTvRowPivot
+import io.github.aedev.flow.ui.tv.focus.tvRowEntersAtStart
 import io.github.aedev.flow.ui.tv.focus.tvRowFocus
 import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 import nl.neerdael.milkbeat.catalog.CollectionBlock
@@ -52,21 +61,35 @@ fun TvCatalogCollection(
     modifier: Modifier = Modifier,
 ) {
     val dimens = LocalTvDimens.current
+    val header = collection.header
+    val openHeader = header?.target?.takeIf { it.kind.isBrowsable }?.let { target -> { onOpen(target) } }
+    val hasActions = header != null && (onPlayAll != null || openHeader != null)
+    val actionsFocus = remember { FocusRequester() }
+    // The header's buttons sit at the far right, outside the beam of most cards below them, so a
+    // plain Up skipped them for the shelf above; leaving the shelf upwards lands on them instead.
+    val itemsModifier =
+        Modifier.focusProperties {
+            @OptIn(ExperimentalComposeUiApi::class)
+            exit = { direction ->
+                if (direction == FocusDirection.Up && hasActions) actionsFocus else FocusRequester.Default
+            }
+        }
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        collection.header?.let { header ->
+        header?.let {
             TvCatalogHeader(
-                header = header,
+                header = it,
                 onPlayAll = onPlayAll,
-                onOpen = header.target?.takeIf { it.kind.isBrowsable }?.let { target -> { onOpen(target) } },
+                onOpen = openHeader,
+                actionsModifier = Modifier.focusRequester(actionsFocus).focusGroup(),
                 modifier = Modifier.padding(horizontal = dimens.overscanHorizontal),
             )
         }
         when (collection.layout) {
-            CollectionLayout.HORIZONTAL_SHELF -> TvCatalogShelf(collection, onItemClick)
-            CollectionLayout.MULTI_COLUMN_LIST -> TvCatalogTrackColumns(collection, onItemClick)
+            CollectionLayout.HORIZONTAL_SHELF -> TvCatalogShelf(collection, onItemClick, itemsModifier)
+            CollectionLayout.MULTI_COLUMN_LIST -> TvCatalogTrackColumns(collection, onItemClick, itemsModifier)
         }
     }
 }
@@ -76,6 +99,7 @@ private fun TvCatalogHeader(
     header: CollectionHeader,
     onPlayAll: (() -> Unit)?,
     onOpen: (() -> Unit)?,
+    actionsModifier: Modifier,
     modifier: Modifier = Modifier,
 ) {
     val dimens = LocalTvDimens.current
@@ -109,19 +133,25 @@ private fun TvCatalogHeader(
             }
             TvSectionHeader(title = header.title)
         }
-        onOpen?.let {
-            TvIconButton(
-                icon = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                contentDescription = stringResource(R.string.tv_catalog_open, header.title),
-                onClick = it,
-            )
-        }
-        onPlayAll?.let {
-            TvButton(
-                text = stringResource(R.string.play_all),
-                onClick = it,
-                icon = Icons.Outlined.PlayArrow,
-            )
+        Row(
+            modifier = actionsModifier,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            onOpen?.let {
+                TvIconButton(
+                    icon = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                    contentDescription = stringResource(R.string.tv_catalog_open, header.title),
+                    onClick = it,
+                )
+            }
+            onPlayAll?.let {
+                TvButton(
+                    text = stringResource(R.string.play_all),
+                    onClick = it,
+                    icon = Icons.Outlined.PlayArrow,
+                )
+            }
         }
     }
 }
@@ -130,8 +160,9 @@ private fun TvCatalogHeader(
 private fun TvCatalogShelf(
     collection: CollectionBlock,
     onItemClick: (MetadataItem) -> Unit,
+    modifier: Modifier,
 ) {
-    TvMediaRow(items = collection.items, key = MetadataItem::id) { item ->
+    TvMediaRow(items = collection.items, key = MetadataItem::id, modifier = modifier) { item ->
         val artwork = item.artwork?.url.orEmpty()
         when (item.view ?: collection.defaultItemView) {
             ItemView.ARTIST_PORTRAIT -> {
@@ -163,28 +194,39 @@ private fun TvCatalogShelf(
 private fun TvCatalogTrackColumns(
     collection: CollectionBlock,
     onItemClick: (MetadataItem) -> Unit,
+    modifier: Modifier,
 ) {
     val dimens = LocalTvDimens.current
     val rows = minOf(TRACK_ROWS, collection.items.size)
+    val gridState = rememberLazyGridState()
+    val first = remember { FocusRequester() }
     ProvideTvRowPivot {
         LazyHorizontalGrid(
             rows = GridCells.Fixed(rows),
+            state = gridState,
             modifier =
-                Modifier
+                modifier
                     .fillMaxWidth()
                     .height(dimens.trackRowHeight * rows)
-                    .tvRowFocus(),
+                    .tvRowEntersAtStart(
+                        first = first,
+                        isAtStart = { gridState.firstVisibleItemIndex == 0 },
+                        scrollToStart = { gridState.scrollToItem(0) },
+                    ).tvRowFocus(),
             contentPadding = PaddingValues(horizontal = dimens.overscanHorizontal),
             horizontalArrangement = Arrangement.spacedBy(dimens.itemSpacing),
         ) {
-            items(collection.items, key = MetadataItem::id) { item ->
+            itemsIndexed(collection.items, key = { _, item -> item.id }) { index, item ->
                 TvMusicTrackRow(
                     title = item.title,
                     subtitle = item.subtitle,
                     thumbnailUrl = item.artwork?.url.orEmpty(),
                     durationSeconds = item.durationSeconds ?: 0,
                     onClick = { onItemClick(item) },
-                    modifier = Modifier.width(dimens.trackColumnWidth),
+                    modifier =
+                        Modifier
+                            .width(dimens.trackColumnWidth)
+                            .then(if (index == 0) Modifier.focusRequester(first) else Modifier),
                 )
             }
         }

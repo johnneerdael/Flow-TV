@@ -1,16 +1,22 @@
 package io.github.aedev.flow.ui.tv.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import io.github.aedev.flow.ui.tv.focus.ProvideTvRowPivot
+import io.github.aedev.flow.ui.tv.focus.tvRowEntersAtStart
 import io.github.aedev.flow.ui.tv.focus.tvRowFocus
 import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 
@@ -28,6 +34,8 @@ fun <T> TvMediaRow(
     card: @Composable (T) -> Unit,
 ) {
     val dimens = LocalTvDimens.current
+    val listState = rememberLazyListState()
+    val first = remember { FocusRequester() }
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(14.dp),
@@ -40,17 +48,26 @@ fun <T> TvMediaRow(
         }
         ProvideTvRowPivot {
             LazyRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .tvRowFocus(),
+                state = listState,
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .tvRowEntersAtStart(
+                            first = first,
+                            isAtStart = { listState.firstVisibleItemIndex == 0 },
+                            scrollToStart = { listState.scrollToItem(0) },
+                        ).tvRowFocus(),
                 horizontalArrangement = Arrangement.spacedBy(dimens.itemSpacing),
                 // Vertical headroom so the focus scale never clips at the row bounds.
-                contentPadding = PaddingValues(
-                    horizontal = dimens.overscanHorizontal,
-                    vertical = 12.dp,
-                ),
+                contentPadding =
+                    PaddingValues(
+                        horizontal = dimens.overscanHorizontal,
+                        vertical = 12.dp,
+                    ),
             ) {
-                items(items = items, key = key) { item -> card(item) }
+                itemsIndexed(items = items, key = { _, item -> key(item) }) { index, item ->
+                    if (index == 0) Box(Modifier.focusRequester(first)) { card(item) } else card(item)
+                }
             }
         }
     }
