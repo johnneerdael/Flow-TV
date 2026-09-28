@@ -37,7 +37,8 @@ internal fun LazyListScope.catalogTrackTable(
     endPadding: Dp,
     firstRowFocus: FocusRequester? = null,
 ) {
-    val showAlbum = collection.items.any { it.album != null }
+    // A column most rows leave empty is noise; YouTube names the album only on some playlist tracks.
+    val showAlbum = collection.items.count { it.album != null } * 2 >= collection.items.size
     val padding = Modifier.padding(start = startPadding, end = endPadding)
     collection.header?.let { header ->
         item(key = "${collection.id}/header") {

@@ -116,6 +116,14 @@ class YouTubePageMapperTest {
     }
 
     @Test
+    fun `an album's track that names no artist is credited to the album's artist, never to its play count`() {
+        val tracks = collections(album.blocks).first()
+
+        assertThat(tracks.items.flatMap { it.artists }.map { it.name }).doesNotContain("2M plays")
+        assertThat(tracks.items.all { it.artists.isNotEmpty() }).isTrue()
+    }
+
+    @Test
     fun `an album is followed by releases like it`() {
         assertThat(collections(album.blocks).map { it.header?.title }).contains("Releases for you")
     }

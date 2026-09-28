@@ -76,17 +76,21 @@ internal object YouTubeShelfMapper {
         )
     }
 
-    /** Rows of one list shelf, numbered when [numbered], in the order they are served. */
+    /**
+     * Rows of one list shelf, numbered when [numbered], in the order they are served. A row that names no
+     * artist of its own (an album's tracks) is credited to [defaultArtists].
+     */
     fun trackTable(
         id: String,
         title: String?,
         rows: List<MusicResponsiveListItemRenderer>,
         numbered: Boolean,
         showAll: EntityRef? = null,
+        defaultArtists: List<ArtistCredit> = emptyList(),
     ): CollectionBlock? {
         val items =
             rows
-                .mapIndexedNotNull { index, renderer -> row(renderer, id, ordinal = (index + 1).takeIf { numbered }) }
+                .mapIndexedNotNull { index, renderer -> row(renderer, id, ordinal = (index + 1).takeIf { numbered }, defaultArtists) }
                 .distinctBy { it.entity }
         if (items.isEmpty()) return null
         return CollectionBlock(
@@ -132,6 +136,7 @@ internal object YouTubeShelfMapper {
         renderer: MusicResponsiveListItemRenderer,
         collectionId: String,
         ordinal: Int? = null,
+        defaultArtists: List<ArtistCredit> = emptyList(),
     ): MetadataItem? {
         val columns =
             renderer.flexColumns.map {
@@ -189,15 +194,7 @@ internal object YouTubeShelfMapper {
             artists =
                 artistRuns
                     .map { run -> ArtistCredit(name = run.text, entity = run.navigationEndpoint?.browseEndpoint?.toEntityRef()) }
-                    .ifEmpty {
-                        listOfNotNull(
-                            detailColumns
-                                .firstOrNull()
-                                ?.firstOrNull()
-                                ?.text
-                                ?.let(::ArtistCredit),
-                        )
-                    },
+                    .ifEmpty { defaultArtists },
             durationSeconds =
                 renderer.fixedColumns
                     ?.firstOrNull()

@@ -7,6 +7,7 @@ import io.github.aedev.flow.innertube.models.MusicShelfRenderer
 import io.github.aedev.flow.innertube.models.SectionListRenderer
 import io.github.aedev.flow.innertube.models.getContinuation
 import io.github.aedev.flow.innertube.models.response.BrowseResponse
+import nl.neerdael.milkbeat.catalog.ArtistCredit
 import nl.neerdael.milkbeat.catalog.Artwork
 import nl.neerdael.milkbeat.catalog.Attribution
 import nl.neerdael.milkbeat.catalog.EntityHeader
@@ -90,11 +91,13 @@ internal object YouTubePageMapper {
                 ?.contents
                 .orEmpty()
         val tracksShelf = sections.firstNotNullOfOrNull { it.musicPlaylistShelfRenderer }
+        val cover = header?.let { cover(it, entity) }
+        val isAlbum = entity.kind == EntityKind.ALBUM
+        // An album's tracks name no artist of their own: they are the album's.
+        val albumArtists = if (isAlbum) listOfNotNull(cover?.attribution?.let { ArtistCredit(it.name, it.entity) }) else emptyList()
         return MetadataPage(
             id = "youtube-music/${entity.kind.name.lowercase()}/${entity.providerId}",
-            blocks =
-                listOfNotNull(header?.let { cover(it, entity) }) +
-                    sections.mapNotNull { section(it, numbered = entity.kind == EntityKind.ALBUM) },
+            blocks = listOfNotNull(cover) + sections.mapNotNull { section(it, numbered = isAlbum, defaultArtists = albumArtists) },
             nextCursor = tracksShelf?.contents?.getContinuation(),
         )
     }
@@ -185,6 +188,7 @@ internal object YouTubePageMapper {
     private fun section(
         section: SectionListRenderer.Content,
         numbered: Boolean = false,
+        defaultArtists: List<ArtistCredit> = emptyList(),
     ): PageBlock? {
         section.musicCarouselShelfRenderer?.let { return YouTubeShelfMapper.carousel(it) }
         section.musicPlaylistShelfRenderer?.let { return tracks(it.contents.orEmpty(), numbered) }
@@ -195,6 +199,7 @@ internal object YouTubePageMapper {
             title = title,
             rows = shelf.contents.orEmpty().mapNotNull { it.musicResponsiveListItemRenderer },
             numbered = numbered,
+            defaultArtists = defaultArtists,
             showAll =
                 shelf.bottomEndpoint
                     ?.browseEndpoint
