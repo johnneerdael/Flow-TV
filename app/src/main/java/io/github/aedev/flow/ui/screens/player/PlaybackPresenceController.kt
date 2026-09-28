@@ -54,7 +54,7 @@ internal class PlaybackPresenceController(
     fun armNotificationFor(video: Video) =
         playerManager.startBackgroundService(
             videoId = video.id,
-            title = video.title.ifEmpty { "MusicViz Player" },
+            title = video.title.ifEmpty { "Milkbeat Player" },
             channel = video.channelName,
             thumbnail = video.thumbnailUrl,
         )

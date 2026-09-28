@@ -6,7 +6,7 @@ import androidx.compose.material3.Shapes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.unit.dp
-import io.github.aedev.flow.ui.theme.MusicVizColorScheme
+import io.github.aedev.flow.ui.theme.MilkbeatColorScheme
 
 private val TvShapes =
     Shapes(
@@ -18,15 +18,15 @@ private val TvShapes =
     )
 
 /**
- * TV layer over [io.github.aedev.flow.ui.theme.FlowTheme]: MusicViz's single AMOLED scheme
- * ([MusicVizColorScheme]) whatever the phone theme is set to, plus the ten-foot type scale,
+ * TV layer over [io.github.aedev.flow.ui.theme.FlowTheme]: Milkbeat's single AMOLED scheme
+ * ([MilkbeatColorScheme]) whatever the phone theme is set to, plus the ten-foot type scale,
  * larger shapes, and TV layout tokens.
  */
 @Composable
 fun TvTheme(content: @Composable () -> Unit) {
     CompositionLocalProvider(LocalTvDimens provides TvDimens()) {
         MaterialTheme(
-            colorScheme = MusicVizColorScheme,
+            colorScheme = MilkbeatColorScheme,
             typography = TvTypography,
             shapes = TvShapes,
             content = content,

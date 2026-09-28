@@ -214,12 +214,12 @@ class Media3MusicService : MediaLibraryService() {
 
         try {
             val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MusicViz:MusicServiceWakeLock")
+            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Milkbeat:MusicServiceWakeLock")
             wakeLock?.setReferenceCounted(false)
 
             val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
             @Suppress("DEPRECATION")
-            wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL, "MusicViz:MusicServiceWifiLock")
+            wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL, "Milkbeat:MusicServiceWifiLock")
             wifiLock?.setReferenceCounted(false)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to acquire locks", e)

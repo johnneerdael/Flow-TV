@@ -15,7 +15,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "MusicViz"
+rootProject.name = "Milkbeat"
 include(":app")
 include(":benchmark")
 include(":projectm-core")

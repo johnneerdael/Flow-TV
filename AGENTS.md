@@ -1,6 +1,6 @@
-# Working with MusicViz as an AI agent
+# Working with Milkbeat as an AI agent
 
-MusicViz (application id `nl.neerdael.musicviz`; Kotlin sources and namespace stay `io.github.aedev.flow`) is an Android TV music app forked from [Flow](https://github.com/A-EDev/Flow), an Android music/video app written in Kotlin with Jetpack Compose, Hilt, and Media3/ExoPlayer. It plays YouTube content via a native InnerTube client with a NewPipe-based fallback extraction path, supports local media playback, offline downloads, casting, lyrics, a device-to-device sync feature, and an on-device recommendation engine (FlowNeuroEngine). It follows Material 3 design guidelines closely.
+Milkbeat (application id `nl.neerdael.milkbeat`; Kotlin sources and namespace stay `io.github.aedev.flow`) is an Android TV music app forked from [Flow](https://github.com/A-EDev/Flow), an Android music/video app written in Kotlin with Jetpack Compose, Hilt, and Media3/ExoPlayer. It plays YouTube content via a native InnerTube client with a NewPipe-based fallback extraction path, supports local media playback, offline downloads, casting, lyrics, a device-to-device sync feature, and an on-device recommendation engine (FlowNeuroEngine). It follows Material 3 design guidelines closely.
 
 Product flavors: `github` (default, in-app updater enabled) and `foss` (no updater). Always use flavor-prefixed Gradle tasks — e.g. `assembleGithubDebug`, `compileFossDebugKotlin` — never bare `assembleDebug`/`compileDebugKotlin`.
 
@@ -136,7 +136,7 @@ A legitimate hand-rolled component must therefore:
 
 ## Performance, battery, and thermals — non-negotiable
 
-MusicViz is a media player that runs for hours at a time. Jank, dropped frames, playback stutter,
+Milkbeat is a media player that runs for hours at a time. Jank, dropped frames, playback stutter,
 device heat, and battery drain are critical bugs, not cosmetic issues. Every rule below is
 anchored in a real shipped regression that had to be found and fixed on-device — treat them as
 hard constraints, not suggestions.
@@ -214,7 +214,7 @@ hard constraints, not suggestions.
 13. Sustained heat while the app is open = per-frame work; drain with the screen off = CPU/network
     loops. Diagnose in that order: (a) run the rule-2 audit over every composed-but-hidden tree;
     (b) count fetches per user action in logcat — any unexplained second fetch is the bug;
-    (c) check `adb shell dumpsys gfxinfo nl.neerdael.musicviz` for continuous frame production
+    (c) check `adb shell dumpsys gfxinfo nl.neerdael.milkbeat` for continuous frame production
     while the UI should be idle; (d) only then suspect the player path. Do not "fix" heat by
     degrading visible design, motion, or update smoothness — find the invisible work instead.
 
@@ -236,7 +236,7 @@ hard constraints, not suggestions.
 
 ## Dependency injection and service-locator migration
 
-MusicViz uses Hilt, but some legacy app-owned classes are still reached through static/companion
+Milkbeat uses Hilt, but some legacy app-owned classes are still reached through static/companion
 `getInstance()` calls. Treat those calls as migration debt, not as the pattern for new code. The
 goal is explicit, testable dependencies while preserving object identity, lifecycle, startup cost,
 and playback behavior.

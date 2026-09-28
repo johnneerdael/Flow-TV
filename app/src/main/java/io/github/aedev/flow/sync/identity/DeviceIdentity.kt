@@ -52,7 +52,7 @@ class DeviceIdentity
 
         private fun defaultDeviceName(): String {
             val model = Build.MODEL?.trim().orEmpty()
-            return if (model.isEmpty()) "MusicViz (Android)" else "MusicViz ($model)"
+            return if (model.isEmpty()) "Milkbeat (Android)" else "Milkbeat ($model)"
         }
 
         companion object {

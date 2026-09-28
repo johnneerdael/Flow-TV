@@ -17,7 +17,7 @@ internal fun buildSubscriptionFailureReport(
     sessionLogs: String,
 ): String =
     buildString {
-        appendLine("MusicViz — subscription refresh failure")
+        appendLine("Milkbeat — subscription refresh failure")
         appendLine("=".repeat(60))
         appendLine()
         append(deviceInfo)

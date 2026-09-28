@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MusicViz</string>
+    <string name="app_name">Milkbeat</string>
     <string name="subscriptions_search_placeholder">Cerca iscrizioni …</string>
     <string name="top_bar_subscriptions_title">Iscrizioni</string>
     <string name="subscribed">Iscritto</string>
@@ -151,7 +151,7 @@
     <string name="new_update_available">Nuovo aggiornamento disponibile</string>
     <string name="update_available_template">%1$s è ora disponibile</string>
     <string name="release_notes">NOTE DI RILASCIO</string>
-    <string name="update_flow">Aggiorna MusicViz</string>
+    <string name="update_flow">Aggiorna Milkbeat</string>
     <string name="maybe_later">Forse più tardi</string>
     <string name="nav_home">Home</string>
     <string name="nav_shorts">Shorts</string>
@@ -269,10 +269,10 @@
     <string name="peace_and_quiet">Pace e tranquillità</string>
     <string name="notifications_empty_body">Sei in pari! I nuovi aggiornamenti dalle tue iscrizioni appariranno qui.</string>
     <string name="settings_title">Impostazioni</string>
-    <string name="settings_flow_engine_header">Algoritmo di MusicViz</string>
+    <string name="settings_flow_engine_header">Algoritmo di Milkbeat</string>
     <string name="settings_active_learning">APPRENDIMENTO ATTIVO</string>
-    <string name="settings_reset_brain_title">Reimpostare la personalità di MusicViz?</string>
-    <string name="settings_reset_brain_body">Questa operazione cancellerà completamente il tuo profilo di interessi \"MusicViz Brain\".\n\n• Tutti gli argomenti appresi verranno dimenticati.\n• I tratti della personalità verranno reimpostati a neutro.\n• I suggerimenti torneranno a quelli predefiniti.\n\nQuesta azione non può essere annullata.</string>
+    <string name="settings_reset_brain_title">Reimpostare la personalità di Milkbeat?</string>
+    <string name="settings_reset_brain_body">Questa operazione cancellerà completamente il tuo profilo di interessi \"Milkbeat Brain\".\n\n• Tutti gli argomenti appresi verranno dimenticati.\n• I tratti della personalità verranno reimpostati a neutro.\n• I suggerimenti torneranno a quelli predefiniti.\n\nQuesta azione non può essere annullata.</string>
     <string name="settings_reset_everything">Reimposta tutto</string>
     <string name="settings_analyzing_interactions">Analisi delle tue interazioni in corso…</string>
     <string name="settings_view_analytics">Visualizza analisi</string>
@@ -282,7 +282,7 @@
     <string name="settings_header_about">Informazioni</string>
     <string name="settings_header_notifications">Notifiche</string>
     <string name="settings_item_notifications">Preferenze delle notifiche</string>
-    <string name="settings_item_notifications_subtitle">Controlla le notifiche che MusicViz può inviare</string>
+    <string name="settings_item_notifications_subtitle">Controlla le notifiche che Milkbeat può inviare</string>
     <string name="notif_settings_title">Preferenze delle notifiche</string>
     <string name="notif_type_new_videos">Nuovi video</string>
     <string name="notif_type_new_videos_subtitle">Notifica quando i canali a cui sei iscritto caricano nuovi video</string>
@@ -291,7 +291,7 @@
     <string name="notif_type_reminders">Promemoria tempo di utilizzo</string>
     <string name="notif_type_reminders_subtitle">Promemoria per l\'ora di dormire e per le pause da Gestione tempo di utilizzo</string>
     <string name="notif_type_updates">Aggiornamenti app</string>
-    <string name="notif_type_updates_subtitle">Ricevi una notifica quando una nuova versione di MusicViz è disponibile</string>
+    <string name="notif_type_updates_subtitle">Ricevi una notifica quando una nuova versione di Milkbeat è disponibile</string>
     <string name="notif_type_general">Notifiche generali</string>
     <string name="notif_type_general_subtitle">Avvisi e annunci vari dell\'app</string>
     <string name="notif_system_settings">Impostazioni delle notifiche di sistema</string>
@@ -300,7 +300,7 @@
     <string name="notif_check_interval">Intervallo di verifica di nuovi video</string>
     <string name="notif_check_interval_subtitle_template">Verifica ogni %s</string>
     <string name="notif_check_interval_dialog_title">Intervallo di verifica</string>
-    <string name="notif_check_interval_dialog_body">Quanto spesso MusicViz verifica la presenza di nuovi video dai canali a cui sei iscritto.</string>
+    <string name="notif_check_interval_dialog_body">Quanto spesso Milkbeat verifica la presenza di nuovi video dai canali a cui sei iscritto.</string>
     <string name="notif_interval_15m">15 minuti</string>
     <string name="notif_interval_30m">30 minuti</string>
     <string name="notif_interval_1h">1 ora</string>
@@ -331,13 +331,13 @@
     <string name="settings_item_export_data_subtitle">Esegui il backup dei tuoi dati</string>
     <string name="settings_item_import_data">Importa dati</string>
     <string name="settings_item_import_data_subtitle">Reimposta da un backup o importa da un\'altra app</string>
-    <string name="settings_item_about_flow">Informazioni su MusicViz</string>
+    <string name="settings_item_about_flow">Informazioni su Milkbeat</string>
     <string name="settings_item_about_flow_subtitle">Versione, licenza, collaboratori</string>
     <string name="settings_region_dialog_title">Seleziona regione</string>
     <string name="settings_export_success">Dati esportati correttamente</string>
     <string name="settings_export_failed">Esportazione non riuscita: %1$s</string>
     <string name="appearance_title">Aspetto</string>
-    <string name="appearance_subtitle">Personalizza la tua esperienza in MusicViz</string>
+    <string name="appearance_subtitle">Personalizza la tua esperienza in Milkbeat</string>
     <string name="appearance_current_theme">TEMA ATTUALE</string>
     <string name="appearance_category_all">Tutti</string>
     <string name="appearance_category_light">Chiari</string>
@@ -408,7 +408,7 @@
     <string name="theme_name_cream_paper">Carta Crema</string>
     <string name="theme_desc_cream_paper">Caldo e accogliente</string>
     <string name="theme_name_classic_dark">Classico</string>
-    <string name="theme_desc_classic_dark">Palette originale di MusicViz</string>
+    <string name="theme_desc_classic_dark">Palette originale di Milkbeat</string>
     <string name="theme_name_true_black">Nero Assoluto</string>
     <string name="theme_desc_true_black">OLED Puro</string>
     <string name="theme_name_monochrome">Monocromatico</string>
@@ -491,7 +491,7 @@
     <string name="content_settings_video_card_actions_title">Pulsanti mi piace e non mi piace sulla scheda video</string>
     <string name="content_settings_video_card_actions_subtitle">Mostra i pulsanti pollice su/pollice giù sulle schede video per ottimizzare rapidamente i tuoi suggerimenti</string>
     <string name="content_settings_show_app_logo_title">Mostra icona del logo dell\'app</string>
-    <string name="content_settings_show_app_logo_subtitle">Mostra l\'icona del logo MusicViz accanto al nome dell\'app nella barra superiore della schermata home</string>
+    <string name="content_settings_show_app_logo_subtitle">Mostra l\'icona del logo Milkbeat accanto al nome dell\'app nella barra superiore della schermata home</string>
     <string name="content_settings_header_content_components">Componenti dei contenuti</string>
     <string name="content_settings_hide_watched_title">Nascondi video già visti</string>
     <string name="content_settings_hide_watched_subtitle">Filtra i video già guardati dal feed home e dalle iscrizioni</string>
@@ -690,7 +690,7 @@
     <string name="interests_tab">Interessi</string>
     <string name="blocked_tab">Bloccati</string>
     <string name="your_interests_title">I tuoi interessi</string>
-    <string name="your_interests_desc">Gli argomenti selezionati aiutano MusicViz a suggerire contenuti migliori. Tocca gli argomenti per aggiungerli o rimuoverli.</string>
+    <string name="your_interests_desc">Gli argomenti selezionati aiutano Milkbeat a suggerire contenuti migliori. Tocca gli argomenti per aggiungerli o rimuoverli.</string>
     <string name="currently_following">Seguiti attualmente</string>
     <string name="tap_to_remove">Tocca per rimuovere</string>
     <string name="add_topics">Aggiungi argomenti</string>
@@ -781,12 +781,12 @@
     <string name="period_six_months">6 mesi</string>
     <string name="period_one_year">1 anno</string>
     <string name="import_data_title">Importazione dei dati</string>
-    <string name="import_flow_backup_success">Backup di MusicViz importato correttamente</string>
-    <string name="import_flow_backup_failed_template">Impossibile importare il backup di MusicViz: %1$s</string>
+    <string name="import_flow_backup_success">Backup di Milkbeat importato correttamente</string>
+    <string name="import_flow_backup_failed_template">Impossibile importare il backup di Milkbeat: %1$s</string>
     <string name="import_newpipe_failed_template">Impossibile importare il backup di NewPipe: %1$s</string>
     <string name="import_youtube_failed_template">Impossibile importare il backup di YouTube: %1$s</string>
-    <string name="import_flow_backup_item_title">Importa backup di MusicViz</string>
-    <string name="import_flow_backup_desc">Ripristina la tua cronologia, le impostazioni e le iscrizioni da un file di backup di MusicViz.</string>
+    <string name="import_flow_backup_item_title">Importa backup di Milkbeat</string>
+    <string name="import_flow_backup_desc">Ripristina la tua cronologia, le impostazioni e le iscrizioni da un file di backup di Milkbeat.</string>
     <string name="import_from_newpipe">Importa da NewPipe</string>
     <string name="import_from_newpipe_desc">Importa iscrizioni da un file di esportazione di NewPipe (JSON).</string>
     <string name="import_from_libretube">Importa da LibreTube</string>
@@ -838,8 +838,8 @@
     <string name="location_dialog_subtitle">Scegli dove salvare i file scaricati nel dispositivo.</string>
     <string name="location_preset_header">Posizioni predefinite</string>
     <string name="location_custom_header">Posizione personalizzata</string>
-    <string name="location_downloads_label">Downloads / MusicViz</string>
-    <string name="location_movies_label">Movies / MusicViz</string>
+    <string name="location_downloads_label">Downloads / Milkbeat</string>
+    <string name="location_movies_label">Movies / Milkbeat</string>
     <string name="location_internal_app_label">Archiviazione app interna</string>
     <string name="location_internal_app_desc">Privata dell\'app — i file potrebbero essere eliminati se disinstalli l\'app</string>
     <string name="location_custom_saf_label">Sfoglia…</string>
@@ -858,7 +858,7 @@
     <string name="newpipe_extractor_subtitle">Libreria di estrazione principale</string>
     <string name="about_license">Licenza</string>
     <string name="about_changelog">Changelog</string>
-    <string name="whats_new_in_flow">Novità in MusicViz</string>
+    <string name="whats_new_in_flow">Novità in Milkbeat</string>
     <string name="about_device_info">Informazioni sul dispositivo</string>
     <string name="gnu_license_full_title">Licenza Pubblica Generica GNU</string>
     <string name="loading_ellipsis">Caricamento…</string>
@@ -897,7 +897,7 @@
     <string name="playlist_empty_desc">Aggiungi video dal player video\nper creare la tua playlist</string>
     <string name="delete_playlist_dialog_title">Eliminare la playlist?</string>
     <string name="delete_playlist_dialog_text">Questa operazione eliminerà definitivamente \"%1$s\" e tutti i suoi video.</string>
-    <string name="welcome_to_flow">Benvenuto in MusicViz</string>
+    <string name="welcome_to_flow">Benvenuto in Milkbeat</string>
     <string name="onboarding_subtitle">Dicci cosa ti interessa</string>
     <string name="onboarding_instructions">Seleziona almeno 3 argomenti per personalizzare la tua esperienza</string>
     <string name="btn_skip_for_now">Salta per ora</string>
@@ -914,7 +914,7 @@
     <string name="category_creative">Creatività</string>
     <string name="category_science_nature">Scienza e natura</string>
     <string name="category_news_current_events">Notizie e attualità</string>
-    <string name="flow_control_center">Pannello di controllo di MusicViz</string>
+    <string name="flow_control_center">Pannello di controllo di Milkbeat</string>
     <string name="action_refresh">Aggiorna</string>
     <string name="loading_neural_matrix">Caricamento della matrice neurale in corso…</string>
     <string name="neural_interest_map_subtitle">La tua mappa neurale degli interessi</string>
@@ -940,7 +940,7 @@
     <string name="stats_topics">Argomenti</string>
     <string name="empty_bubble_cloud_message">Guarda qualche video per popolare la tua nebulosa di interessi!</string>
     <string name="export_profile_data">Esporta dati profilo</string>
-    <string name="flow_neural_profile_export_subject">Esportazione del profilo neurale di MusicViz</string>
+    <string name="flow_neural_profile_export_subject">Esportazione del profilo neurale di Milkbeat</string>
     <string name="screen_title_music_library">Libreria musicale</string>
     <string name="subtitle_liked_music">I brani che ti piacciono</string>
     <string name="subtitle_history">I brani che hai ascoltato</string>
@@ -1103,17 +1103,17 @@
     <string name="check_for_updates">Controlla aggiornamenti</string>
     <string name="check_for_updates_subtitle">Tocca per controllare l\'ultima versione disponibile</string>
     <string name="checking_for_updates">Controllo aggiornamenti in corso…</string>
-    <string name="flow_is_up_to_date">MusicViz è aggiornato!</string>
+    <string name="flow_is_up_to_date">Milkbeat è aggiornato!</string>
     <string name="update_check_failed">Impossibile verificare gli aggiornamenti. Controlla la tua connessione.</string>
     <string name="export_engine_data">Esporta profilo dell\'algoritmo</string>
     <string name="export_engine_data_subtitle">Esegui il backup della tua personalità AI e dei dati di apprendimento</string>
     <string name="export_engine_success">Profilo dell\'algoritmo esportato correttamente</string>
     <string name="export_engine_failed">Impossibile esportare il profilo dell\'algoritmo</string>
-    <string name="import_engine_data">Importa i dati dell\'algoritmo di MusicViz</string>
+    <string name="import_engine_data">Importa i dati dell\'algoritmo di Milkbeat</string>
     <string name="import_engine_data_desc">Ripristina la tua personalità AI da un file di backup</string>
     <string name="import_engine_success">Profilo dell\'algoritmo ripristinato correttamente</string>
     <string name="import_engine_failed">Impossibile importare il profilo dell\'algoritmo</string>
-    <string name="import_engine_section_title">Motore di MusicViz</string>
+    <string name="import_engine_section_title">Motore di Milkbeat</string>
     <string name="import_engine_section_subtitle">Ripristina il tuo profilo di apprendimento AI</string>
     <string name="master_backup_title">Backup completo</string>
     <string name="master_backup_subtitle">Esporta il cervello e i dati dell\'app in un unico file</string>
@@ -1168,7 +1168,7 @@
     <string name="error_not_available">Video non disponibile</string>
     <string name="error_not_available_hint">Questo video potrebbe essere stato eliminato, reso privato o rimosso da YouTube.</string>
     <string name="error_not_supported">Tipologia di contenuto non supportato</string>
-    <string name="error_not_supported_hint">Questo formato o contenuto non può essere riprodotto in MusicViz.</string>
+    <string name="error_not_supported_hint">Questo formato o contenuto non può essere riprodotto in Milkbeat.</string>
     <string name="error_no_internet">Nessuna connessione internet</string>
     <string name="error_no_internet_hint">Controlla la connessione Wi-Fi o i dati mobili e riprova.</string>
     <string name="error_timeout">Connessione scaduta</string>
@@ -1186,7 +1186,7 @@
     <string name="error_playback_failed">Riproduzione non riuscita</string>
     <string name="error_playback_failed_hint">Si è verificato un errore imprevisto del player. Riprova.</string>
     <string name="error_extraction_failed">Impossibile analizzare i dati video</string>
-    <string name="error_extraction_failed_hint">YouTube potrebbe aver aggiornato il suo formato. MusicViz verrà aggiornato a breve — riprova più tardi.</string>
+    <string name="error_extraction_failed_hint">YouTube potrebbe aver aggiornato il suo formato. Milkbeat verrà aggiornato a breve — riprova più tardi.</string>
     <string name="error_generic">Impossibile caricare il video</string>
     <string name="error_generic_hint">Si è verificato un errore imprevisto. Riprova.</string>
     <string name="player_settings_overlay_controls">Controlli a schermo</string>
@@ -1403,7 +1403,7 @@
     <string name="import_newpipe_history">Importa cronologia di NewPipe</string>
     <string name="import_newpipe_history_desc">Importa la cronologia di visualizzazione da backup ZIP di NewPipe o da un file newpipe.db.</string>
     <string name="notif_master_toggle">Abilita notifiche</string>
-    <string name="notif_master_toggle_subtitle">Consenti a MusicViz di cercare nuovi video in secondo piano</string>
+    <string name="notif_master_toggle_subtitle">Consenti a Milkbeat di cercare nuovi video in secondo piano</string>
     <string name="notif_check_interval_disabled">Il controllo delle notifiche in background è disabilitato</string>
     <string name="player_adaptive_size_title">Dimensione del player adattiva</string>
     <string name="player_adaptive_size_subtitle">Usa il formato video per l\'altezza del player. Disattiva per un rapporto fisso 16:9.</string>
@@ -1563,7 +1563,7 @@
     <string name="datetime_override_relative">Relativo</string>
     <string name="datetime_override_exact">Esatto</string>
     <string name="datetime_override_both">Entrambi</string>
-    <string name="export_watch_history_desc">Esporta come JSON della cronologia di YouTube (importabile in LibreTube e MusicViz)</string>
+    <string name="export_watch_history_desc">Esporta come JSON della cronologia di YouTube (importabile in LibreTube e Milkbeat)</string>
     <string name="history_export_failed">Impossibile esportare la cronologia delle visualizzazioni</string>
     <string name="history_delete_shorts">Elimina gli Shorts dalla cronologia</string>
     <string name="history_delete_shorts_title">Eliminare gli Shorts?</string>
@@ -1592,7 +1592,7 @@
     <string name="local_media_empty_title">Nessun %1$s trovato</string>
     <string name="local_media_empty_body">I video e la musica memorizzati su questo dispositivo appariranno qui.</string>
     <string name="local_media_permission_title">Autorizzazione necessaria</string>
-    <string name="local_media_permission_body">Concedi l\'accesso ai contenuti multimediali in modo che MusicViz possa individuare e riprodurre video e musica locali.</string>
+    <string name="local_media_permission_body">Concedi l\'accesso ai contenuti multimediali in modo che Milkbeat possa individuare e riprodurre video e musica locali.</string>
     <string name="local_media_grant">Concedi accesso</string>
     <string name="history_tab_local_videos">Video locali</string>
     <string name="history_tab_local_music">Musica locale</string>
@@ -1628,7 +1628,7 @@
     <string name="no_match_found">Nessuna corrispondenza trovata</string>
     <string name="recognition_error">Identificazione non riuscita</string>
     <string name="try_again">Riprova</string>
-    <string name="search_in_flow">Cerca in MusicViz</string>
+    <string name="search_in_flow">Cerca in Milkbeat</string>
     <string name="recognition_search_history">Cerca brani identificati</string>
     <string name="recognition_history_empty">I brani identificati appariranno qui</string>
     <string name="recognition_clear_history">Cancellare la cronologia?</string>
@@ -1681,7 +1681,7 @@
     <string name="sync_qr_scan_on_target_receiving">Scansionalo sul dispositivo da cui stai ricevendo</string>
     <string name="sync_confirmation_code">Codice di conferma: %1$s</string>
     <string name="sync_expires_in">Scade in %1$ds</string>
-    <string name="sync_qr_network_note">Entrambi i dispositivi devono essere connessi alla stessa rete Wi-Fi (o all\'hotspot di uno dei due). Potrebbe essere necessario consentire il passaggio di MusicViz attraverso il firewall.</string>
+    <string name="sync_qr_network_note">Entrambi i dispositivi devono essere connessi alla stessa rete Wi-Fi (o all\'hotspot di uno dei due). Potrebbe essere necessario consentire il passaggio di Milkbeat attraverso il firewall.</string>
     <string name="sync_sas_title">I codici di verifica corrispondono?</string>
     <string name="sync_sas_body">Conferma che questo codice di verifica a 6 cifre sia identico in entrambi i dispositivi prima di continuare.</string>
     <string name="sync_sas_differ">Non corrispondono</string>
@@ -1705,7 +1705,7 @@
     <string name="sync_error_peer_also_receive">Anche l\'altro dispositivo è impostato su Ricezione. Impostalo su Invio, quindi riprova.</string>
     <string name="sync_error_qr_expired">Questa sessione di abbinamento è scaduta. Chiedi all\'altro dispositivo di crearne una nuova.</string>
     <string name="sync_error_qr_wrong_version">Versione dell\'app incompatibile sull\'altro dispositivo.</string>
-    <string name="sync_error_qr_not_flow">Questi non sembrano dati di connessione di MusicViz validi.</string>
+    <string name="sync_error_qr_not_flow">Questi non sembrano dati di connessione di Milkbeat validi.</string>
     <string name="sync_error_qr_bad_address">I dati di connessione sono privi di un indirizzo di rete valido.</string>
     <string name="player_settings_overlay_comments">Pulsante Commenti</string>
     <string name="player_settings_overlay_comments_subtitle">Mostra un pulsante per i commenti nel lettore a schermo intero per aprirli in un pannello laterale</string>
@@ -1752,7 +1752,7 @@
     <string name="persona_initiate_title">L\'Iniziato</string>
     <string name="persona_initiate_description">Hai appena cominciato. Il tuo profilo sta ancora prendendo forma.</string>
     <string name="persona_audiophile_title">L\'Audiofilo</string>
-    <string name="persona_audiophile_description">Usi MusicViz principalmente per la Musica. L\'atmosfera è tutto.</string>
+    <string name="persona_audiophile_description">Usi Milkbeat principalmente per la Musica. L\'atmosfera è tutto.</string>
     <string name="persona_livewire_title">Il Fulmine</string>
     <string name="persona_livewire_description">Ami l\'energia pura dei live stream e delle anteprime.</string>
     <string name="persona_night_owl_title">Il Gufo Notturno</string>
@@ -1857,9 +1857,9 @@
     <string name="subtitle_preview_text">Anteprima del testo dei sottotitoli</string>
     <string name="desc_more">…altro</string>
     <string name="widget_now_playing_label">In riproduzione</string>
-    <string name="widget_now_playing_description">Controlla la musica in riproduzione su MusicViz</string>
+    <string name="widget_now_playing_description">Controlla la musica in riproduzione su Milkbeat</string>
     <string name="widget_quick_actions_label">Azioni rapide</string>
-    <string name="widget_quick_actions_description">Cerca su MusicViz e passa a download, cronologia o riconoscimento</string>
+    <string name="widget_quick_actions_description">Cerca su Milkbeat e passa a download, cronologia o riconoscimento</string>
     <string name="widget_recently_played_label">Riprodotto di recente</string>
     <string name="playlist_filter_owned">Posseduto</string>
     <string name="content_settings_hide_unplayable_subscriptions_title">Nascondi i video non riproducibili dalle Iscrizioni</string>
@@ -1888,20 +1888,20 @@
     <string name="discord_presence_disconnect">Disconnetti e scollega</string>
     <string name="discord_presence_unlink_action">Scollega</string>
     <string name="discord_presence_retry">Ritenta connessione</string>
-    <string name="discord_presence_description">Mostra cosa stai riproducendo su MusicViz come Rich Presence di Discord.</string>
+    <string name="discord_presence_description">Mostra cosa stai riproducendo su Milkbeat come Rich Presence di Discord.</string>
     <string name="discord_presence_connection_section">Connessione</string>
     <string name="discord_presence_account">Account Discord</string>
     <string name="discord_presence_privacy_section">Privacy e rischi per l\'account</string>
     <string name="discord_presence_privacy_title">Privacy</string>
-    <string name="discord_presence_privacy_body">Quando è attiva, MusicViz condivide con Discord il titolo del video, dello Short, della diretta o del brano in riproduzione, l\'autore o l\'artista, la copertina e il tempo di riproduzione. L\'impostazione è disattivata per impostazione predefinita. Il token di sessione di Discord viene crittografato tramite Android Keystore e non viene mai inserito nei log dell\'app.</string>
-    <string name="discord_presence_gateway_warning">MusicViz utilizza una connessione self-bot non ufficiale tramite il token del tuo account Discord, anziché OAuth. Questo viola i Termini di servizio di Discord e può comportare la sospensione o la chiusura dell\'account. I client non supportati possono inoltre attivare avvisi di fuga di token, reimpostazioni della password, CAPTCHA o blocchi per la verifica del numero di telefono.</string>
+    <string name="discord_presence_privacy_body">Quando è attiva, Milkbeat condivide con Discord il titolo del video, dello Short, della diretta o del brano in riproduzione, l\'autore o l\'artista, la copertina e il tempo di riproduzione. L\'impostazione è disattivata per impostazione predefinita. Il token di sessione di Discord viene crittografato tramite Android Keystore e non viene mai inserito nei log dell\'app.</string>
+    <string name="discord_presence_gateway_warning">Milkbeat utilizza una connessione self-bot non ufficiale tramite il token del tuo account Discord, anziché OAuth. Questo viola i Termini di servizio di Discord e può comportare la sospensione o la chiusura dell\'account. I client non supportati possono inoltre attivare avvisi di fuga di token, reimpostazioni della password, CAPTCHA o blocchi per la verifica del numero di telefono.</string>
     <string name="discord_presence_risk_dialog_title">Accetti i rischi per l\'account Discord?</string>
-    <string name="discord_presence_risk_dialog_body">La connessione effettua l\'accesso tramite Discord e fornisce a MusicViz il token del tuo account Discord. MusicViz lo memorizza crittografandolo con Android Keystore e lo invia esclusivamente a Discord, ma questo metodo self-bot non ufficiale viola i Termini di servizio di Discord. Discord potrebbe sospendere o chiudere il tuo account, richiedere la reimpostazione della password, mostrare CAPTCHA o bloccare l\'account richiedendo la verifica del numero di telefono.</string>
+    <string name="discord_presence_risk_dialog_body">La connessione effettua l\'accesso tramite Discord e fornisce a Milkbeat il token del tuo account Discord. Milkbeat lo memorizza crittografandolo con Android Keystore e lo invia esclusivamente a Discord, ma questo metodo self-bot non ufficiale viola i Termini di servizio di Discord. Discord potrebbe sospendere o chiudere il tuo account, richiedere la reimpostazione della password, mostrare CAPTCHA o bloccare l\'account richiedendo la verifica del numero di telefono.</string>
     <string name="discord_presence_risk_accept">Ho capito, connetti</string>
     <string name="discord_error_not_initialized">Discord Rich Presence non è stata avviata.</string>
     <string name="discord_error_enable_before_connect">Abilita Discord Rich Presence prima di connettere un account.</string>
     <string name="discord_error_unavailable">Discordia Rich Presence non è disponibile in questa build.</string>
-    <string name="discord_error_open_flow">Apri MusicViz prima di connettere Discord.</string>
+    <string name="discord_error_open_flow">Apri Milkbeat prima di connettere Discord.</string>
     <string name="discord_error_connection_in_progress">Una connessione a Discord è già in corso.</string>
     <string name="discord_error_login_timeout">Accesso a Discord scaduto.</string>
     <string name="discord_error_login_cancelled">Connessione a Discord annullata.</string>
@@ -1918,16 +1918,16 @@
     </plurals>
     <string name="subscriptions_failed_channels_body">I loro ultimi video non sono presenti in questo feed: %1$s</string>
     <string name="subscriptions_failed_channels_more">%1$s e altri %2$d</string>
-    <string name="channel_error_log_clip_label">Log errori del canale MusicViz</string>
+    <string name="channel_error_log_clip_label">Log errori del canale Milkbeat</string>
     <string name="comment_edited">modificato</string>
     <string name="comment_time_edited_template">%1$s (%2$s)</string>
     <string name="notif_background_restricted_title">I controlli in background sono limitati</string>
-    <string name="notif_background_restricted_subtitle">Android impedisce a MusicViz di verificare la presenza di nuovi video quando l\'app è chiusa, quindi gli avvisi arrivano solo quando la apri. Tocca per consentire l\'attività in background senza restrizioni.</string>
+    <string name="notif_background_restricted_subtitle">Android impedisce a Milkbeat di verificare la presenza di nuovi video quando l\'app è chiusa, quindi gli avvisi arrivano solo quando la apri. Tocca per consentire l\'attività in background senza restrizioni.</string>
     <string name="discord_error_gateway_failed">Connessione al Gateway di Discord non riuscita.</string>
     <string name="discord_error_heartbeat_unacknowledged">L\'heartbeat del Gateway di Discord non è stato riconosciuto.</string>
     <string name="discord_error_heartbeat_failed">Heartbeat del Gateway di Discord non riuscito.</string>
     <string name="discord_account_fallback">Utente Discord</string>
-    <string name="discord_presence_playing_fallback">In riproduzione su MusicViz</string>
+    <string name="discord_presence_playing_fallback">In riproduzione su Milkbeat</string>
     <string name="discord_presence_by_creator">di %1$s</string>
     <string name="settings_item_interface_mode">Modalità interfaccia</string>
     <string name="settings_item_interface_mode_subtitle">Seleziona il layout automatico, mobile o per TV</string>
@@ -1972,13 +1972,13 @@
     </plurals>
     <string name="tv_music_lyrics">Testi</string>
     <string name="tv_music_radio">Radio</string>
-    <string name="tv_settings_flow_engine">Algoritmo di MusicViz</string>
+    <string name="tv_settings_flow_engine">Algoritmo di Milkbeat</string>
     <string name="tv_music_expand">Apri player intero</string>
     <string name="player_appearance_seek_gesture_title">Gesto di scorrimento</string>
     <string name="player_appearance_seek_gesture_subtitle">Scorri orizzontalmente a schermo intero per muoverti nel video</string>
     <string name="player_settings_subtitle_language">Lingua dei sottotitoli preferita</string>
     <string name="player_settings_subtitle_language_dialog_title">Lingua dei sottotitoli</string>
-    <string name="player_settings_subtitle_language_dialog_body">I sottotitoli si aprono in questa lingua quando disponibili. Se il video non ha una traccia al suo interno, MusicViz utilizza la traduzione di YouTube di una traccia esistente. La selezione di un sottotitolo durante la riproduzione aggiorna anche questo.</string>
+    <string name="player_settings_subtitle_language_dialog_body">I sottotitoli si aprono in questa lingua quando disponibili. Se il video non ha una traccia al suo interno, Milkbeat utilizza la traduzione di YouTube di una traccia esistente. La selezione di un sottotitolo durante la riproduzione aggiorna anche questo.</string>
     <string name="player_settings_subtitle_language_none">Nessuna preferenza</string>
     <string name="player_settings_subtitle_language_none_desc">Utilizza la prima traccia dei sottotitoli offerta dal video</string>
     <string name="player_settings_auto_enable_subtitles">Attiva automaticamente i sottotitoli</string>
@@ -2022,7 +2022,7 @@
     <string name="ui_navigate">Naviga</string>
     <string name="ui_options">Opzioni</string>
     <string name="ui_selected">Selezionato</string>
-    <string name="ui_flow_logo">Logo MusicViz</string>
+    <string name="ui_flow_logo">Logo Milkbeat</string>
     <string name="ui_list_view">Vista elenco</string>
     <string name="ui_grid_view">Vista griglia</string>
     <string name="ui_back">Indietro</string>
@@ -2077,7 +2077,7 @@
     <string name="sync_collection_likes_body">Video e musica piaciuti e non piaciuti.</string>
     <string name="sync_collection_subscriptions_body">I canali che segui.</string>
     <string name="sync_collection_settings_body">Riproduzione, aspetto e preferenze di download.</string>
-    <string name="sync_collection_recommendation_profile_body">Ciò che MusicViz ha imparato su cosa guardi.</string>
+    <string name="sync_collection_recommendation_profile_body">Ciò che Milkbeat ha imparato su cosa guardi.</string>
     <string name="sync_waiting_for_peer">In attesa che l\'altro dispositivo si connetta…</string>
     <string name="sync_cancel_session">Annulla sincronizzazione</string>
     <string name="sync_expires_label">Scadenza codice QR</string>
@@ -2306,7 +2306,7 @@
         <item quantity="many">%1$d di %2$d selezionati</item>
         <item quantity="other">%1$d di %2$d selezionati</item>
     </plurals>
-    <string name="diagnostics_report_subject">Rapporto di diagnostica di MusicViz</string>
+    <string name="diagnostics_report_subject">Rapporto di diagnostica di Milkbeat</string>
     <plurals name="merge_playlist_success">
         <item quantity="one">%1$d brano aggiunto a “%2$s”</item>
         <item quantity="many">%1$d brani aggiunti a “%2$s”</item>
@@ -2503,7 +2503,7 @@
     <string name="sync_connect">Connetti</string>
     <string name="sync_verification_after_connect">Dopo la connessione, confronta il codice di verifica mostrato su entrambi i dispositivi prima di continuare.</string>
     <string name="sync_step_title_manual">Inserisci dati di connessione</string>
-    <string name="sync_collection_music_profile_body">Cosa ha appreso MusicViz riguardo ciò che ascolti.</string>
+    <string name="sync_collection_music_profile_body">Cosa ha appreso Milkbeat riguardo ciò che ascolti.</string>
     <string name="player_seek_seconds_forward">+%1$d</string>
     <string name="player_seek_seconds_back">-%1$d</string>
     <string name="player_seek_chevron_forward">&gt;</string>

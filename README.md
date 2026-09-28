@@ -1,11 +1,11 @@
 <div align="center">
 
-<img src="docs/banner.jpg" alt="MusicViz" width="720">
+<img src="docs/banner.jpg" alt="Milkbeat" width="720">
 
 **A music-first YouTube Music client for Android TV.**
 
-<a href="https://github.com/johnneerdael/MusicViz/releases/latest">
-  <img src="https://img.shields.io/github/v/release/johnneerdael/MusicViz?style=for-the-badge&color=8355FB&label=Latest%20build">
+<a href="https://github.com/johnneerdael/Milkbeat/releases/latest">
+  <img src="https://img.shields.io/github/v/release/johnneerdael/Milkbeat?style=for-the-badge&color=8355FB&label=Latest%20build">
 </a>
 <img src="https://img.shields.io/badge/Platform-Android_TV_8.0+-3DDC84?style=for-the-badge&logo=android&logoColor=white">
 <a href="License">
@@ -19,7 +19,7 @@
 
 ---
 
-MusicViz turns your TV into a music player for YouTube Music. It opens straight on your
+Milkbeat turns your TV into a music player for YouTube Music. It opens straight on your
 YouTube Music home — the same mood chips and shelves, in the same order as
 music.youtube.com — built for the remote with Jetpack Compose and Material 3.
 
@@ -42,11 +42,16 @@ concert recordings are one press away.
 | Method | How |
 |---|---|
 | **Downloader app** (Google TV, Fire TV, NVIDIA SHIELD) | Install [Downloader](https://www.aftvnews.com/downloader/) and enter code **`4718521`** |
-| **Direct link** (always the latest build) | https://github.com/johnneerdael/MusicViz/releases/latest/download/musicviz-universal.apk |
-| **All builds** | [Releases](https://github.com/johnneerdael/MusicViz/releases) — every push to `main` is published automatically with release notes |
+| **Direct link** (always the latest build) | https://github.com/johnneerdael/Milkbeat/releases/latest/download/milkbeat-universal.apk |
+| **All builds** | [Releases](https://github.com/johnneerdael/Milkbeat/releases) — every push to `main` is published automatically with release notes |
 
-Per-ABI APKs (`musicviz-arm64-v8a.apk`, `musicviz-armeabi-v7a.apk`) are
+Per-ABI APKs (`milkbeat-arm64-v8a.apk`, `milkbeat-armeabi-v7a.apk`) are
 attached to each release if you prefer a smaller download.
+
+**Coming from MusicViz?** Milkbeat is the same app under a new name and application id
+(`nl.neerdael.milkbeat`), so it installs next to MusicViz rather than over it: sign in again in
+Milkbeat, then uninstall MusicViz. Downloader code `4718521` and the old `musicviz-universal.apk`
+link keep working and now bring Milkbeat.
 
 **Requirements:** Android TV / Google TV / Fire TV running Android 8.0 or newer.
 
@@ -85,12 +90,12 @@ attached to each release if you prefer a smaller download.
 Check the signing certificate of a downloaded APK with a tool such as
 [AppVerifier](https://github.com/soupslurpr/AppVerifier).
 
-**MusicViz release certificate SHA-256 fingerprint:**
+**Milkbeat release certificate SHA-256 fingerprint:**
 `FE:FB:39:D0:D5:F3:DF:3B:BB:D0:B7:CC:F7:FE:D7:16:A0:A1:3E:BD:17:AC:52:9B:0C:1A:8E:C3:C1:F7:A3:F8`
 
 ## Built on Flow
 
-MusicViz is a fork of [Flow](https://github.com/A-EDev/Flow) by A-EDev, which provides the
+Milkbeat is a fork of [Flow](https://github.com/A-EDev/Flow) by A-EDev, which provides the
 groundwork this app is built on: its player, YouTube and YouTube Music extraction, and its
 on-device recommendation engine.
 
@@ -108,8 +113,8 @@ Flow in turn builds on these projects:
 
 ## License
 
-MusicViz is free software under the **GNU General Public License v3** — see [License](License).
+Milkbeat is free software under the **GNU General Public License v3** — see [License](License).
 Any project that uses this source code, including the recommendation engine, must also be
 released under the GPLv3.
 
-Copyright © 2025-2026 A-EDev (Flow) · Copyright © 2026 John Neerdael (MusicViz changes)
+Copyright © 2025-2026 A-EDev (Flow) · Copyright © 2026 John Neerdael (Milkbeat changes)

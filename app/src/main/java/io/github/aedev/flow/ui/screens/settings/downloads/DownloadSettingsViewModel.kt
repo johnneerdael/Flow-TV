@@ -101,7 +101,7 @@ class DownloadSettingsViewModel
         companion object {
             const val DEFAULT_THREADS = 3
             const val DEFAULT_CACHE_MB = 500
-            private const val APP_FOLDER = "MusicViz"
+            private const val APP_FOLDER = "Milkbeat"
             private const val INTERNAL_FOLDER = "downloads"
         }
     }

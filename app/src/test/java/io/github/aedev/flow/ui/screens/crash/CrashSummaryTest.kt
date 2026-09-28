@@ -46,7 +46,7 @@ class CrashSummaryTest {
         assertThat(
             url,
         ).startsWith(
-            "https://github.com/johnneerdael/MusicViz/issues/new?template=bug_report.yml&title=%5BBug%5D%3A%20IllegalArgumentException",
+            "https://github.com/johnneerdael/Milkbeat/issues/new?template=bug_report.yml&title=%5BBug%5D%3A%20IllegalArgumentException",
         )
         assertThat(url).contains("&app-version=2.2.5&")
         assertThat(url).contains("&android-version=16%20%28SDK%2036%29&")

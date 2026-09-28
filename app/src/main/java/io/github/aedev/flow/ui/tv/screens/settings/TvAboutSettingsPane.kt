@@ -40,8 +40,8 @@ import io.github.aedev.flow.ui.tv.components.TvNavRow
 import io.github.aedev.flow.ui.tv.components.TvSectionHeader
 import io.github.aedev.flow.ui.tv.focus.ProvideTvColumnPivot
 
-private const val RELEASES_URL = "https://github.com/johnneerdael/MusicViz/releases"
-private const val GITHUB_URL = "https://github.com/johnneerdael/MusicViz"
+private const val RELEASES_URL = "https://github.com/johnneerdael/Milkbeat/releases"
+private const val GITHUB_URL = "https://github.com/johnneerdael/Milkbeat"
 private const val CREATOR_URL = "https://github.com/johnneerdael"
 private const val UPSTREAM_URL = "https://github.com/A-EDev/Flow"
 private const val LICENSE_URL = "https://www.gnu.org/licenses/gpl-3.0.html"
@@ -160,7 +160,7 @@ private fun TvAboutIdentity() {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Image(
-                painter = painterResource(R.drawable.ic_musicviz_logo),
+                painter = painterResource(R.drawable.ic_milkbeat_logo),
                 contentDescription = stringResource(R.string.app_logo_desc),
                 modifier = Modifier.size(72.dp),
             )

@@ -14,7 +14,7 @@ private const val LOGO_ASPECT = 48f / 36f
 @Composable
 fun FlowLogo(modifier: Modifier = Modifier) {
     Image(
-        painter = painterResource(R.drawable.ic_musicviz_logo),
+        painter = painterResource(R.drawable.ic_milkbeat_logo),
         contentDescription = null,
         contentScale = ContentScale.Fit,
         modifier = modifier.aspectRatio(LOGO_ASPECT),

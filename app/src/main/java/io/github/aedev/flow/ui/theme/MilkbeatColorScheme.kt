@@ -3,7 +3,7 @@ package io.github.aedev.flow.ui.theme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.graphics.Color
 
-private val MusicVizSeed =
+private val MilkbeatSeed =
     PaletteSeed(
         primary = Color(0xFF8355FB),
         onPrimary = Color(0xFFFFFFFF),
@@ -17,8 +17,8 @@ private val MusicVizSeed =
     )
 
 /**
- * MusicViz's single look: the logo's violet (the centre of its cyan-to-magenta sweep) as the
+ * Milkbeat's single look: the logo's violet (the centre of its cyan-to-magenta sweep) as the
  * accent and its cyan as the second accent, on the AMOLED black ladder.
  */
-val MusicVizColorScheme: ColorScheme =
-    MusicVizSeed.expand(ThemeVariant.AMOLED).toColorScheme(ThemeVariant.AMOLED)
+val MilkbeatColorScheme: ColorScheme =
+    MilkbeatSeed.expand(ThemeVariant.AMOLED).toColorScheme(ThemeVariant.AMOLED)

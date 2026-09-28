@@ -54,7 +54,7 @@ object DeArrowRepository {
                     Request
                         .Builder()
                         .url("$BRANDING_BASE_URL?videoID=$videoId")
-                        .header("User-Agent", "MusicViz/1.0")
+                        .header("User-Agent", "Milkbeat/1.0")
                         .build()
 
                 client.newCall(request).execute().use { response ->

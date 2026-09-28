@@ -1,11 +1,11 @@
 ---
 name: unit-testing
-description: Guidelines, patterns, and best practices for writing Kotlin unit tests for ViewModels, Repositories, and Utilities in the MusicViz Android project.
+description: Guidelines, patterns, and best practices for writing Kotlin unit tests for ViewModels, Repositories, and Utilities in the Milkbeat Android project.
 ---
 
-# Kotlin Unit Testing Guidelines & Best Practices for MusicViz
+# Kotlin Unit Testing Guidelines & Best Practices for Milkbeat
 
-This skill outlines the standards and conventions for writing unit tests in the MusicViz codebase (`io.github.aedev.flow`).
+This skill outlines the standards and conventions for writing unit tests in the Milkbeat codebase (`io.github.aedev.flow`).
 
 ## 1. Naming Conventions
 

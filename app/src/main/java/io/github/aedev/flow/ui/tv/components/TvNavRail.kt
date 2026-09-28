@@ -119,7 +119,7 @@ fun TvNavRail(
             ) {
                 // Centred on the rail icons' column, with the app name starting where their labels do.
                 Image(
-                    painter = painterResource(R.drawable.ic_musicviz_logo),
+                    painter = painterResource(R.drawable.ic_milkbeat_logo),
                     contentDescription = null,
                     modifier = Modifier.padding(start = 5.dp).size(38.dp),
                 )

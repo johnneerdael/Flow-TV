@@ -1,4 +1,4 @@
-MusicViz is a music-first YouTube Music client for Android TV, built for the remote.
+Milkbeat is a music-first YouTube Music client for Android TV, built for the remote.
 
 Features:
 
@@ -11,4 +11,4 @@ Features:
 - On-device recommendation engine with no analytics or tracking
 - Modern Material 3 interface
 
-MusicViz is a fork of Flow by A-EDev.
+Milkbeat is a fork of Flow by A-EDev.

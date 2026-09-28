@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MusicViz</string>
+    <string name="app_name">Milkbeat</string>
     <string name="subscriptions_search_placeholder">Abonnements durchsuchen ...</string>
     <string name="top_bar_subscriptions_title">Abonnements</string>
     <string name="view_all_button_label">Alle</string>
@@ -164,7 +164,7 @@
     <string name="release_notes">VERSIONSHINWEISE</string>
     <string name="premiere_date_prefix">Premieren %1$s</string>
     <string name="maybe_later">Vielleicht später</string>
-    <string name="update_flow">MusicViz Aktualisieren</string>
+    <string name="update_flow">Milkbeat Aktualisieren</string>
     <string name="nav_home">Startseite</string>
     <string name="nav_shorts">Shorts</string>
     <string name="nav_music">Musik</string>
@@ -278,10 +278,10 @@
     <string name="peace_and_quiet">Ruhe und Frieden</string>
     <string name="notifications_empty_body">Jetzt bist du auf dem neuesten Stand! Neue Updates aus deinen Abonnements werden hier angezeigt.</string>
     <string name="settings_title">Einstellungen</string>
-    <string name="settings_flow_engine_header">MusicViz Engine</string>
+    <string name="settings_flow_engine_header">Milkbeat Engine</string>
     <string name="settings_active_learning">AKTIVES LERNEN</string>
-    <string name="settings_reset_brain_title">MusicViz-Persönlichkeit zurücksetzen?</string>
-    <string name="settings_reset_brain_body">Dadurch wird dein „MusicViz Brain“-Interessenprofil vollständig gelöscht.\n\n• Alle gespeicherten Themen werden gelöscht.\n• Persönlichkeitsmerkmale werden auf den neutralen Stand zurückgesetzt.\n• Empfehlungen werden auf die Standardeinstellungen zurückgesetzt.\n\nDieser Vorgang kann nicht rückgängig gemacht werden.</string>
+    <string name="settings_reset_brain_title">Milkbeat-Persönlichkeit zurücksetzen?</string>
+    <string name="settings_reset_brain_body">Dadurch wird dein „Milkbeat Brain“-Interessenprofil vollständig gelöscht.\n\n• Alle gespeicherten Themen werden gelöscht.\n• Persönlichkeitsmerkmale werden auf den neutralen Stand zurückgesetzt.\n• Empfehlungen werden auf die Standardeinstellungen zurückgesetzt.\n\nDieser Vorgang kann nicht rückgängig gemacht werden.</string>
     <string name="settings_reset_everything">Alles zurücksetzen</string>
     <string name="settings_analyzing_interactions">Analysieren Sie Ihre Interaktionen...</string>
     <string name="settings_view_analytics">Analysen anzeigen</string>
@@ -311,7 +311,7 @@
     <string name="settings_header_about">Über</string>
     <string name="settings_header_notifications">Benachrichtigungen</string>
     <string name="settings_item_notifications">Benachrichtigungseinstellungen</string>
-    <string name="settings_item_notifications_subtitle">Steuern Sie, welche Benachrichtigungen MusicViz senden kann</string>
+    <string name="settings_item_notifications_subtitle">Steuern Sie, welche Benachrichtigungen Milkbeat senden kann</string>
     <string name="notif_settings_title">Benachrichtigungseinstellungen</string>
     <string name="notif_type_new_videos">Neue Videos</string>
     <string name="notif_type_new_videos_subtitle">Benachrichtigen, wenn abonnierte Kanäle neue Videos hochladen</string>
@@ -320,7 +320,7 @@
     <string name="notif_type_reminders">Bildschirmzeit-Erinnerungen</string>
     <string name="notif_type_reminders_subtitle">Erinnerungen an die Schlafenszeit und Pausen von „Zeitmanagement“</string>
     <string name="notif_type_updates">App-Updates</string>
-    <string name="notif_type_updates_subtitle">Werden Sie benachrichtigt, wenn eine neue Version von MusicViz verfügbar ist</string>
+    <string name="notif_type_updates_subtitle">Werden Sie benachrichtigt, wenn eine neue Version von Milkbeat verfügbar ist</string>
     <string name="notif_type_general">Allgemeine Benachrichtigungen</string>
     <string name="notif_type_general_subtitle">Verschiedene App-Benachrichtigungen und Ankündigungen</string>
     <string name="notif_system_settings">Einstellungen für die Systembenachrichtigung</string>
@@ -329,7 +329,7 @@
     <string name="notif_check_interval">Neue Videos – Überprüfungsintervall</string>
     <string name="notif_check_interval_subtitle_template">Überprüfen Sie alle %s</string>
     <string name="notif_check_interval_dialog_title">Prüfintervall</string>
-    <string name="notif_check_interval_dialog_body">Wie oft überprüft MusicViz nach neuen Videos aus Ihren abonnierten Kanälen.</string>
+    <string name="notif_check_interval_dialog_body">Wie oft überprüft Milkbeat nach neuen Videos aus Ihren abonnierten Kanälen.</string>
     <string name="notif_interval_15m">15 Minuten</string>
     <string name="notif_interval_30m">30 Minuten</string>
     <string name="notif_interval_1h">1 Stunde</string>
@@ -364,7 +364,7 @@
     <string name="settings_item_export_data_subtitle">Sichern Sie Ihre Daten</string>
     <string name="settings_item_import_data">Daten importieren</string>
     <string name="settings_item_import_data_subtitle">Aus einem Backup wiederherstellen oder Import aus anderen Apps</string>
-    <string name="settings_item_about_flow">Über MusicViz</string>
+    <string name="settings_item_about_flow">Über Milkbeat</string>
     <string name="settings_item_about_flow_subtitle">Version, Lizenz, Mitwirkende</string>
     <string name="settings_region_dialog_title">Region auswählen</string>
     <string name="settings_language_dialog_title">App-Sprache auswählen</string>
@@ -372,7 +372,7 @@
     <string name="settings_export_success">Daten erfolgreich exportiert</string>
     <string name="settings_export_failed">Export fehlgeschlagen: %1$s</string>
     <string name="appearance_title">Aussehen</string>
-    <string name="appearance_subtitle">Personalisieren Sie Ihre MusicViz-Erfahrung</string>
+    <string name="appearance_subtitle">Personalisieren Sie Ihre Milkbeat-Erfahrung</string>
     <string name="appearance_current_theme">AKTUELLES DESIGN</string>
     <string name="appearance_category_all">Alle</string>
     <string name="appearance_category_light">Hell</string>
@@ -447,7 +447,7 @@
     <string name="theme_name_cream_paper">Cremepapier</string>
     <string name="theme_desc_cream_paper">Warm &amp; gemütlich</string>
     <string name="theme_name_classic_dark">Klassisch</string>
-    <string name="theme_desc_classic_dark">Die ursprüngliche Farbpalette von MusicViz</string>
+    <string name="theme_desc_classic_dark">Die ursprüngliche Farbpalette von Milkbeat</string>
     <string name="theme_name_true_black">Echtes Schwarz</string>
     <string name="theme_desc_true_black">Reines OLED</string>
     <string name="theme_name_monochrome">Monochrom</string>
@@ -530,7 +530,7 @@
     <string name="content_settings_video_card_mark_watched_title">Schaltfläche „Als angesehen markieren“-Button anzeigen</string>
     <string name="content_settings_video_card_mark_watched_subtitle">Zeige auf den Vollbild- und Kompakt-Videokarten eine „Auge“-Schaltfläche an, um Videos schnell als angesehen zu markieren</string>
     <string name="content_settings_show_app_logo_title">App-Logo-Symbol anzeigen</string>
-    <string name="content_settings_show_app_logo_subtitle">Das MusicViz-Logo neben dem App-Namen in der oberen Leiste des Startbildschirms anzeigen</string>
+    <string name="content_settings_show_app_logo_subtitle">Das Milkbeat-Logo neben dem App-Namen in der oberen Leiste des Startbildschirms anzeigen</string>
     <string name="content_settings_header_content_components">Inhaltskomponenten</string>
     <string name="content_settings_hide_watched_title">Angesehene Videos Ausblenden</string>
     <string name="content_settings_hide_watched_subtitle">Filtern Sie Videos, die Sie bereits von Ihrem Home-Feed und Abonnements angesehen haben</string>
@@ -578,7 +578,7 @@
     <string name="hide_channel_shorts">Shorts dieses Kanals ausblenden</string>
     <string name="show_channel_shorts">Shorts dieses Kanals anzeigen</string>
     <string name="notif_master_toggle">Benachrichtigungen aktivieren</string>
-    <string name="notif_master_toggle_subtitle">Erlaube MusicViz, im Hintergrund zu aktivieren, um Benachrichtigungen und Warnmeldungen zu überprüfen</string>
+    <string name="notif_master_toggle_subtitle">Erlaube Milkbeat, im Hintergrund zu aktivieren, um Benachrichtigungen und Warnmeldungen zu überprüfen</string>
     <string name="notif_check_interval_disabled">Hintergrundüberprüfungen sind deaktiviert</string>
     <string name="appearance_role_surface_variant">Oberflächenvariante</string>
     <string name="appearance_role_on_surface_variant">Zur Surface-Variante</string>
@@ -870,7 +870,7 @@
     <string name="interests_tab">Interessen</string>
     <string name="blocked_tab">Gesperrt</string>
     <string name="your_interests_title">Deine Interessen</string>
-    <string name="your_interests_desc">Die von dir ausgewählten Themen helfen MusicViz dabei, dir passendere Inhalte vorzuschlagen. Tippe unten auf die Themen, um sie hinzuzufügen oder zu entfernen.</string>
+    <string name="your_interests_desc">Die von dir ausgewählten Themen helfen Milkbeat dabei, dir passendere Inhalte vorzuschlagen. Tippe unten auf die Themen, um sie hinzuzufügen oder zu entfernen.</string>
     <string name="currently_following">Derzeit abonniert</string>
     <string name="tap_to_remove">Zum Entfernen antippen</string>
     <string name="add_topics">Themen hinzufügen</string>
@@ -923,7 +923,7 @@
     <string name="local_media_empty_title">Es wurden keine %1$s gefunden</string>
     <string name="local_media_empty_body">Die auf diesem Gerät gespeicherten Videos und Musikdateien werden hier angezeigt.</string>
     <string name="local_media_permission_title">Erforderliche Berechtigung</string>
-    <string name="local_media_permission_body">Erlauben Sie den Zugriff auf Ihre Medien, damit MusicViz lokale Videos und Musik finden und abspielen kann.</string>
+    <string name="local_media_permission_body">Erlauben Sie den Zugriff auf Ihre Medien, damit Milkbeat lokale Videos und Musik finden und abspielen kann.</string>
     <string name="local_media_grant">Zugriff gewähren</string>
     <string name="history_tab_local_videos">Lokale Videos</string>
     <string name="history_tab_local_music">Lokale Musik</string>
@@ -985,12 +985,12 @@
     <string name="shorts_player_ui_impressive">Beeindruckend</string>
     <string name="shorts_saved">Short gespeichert</string>
     <string name="shorts_unsaved">Short, nicht gespeichert</string>
-    <string name="import_flow_backup_success">MusicViz-Backup erfolgreich importiert</string>
-    <string name="import_flow_backup_failed_template">Der Import des MusicViz-Backups ist fehlgeschlagen: %1$s</string>
+    <string name="import_flow_backup_success">Milkbeat-Backup erfolgreich importiert</string>
+    <string name="import_flow_backup_failed_template">Der Import des Milkbeat-Backups ist fehlgeschlagen: %1$s</string>
     <string name="import_newpipe_failed_template">Der Import des NewPipe-Backups ist fehlgeschlagen: %1$s</string>
     <string name="import_youtube_failed_template">Der Import des YouTube-Backups ist fehlgeschlagen: %1$s</string>
-    <string name="import_flow_backup_item_title">MusicViz-Backup importieren</string>
-    <string name="import_flow_backup_desc">Stellen Sie Ihren Verlauf, Ihre Einstellungen und Ihre Abonnements aus einer MusicViz-Backup wieder her.</string>
+    <string name="import_flow_backup_item_title">Milkbeat-Backup importieren</string>
+    <string name="import_flow_backup_desc">Stellen Sie Ihren Verlauf, Ihre Einstellungen und Ihre Abonnements aus einer Milkbeat-Backup wieder her.</string>
     <string name="import_from_newpipe">Aus NewPipe importieren</string>
     <string name="player_settings_display">Anzeige</string>
     <string name="sleep_timer_stops_in">Schaltet sich nach</string>
@@ -1234,7 +1234,7 @@
     <string name="subtitle_background_color">Hintergrundfarbe</string>
     <string name="check_for_updates">Nach Updates suchen</string>
     <string name="checking_for_updates">Suche nach Updates…</string>
-    <string name="flow_is_up_to_date">MusicViz ist auf dem neuesten Stand!</string>
+    <string name="flow_is_up_to_date">Milkbeat ist auf dem neuesten Stand!</string>
     <string name="update_check_failed">Konnte nicht nach Updates suchen. Überprüfe deine Verbindung.</string>
     <string name="sync_devices_title">Synchronisiere Geräte</string>
     <string name="sync_notification_title">Geräte synchronisieren</string>
@@ -1344,7 +1344,7 @@
     <string name="processing">Verarbeiten…</string>
     <string name="recognition_error">Erkennung fehlgeschlagen</string>
     <string name="try_again">Erneut versuchen</string>
-    <string name="search_in_flow">In MusicViz suchen</string>
+    <string name="search_in_flow">In Milkbeat suchen</string>
     <string name="recognition_clear_history">Verlauf leeren?</string>
     <string name="appearance_variant_title">Designstil</string>
     <string name="appearance_variant_amoled">AMOLED</string>
@@ -1412,14 +1412,14 @@
     <string name="import_yt_music_playlist">YouTube-Musik-Playlist importieren</string>
     <string name="import_yt_music_playlist_desc">Importieren Sie eine Musik-Playlist aus einer YouTube Music Auszug-CSV-Datei. Diese wird unter „Musik-Playlists“ angezeigt.</string>
     <string name="import_yt_history_failed_template">Der Import des Wiedergabesverlaufs ist fehlgeschlagen: %1$s</string>
-    <string name="channel_error_log_clip_label">MusicViz Kanal-Fehlerprotokoll</string>
+    <string name="channel_error_log_clip_label">Milkbeat Kanal-Fehlerprotokoll</string>
     <string name="about_creator">Entwickler</string>
     <string name="about_creator_name">John Neerdael</string>
     <string name="github_subtitle">Quellcode &amp; Probleme</string>
     <string name="newpipe_extractor_title">NewPipe Extractor</string>
     <string name="about_license_name">GNU GPL v3</string>
     <string name="about_changelog">Änderungsprotokoll</string>
-    <string name="whats_new_in_flow">Was gibt es Neues bei MusicViz?</string>
+    <string name="whats_new_in_flow">Was gibt es Neues bei Milkbeat?</string>
     <string name="no_changelog_found_message">Es wurde kein Änderungsprotokoll gefunden.</string>
     <string name="error_changelog_load">Die Änderungsprotokoll-Datei konnte nicht geladen werden.</string>
     <string name="app_logo_desc">App Logo</string>
@@ -1448,7 +1448,7 @@
     <string name="playlist_sort_date_published_oldest">Veröffentlichungsdatum (ältestes)</string>
     <string name="remove_selected_playlist_text">Sie werden aus dieser Playlist entfernt.</string>
     <string name="remove_selected_watch_later_text">Sie werden aus „Später ansehen“ entfernt.</string>
-    <string name="welcome_to_flow">Willkommen bei MusicViz</string>
+    <string name="welcome_to_flow">Willkommen bei Milkbeat</string>
     <string name="onboarding_interests_title">Was macht dir Spaß?</string>
     <string name="onboarding_interests_hint">Wähle mindestens %1$d Themen aus, um deinen Feed individuell anzupassen. Es fehlen noch %2$d.</string>
     <string name="onboarding_channels_empty_prompt">Gib einen Kanalnamen ein, um danach zu suchen</string>
@@ -1459,7 +1459,7 @@
     <string name="onboarding_btn_continue">Weiter</string>
     <string name="category_creative">Kreativ</string>
     <string name="category_news_current_events">Nachrichten &amp; Aktuelles</string>
-    <string name="flow_control_center">MusicViz Kontrollzentrum</string>
+    <string name="flow_control_center">Milkbeat Kontrollzentrum</string>
     <string name="filter_deep_cuts">Deep cuts</string>
     <string name="player_portrait_seekbar_width_title">Breite der Suchleiste im Hochformat</string>
     <string name="player_settings_stable_voice">Stabiler Ton</string>
@@ -1476,8 +1476,8 @@
     <string name="location_dialog_subtitle">Wählen Sie aus, wo die heruntergeladenen Dateien auf Ihrem Gerät gespeichert werden sollen.</string>
     <string name="location_preset_header">Voreingestellte Standorte</string>
     <string name="location_custom_header">Benutzerdefinierter Standort</string>
-    <string name="location_downloads_label">Downloads / MusicViz</string>
-    <string name="location_movies_label">Movies / MusicViz</string>
+    <string name="location_downloads_label">Downloads / Milkbeat</string>
+    <string name="location_movies_label">Movies / Milkbeat</string>
     <string name="location_internal_app_label">Interner App-Speicher</string>
     <string name="location_internal_app_desc">Nur in der App verfügbar – Dateien werden möglicherweise gelöscht, wenn Sie die App deinstallieren</string>
     <string name="location_custom_saf_desc">Wählen Sie mithilfe der System-Dateiauswahl einen beliebigen Ordner aus.</string>
@@ -1518,7 +1518,7 @@
     <string name="persona_initiate_title">Der Eingeweihte</string>
     <string name="persona_initiate_description">Du fängst gerade erst an. Dein Profil ist noch im Aufbau.</string>
     <string name="persona_audiophile_title">Der Audiophile</string>
-    <string name="persona_audiophile_description">Du nutzt MusicViz hauptsächlich für Musik. Die Stimmung ist das Wichtigste.</string>
+    <string name="persona_audiophile_description">Du nutzt Milkbeat hauptsächlich für Musik. Die Stimmung ist das Wichtigste.</string>
     <string name="persona_skimmer_title">Der Skimmer</string>
     <string name="persona_skimmer_description">Rasante, kurze Inhalte. Dopamin auf Abruf.</string>
     <string name="screen_title_music_library">Bildschirm „Musik-Playlists“</string>
@@ -1616,7 +1616,7 @@
     <string name="sync_receive_scan_hint">Verwenden Sie diese Option, wenn dieses Gerät über eine Kamera verfügt und auf dem anderen Gerät ein sende QR-Code angezeigt wird.</string>
     <string name="playlist_filter_owned">Im Besitz</string>
     <string name="notif_background_restricted_title">Hintergrund Prüfungen sind beschränkt</string>
-    <string name="notif_background_restricted_subtitle">Android verbietet MusicViz im Hintergrund nach neuen Videos zu suchen, dadurch kommen Benachrichtigungen erst nach öffnen der App. Klicke hier um uneingeschränkte Hintergrundaktivitäten zuzulassen</string>
+    <string name="notif_background_restricted_subtitle">Android verbietet Milkbeat im Hintergrund nach neuen Videos zu suchen, dadurch kommen Benachrichtigungen erst nach öffnen der App. Klicke hier um uneingeschränkte Hintergrundaktivitäten zuzulassen</string>
     <string name="player_appearance_long_press_speed_title">Wiedergabetempo beim gedrückthalten</string>
     <string name="select_threads_count_desc">Wähle die Anzahl der Threads (1-8):</string>
     <string name="topic_weights_subtitle">Volle Transparenz wodurch dein Feed beeinflusst wird</string>
@@ -1643,7 +1643,7 @@
     <string name="diagnostics_clear_crashes">Absturzberichte löschen</string>
     <string name="diagnostics_clear_confirm_title">Absturzberichte löschen?</string>
     <string name="diagnostics_clear_confirm_body">Alle gespeicherten Absturzberichte werden endgültig gelöscht. Dieser Vorgang kann nicht rückgängig gemacht werden.</string>
-    <string name="tv_settings_flow_engine">MusicViz Engine</string>
+    <string name="tv_settings_flow_engine">Milkbeat Engine</string>
     <string name="newpipe_extractor_subtitle">Kern-Extraktionsbibliothek</string>
     <string name="onboarding_step_interests">Interessen</string>
     <plurals name="subscriptions_refresh_progress_template">
@@ -1662,7 +1662,7 @@
     <string name="import_master_backup_desc">App-Daten als auch das Engine-Profil aus einer einzigen Master-Backup Datei wiederherstellen</string>
     <string name="import_master_backup_success">Master Backup erfolgreich wiederhergestellt</string>
     <string name="import_master_backup_failed">Master Backup Import fehlgeschlagen</string>
-    <string name="import_engine_data">MusicViz Engine Daten importieren</string>
+    <string name="import_engine_data">Milkbeat Engine Daten importieren</string>
     <string name="import_engine_data_desc">Stellen Sie Ihr KI-Persönlichkeitsprofil aus einer Backup Datei wieder her</string>
     <string name="sync_devices_subtitle">Bibliothek, Verlauf und Profil über lokales WLAN synchronisieren</string>
     <string name="sync_send_option_body">Kopieren Sie die Bibliothek dieses Geräts auf ein anderes Gerät.</string>
@@ -1714,8 +1714,8 @@
     <string name="profile_action_import_detail">Ein Profil Backup wiederherstellen</string>
     <string name="notification_import_complete">Import abgeschlossen!</string>
     <string name="notification_channel_import_description">Zeigt den Fortschritt beim Importieren von Abonnements oder des Wiedergabeverlaufs an</string>
-    <string name="import_migrate_description">Übertragen Sie Ihre Abonnements und Ihren Verlauf nahtlos von anderen Plattformen auf MusicViz.</string>
-    <string name="import_manage_backups">Verwalten Sie Ihre MusicViz Backups</string>
+    <string name="import_migrate_description">Übertragen Sie Ihre Abonnements und Ihren Verlauf nahtlos von anderen Plattformen auf Milkbeat.</string>
+    <string name="import_manage_backups">Verwalten Sie Ihre Milkbeat Backups</string>
     <string name="import_label_newpipe_subscriptions">NewPipe Abonnements</string>
     <string name="import_label_youtube_subscriptions">YouTube-Abonnements</string>
     <string name="import_label_youtube_watch_history">YouTube Wiedergabeverlauf</string>
@@ -1727,7 +1727,7 @@
     <string name="import_label_libretube_playlists">LibreTube Playlisten</string>
     <string name="import_label_youtube_takeout">YouTube-Auszug</string>
     <string name="imported_from_google_takeout">Aus Google-Auszug importieren</string>
-    <string name="flow_neural_profile_export_subject">MusicViz Neural Profil Export</string>
+    <string name="flow_neural_profile_export_subject">Milkbeat Neural Profil Export</string>
     <string name="export_music_brain_title">Export Musik Engine Daten</string>
     <string name="export_music_brain_desc">Speichere Sie ihr Musikgeschmacksprofil als JSON-Datei</string>
     <string name="music_brain_export_success">Musik Engine Daten exportiert</string>
@@ -1744,7 +1744,7 @@
     <string name="export_newpipe_subs_failed">NewPipe Abonnements Export fehlgeschlagen</string>
     <string name="export_app_data_title">App Daten Backup</string>
     <string name="export_app_data_desc">Exportieren Sie Ihre Abonnements, Wiedergabeverläufe, Wiedergabelisten und Einstellungen</string>
-    <string name="export_watch_history_desc">Export als YouTube-Verlauf JSON (importierbar in LibreTube und MusicViz)</string>
+    <string name="export_watch_history_desc">Export als YouTube-Verlauf JSON (importierbar in LibreTube und Milkbeat)</string>
     <string name="history_export_failed">Wiedergabeverlauf Export fehlgeschlagen</string>
     <string name="shorts_quality_settings_subtitle">Qualität beim Anschauen von Shorts</string>
     <string name="ui_custom_interest_title">Benutzerdefinierte Interessen hinzufügen</string>

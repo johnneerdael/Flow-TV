@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MusicViz</string>
+    <string name="app_name">Milkbeat</string>
     <string name="subscriptions_search_placeholder">Pretraži pretplate…</string>
     <string name="top_bar_subscriptions_title">Pretplate</string>
     <string name="view_all_button_label">Svi</string>
@@ -165,7 +165,7 @@
     <string name="new_update_available">Novo ažuriranje dostupno</string>
     <string name="update_available_template">%1$s je sada dostupno</string>
     <string name="release_notes">Bilješke o izdanju</string>
-    <string name="update_flow">Ažuriraj MusicViz</string>
+    <string name="update_flow">Ažuriraj Milkbeat</string>
     <string name="maybe_later">Možda kasnije</string>
     <string name="nav_home">Početna</string>
     <string name="nav_shorts">Shorts</string>
@@ -268,10 +268,10 @@
     <string name="peace_and_quiet">Mir i tišina</string>
     <string name="notifications_empty_body">Pregledali ste sve! Nova ažuriranja iz vaših pretplata pojavit će se ovdje.</string>
     <string name="settings_title">Postavke</string>
-    <string name="settings_flow_engine_header">MusicViz Engine</string>
+    <string name="settings_flow_engine_header">Milkbeat Engine</string>
     <string name="settings_active_learning">AKTIVNO UČENJE</string>
-    <string name="settings_reset_brain_title">Resetiraj osobinu MusicViz-a?</string>
-    <string name="settings_reset_brain_body">Ovo će potpuno obrisati vaš profil interesa \'MusicViz Brain\'.\n\n• Sve naučene teme će biti zaboravljene.\n• Osobine ličnosti će biti resetovane na neutralno.\n• Preporuke će se vratiti na zadane vrijednosti.\n\nOva radnja se ne može poništiti.</string>
+    <string name="settings_reset_brain_title">Resetiraj osobinu Milkbeat-a?</string>
+    <string name="settings_reset_brain_body">Ovo će potpuno obrisati vaš profil interesa \'Milkbeat Brain\'.\n\n• Sve naučene teme će biti zaboravljene.\n• Osobine ličnosti će biti resetovane na neutralno.\n• Preporuke će se vratiti na zadane vrijednosti.\n\nOva radnja se ne može poništiti.</string>
     <string name="settings_reset_everything">Resetuj sve</string>
     <string name="settings_analyzing_interactions">Analizirajući vaše interakcije...</string>
     <string name="settings_view_analytics">Pregled analitike</string>
@@ -296,7 +296,7 @@
     <string name="settings_header_about">O nama</string>
     <string name="settings_header_notifications">Obavijesti</string>
     <string name="settings_item_notifications">Preferencije obavještenja</string>
-    <string name="settings_item_notifications_subtitle">Kontrolirajte koja obavještenja MusicViz može slati</string>
+    <string name="settings_item_notifications_subtitle">Kontrolirajte koja obavještenja Milkbeat može slati</string>
     <string name="notif_settings_title">Preferencije obavještenja</string>
     <string name="notif_type_new_videos">Novi videi</string>
     <string name="notif_type_new_videos_subtitle">Obavijestite kada pretplaćeni kanali postave nove videozapise</string>
@@ -305,7 +305,7 @@
     <string name="notif_type_reminders">Podsjetnici za vrijeme na ekranu</string>
     <string name="notif_type_reminders_subtitle">Podsjetnici za odlazak u krevet i pauze iz Upravljanja vremenom</string>
     <string name="notif_type_updates">Ažuriranja aplikacije</string>
-    <string name="notif_type_updates_subtitle">Obavijestite me kada bude dostupna nova verzija MusicViz-a</string>
+    <string name="notif_type_updates_subtitle">Obavijestite me kada bude dostupna nova verzija Milkbeat-a</string>
     <string name="notif_type_general">Opće obavijesti</string>
     <string name="notif_type_general_subtitle">Razne obavijesti i najave aplikacije</string>
     <string name="notif_system_settings">Postavke obavještenja sistema</string>
@@ -314,7 +314,7 @@
     <string name="notif_check_interval">Interval provjere novih videa</string>
     <string name="notif_check_interval_subtitle_template">Provjeri svakih %s</string>
     <string name="notif_check_interval_dialog_title">Interval provjere</string>
-    <string name="notif_check_interval_dialog_body">Koliko često MusicViz provjerava nove videozapise s kanala na koje ste pretplaćeni.</string>
+    <string name="notif_check_interval_dialog_body">Koliko često Milkbeat provjerava nove videozapise s kanala na koje ste pretplaćeni.</string>
     <string name="notif_interval_15m">15 minuta</string>
     <string name="notif_interval_30m">30 minuta</string>
     <string name="notif_interval_1h">1 sat</string>
@@ -345,7 +345,7 @@
     <string name="settings_item_export_data_subtitle">Napravite sigurnosnu kopiju svojih podataka</string>
     <string name="settings_item_import_data">Uvoz podataka</string>
     <string name="settings_item_import_data_subtitle">Obnovite iz sigurnosne kopije ili uvezite iz drugih aplikacija</string>
-    <string name="settings_item_about_flow">O MusicViz-u</string>
+    <string name="settings_item_about_flow">O Milkbeat-u</string>
     <string name="settings_item_about_flow_subtitle">Verzija, Licenca, Doprinosioci</string>
     <string name="settings_region_dialog_title">Odaberite regiju</string>
     <string name="settings_export_success">Podaci uspješno izvezani</string>
@@ -369,7 +369,7 @@
     <string name="deep_flow_duration_never">Nikad</string>
     <string name="settings_export_failed">Izvoz je propao: %1$s</string>
     <string name="appearance_title">Izgled</string>
-    <string name="appearance_subtitle">Personalizirajte svoje MusicViz iskustvo</string>
+    <string name="appearance_subtitle">Personalizirajte svoje Milkbeat iskustvo</string>
     <string name="appearance_current_theme">TRENUTNA TEMA</string>
     <string name="appearance_category_all">Sve</string>
     <string name="appearance_category_light">#Svjetlo</string>
@@ -403,7 +403,7 @@
     <string name="player_appearance_style_subtitle">Odaberite vizualni stil trake za plejer</string>
     <string name="settings_item_player_appearance">Izgled Plejera</string>
     <string name="settings_item_player_appearance_subtitle">Prilagodite stil trake napretka</string>
-    <string name="style_default">Podrazumijevano (MusicViz)</string>
+    <string name="style_default">Podrazumijevano (Milkbeat)</string>
     <string name="style_metrolist">Metrolist(Debela)</string>
     <string name="style_metrolist_slim">Metrolist (Tanka)</string>
     <string name="style_squiggly">Krivudava</string>

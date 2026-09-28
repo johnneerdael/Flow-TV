@@ -46,11 +46,11 @@ import io.github.aedev.flow.ui.screens.settings.index.AboutIndex
 
 private enum class AboutDialog { CHANGELOG, DEVICE }
 
-private const val GITHUB_URL = "https://github.com/johnneerdael/MusicViz"
+private const val GITHUB_URL = "https://github.com/johnneerdael/Milkbeat"
 private const val CREATOR_URL = "https://github.com/johnneerdael"
 private const val UPSTREAM_URL = "https://github.com/A-EDev/Flow"
 private const val NEWPIPE_URL = "https://github.com/TeamNewPipe/NewPipeExtractor"
-private const val LICENSE_URL = "https://github.com/johnneerdael/MusicViz/blob/main/License"
+private const val LICENSE_URL = "https://github.com/johnneerdael/Milkbeat/blob/main/License"
 private const val CREATOR_AVATAR_URL = "https://github.com/johnneerdael.png?size=144"
 
 private val LogoSize = 72.dp

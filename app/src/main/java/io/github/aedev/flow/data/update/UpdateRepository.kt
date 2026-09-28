@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private const val RELEASES_API = "https://api.github.com/repos/johnneerdael/MusicViz/releases/latest"
+private const val RELEASES_API = "https://api.github.com/repos/johnneerdael/Milkbeat/releases/latest"
 private const val GITHUB_JSON = "application/vnd.github+json"
 
 /** Where an automatic check may surface a release; each announces a version once. */

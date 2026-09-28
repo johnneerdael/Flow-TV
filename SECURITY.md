@@ -17,7 +17,7 @@ Always update to the newest release before reporting a security issue.
 **Do not report security vulnerabilities through public GitHub issues.**
 
 Report privately through
-[GitHub Security Advisories](https://github.com/johnneerdael/MusicViz/security/advisories/new).
+[GitHub Security Advisories](https://github.com/johnneerdael/Milkbeat/security/advisories/new).
 
 Please include:
 
@@ -34,7 +34,7 @@ Please do not disclose the issue publicly until a fix has shipped.
 
 ## Verifying release APKs
 
-Official MusicViz builds are signed with a single release key. Any APK that does
+Official Milkbeat builds are signed with a single release key. Any APK that does
 not match the fingerprint below is not an official build, regardless of where
 it was downloaded.
 
@@ -45,12 +45,12 @@ SHA-256: FE:FB:39:D0:D5:F3:DF:3B:BB:D0:B7:CC:F7:FE:D7:16:A0:A1:3E:BD:17:AC:52:9B
 Verify a downloaded APK with the Android SDK build tools:
 
 ```bash
-apksigner verify --print-certs musicviz-universal.apk
+apksigner verify --print-certs milkbeat-universal.apk
 ```
 
 The reported `Signer #1 certificate SHA-256 digest` must equal the fingerprint
 above (lower case, without colons).
 
 The official distribution channel is the
-[GitHub Releases page](https://github.com/johnneerdael/MusicViz/releases). Builds
+[GitHub Releases page](https://github.com/johnneerdael/Milkbeat/releases). Builds
 obtained anywhere else are unverified.

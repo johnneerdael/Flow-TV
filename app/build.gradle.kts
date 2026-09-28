@@ -14,20 +14,20 @@ plugins {
 // Releases are major.minor from gradle.properties plus a patch number CI counts up on every
 // published build (0 for local builds). The version code grows with every release, minor bumps
 // included, as long as a minor line stays under 1000 patches.
-val musicVizMajorMinor = providers.gradleProperty("musicvizVersion").get()
-val musicVizPatch = providers.gradleProperty("musicvizPatch").orNull?.toInt() ?: 0
-val (musicVizMajor, musicVizMinor) = musicVizMajorMinor.split('.').map(String::toInt)
+val milkbeatMajorMinor = providers.gradleProperty("milkbeatVersion").get()
+val milkbeatPatch = providers.gradleProperty("milkbeatPatch").orNull?.toInt() ?: 0
+val (milkbeatMajor, milkbeatMinor) = milkbeatMajorMinor.split('.').map(String::toInt)
 
 android {
     namespace = "io.github.aedev.flow"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "nl.neerdael.musicviz"
+        applicationId = "nl.neerdael.milkbeat"
         minSdk = 26
         targetSdk = 36
-        versionCode = musicVizMajor * 1_000_000 + musicVizMinor * 1_000 + musicVizPatch
-        versionName = "$musicVizMajorMinor.$musicVizPatch"
+        versionCode = milkbeatMajor * 1_000_000 + milkbeatMinor * 1_000 + milkbeatPatch
+        versionName = "$milkbeatMajorMinor.$milkbeatPatch"
 
         testInstrumentationRunner = "io.github.aedev.flow.HiltTestRunner"
         vectorDrawables {

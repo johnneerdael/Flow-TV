@@ -1,4 +1,4 @@
-# Categories for GitHub's auto-generated release notes. MusicViz releases carry
+# Categories for GitHub's auto-generated release notes. Milkbeat releases carry
 # notes written by the build workflow, so this only takes effect if a release
 # is generated with "Generate release notes". Labels listed here must exist in
 # the repository and are applied by .github/labeler.yml.
