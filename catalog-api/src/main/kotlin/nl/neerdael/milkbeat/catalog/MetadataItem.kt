@@ -14,6 +14,8 @@ data class MetadataItem(
     val artists: List<ArtistCredit> = emptyList(),
     val durationSeconds: Int? = null,
     val explicit: Boolean = false,
+    val ordinal: Int? = null,
+    val album: String? = null,
 )
 
 data class EntityRef(

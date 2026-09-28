@@ -105,6 +105,7 @@ class Media3MusicService : MediaLibraryService() {
         // Endless radio: append to the real queue when this few tracks remain,
         // this many at a time, and refill the suggestion pool below this size.
         // LOW_WATER/BATCH mirror the desktop station (3 / 10).
+        private const val ARTIST_STATION_PREFIX = "RDEM"
         private const val RADIO_MIN_UPCOMING = 3
         private const val RADIO_APPEND_BATCH = 10
         private const val RADIO_POOL_LOW_WATER = 15
@@ -1287,6 +1288,9 @@ class Media3MusicService : MediaLibraryService() {
      */
     private suspend fun collectionMix(playlistId: String): NextResult? {
         val watch = radioPage(WatchEndpoint(playlistId = playlistId))
+        // An artist's station is already the similar content itself; other RD playlists (curated,
+        // personal mixes) have their own automix like any playlist.
+        if (playlistId.startsWith(ARTIST_STATION_PREFIX)) return watch
         val mixId = watch?.endpoint?.playlistId?.takeIf { it != playlistId } ?: "RDAMPL$playlistId"
         return radioPage(WatchEndpoint(playlistId = mixId)) ?: watch
     }

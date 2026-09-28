@@ -25,7 +25,37 @@ data class CollectionBlock(
     val layout: CollectionLayout,
     val defaultItemView: ItemView,
     val items: List<MetadataItem>,
+    val showAll: EntityRef? = null,
 ) : PageBlock
+
+/**
+ * What a page is about: an artist's portrait, or a collection's cover, with its details. [tracks] is
+ * the collection that holds the page's tracks in order, and [station] a radio built from the entity.
+ */
+data class EntityHeader(
+    override val id: String,
+    val style: HeaderStyle,
+    val entity: EntityRef,
+    val title: String,
+    val artwork: Artwork? = null,
+    val details: List<String> = emptyList(),
+    val attribution: Attribution? = null,
+    val description: String? = null,
+    val tracks: EntityRef? = null,
+    val station: EntityRef? = null,
+) : PageBlock
+
+enum class HeaderStyle {
+    PORTRAIT,
+    COVER,
+}
+
+/** Who made the entity, as in the artist above an album's title. */
+data class Attribution(
+    val name: String,
+    val avatar: Artwork? = null,
+    val entity: EntityRef? = null,
+)
 
 /**
  * A collection's title, with an optional context line and avatar, as in "SIMILAR TO / Massano".
@@ -43,6 +73,9 @@ enum class CollectionLayout {
 
     /** Compact rows read down each column, then across, as in Quick picks. */
     MULTI_COLUMN_LIST,
+
+    /** One track per row with its number or artwork, credits, album and duration. */
+    TRACK_TABLE,
 }
 
 enum class ItemView {

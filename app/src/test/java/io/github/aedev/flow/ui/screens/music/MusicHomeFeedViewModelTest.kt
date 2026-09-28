@@ -18,6 +18,7 @@ import kotlinx.coroutines.withContext
 import nl.neerdael.milkbeat.catalog.CollectionBlock
 import nl.neerdael.milkbeat.catalog.CollectionHeader
 import nl.neerdael.milkbeat.catalog.CollectionLayout
+import nl.neerdael.milkbeat.catalog.EntityRef
 import nl.neerdael.milkbeat.catalog.FilterControl
 import nl.neerdael.milkbeat.catalog.FilterOption
 import nl.neerdael.milkbeat.catalog.HomeRequest
@@ -301,5 +302,10 @@ class MusicHomeFeedViewModelTest {
             requests += request
             return pages(request)
         }
+
+        override suspend fun page(
+            entity: EntityRef,
+            cursor: String?,
+        ): Result<MetadataPage> = Result.failure(UnsupportedOperationException())
     }
 }

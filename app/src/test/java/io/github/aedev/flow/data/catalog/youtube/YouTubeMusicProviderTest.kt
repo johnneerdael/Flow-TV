@@ -4,6 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import io.github.aedev.flow.data.account.AccountFeedClient
 import io.github.aedev.flow.data.account.AccountSession
 import io.github.aedev.flow.data.account.AccountSessionStore
+import io.github.aedev.flow.innertube.InnerTube
 import io.github.aedev.flow.innertube.YouTube
 import io.github.aedev.flow.innertube.pages.HomePage
 import io.mockk.coEvery
@@ -15,6 +16,8 @@ import io.mockk.unmockkObject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import nl.neerdael.milkbeat.catalog.EntityKind
+import nl.neerdael.milkbeat.catalog.EntityRef
 import nl.neerdael.milkbeat.catalog.HomeRequest
 import nl.neerdael.milkbeat.catalog.ProviderAccount
 import org.junit.After
@@ -104,5 +107,40 @@ class YouTubeMusicProviderTest {
 
             sessions.value = AccountSession(cookie = "SAPISID=secret", expired = true)
             assertThat(provider.account.first()).isEqualTo(ProviderAccount.Expired)
+        }
+
+    @Test
+    fun `pages browse by the entity's id, a playlist through its VL page, a cursor as a continuation`() =
+        runTest {
+            coEvery { YouTube.browseResponse(any(), any(), any()) } returns Result.failure(IllegalStateException("offline"))
+
+            provider().page(EntityRef(EntityKind.ARTIST, "UC1"))
+            provider().page(EntityRef(EntityKind.ALBUM, "MPREb_1"))
+            provider().page(EntityRef(EntityKind.PLAYLIST, "PL1"))
+            provider().page(EntityRef(EntityKind.PLAYLIST, "PL1"), cursor = "next")
+
+            coVerify { YouTube.browseResponse("UC1", null, any()) }
+            coVerify { YouTube.browseResponse("MPREb_1", null, any()) }
+            coVerify { YouTube.browseResponse("VLPL1", null, any()) }
+            coVerify { YouTube.browseResponse(null, "next", any()) }
+        }
+
+    @Test
+    fun `a signed-in account's pages are read as that account`() =
+        runTest {
+            sessions.value = AccountSession(cookie = "SAPISID=a")
+            val tube = mockk<InnerTube>()
+            coEvery { client.tube() } returns tube
+            coEvery { YouTube.browseResponse(any(), any(), any()) } returns Result.failure(IllegalStateException("offline"))
+
+            provider().page(EntityRef(EntityKind.ARTIST, "UC1"))
+
+            coVerify { YouTube.browseResponse("UC1", null, tube) }
+        }
+
+    @Test
+    fun `there is no page for a track`() =
+        runTest {
+            assertThat(provider().page(EntityRef(EntityKind.TRACK, "v1")).isFailure).isTrue()
         }
 }

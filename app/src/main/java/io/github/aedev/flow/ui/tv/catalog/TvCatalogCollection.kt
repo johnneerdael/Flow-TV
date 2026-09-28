@@ -1,4 +1,4 @@
-package io.github.aedev.flow.ui.tv.components
+package io.github.aedev.flow.ui.tv.catalog
 
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
@@ -36,6 +36,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import io.github.aedev.flow.R
+import io.github.aedev.flow.ui.tv.components.TvArtistCard
+import io.github.aedev.flow.ui.tv.components.TvButton
+import io.github.aedev.flow.ui.tv.components.TvIconButton
+import io.github.aedev.flow.ui.tv.components.TvMediaRow
+import io.github.aedev.flow.ui.tv.components.TvMusicCollectionCard
+import io.github.aedev.flow.ui.tv.components.TvMusicLandscapeCard
+import io.github.aedev.flow.ui.tv.components.TvMusicTrackRow
+import io.github.aedev.flow.ui.tv.components.TvSectionHeader
 import io.github.aedev.flow.ui.tv.focus.ProvideTvRowPivot
 import io.github.aedev.flow.ui.tv.focus.tvRowEntersAtStart
 import io.github.aedev.flow.ui.tv.focus.tvRowFocus
@@ -53,7 +61,7 @@ import nl.neerdael.milkbeat.catalog.MetadataItem
  * of cards in the shape each item asks for, or compact track rows read down each column.
  */
 @Composable
-fun TvCatalogCollection(
+internal fun TvCatalogCollection(
     collection: CollectionBlock,
     onItemClick: (MetadataItem) -> Unit,
     onPlayAll: (() -> Unit)?,
@@ -88,7 +96,9 @@ fun TvCatalogCollection(
             )
         }
         when (collection.layout) {
-            CollectionLayout.HORIZONTAL_SHELF -> TvCatalogShelf(collection, onItemClick, itemsModifier)
+            // A track table is laid out by the page's lazy list; composed on its own it is a shelf.
+            CollectionLayout.HORIZONTAL_SHELF, CollectionLayout.TRACK_TABLE -> TvCatalogShelf(collection, onItemClick, itemsModifier)
+
             CollectionLayout.MULTI_COLUMN_LIST -> TvCatalogTrackColumns(collection, onItemClick, itemsModifier)
         }
     }

@@ -11,12 +11,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
@@ -30,7 +30,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.aedev.flow.R
 import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.ui.screens.music.MusicHomeFeedViewModel
-import io.github.aedev.flow.ui.tv.components.TvCatalogCollection
+import io.github.aedev.flow.ui.tv.catalog.TvCatalogActions
+import io.github.aedev.flow.ui.tv.catalog.catalogBlocks
 import io.github.aedev.flow.ui.tv.components.TvFilterChip
 import io.github.aedev.flow.ui.tv.components.TvMessageState
 import io.github.aedev.flow.ui.tv.components.TvScreenScaffold
@@ -38,18 +39,14 @@ import io.github.aedev.flow.ui.tv.components.TvShimmerRow
 import io.github.aedev.flow.ui.tv.focus.ProvideTvColumnPivot
 import io.github.aedev.flow.ui.tv.focus.tvRowFocus
 import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
-import nl.neerdael.milkbeat.catalog.CollectionBlock
-import nl.neerdael.milkbeat.catalog.EntityKind
 import nl.neerdael.milkbeat.catalog.EntityRef
-import nl.neerdael.milkbeat.catalog.MetadataItem
 
 /** TV music home: the music provider's home page — its filters, then every block in the order it is served. */
 @Composable
 fun TvMusicScreen(
-    onTrackClick: (MusicTrack, List<MusicTrack>, String) -> Unit,
+    onPlayCollection: (MusicTrack, List<MusicTrack>, String, String?) -> Unit,
     onPlayMix: (MusicTrack) -> Unit,
-    onOpenCollection: (String) -> Unit,
-    onOpenArtist: (String) -> Unit,
+    onOpen: (EntityRef) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: MusicHomeFeedViewModel = hiltViewModel(),
 ) {
@@ -62,15 +59,19 @@ fun TvMusicScreen(
     // content once, so a later return to the tab from the rail keeps focus where the user put it.
     var openedOnContent by rememberSaveable { mutableStateOf(false) }
     val blocks = state.blocks
-    val trackFor = remember(viewModel) { viewModel::track }
     val hasShelves = blocks.isNotEmpty()
-    val open: (EntityRef) -> Unit = { ref ->
-        when (ref.kind) {
-            EntityKind.ALBUM, EntityKind.PLAYLIST -> onOpenCollection(ref.providerId)
-            EntityKind.ARTIST -> onOpenArtist(ref.providerId)
-            else -> Unit
+    val playMix by rememberUpdatedState(onPlayMix)
+    val playCollection by rememberUpdatedState(onPlayCollection)
+    val open by rememberUpdatedState(onOpen)
+    val actions =
+        remember(viewModel) {
+            TvCatalogActions(
+                trackFor = viewModel::track,
+                onPlayMix = { playMix(it) },
+                onPlayList = { track, queue, source, radioPlaylistId -> playCollection(track, queue, source, radioPlaylistId) },
+                onOpen = { open(it) },
+            )
         }
-    }
     LaunchedEffect(hasShelves) {
         if (hasShelves && !openedOnContent) {
             withFrameNanos { }
@@ -130,21 +131,12 @@ fun TvMusicScreen(
                         }
 
                         else -> {
-                            itemsIndexed(blocks, key = { _, block -> block.id }) { index, block ->
-                                val blockModifier = if (index == 0) Modifier.focusRequester(firstShelfFocus).focusGroup() else Modifier
-                                when (block) {
-                                    is CollectionBlock -> {
-                                        TvHomeCollection(
-                                            collection = block,
-                                            trackFor = trackFor,
-                                            onTrackClick = onTrackClick,
-                                            onPlayMix = onPlayMix,
-                                            onOpen = open,
-                                            modifier = blockModifier,
-                                        )
-                                    }
-                                }
-                            }
+                            catalogBlocks(
+                                blocks = blocks,
+                                actions = actions,
+                                horizontalPadding = dimens.overscanHorizontal,
+                                firstBlockModifier = Modifier.focusRequester(firstShelfFocus).focusGroup(),
+                            )
                             if (state.isLoadingMore) {
                                 item(key = "music-loading-more") { TvShimmerRow() }
                             }
@@ -154,28 +146,4 @@ fun TvMusicScreen(
             }
         }
     }
-}
-
-@Composable
-private fun TvHomeCollection(
-    collection: CollectionBlock,
-    trackFor: (MetadataItem) -> MusicTrack?,
-    onTrackClick: (MusicTrack, List<MusicTrack>, String) -> Unit,
-    onPlayMix: (MusicTrack) -> Unit,
-    onOpen: (EntityRef) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val queueTitle = collection.header?.title.orEmpty()
-    val tracks = remember(collection.items) { collection.items.associate { it.id to trackFor(it) } }
-    val queue = remember(tracks) { tracks.values.filterNotNull() }
-    TvCatalogCollection(
-        collection = collection,
-        onItemClick = { item ->
-            val track = tracks[item.id]
-            if (track != null) onPlayMix(track) else onOpen(item.entity)
-        },
-        onPlayAll = { onTrackClick(queue.first(), queue, queueTitle) }.takeIf { queue.isNotEmpty() && queue.size == collection.items.size },
-        onOpen = onOpen,
-        modifier = modifier,
-    )
 }

@@ -11,9 +11,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.music.model.MusicTrack
+import io.github.aedev.flow.ui.screens.music.CatalogPageViewModel
 import io.github.aedev.flow.ui.screens.music.sharedMusicViewModel
 import io.github.aedev.flow.ui.screens.search.SearchViewModel
-import io.github.aedev.flow.ui.tv.screens.TvArtistScreen
+import io.github.aedev.flow.ui.tv.screens.TvCatalogPageScreen
 import io.github.aedev.flow.ui.tv.screens.TvChannelScreen
 import io.github.aedev.flow.ui.tv.screens.TvLibraryScreen
 import io.github.aedev.flow.ui.tv.screens.TvMusicCollectionScreen
@@ -22,6 +23,7 @@ import io.github.aedev.flow.ui.tv.screens.TvPlaylistDetailScreen
 import io.github.aedev.flow.ui.tv.screens.TvSearchScreen
 import io.github.aedev.flow.ui.tv.screens.TvSettingsScreen
 import io.github.aedev.flow.ui.tv.screens.account.TvAccountSignInScreen
+import nl.neerdael.milkbeat.catalog.EntityRef
 
 /** Top-level TV navigation graph plus detail routes (channel, …). */
 @androidx.annotation.OptIn(UnstableApi::class)
@@ -39,6 +41,7 @@ fun TvNavHost(
     val openChannel: (String) -> Unit = { channelRef ->
         navController.navigate(TvRoutes.channel(channelRef))
     }
+    val openCatalog: (EntityRef) -> Unit = { navController.navigate(TvRoutes.catalog(it)) }
 
     NavHost(
         navController = navController,
@@ -47,24 +50,24 @@ fun TvNavHost(
     ) {
         composable(TvDestination.MUSIC.route) {
             TvMusicScreen(
-                onTrackClick = onPlayTrack,
+                onPlayCollection = onPlayCollection,
                 onPlayMix = onPlayMix,
-                onOpenCollection = { navController.navigate(TvRoutes.musicCollection(it)) },
-                onOpenArtist = { navController.navigate(TvRoutes.musicArtist(it)) },
+                onOpen = openCatalog,
                 modifier = Modifier.fillMaxSize(),
             )
         }
         composable(
-            route = TvRoutes.MUSIC_ARTIST,
-            arguments = listOf(navArgument(TvRoutes.MUSIC_ARTIST_ARG) { type = NavType.StringType }),
-        ) { entry ->
-            val artistChannelId = entry.arguments?.getString(TvRoutes.MUSIC_ARTIST_ARG).orEmpty()
-            TvArtistScreen(
-                channelId = artistChannelId,
-                viewModel = sharedMusicViewModel(),
-                onTrackClick = onPlayTrack,
-                onOpenCollection = { navController.navigate(TvRoutes.musicCollection(it)) },
-                onOpenArtist = { navController.navigate(TvRoutes.musicArtist(it)) },
+            route = TvRoutes.CATALOG,
+            arguments =
+                listOf(
+                    navArgument(CatalogPageViewModel.KIND_ARG) { type = NavType.StringType },
+                    navArgument(CatalogPageViewModel.ID_ARG) { type = NavType.StringType },
+                ),
+        ) {
+            TvCatalogPageScreen(
+                onPlayMix = onPlayMix,
+                onPlayCollection = onPlayCollection,
+                onOpen = openCatalog,
                 modifier = Modifier.fillMaxSize(),
             )
         }
@@ -87,8 +90,7 @@ fun TvNavHost(
                 onChannelClick = openChannel,
                 onOpenPlaylist = { navController.navigate(TvRoutes.playlist(it)) },
                 onPlayMix = onPlayMix,
-                onOpenMusicCollection = { navController.navigate(TvRoutes.musicCollection(it)) },
-                onOpenMusicArtist = { navController.navigate(TvRoutes.musicArtist(it)) },
+                onOpenCatalog = openCatalog,
                 modifier = Modifier.fillMaxSize(),
             )
         }

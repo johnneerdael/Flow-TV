@@ -47,6 +47,7 @@ import io.github.aedev.flow.ui.tv.components.TvSearchField
 import io.github.aedev.flow.ui.tv.focus.tvRowFocus
 import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 import kotlinx.coroutines.delay
+import nl.neerdael.milkbeat.catalog.EntityRef
 
 private const val SUGGESTION_CHIPS = 8
 private const val RECENT_SUGGESTIONS = 3
@@ -96,8 +97,7 @@ fun TvSearchScreen(
     onChannelClick: (String) -> Unit = {},
     onOpenPlaylist: (String) -> Unit = {},
     onPlayMix: (MusicTrack) -> Unit = {},
-    onOpenMusicCollection: (String) -> Unit = {},
-    onOpenMusicArtist: (String) -> Unit = {},
+    onOpenCatalog: (EntityRef) -> Unit = {},
     musicSearchViewModel: MusicSearchViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
@@ -296,13 +296,9 @@ fun TvSearchScreen(
                     remembered()
                     onPlayMix(track)
                 },
-                onOpenMusicCollection = {
+                onOpenCatalog = {
                     remembered()
-                    onOpenMusicCollection(it)
-                },
-                onOpenMusicArtist = {
-                    remembered()
-                    onOpenMusicArtist(it)
+                    onOpenCatalog(it)
                 },
                 modifier = Modifier.weight(1f),
             )

@@ -10,6 +10,12 @@ interface MetadataProvider {
     val account: Flow<ProviderAccount>
 
     suspend fun home(request: HomeRequest): Result<MetadataPage>
+
+    /** The page of an artist, album or playlist; [cursor] continues a page that has more. */
+    suspend fun page(
+        entity: EntityRef,
+        cursor: String? = null,
+    ): Result<MetadataPage>
 }
 
 data class HomeRequest(

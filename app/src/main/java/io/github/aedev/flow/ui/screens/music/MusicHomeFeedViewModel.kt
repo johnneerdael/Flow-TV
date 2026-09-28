@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import nl.neerdael.milkbeat.catalog.CollectionBlock
 import nl.neerdael.milkbeat.catalog.FilterOption
 import nl.neerdael.milkbeat.catalog.HomeRequest
 import nl.neerdael.milkbeat.catalog.MetadataItem
@@ -137,28 +136,6 @@ class MusicHomeFeedViewModel
             currentCoroutineContext().ensureActive()
             return result
         }
-
-        /**
-         * Appends a page's blocks. A block served again unchanged is dropped; a different block that
-         * happens to share an id (two shelves with one title) is kept under a numbered id.
-         */
-        private fun List<PageBlock>.withPage(page: List<PageBlock>): List<PageBlock> {
-            val merged = toMutableList()
-            val ids = mapTo(HashSet()) { it.id }
-            for (block in page) {
-                if (block in merged) continue
-                var id = block.id
-                var n = 2
-                while (!ids.add(id)) id = "${block.id}#${n++}"
-                merged += if (id == block.id) block else block.withId(id)
-            }
-            return merged
-        }
-
-        private fun PageBlock.withId(id: String): PageBlock =
-            when (this) {
-                is CollectionBlock -> copy(id = id)
-            }
 
         private data class FeedKey(
             val account: ProviderAccount,

@@ -44,6 +44,8 @@ import io.github.aedev.flow.ui.tv.focus.ProvideTvColumnPivot
 import io.github.aedev.flow.ui.tv.focus.ProvideTvRowPivot
 import io.github.aedev.flow.ui.tv.focus.tvRowFocus
 import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
+import nl.neerdael.milkbeat.catalog.EntityKind
+import nl.neerdael.milkbeat.catalog.EntityRef
 import androidx.compose.foundation.lazy.grid.itemsIndexed as gridItemsIndexed
 
 @Composable
@@ -170,8 +172,7 @@ internal fun TvMusicSearchResults(
     state: MusicSearchUiState,
     filtered: Boolean,
     onPlayMix: (MusicTrack) -> Unit,
-    onOpenMusicCollection: (String) -> Unit,
-    onOpenMusicArtist: (String) -> Unit,
+    onOpenCatalog: (EntityRef) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val dimens = LocalTvDimens.current
@@ -218,8 +219,7 @@ internal fun TvMusicSearchResults(
                             TvMusicResultCard(
                                 item = item,
                                 onPlayMix = onPlayMix,
-                                onOpenMusicCollection = onOpenMusicCollection,
-                                onOpenMusicArtist = onOpenMusicArtist,
+                                onOpenCatalog = onOpenCatalog,
                                 modifier = Modifier.fillMaxWidth(),
                             )
                         }
@@ -272,8 +272,7 @@ internal fun TvMusicSearchResults(
                                         TvMusicResultCard(
                                             item = item,
                                             onPlayMix = onPlayMix,
-                                            onOpenMusicCollection = onOpenMusicCollection,
-                                            onOpenMusicArtist = onOpenMusicArtist,
+                                            onOpenCatalog = onOpenCatalog,
                                         )
                                     }
                                 }
@@ -290,8 +289,7 @@ internal fun TvMusicSearchResults(
 private fun TvMusicResultCard(
     item: YTItem,
     onPlayMix: (MusicTrack) -> Unit,
-    onOpenMusicCollection: (String) -> Unit,
-    onOpenMusicArtist: (String) -> Unit,
+    onOpenCatalog: (EntityRef) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (item) {
@@ -304,14 +302,12 @@ private fun TvMusicResultCard(
             )
         }
 
-        // Albums open the collection page via browseId — same id mobile
-        // passes to its album page (AlbumItem.id == browseId).
         is AlbumItem -> {
             TvMusicCollectionCard(
                 title = item.title,
                 subtitle = item.artists?.joinToString { it.name },
                 thumbnailUrl = item.thumbnail,
-                onClick = { onOpenMusicCollection(item.id) },
+                onClick = { onOpenCatalog(EntityRef(EntityKind.ALBUM, item.browseId)) },
                 modifier = modifier,
             )
         }
@@ -321,7 +317,7 @@ private fun TvMusicResultCard(
                 title = item.title,
                 subtitle = item.author?.name,
                 thumbnailUrl = item.thumbnail.orEmpty(),
-                onClick = { onOpenMusicCollection(item.id) },
+                onClick = { onOpenCatalog(EntityRef(EntityKind.PLAYLIST, item.id)) },
                 modifier = modifier,
             )
         }
@@ -330,7 +326,7 @@ private fun TvMusicResultCard(
             TvArtistCard(
                 name = item.title,
                 thumbnailUrl = item.thumbnail.orEmpty(),
-                onClick = { onOpenMusicArtist(item.id) },
+                onClick = { onOpenCatalog(EntityRef(EntityKind.ARTIST, item.id)) },
                 modifier = modifier,
             )
         }

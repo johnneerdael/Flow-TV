@@ -2,6 +2,7 @@ package io.github.aedev.flow.ui.tv.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -232,6 +233,8 @@ fun TvMusicTrackRow(
     modifier: Modifier = Modifier,
     selected: Boolean = false,
     containerAlpha: Float = 1f,
+    ordinal: Int? = null,
+    album: String? = null,
 ) {
     TvCard(
         onClick = onClick,
@@ -247,16 +250,27 @@ fun TvMusicTrackRow(
             horizontalArrangement = Arrangement.spacedBy(14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Surface(
-                shape = MaterialTheme.shapes.small,
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            ) {
-                AsyncImage(
-                    model = thumbnailUrl,
-                    contentDescription = null,
-                    modifier = Modifier.size(48.dp),
-                    contentScale = ContentScale.Crop,
-                )
+            if (ordinal != null) {
+                // An album's tracks share its cover, so they are told apart by number.
+                Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = ordinal.toString(),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            } else {
+                Surface(
+                    shape = MaterialTheme.shapes.small,
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                ) {
+                    AsyncImage(
+                        model = thumbnailUrl,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        contentScale = ContentScale.Crop,
+                    )
+                }
             }
             Column(Modifier.weight(1f)) {
                 Text(
@@ -275,6 +289,16 @@ fun TvMusicTrackRow(
                     )
                 }
             }
+            album?.let {
+                Text(
+                    text = it,
+                    modifier = Modifier.weight(ALBUM_COLUMN_WEIGHT),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
             if (durationSeconds > 0) {
                 Text(
                     text = formatDuration(durationSeconds),
@@ -287,3 +311,4 @@ fun TvMusicTrackRow(
 }
 
 private const val WIDE_ASPECT_RATIO = 16f / 9f
+private const val ALBUM_COLUMN_WEIGHT = 0.6f

@@ -2087,6 +2087,16 @@ object YouTube {
             )
         }
 
+    /** A music browse response as served, for mappers that read more than the parsed pages keep. */
+    suspend fun browseResponse(
+        browseId: String? = null,
+        continuation: String? = null,
+        via: InnerTube = innerTube,
+    ): Result<BrowseResponse> =
+        runCatching {
+            via.browse(WEB_REMIX, browseId = browseId, continuation = continuation, setLogin = true).body<BrowseResponse>()
+        }
+
     suspend fun playlistContinuation(continuation: String): Result<PlaylistContinuationPage> =
         runCatching {
             val response =
