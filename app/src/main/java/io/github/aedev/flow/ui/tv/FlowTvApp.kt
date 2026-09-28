@@ -90,14 +90,31 @@ fun FlowTvApp(
         playerViewModel.playVideo(video)
     }
 
-    // Starting music opens the full-screen player; it shows once the new track is loaded.
+    /**
+     * A list from a YouTube collection, which continues with that collection's own mix. Starting
+     * music opens the full-screen player; it shows once the new track is loaded.
+     */
+    fun playCollection(
+        track: MusicTrack,
+        queue: List<MusicTrack>,
+        source: String,
+        radioPlaylistId: String?,
+    ) {
+        requestedTrackId = track.videoId
+        musicPlayerViewModel.loadAndPlayTrack(track, queue, source, radioPlaylistId = radioPlaylistId)
+        musicExpanded = true
+    }
+
     fun playTrack(
         track: MusicTrack,
         queue: List<MusicTrack>,
         source: String,
-    ) {
+    ) = playCollection(track, queue, source, radioPlaylistId = null)
+
+    /** A song on its own, as YouTube Music plays it: that song, then the mix YouTube builds from it. */
+    fun playMix(track: MusicTrack) {
         requestedTrackId = track.videoId
-        musicPlayerViewModel.loadAndPlayTrack(track, queue, source)
+        musicPlayerViewModel.startRadio(track)
         musicExpanded = true
     }
 
@@ -152,6 +169,8 @@ fun FlowTvApp(
                     TvShell(
                         navController = navController,
                         onPlayTrack = ::playTrack,
+                        onPlayMix = ::playMix,
+                        onPlayCollection = ::playCollection,
                         searchViewModel = searchViewModel,
                         onPlayVideo = ::play,
                         onPlayPlaylist = ::playPlaylist,

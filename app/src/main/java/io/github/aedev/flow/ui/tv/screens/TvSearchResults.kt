@@ -169,13 +169,12 @@ internal fun TvMusicSearchResults(
     query: String,
     state: MusicSearchUiState,
     filtered: Boolean,
-    onPlayTrack: (MusicTrack, List<MusicTrack>, String) -> Unit,
+    onPlayMix: (MusicTrack) -> Unit,
     onOpenMusicCollection: (String) -> Unit,
     onOpenMusicArtist: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val dimens = LocalTvDimens.current
-    val searchSource = stringResource(R.string.search_source_template, query)
     val summaries =
         state.searchSummary
             ?.summaries
@@ -205,10 +204,6 @@ internal fun TvMusicSearchResults(
                 }
 
                 else -> {
-                    val songs =
-                        remember(state.filteredResults) {
-                            state.filteredResults.filterIsInstance<SongItem>().map(::convertSongToMusicTrack)
-                        }
                     LazyVerticalGrid(
                         columns = GridCells.Adaptive(minSize = dimens.musicCardWidth),
                         modifier = modifier.tvRowFocus(),
@@ -222,9 +217,7 @@ internal fun TvMusicSearchResults(
                         ) { _, item ->
                             TvMusicResultCard(
                                 item = item,
-                                sectionSongs = songs,
-                                searchSource = searchSource,
-                                onPlayTrack = onPlayTrack,
+                                onPlayMix = onPlayMix,
                                 onOpenMusicCollection = onOpenMusicCollection,
                                 onOpenMusicArtist = onOpenMusicArtist,
                                 modifier = Modifier.fillMaxWidth(),
@@ -263,10 +256,6 @@ internal fun TvMusicSearchResults(
                     ) { _, summary ->
                         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                             TvSectionHeader(title = summary.title)
-                            val sectionSongs =
-                                remember(summary) {
-                                    summary.items.filterIsInstance<SongItem>().map(::convertSongToMusicTrack)
-                                }
                             ProvideTvRowPivot {
                                 LazyRow(
                                     modifier =
@@ -282,9 +271,7 @@ internal fun TvMusicSearchResults(
                                     ) { _, item ->
                                         TvMusicResultCard(
                                             item = item,
-                                            sectionSongs = sectionSongs,
-                                            searchSource = searchSource,
-                                            onPlayTrack = onPlayTrack,
+                                            onPlayMix = onPlayMix,
                                             onOpenMusicCollection = onOpenMusicCollection,
                                             onOpenMusicArtist = onOpenMusicArtist,
                                         )
@@ -302,9 +289,7 @@ internal fun TvMusicSearchResults(
 @Composable
 private fun TvMusicResultCard(
     item: YTItem,
-    sectionSongs: List<MusicTrack>,
-    searchSource: String,
-    onPlayTrack: (MusicTrack, List<MusicTrack>, String) -> Unit,
+    onPlayMix: (MusicTrack) -> Unit,
     onOpenMusicCollection: (String) -> Unit,
     onOpenMusicArtist: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -314,9 +299,7 @@ private fun TvMusicResultCard(
             val track = remember(item) { convertSongToMusicTrack(item) }
             TvMusicCard(
                 track = track,
-                onClick = {
-                    onPlayTrack(track, sectionSongs.ifEmpty { listOf(track) }, searchSource)
-                },
+                onClick = { onPlayMix(track) },
                 modifier = modifier,
             )
         }

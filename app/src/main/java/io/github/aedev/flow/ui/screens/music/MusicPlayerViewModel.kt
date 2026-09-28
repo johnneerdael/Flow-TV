@@ -275,6 +275,7 @@ class MusicPlayerViewModel
             queue: List<MusicTrack> = emptyList(),
             sourceName: String? = null,
             asRadio: Boolean = false,
+            radioPlaylistId: String? = null,
         ) {
             // Tapping the song that is already loaded, from any list, keeps it going instead of
             // fetching and restarting it; a paused one resumes. The queue is left as it is.
@@ -333,6 +334,7 @@ class MusicPlayerViewModel
                     // playlist change, and an unrelated advance during the lookup above would
                     // otherwise eat it.
                     EnhancedMusicPlayerManager.pendingRadioSeedId = track.videoId.takeIf { asRadio }
+                    EnhancedMusicPlayerManager.pendingRadioPlaylistId = radioPlaylistId.takeUnless { asRadio }
 
                     withContext(kotlinx.coroutines.Dispatchers.Main) {
                         EnhancedMusicPlayerManager.playTrack(

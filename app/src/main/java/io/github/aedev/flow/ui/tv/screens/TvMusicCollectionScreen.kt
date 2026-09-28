@@ -47,7 +47,7 @@ import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 fun TvMusicCollectionScreen(
     collectionId: String,
     viewModel: MusicViewModel,
-    onTrackClick: (MusicTrack, List<MusicTrack>, String) -> Unit,
+    onPlayCollection: (MusicTrack, List<MusicTrack>, String, String?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -132,7 +132,7 @@ fun TvMusicCollectionScreen(
                                         TvButton(
                                             text = stringResource(R.string.play_all),
                                             onClick = {
-                                                onTrackClick(tracks.first(), tracks, details.title)
+                                                onPlayCollection(tracks.first(), tracks, details.title, details.radioPlaylistId)
                                             },
                                             icon = Icons.Outlined.PlayArrow,
                                             modifier = Modifier.tvInitialFocus(),
@@ -141,7 +141,7 @@ fun TvMusicCollectionScreen(
                                             text = stringResource(R.string.shuffle),
                                             onClick = {
                                                 val shuffled = tracks.shuffled()
-                                                onTrackClick(shuffled.first(), shuffled, details.title)
+                                                onPlayCollection(shuffled.first(), shuffled, details.title, details.radioPlaylistId)
                                             },
                                             icon = Icons.Outlined.Shuffle,
                                         )
@@ -161,7 +161,7 @@ fun TvMusicCollectionScreen(
                         ) { _, track ->
                             TvMusicTrackRow(
                                 track = track,
-                                onClick = { onTrackClick(track, tracks, details.title) },
+                                onClick = { onPlayCollection(track, tracks, details.title, details.radioPlaylistId) },
                             )
                         }
                     }

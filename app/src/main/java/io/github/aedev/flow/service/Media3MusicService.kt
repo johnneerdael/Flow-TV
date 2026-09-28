@@ -1188,6 +1188,8 @@ class Media3MusicService : MediaLibraryService() {
         val queueIds = manager.queue.value.map { it.videoId }
         val explicitSeedId = manager.pendingRadioSeedId
         manager.pendingRadioSeedId = null
+        val collectionId = manager.pendingRadioPlaylistId
+        manager.pendingRadioPlaylistId = null
 
         val context =
             MusicRadioPlanner.resolveQueueContext(
@@ -1201,19 +1203,26 @@ class Media3MusicService : MediaLibraryService() {
             maybeExtendRadio()
             return
         }
-        radioSeedId = currentId
+        // A song asked for on its own continues with its mix; any other list hands over from its last
+        // track, unless it came from a collection, which continues with that collection's mix.
+        val seedId =
+            if (context.explicit) currentId else queueIds.lastOrNull { !LocalMediaIds.isLocal(it) } ?: currentId
+        radioSeedId = seedId
         radioContinuation = null
         radioEndpoint = null
         radioResumeWhenAppended = false
         explicitRadioRequest = context.explicit
-        startRadio(currentId)
+        startRadio(seedId, collectionId.takeUnless { context.explicit })
     }
 
     /**
-     * Seeds the station the way YouTube Music does: the playing track's own mix, kept in the order
-     * YouTube built it. Only artists the user blocked or turned down are taken out.
+     * Seeds the station the way YouTube Music does: the collection's or the track's own mix, kept in
+     * the order YouTube built it. Only artists the user blocked or turned down are taken out.
      */
-    private fun startRadio(seedId: String) {
+    private fun startRadio(
+        seedId: String,
+        collectionId: String?,
+    ) {
         automixJob?.cancel()
         radioTopUpJob?.cancel()
         val manager = io.github.aedev.flow.player.EnhancedMusicPlayerManager
@@ -1223,10 +1232,8 @@ class Media3MusicService : MediaLibraryService() {
         automixJob =
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
-                    var page = radioPage(WatchEndpoint(videoId = seedId, playlistId = "RDAMVM$seedId"))
-                    if (page == null || page.items.size <= 1) {
-                        page = radioPage(WatchEndpoint(videoId = seedId)) ?: page
-                    }
+                    var page = collectionId?.let { collectionMix(it) }
+                    if (page == null || page.items.isEmpty()) page = trackMix(seedId)
 
                     var mapped = page?.items.orEmpty().toRadioTracks(seedId)
                     if (mapped.isEmpty()) {
@@ -1245,7 +1252,11 @@ class Media3MusicService : MediaLibraryService() {
                     }
 
                     val station = withoutHiddenArtists(mapped)
-                    Log.d(TAG, "Radio seeded from $seedId: ${station.size} tracks, continuation=${radioContinuation != null}")
+                    Log.d(
+                        TAG,
+                        "Radio seeded from ${collectionId ?: seedId} via ${radioEndpoint?.playlistId}: " +
+                            "${station.size} tracks, continuation=${radioContinuation != null}",
+                    )
                     if (station.isNotEmpty()) {
                         manager.updateAutomixItems(station)
                         // The queue may already be short (or ended) by the time the
@@ -1260,6 +1271,22 @@ class Media3MusicService : MediaLibraryService() {
                     manager.setRadioLoading(false)
                 }
             }
+    }
+
+    private suspend fun trackMix(seedId: String): NextResult? {
+        val page = radioPage(WatchEndpoint(videoId = seedId, playlistId = "RDAMVM$seedId"))
+        if (page != null && page.items.size > 1) return page
+        return radioPage(WatchEndpoint(videoId = seedId)) ?: page
+    }
+
+    /**
+     * A collection's watch queue ends in its automix, which [YouTube.next] follows and names as the
+     * page's endpoint. A long playlist leaves no room for one, so its radio is asked for directly.
+     */
+    private suspend fun collectionMix(playlistId: String): NextResult? {
+        val watch = radioPage(WatchEndpoint(playlistId = playlistId))
+        if (watch != null && watch.endpoint.playlistId != playlistId) return watch
+        return radioPage(WatchEndpoint(playlistId = "RDAMPL$playlistId"))
     }
 
     /** The account's own mix when signed in, as YouTube Music would queue it; the anonymous one otherwise. */
@@ -1355,7 +1382,7 @@ class Media3MusicService : MediaLibraryService() {
                                     .firstOrNull { it != radioSeedId && !LocalMediaIds.isLocal(it) }
                                     ?: return@launch
                             radioSeedId = seedId
-                            radioPage(WatchEndpoint(videoId = seedId, playlistId = "RDAMVM$seedId"))
+                            trackMix(seedId)
                         }
                     if (page == null) return@launch
                     radioContinuation = page.continuation

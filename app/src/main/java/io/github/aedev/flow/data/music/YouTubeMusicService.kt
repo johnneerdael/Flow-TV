@@ -456,6 +456,7 @@ object YouTubeMusicService {
                             durationText = durationText,
                             dateText = albumPage.album.year?.toString(),
                             tracks = tracks,
+                            radioPlaylistId = albumPage.album.playlistId,
                         )
                     }
                 }
@@ -485,6 +486,7 @@ object YouTubeMusicService {
                     durationText = durationText,
                     dateText = null,
                     tracks = tracks,
+                    radioPlaylistId = playlistId.removePrefix("VL"),
                 )
             } catch (e: Exception) {
                 Log.e(TAG, "Error fetching playlist details: $playlistId", e)

@@ -29,6 +29,8 @@ import io.github.aedev.flow.ui.tv.screens.account.TvAccountSignInScreen
 fun TvNavHost(
     navController: NavHostController,
     onPlayTrack: (MusicTrack, List<MusicTrack>, String) -> Unit,
+    onPlayMix: (MusicTrack) -> Unit,
+    onPlayCollection: (MusicTrack, List<MusicTrack>, String, String?) -> Unit,
     searchViewModel: SearchViewModel,
     onPlayVideo: (Video) -> Unit,
     onPlayPlaylist: (List<Video>, String) -> Unit,
@@ -46,6 +48,7 @@ fun TvNavHost(
         composable(TvDestination.MUSIC.route) {
             TvMusicScreen(
                 onTrackClick = onPlayTrack,
+                onPlayMix = onPlayMix,
                 onOpenCollection = { navController.navigate(TvRoutes.musicCollection(it)) },
                 onOpenArtist = { navController.navigate(TvRoutes.musicArtist(it)) },
                 modifier = Modifier.fillMaxSize(),
@@ -73,7 +76,7 @@ fun TvNavHost(
             TvMusicCollectionScreen(
                 collectionId = collectionId,
                 viewModel = sharedMusicViewModel(),
-                onTrackClick = onPlayTrack,
+                onPlayCollection = onPlayCollection,
                 modifier = Modifier.fillMaxSize(),
             )
         }
@@ -83,7 +86,7 @@ fun TvNavHost(
                 onVideoClick = onPlayVideo,
                 onChannelClick = openChannel,
                 onOpenPlaylist = { navController.navigate(TvRoutes.playlist(it)) },
-                onPlayTrack = onPlayTrack,
+                onPlayMix = onPlayMix,
                 onOpenMusicCollection = { navController.navigate(TvRoutes.musicCollection(it)) },
                 onOpenMusicArtist = { navController.navigate(TvRoutes.musicArtist(it)) },
                 modifier = Modifier.fillMaxSize(),

@@ -167,6 +167,7 @@ object InnertubeMusicService {
                     description = null,
                     tracks = tracks,
                     continuation = page.songsContinuation ?: page.continuation,
+                    radioPlaylistId = page.playlist.id.removePrefix("VL"),
                 )
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -198,6 +199,7 @@ object InnertubeMusicService {
                     description = page.album.year?.toString(),
                     tracks = tracks,
                     continuation = null,
+                    radioPlaylistId = page.album.playlistId,
                     durationText = page.durationText,
                     otherVersions = page.otherVersions.map { convertAlbumToPlaylist(it) },
                 )

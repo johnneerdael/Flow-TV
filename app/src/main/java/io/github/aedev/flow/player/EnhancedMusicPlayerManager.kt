@@ -58,6 +58,13 @@ object EnhancedMusicPlayerManager {
     @Volatile
     var pendingRadioSeedId: String? = null
 
+    /**
+     * The collection a new queue was played from, whose own YouTube mix follows it. Travels with
+     * the queue change like [pendingRadioSeedId] and is consumed by the service with it.
+     */
+    @Volatile
+    var pendingRadioPlaylistId: String? = null
+
     private val _radioLoading = MutableStateFlow(false)
 
     /** True while the service is seeding or topping up the station, for the queue sheet's spinner. */
@@ -1056,6 +1063,7 @@ object EnhancedMusicPlayerManager {
             _automixItems.value = emptyList()
             playContextGenre = null
             pendingRadioSeedId = null
+            pendingRadioPlaylistId = null
             _radioLoading.value = false
             _currentQueueIndex.value = 0
             clearPendingPlayNext()

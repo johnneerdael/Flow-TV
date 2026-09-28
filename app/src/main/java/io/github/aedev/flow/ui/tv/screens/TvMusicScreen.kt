@@ -11,8 +11,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -31,7 +29,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.aedev.flow.R
 import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.ui.screens.music.MusicHomeFeedViewModel
-import io.github.aedev.flow.ui.tv.components.TvButton
 import io.github.aedev.flow.ui.tv.components.TvCatalogCollection
 import io.github.aedev.flow.ui.tv.components.TvFilterChip
 import io.github.aedev.flow.ui.tv.components.TvMessageState
@@ -49,6 +46,7 @@ import nl.neerdael.milkbeat.catalog.MetadataItem
 @Composable
 fun TvMusicScreen(
     onTrackClick: (MusicTrack, List<MusicTrack>, String) -> Unit,
+    onPlayMix: (MusicTrack) -> Unit,
     onOpenCollection: (String) -> Unit,
     onOpenArtist: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -84,13 +82,6 @@ fun TvMusicScreen(
         title = null,
         modifier = modifier,
         subtitle = if (accountExpired) stringResource(R.string.tv_account_session_expired) else null,
-        action = {
-            TvButton(
-                text = stringResource(R.string.action_refresh),
-                onClick = { viewModel.load(force = true) },
-                icon = Icons.Outlined.Refresh,
-            )
-        },
     ) {
         ProvideTvColumnPivot {
             LazyColumn(
@@ -145,6 +136,7 @@ fun TvMusicScreen(
                                         collection = block,
                                         trackFor = trackFor,
                                         onTrackClick = onTrackClick,
+                                        onPlayMix = onPlayMix,
                                         onOpen = open,
                                         modifier = blockModifier,
                                     )
@@ -166,6 +158,7 @@ private fun TvHomeCollection(
     collection: CollectionBlock,
     trackFor: (MetadataItem) -> MusicTrack?,
     onTrackClick: (MusicTrack, List<MusicTrack>, String) -> Unit,
+    onPlayMix: (MusicTrack) -> Unit,
     onOpen: (EntityRef) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -176,7 +169,7 @@ private fun TvHomeCollection(
         collection = collection,
         onItemClick = { item ->
             val track = tracks[item.id]
-            if (track != null) onTrackClick(track, queue, queueTitle) else onOpen(item.entity)
+            if (track != null) onPlayMix(track) else onOpen(item.entity)
         },
         onPlayAll = { onTrackClick(queue.first(), queue, queueTitle) }.takeIf { queue.isNotEmpty() && queue.size == collection.items.size },
         onOpen = onOpen,

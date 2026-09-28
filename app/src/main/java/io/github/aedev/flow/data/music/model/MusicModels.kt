@@ -109,6 +109,8 @@ data class PlaylistDetails(
     val tracks: List<MusicTrack> = emptyList(),
     val continuation: String? = null,
     val otherVersions: List<MusicPlaylist> = emptyList(),
+    /** The YouTube playlist whose own mix follows this collection once it has played through. */
+    val radioPlaylistId: String? = null,
 )
 
 data class ArtistDetails(

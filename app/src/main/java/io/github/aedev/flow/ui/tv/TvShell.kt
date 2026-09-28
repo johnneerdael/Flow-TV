@@ -51,6 +51,8 @@ private const val CONTENT_FOCUS_WAIT_MS = 3_000L
 fun TvShell(
     navController: NavHostController,
     onPlayTrack: (MusicTrack, List<MusicTrack>, String) -> Unit,
+    onPlayMix: (MusicTrack) -> Unit,
+    onPlayCollection: (MusicTrack, List<MusicTrack>, String, String?) -> Unit,
     searchViewModel: SearchViewModel,
     onPlayVideo: (Video) -> Unit,
     onPlayPlaylist: (List<Video>, String) -> Unit,
@@ -143,6 +145,8 @@ fun TvShell(
                 TvNavHost(
                     navController = navController,
                     onPlayTrack = onPlayTrack,
+                    onPlayMix = onPlayMix,
+                    onPlayCollection = onPlayCollection,
                     searchViewModel = searchViewModel,
                     onPlayVideo = onPlayVideo,
                     onPlayPlaylist = onPlayPlaylist,

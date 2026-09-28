@@ -95,7 +95,7 @@ fun TvSearchScreen(
     modifier: Modifier = Modifier,
     onChannelClick: (String) -> Unit = {},
     onOpenPlaylist: (String) -> Unit = {},
-    onPlayTrack: (MusicTrack, List<MusicTrack>, String) -> Unit = { _, _, _ -> },
+    onPlayMix: (MusicTrack) -> Unit = {},
     onOpenMusicCollection: (String) -> Unit = {},
     onOpenMusicArtist: (String) -> Unit = {},
     musicSearchViewModel: MusicSearchViewModel = hiltViewModel(),
@@ -292,9 +292,9 @@ fun TvSearchScreen(
                 query = query,
                 state = musicState,
                 filtered = musicSubFilter != null,
-                onPlayTrack = { track, queue, source ->
+                onPlayMix = { track ->
                     remembered()
-                    onPlayTrack(track, queue, source)
+                    onPlayMix(track)
                 },
                 onOpenMusicCollection = {
                     remembered()
