@@ -12,7 +12,9 @@ import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.aedev.flow.data.local.SearchFilter
+import io.github.aedev.flow.data.local.SearchHistoryItem
 import io.github.aedev.flow.data.local.SearchHistoryRepository
+import io.github.aedev.flow.data.local.SearchType
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.paging.SearchPagingSource
 import io.github.aedev.flow.data.paging.SearchResultItem
@@ -27,12 +29,14 @@ import io.github.aedev.flow.innertube.pages.search.SearchSuggestion
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -120,6 +124,30 @@ class SearchViewModel
         }
 
         fun onSearchHistoryCleared() = videoStats.onSearchHistoryCleared()
+
+        /** The saved searches, most recent first; empty while search history is switched off. */
+        val recentSearches: StateFlow<List<SearchHistoryItem>> =
+            searchHistory.getSearchHistoryFlow().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+        /** Saves [query] once the user acts on it, not for every keystroke of a live search. */
+        fun rememberSearch(
+            query: String,
+            type: SearchType = SearchType.TEXT,
+        ) {
+            val trimmed = query.trim()
+            if (trimmed.isNotEmpty()) viewModelScope.launch { searchHistory.saveSearchQuery(trimmed, type) }
+        }
+
+        fun forgetSearch(item: SearchHistoryItem) {
+            viewModelScope.launch { searchHistory.deleteSearchItem(item.id) }
+        }
+
+        fun clearSearchHistory() {
+            viewModelScope.launch {
+                searchHistory.clearSearchHistory()
+                onSearchHistoryCleared()
+            }
+        }
 
         fun updateFilters(filters: SearchFilter) {
             val currentQuery = _uiState.value.query

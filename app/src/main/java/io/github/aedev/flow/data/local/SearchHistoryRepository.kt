@@ -22,6 +22,21 @@ data class SearchHistoryItem(
     val type: SearchType = SearchType.TEXT,
 )
 
+/**
+ * The rows that match [typed], prefix matches first, as YouTube orders them; with nothing typed, the
+ * most recent [limit].
+ */
+fun List<SearchHistoryItem>.matching(
+    typed: String,
+    limit: Int,
+): List<SearchHistoryItem> {
+    if (typed.isEmpty()) return take(limit)
+    val lowered = typed.lowercase()
+    val matches = filter { it.query.contains(typed, ignoreCase = true) }
+    val (prefix, rest) = matches.partition { it.query.lowercase().startsWith(lowered) }
+    return (prefix + rest).take(limit)
+}
+
 enum class SearchType {
     TEXT,
     VOICE,

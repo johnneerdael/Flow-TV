@@ -35,6 +35,8 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import io.github.aedev.flow.R
 import io.github.aedev.flow.data.local.ContentType
 import io.github.aedev.flow.data.local.SearchFilter
+import io.github.aedev.flow.data.local.SearchType
+import io.github.aedev.flow.data.local.matching
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.innertube.YouTube
@@ -45,6 +47,9 @@ import io.github.aedev.flow.ui.tv.components.TvKeyboard
 import io.github.aedev.flow.ui.tv.focus.tvRowFocus
 import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 import kotlinx.coroutines.delay
+
+private const val SUGGESTION_CHIPS = 8
+private const val RECENT_SUGGESTIONS = 3
 
 private enum class TvSearchTop(
     @StringRes val labelRes: Int,
@@ -104,6 +109,7 @@ fun TvSearchScreen(
     var musicSubFilter by remember { mutableStateOf<TvMusicSubFilter?>(null) }
     val results = viewModel.searchResults.collectAsLazyPagingItems()
     val musicState by musicSearchViewModel.uiState.collectAsStateWithLifecycle()
+    val recentSearches by viewModel.recentSearches.collectAsStateWithLifecycle()
     var videoSuggestions by remember { mutableStateOf(emptyList<String>()) }
 
     val voiceLauncher =
@@ -114,7 +120,10 @@ fun TvSearchScreen(
                 result.data
                     ?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
                     ?.firstOrNull()
-                    ?.let { query = it }
+                    ?.let {
+                        query = it
+                        viewModel.rememberSearch(it, SearchType.VOICE)
+                    }
             }
         }
     val voiceIntent =
@@ -160,7 +169,14 @@ fun TvSearchScreen(
         }
     }
 
-    val suggestions = if (topFilter == TvSearchTop.MUSIC) musicState.suggestions else videoSuggestions
+    val liveSuggestions = if (topFilter == TvSearchTop.MUSIC) musicState.suggestions else videoSuggestions
+    // Searches made before come first, as they do on YouTube.
+    val suggestions =
+        (recentSearches.matching(query.trim(), RECENT_SUGGESTIONS).map { it.query } + liveSuggestions)
+            .distinct()
+            .take(SUGGESTION_CHIPS)
+    // A live search runs on every pause in typing; only acting on a result saves the query.
+    val remembered = { viewModel.rememberSearch(query) }
 
     Row(
         modifier =
@@ -276,33 +292,62 @@ fun TvSearchScreen(
                             .tvRowFocus(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    items(suggestions.take(8), key = { it }) { suggestion ->
+                    items(suggestions, key = { it }) { suggestion ->
                         TvFilterChip(
                             label = suggestion,
                             selected = false,
-                            onClick = { query = suggestion },
+                            onClick = {
+                                query = suggestion
+                                viewModel.rememberSearch(suggestion, SearchType.SUGGESTION)
+                            },
                         )
                     }
                 }
             }
 
-            if (topFilter == TvSearchTop.MUSIC) {
+            if (query.isBlank() && recentSearches.isNotEmpty()) {
+                TvRecentSearches(
+                    history = recentSearches,
+                    onPick = { query = it },
+                    onForget = viewModel::forgetSearch,
+                    onClear = viewModel::clearSearchHistory,
+                    modifier = Modifier.weight(1f),
+                )
+            } else if (topFilter == TvSearchTop.MUSIC) {
                 TvMusicSearchResults(
                     query = query,
                     state = musicState,
                     filtered = musicSubFilter != null,
-                    onPlayTrack = onPlayTrack,
-                    onOpenMusicCollection = onOpenMusicCollection,
-                    onOpenMusicArtist = onOpenMusicArtist,
+                    onPlayTrack = { track, queue, source ->
+                        remembered()
+                        onPlayTrack(track, queue, source)
+                    },
+                    onOpenMusicCollection = {
+                        remembered()
+                        onOpenMusicCollection(it)
+                    },
+                    onOpenMusicArtist = {
+                        remembered()
+                        onOpenMusicArtist(it)
+                    },
                     modifier = Modifier.weight(1f),
                 )
             } else {
                 TvVideoSearchResults(
                     query = query,
                     results = results,
-                    onVideoClick = onVideoClick,
-                    onChannelClick = onChannelClick,
-                    onOpenPlaylist = onOpenPlaylist,
+                    onVideoClick = {
+                        remembered()
+                        onVideoClick(it)
+                    },
+                    onChannelClick = {
+                        remembered()
+                        onChannelClick(it)
+                    },
+                    onOpenPlaylist = {
+                        remembered()
+                        onOpenPlaylist(it)
+                    },
                     modifier = Modifier.weight(1f),
                 )
             }
