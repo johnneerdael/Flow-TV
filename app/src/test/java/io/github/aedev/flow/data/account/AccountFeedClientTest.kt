@@ -3,7 +3,6 @@ package io.github.aedev.flow.data.account
 import com.google.common.truth.Truth.assertThat
 import io.github.aedev.flow.innertube.AccountEndpointBlockedException
 import io.github.aedev.flow.innertube.YouTube
-import io.github.aedev.flow.innertube.models.YouTubeClient
 import io.github.aedev.flow.innertube.pages.account.AccountVideoFeed
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -43,11 +42,11 @@ class AccountFeedClientTest {
         }
 
     @Test
-    fun `the tube refuses what playback itself uses`() =
+    fun `the tube refuses what the account may not do`() =
         runBlocking {
             val store = testAccountSessionStore(tmp.root, scope).also { it.save(session) }
             val tube = AccountFeedClient(store).tube()!!
-            val error = runCatching { tube.next(YouTubeClient.WEB_REMIX, "dQw4w9WgXcQ", null, null, null, null, null) }.exceptionOrNull()
+            val error = runCatching { tube.nextForLiveChat("dQw4w9WgXcQ") }.exceptionOrNull()
             assertThat(generateSequence(error) { it.cause }.any { it is AccountEndpointBlockedException }).isTrue()
         }
 
