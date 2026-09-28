@@ -259,6 +259,9 @@ object VideoCodecUtils {
             "av1" to "video/av01",
         )
 
+    /** The decoder MIME type of a codec key ("h264" → "video/avc"), or null for an unknown key. */
+    fun mimeTypeForCodecKey(codecKey: String): String? = MIME_TYPE_BY_CODEC_KEY[codecKey]
+
     @JvmOverloads
     fun preferredVideoMimeTypes(preferredCodecKey: String? = null): Array<String> {
         val preferred =

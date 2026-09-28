@@ -30,6 +30,7 @@ fun TvVisualizerSettingsPane(
     val enabled by viewModel.enabled.collectAsStateWithLifecycle()
     val diagnostics by viewModel.diagnostics.collectAsStateWithLifecycle()
     val timingOffsetMs by viewModel.timingOffsetMs.collectAsStateWithLifecycle()
+    val showMusicVideos by viewModel.showMusicVideos.collectAsStateWithLifecycle()
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -44,6 +45,14 @@ fun TvVisualizerSettingsPane(
                     ),
                 checked = enabled && viewModel.supported,
                 onCheckedChange = { if (viewModel.supported) viewModel.setEnabled(it) },
+            )
+        }
+        item(key = "visualizer-music-videos") {
+            TvToggleRow(
+                label = stringResource(R.string.visualizer_music_videos),
+                supportingText = stringResource(R.string.visualizer_music_videos_subtitle),
+                checked = showMusicVideos,
+                onCheckedChange = viewModel::setShowMusicVideos,
             )
         }
         if (enabled && viewModel.supported) {

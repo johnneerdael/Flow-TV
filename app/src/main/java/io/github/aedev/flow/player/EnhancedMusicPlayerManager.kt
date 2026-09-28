@@ -17,6 +17,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import io.github.aedev.flow.data.local.AudioSettingsPersistence
 import io.github.aedev.flow.data.local.QueuePersistence
+import io.github.aedev.flow.data.local.VisualizerPreferences
 import io.github.aedev.flow.data.localmedia.LocalMediaIds
 import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.service.Media3MusicService
@@ -30,6 +31,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
@@ -158,6 +160,32 @@ object EnhancedMusicPlayerManager {
     private val _shuffleEnabled = MutableStateFlow(false)
     val shuffleEnabled: StateFlow<Boolean> = _shuffleEnabled.asStateFlow()
 
+    // Whether a music video shows its picture: the setting decides, and the player's Video button
+    // overrides it for the session, so each video track starts the way the last one was left.
+    @Volatile
+    private var showVideo = false
+
+    // Queue items that stream (not device files or downloads), and which of them carry a picture; a
+    // track whose picture failed plays as its song for the rest of the session.
+    private val streamItemIds =
+        java.util.concurrent.ConcurrentHashMap
+            .newKeySet<String>()
+    private val videoItemIds =
+        java.util.concurrent.ConcurrentHashMap
+            .newKeySet<String>()
+    private val videoUnavailableIds =
+        java.util.concurrent.ConcurrentHashMap
+            .newKeySet<String>()
+
+    // Surfaces on screen that show the picture; with none, the picture track is off so nothing is
+    // decoded or downloaded that nobody sees (collapsed now-playing, background, screen off).
+    private var videoSurfaces = 0
+
+    private val _videoShown = MutableStateFlow(false)
+
+    /** Whether the playing track's picture is shown rather than the visualizer. */
+    val videoShown: StateFlow<Boolean> = _videoShown.asStateFlow()
+
     private val _repeatMode = MutableStateFlow(RepeatMode.OFF)
     val repeatMode: StateFlow<RepeatMode> = _repeatMode.asStateFlow()
 
@@ -248,6 +276,9 @@ object EnhancedMusicPlayerManager {
                 _playerInstance.value = controller
                 if (controller != null) {
                     setupPlayerListener(controller)
+                    scope.launch {
+                        VisualizerPreferences(context).showMusicVideos.distinctUntilChanged().collect(::setVideoMode)
+                    }
 
                     scope.launch {
                         restoreSavedQueue()
@@ -288,6 +319,7 @@ object EnhancedMusicPlayerManager {
     }
 
     private fun setupPlayerListener(controller: Player) {
+        applyVideoMode(controller)
         controller.addListener(
             object : Player.Listener {
                 override fun onPlaybackStateChanged(playbackState: Int) {
@@ -313,6 +345,7 @@ object EnhancedMusicPlayerManager {
                     }
 
                     syncCurrentTrackFromMediaItem(controller, mediaItem)
+                    applyVideoMode(controller)
                     if (
                         isAutomaticTransition ||
                         reason == Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT
@@ -446,12 +479,19 @@ object EnhancedMusicPlayerManager {
         )
     }
 
-    /** A device file plays from its MediaStore URI; everything else resolves through `music://`. */
-    private fun streamUri(videoId: String): Uri = LocalMediaIds.audioUri(videoId) ?: Uri.parse("music://$videoId")
+    /**
+     * A device file plays from its MediaStore URI; a music video as picture and sound, whether or not
+     * its picture is shown; everything else resolves through `music://`.
+     */
+    private fun streamUri(track: MusicTrack): Uri =
+        LocalMediaIds.audioUri(track.videoId)
+            ?: Uri.parse(if (carriesPicture(track)) MusicVideoItems.uri(track.videoId) else "music://${track.videoId}")
+
+    private fun carriesPicture(track: MusicTrack): Boolean = showVideo && track.isVideoSong && track.videoId !in videoUnavailableIds
 
     private fun buildMediaItem(
         track: MusicTrack,
-        uri: Uri = streamUri(track.videoId),
+        uri: Uri = streamUri(track),
         useCacheKey: Boolean = !LocalMediaIds.isLocal(track.videoId),
     ): MediaItem {
         val builder =
@@ -471,9 +511,71 @@ object EnhancedMusicPlayerManager {
         if (useCacheKey) {
             builder.setCustomCacheKey(track.videoId)
         }
+        if (uri.scheme == MusicVideoItems.SCHEME || uri.scheme == "music") {
+            streamItemIds += track.videoId
+            if (uri.scheme == MusicVideoItems.SCHEME) videoItemIds += track.videoId else videoItemIds -= track.videoId
+        } else {
+            streamItemIds -= track.videoId
+            videoItemIds -= track.videoId
+        }
 
         return builder
             .build()
+    }
+
+    fun toggleVideoMode() = setVideoMode(!showVideo)
+
+    /**
+     * Shows or hides music videos' pictures. Hiding turns the playing track's picture off while its sound
+     * plays on; showing gives it back, reloading the track once if it started as a song. Queued tracks
+     * are rebuilt either way, so a hidden picture is never fetched.
+     */
+    fun setVideoMode(show: Boolean) {
+        if (show == showVideo) return
+        showVideo = show
+        Log.d("EnhancedMusicPlayer", "Music video pictures ${if (show) "shown" else "hidden"}")
+        val controller = player ?: return
+        val playing = controller.currentMediaItemIndex
+        val position = controller.currentPosition
+        val tracks = _queue.value.associateBy { it.videoId }
+        for (index in (if (show) playing else playing + 1) until controller.mediaItemCount) {
+            val track = tracks[controller.getMediaItemAt(index).mediaId]?.takeIf { it.isVideoSong } ?: continue
+            if (track.videoId !in streamItemIds || (track.videoId in videoItemIds) == carriesPicture(track)) continue
+            controller.replaceMediaItem(index, buildMediaItem(track))
+            if (index == playing) controller.seekTo(index, position)
+        }
+        applyVideoMode(controller)
+    }
+
+    /** A surface showing the picture is on screen; the picture track plays only while one is. */
+    fun acquireVideoSurface() {
+        videoSurfaces++
+        player?.let(::applyVideoMode)
+    }
+
+    fun releaseVideoSurface() {
+        videoSurfaces = (videoSurfaces - 1).coerceAtLeast(0)
+        player?.let(::applyVideoMode)
+    }
+
+    /** The service found no playable picture for [videoId]; it plays as its song from now on. */
+    fun onVideoUnavailable(videoId: String) {
+        videoUnavailableIds += videoId
+        videoItemIds -= videoId
+        player?.let(::applyVideoMode)
+    }
+
+    private fun applyVideoMode(controller: Player) {
+        val currentId = _currentTrack.value?.videoId
+        _videoShown.value = showVideo && currentId != null && currentId in videoItemIds
+        val play = _videoShown.value && videoSurfaces > 0
+        val disabled = androidx.media3.common.C.TRACK_TYPE_VIDEO in controller.trackSelectionParameters.disabledTrackTypes
+        if (disabled != play) return
+        controller.trackSelectionParameters =
+            controller.trackSelectionParameters
+                .buildUpon()
+                .setTrackTypeDisabled(androidx.media3.common.C.TRACK_TYPE_VIDEO, !play)
+                .build()
     }
 
     private fun clearPendingPlayNext() {
@@ -599,10 +701,10 @@ object EnhancedMusicPlayerManager {
             activeQueue.map { t ->
                 val localUri = localUriOverrides[t.videoId]
                 val uri =
-                    localUri ?: if (t.videoId == track.videoId && audioUrl.isNotEmpty()) {
+                    localUri ?: if (t.videoId == track.videoId && audioUrl.isNotEmpty() && !audioUrl.startsWith("music://")) {
                         Uri.parse(audioUrl)
                     } else {
-                        streamUri(t.videoId)
+                        streamUri(t)
                     }
 
                 buildMediaItem(t, uri, useCacheKey = localUri == null && !LocalMediaIds.isLocal(t.videoId))

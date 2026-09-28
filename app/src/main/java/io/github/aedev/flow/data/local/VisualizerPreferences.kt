@@ -57,9 +57,20 @@ class VisualizerPreferences
             appContext.visualizerDataStore.edit { it[TIMING_OFFSET_MS] = offsetMs }
         }
 
+        /**
+         * Whether a track that has a music video starts on its picture rather than the visualizer. Off by
+         * default: most tracks come with a video, and the visualizer is the app's own view.
+         */
+        val showMusicVideos: Flow<Boolean> = appContext.visualizerDataStore.data.map { it[SHOW_MUSIC_VIDEOS] ?: false }
+
+        suspend fun setShowMusicVideos(show: Boolean) {
+            appContext.visualizerDataStore.edit { it[SHOW_MUSIC_VIDEOS] = show }
+        }
+
         private companion object {
             val TIMING_OFFSET_MS = intPreferencesKey("timing_offset_ms")
             val ENABLED = booleanPreferencesKey("enabled")
             val DIAGNOSTICS = booleanPreferencesKey("diagnostics")
+            val SHOW_MUSIC_VIDEOS = booleanPreferencesKey("show_music_videos")
         }
     }

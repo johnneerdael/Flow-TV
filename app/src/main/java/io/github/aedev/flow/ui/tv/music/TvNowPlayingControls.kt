@@ -11,7 +11,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.QueueMusic
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Lyrics
+import androidx.compose.material.icons.outlined.GraphicEq
+import androidx.compose.material.icons.outlined.MusicVideo
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Repeat
@@ -56,7 +57,8 @@ internal data class TvNowPlayingControlsState(
     val isLiked: Boolean,
     val shuffleEnabled: Boolean,
     val repeatMode: RepeatMode,
-    val lyricsOpen: Boolean,
+    val videoAvailable: Boolean,
+    val videoOn: Boolean,
     val queueOpen: Boolean,
 )
 
@@ -69,7 +71,7 @@ internal class TvNowPlayingControlsActions(
     val onNext: () -> Unit,
     val onToggleRepeat: () -> Unit,
     val onToggleLike: () -> Unit,
-    val onToggleLyrics: () -> Unit,
+    val onToggleVideo: () -> Unit,
     val onToggleQueue: () -> Unit,
 )
 
@@ -173,11 +175,16 @@ internal fun TvNowPlayingControls(
                     colors = buttonColors,
                     size = ControlButtonSize,
                 )
+                // A choice between two views rather than an on/off feature: it shows the view on screen,
+                // unfilled. A track without a video keeps it in place, dimmed, so the row never shifts.
                 TvIconButton(
-                    icon = Icons.Outlined.Lyrics,
-                    contentDescription = stringResource(R.string.tv_music_lyrics),
-                    onClick = actions.onToggleLyrics,
-                    active = state.lyricsOpen,
+                    icon = if (state.videoOn) Icons.Outlined.MusicVideo else Icons.Outlined.GraphicEq,
+                    contentDescription =
+                        stringResource(
+                            if (state.videoOn) R.string.tv_music_show_visualizer else R.string.tv_music_show_video,
+                        ),
+                    onClick = actions.onToggleVideo,
+                    enabled = state.videoAvailable,
                     colors = buttonColors,
                     size = ControlButtonSize,
                 )

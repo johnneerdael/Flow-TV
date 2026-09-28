@@ -18,7 +18,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.QueueMusic
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Lyrics
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Repeat
@@ -78,7 +77,7 @@ import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
-private enum class TvMusicPanel { NONE, QUEUE, LYRICS }
+private enum class TvMusicPanel { NONE, QUEUE }
 
 private const val CORNER_WIDTH_FRACTION = 0.6f
 private val PanelGap = 24.dp
@@ -106,7 +105,7 @@ fun TvMusicNowPlayingScreen(
     val queue by manager.queue.collectAsStateWithLifecycle()
     val queueIndex by manager.currentQueueIndex.collectAsStateWithLifecycle()
     val automix by manager.automixItems.collectAsStateWithLifecycle()
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val showsVideo by manager.videoShown.collectAsStateWithLifecycle()
     val dimens = LocalTvDimens.current
 
     val playerPreferences = remember { PlayerPreferences(context) }
@@ -218,7 +217,7 @@ fun TvMusicNowPlayingScreen(
                 .fillMaxSize()
                 .onPreviewKeyEvent { event ->
                     val keyCode = event.nativeKeyEvent.keyCode
-                    if (event.type == KeyEventType.KeyDown && !controlsVisible && visualizer != null) {
+                    if (event.type == KeyEventType.KeyDown && !controlsVisible && visualizer != null && !showsVideo) {
                         val forward = presetStepFor(keyCode)
                         if (forward != null) {
                             visualizer.onPresetStep(forward)
@@ -298,16 +297,24 @@ fun TvMusicNowPlayingScreen(
                     }
                 },
     ) {
-        if (visualizer != null) {
-            visualizer.background()
-        } else {
-            PlayerBackground(
-                thumbnailUrl = artworkUrl,
-                style = backgroundStyle,
-                paletteBaseColor = palette.base,
-                paletteAccentColor = palette.accent,
-                modifier = Modifier.fillMaxSize(),
-            )
+        when {
+            showsVideo -> {
+                TvMusicVideoSurface(player = manager.player, modifier = Modifier.fillMaxSize())
+            }
+
+            visualizer != null -> {
+                visualizer.background()
+            }
+
+            else -> {
+                PlayerBackground(
+                    thumbnailUrl = artworkUrl,
+                    style = backgroundStyle,
+                    paletteBaseColor = palette.base,
+                    paletteAccentColor = palette.accent,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
         }
 
         TvNowPlayingTrackCorner(
@@ -343,7 +350,8 @@ fun TvMusicNowPlayingScreen(
                         isLiked = isLiked,
                         shuffleEnabled = shuffleEnabled,
                         repeatMode = repeatMode,
-                        lyricsOpen = panel == TvMusicPanel.LYRICS,
+                        videoAvailable = track?.isVideoSong == true,
+                        videoOn = showsVideo,
                         queueOpen = panel == TvMusicPanel.QUEUE,
                     ),
                 actions =
@@ -359,9 +367,7 @@ fun TvMusicNowPlayingScreen(
                         onNext = manager::playNext,
                         onToggleRepeat = manager::toggleRepeat,
                         onToggleLike = viewModel::toggleLike,
-                        onToggleLyrics = {
-                            panel = if (panel == TvMusicPanel.LYRICS) TvMusicPanel.NONE else TvMusicPanel.LYRICS
-                        },
+                        onToggleVideo = manager::toggleVideoMode,
                         onToggleQueue = {
                             panel = if (panel == TvMusicPanel.QUEUE) TvMusicPanel.NONE else TvMusicPanel.QUEUE
                         },
@@ -370,7 +376,7 @@ fun TvMusicNowPlayingScreen(
                 durationMs = durationMs,
                 buttonColors = playerButtonColors,
                 playPauseFocusRequester = playPauseFocusRequester,
-                status = visualizer?.status,
+                status = visualizer?.status?.takeUnless { showsVideo },
             )
         }
         if (!controlsVisible) {
@@ -385,15 +391,6 @@ fun TvMusicNowPlayingScreen(
         TvMusicQueuePanel(
             visible = panel == TvMusicPanel.QUEUE,
             manager = manager,
-            onClose = { panel = TvMusicPanel.NONE },
-        )
-        TvLyricsPanel(
-            visible = panel == TvMusicPanel.LYRICS,
-            track = track,
-            uiState = uiState,
-            positionProvider = { manager.getCurrentPosition().coerceAtLeast(0L) },
-            onEnsureLyrics = viewModel::ensureLyricsLoaded,
-            onSeekTo = manager::seekTo,
             onClose = { panel = TvMusicPanel.NONE },
         )
     }

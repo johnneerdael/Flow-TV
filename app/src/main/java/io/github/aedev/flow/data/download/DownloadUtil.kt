@@ -1,7 +1,9 @@
 package io.github.aedev.flow.data.download
 
 import android.content.Context
+import android.hardware.display.DisplayManager
 import android.util.Log
+import android.view.Display
 import androidx.core.net.toUri
 import androidx.media3.common.C
 import androidx.media3.database.DatabaseProvider
@@ -16,15 +18,19 @@ import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadManager
 import androidx.media3.exoplayer.offline.DownloadNotificationHelper
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.di.DownloadCache
 import io.github.aedev.flow.di.PlayerCache
 import io.github.aedev.flow.network.AppProxyManager
+import io.github.aedev.flow.player.MusicVideoItems
 import io.github.aedev.flow.service.ExoDownloadService
 import io.github.aedev.flow.utils.MusicPlayerUtils
+import io.github.aedev.flow.utils.MusicVideoFormats
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -43,14 +49,26 @@ class DownloadUtil
         private val databaseProvider: DatabaseProvider,
         @DownloadCache private val downloadCache: SimpleCache,
         @PlayerCache private val playerCache: SimpleCache,
+        private val playerPreferences: PlayerPreferences,
     ) {
         companion object {
             private const val TAG = "DownloadUtil"
             private const val CHUNK_LENGTH = 512 * 1024L // 512KB for cache check
+
+            // A music video's picture runs at megabits a second; audio-sized ranges would need a
+            // request every second and leave the picture waiting on round trips.
+            private const val VIDEO_CHUNK_LENGTH = 4 * 1024 * 1024L
             private val URL_RANGE_PARAM_REGEX = Regex("""([?&])range=\d+-\d*(&?)""")
         }
 
         private val songUrlCache = java.util.concurrent.ConcurrentHashMap<String, Triple<String, String, Long>>()
+
+        /** Music videos play no taller than the display, and at most at [MusicVideoFormats.MAX_HEIGHT]. */
+        private val maxVideoHeight: Int by lazy {
+            val mode = context.getSystemService(DisplayManager::class.java)?.getDisplay(Display.DEFAULT_DISPLAY)?.mode
+            val shortSide = mode?.let { minOf(it.physicalWidth, it.physicalHeight) } ?: MusicVideoFormats.MAX_HEIGHT
+            shortSide.coerceAtMost(MusicVideoFormats.MAX_HEIGHT)
+        }
 
         // Download-specific cache storing range-appended URLs for full-speed downloads
         private val downloadUrlCache = java.util.concurrent.ConcurrentHashMap<String, Triple<String, String, Long>>()
@@ -208,7 +226,21 @@ class DownloadUtil
 
                 songUrlCache[mediaId]?.takeIf { it.third > System.currentTimeMillis() }?.let { (url, ua, _) ->
                     Log.d(TAG, "[Player] Using cached URL for $mediaId")
-                    return@Factory buildPlaybackDataSpec(dataSpec, url, ua)
+                    return@Factory buildPlaybackDataSpec(dataSpec, url, ua, chunkLengthFor(mediaId, dataSpec.position))
+                }
+
+                MusicVideoItems.videoIdOfVideoKey(mediaId)?.let { videoId ->
+                    val video =
+                        runBlocking(Dispatchers.IO) {
+                            MusicPlayerUtils.videoStreamForPlayback(
+                                videoId,
+                                maxVideoHeight,
+                                playerPreferences.videoCodecPriority.first(),
+                            )
+                        }.getOrThrow()
+                    val expiration = System.currentTimeMillis() + (video.expiresInSeconds - 60) * 1000L
+                    songUrlCache[mediaId] = Triple(video.url, video.userAgent, expiration)
+                    return@Factory buildPlaybackDataSpec(dataSpec, video.url, video.userAgent, chunkLengthFor(mediaId, dataSpec.position))
                 }
 
                 val playbackData =
@@ -227,17 +259,22 @@ class DownloadUtil
             }
         }
 
+        /**
+         * A picture's first range stays audio-sized: it only has to reveal the stream's layout, and while
+         * the picture is hidden the player stops loading right after it.
+         */
+        private fun chunkLengthFor(
+            mediaId: String,
+            position: Long,
+        ): Long = if (position > 0 && MusicVideoItems.videoIdOfVideoKey(mediaId) != null) VIDEO_CHUNK_LENGTH else CHUNK_LENGTH
+
         private fun buildPlaybackDataSpec(
             dataSpec: DataSpec,
             streamUrl: String,
             userAgent: String,
+            chunkLength: Long = CHUNK_LENGTH,
         ): DataSpec {
-            val requestLength =
-                when {
-                    dataSpec.length > 0 -> dataSpec.length
-                    dataSpec.length == C.LENGTH_UNSET.toLong() -> CHUNK_LENGTH
-                    else -> CHUNK_LENGTH
-                }
+            val requestLength = if (dataSpec.length > 0) dataSpec.length else chunkLength
 
             return dataSpec
                 .buildUpon()
@@ -268,6 +305,7 @@ class DownloadUtil
          */
         fun invalidateUrlCache(mediaId: String) {
             songUrlCache.remove(mediaId)
+            songUrlCache.remove(MusicVideoItems.videoKey(mediaId))
             downloadUrlCache.remove(mediaId)
             Log.d(TAG, "Invalidated URL cache for $mediaId")
         }

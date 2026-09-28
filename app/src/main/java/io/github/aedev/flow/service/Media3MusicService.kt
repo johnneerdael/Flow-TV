@@ -55,9 +55,11 @@ import io.github.aedev.flow.innertube.models.WatchEndpoint
 import io.github.aedev.flow.innertube.pages.NextResult
 import io.github.aedev.flow.platform.DeviceFormFactor
 import io.github.aedev.flow.platform.DeviceFormFactorDetector
+import io.github.aedev.flow.player.MusicMediaSourceFactory
 import io.github.aedev.flow.player.MusicPlaybackRecoveryPlanner
 import io.github.aedev.flow.player.MusicQueuePlanner
 import io.github.aedev.flow.player.MusicRadioPlanner
+import io.github.aedev.flow.player.MusicVideoItems
 import io.github.aedev.flow.player.audio.AudioSessionRegistry
 import io.github.aedev.flow.player.audio.eq.EqualizerAudioProcessor
 import io.github.aedev.flow.player.audio.shouldHandleAudioFocus
@@ -351,7 +353,8 @@ class Media3MusicService : MediaLibraryService() {
     }
 
     private fun initializePlayer() {
-        val mediaSourceFactory = DefaultMediaSourceFactory(downloadUtil.getPlayerDataSourceFactory())
+        val playerDataSourceFactory = downloadUtil.getPlayerDataSourceFactory()
+        val mediaSourceFactory = MusicMediaSourceFactory(DefaultMediaSourceFactory(playerDataSourceFactory), playerDataSourceFactory)
 
         val renderersFactory =
             object : androidx.media3.exoplayer.DefaultRenderersFactory(this) {
@@ -645,6 +648,11 @@ class Media3MusicService : MediaLibraryService() {
         }
         val mediaId = failed.mediaId
 
+        if (fallBackToSong(failed)) {
+            Log.w(TAG, "Music video of $mediaId failed (${error.errorCodeName}), playing its song instead", error)
+            return
+        }
+
         Log.e(TAG, "Playback error for $mediaId: ${error.errorCodeName} (code=${error.errorCode})", error)
         lastPlaybackErrorAtMap[mediaId] = System.currentTimeMillis()
 
@@ -701,6 +709,31 @@ class Media3MusicService : MediaLibraryService() {
                 handleGenericError(failed, currentRetry)
             }
         }
+    }
+
+    /**
+     * A music video whose picture or sound fails plays on as its song, at the same moment, before any
+     * retry counts against the track. Returns false for anything that is not a music video.
+     */
+    private fun fallBackToSong(failed: MusicPlaybackRecoveryPlanner.FailedItem): Boolean {
+        val index = playerIndexOf(failed)
+        if (index == MusicQueuePlanner.INDEX_UNSET) return false
+        if (player
+                .getMediaItemAt(index)
+                .localConfiguration
+                ?.uri
+                ?.scheme != MusicVideoItems.SCHEME
+        ) {
+            return false
+        }
+        // Either half may have failed; both urls are fetched afresh, and the track stays a song.
+        downloadUtil.invalidateUrlCache(failed.mediaId)
+        io.github.aedev.flow.player.EnhancedMusicPlayerManager
+            .onVideoUnavailable(failed.mediaId)
+        if (!refreshStreamMediaItemAt(index, failed.mediaId, failed.resumePositionMs)) return false
+        player.prepare()
+        player.play()
+        return true
     }
 
     private fun playerMediaIds(): List<String> = List(player.mediaItemCount) { player.getMediaItemAt(it).mediaId }
@@ -902,7 +935,8 @@ class Media3MusicService : MediaLibraryService() {
         positionMs: Long,
     ): Boolean {
         val currentItem = player.getMediaItemAt(index)
-        if (currentItem.localConfiguration?.uri?.scheme != MUSIC_URI_SCHEME) return false
+        val scheme = currentItem.localConfiguration?.uri?.scheme
+        if (scheme != MUSIC_URI_SCHEME && scheme != MusicVideoItems.SCHEME) return false
 
         val refreshedItem =
             currentItem

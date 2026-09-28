@@ -121,6 +121,16 @@ object MusicPlayerUtils {
         val streamUrl: String,
         val streamExpiresInSeconds: Int,
         val usedClient: YouTubeClient,
+        val playerResponse: PlayerResponse,
+        val streamingPoToken: String? = null,
+    )
+
+    /** The picture half of a music video, resolved from the same player response as its sound. */
+    data class VideoPlaybackStream(
+        val url: String,
+        val userAgent: String,
+        val expiresInSeconds: Int,
+        val format: PlayerResponse.StreamingData.Format,
     )
 
     private data class AudioSelectionPreferences(
@@ -501,34 +511,10 @@ object MusicPlayerUtils {
             }
 
             val (format, resolved) = extraction
-            val rawStreamUrl = resolved.url
 
-            val streamUrl =
-                if (resolved.needsNTransform) {
-                    try {
-                        var transformedUrl =
-                            NewPipeExtractor
-                                .deobfuscateThrottling(videoId, rawStreamUrl)
-                                ?.takeIf { it != rawStreamUrl }
-                                ?: CipherDeobfuscator.transformNParamInUrl(rawStreamUrl).takeIf { it != rawStreamUrl }
-                                ?: io.github.aedev.flow.utils.cipher.PipePipeNsigDecoder
-                                    .deobfuscateUrl(rawStreamUrl)
-                                ?: rawStreamUrl
-                        if (usedClient.useWebPoTokens) {
-                            val streamingPoToken = getPoTokenForWebClient()?.streamingDataPoToken
-                            if (streamingPoToken != null && !transformedUrl.contains("pot=")) {
-                                val separator = if ("?" in transformedUrl) "&" else "?"
-                                transformedUrl = "${transformedUrl}${separator}pot=${Uri.encode(streamingPoToken)}"
-                            }
-                        }
-                        transformedUrl
-                    } catch (e: Exception) {
-                        Log.w(TAG, "N-transform/pot failed, using raw URL: ${e.message}")
-                        rawStreamUrl
-                    }
-                } else {
-                    rawStreamUrl
-                }
+            val streamingPoToken =
+                if (usedClient.useWebPoTokens && resolved.needsNTransform) getPoTokenForWebClient()?.streamingDataPoToken else null
+            val streamUrl = playableUrl(resolved, videoId, streamingPoToken)
 
             val playbackTracking =
                 if (usedClient != MAIN_CLIENT && mainPlayerResponse != null) {
@@ -548,8 +534,74 @@ object MusicPlayerUtils {
                 streamUrl = streamUrl,
                 streamExpiresInSeconds = response.streamingData?.expiresInSeconds ?: 21600,
                 usedClient = usedClient,
+                playerResponse = response,
+                streamingPoToken = streamingPoToken,
             )
         }
+
+    /**
+     * A music video's picture stream, chosen by [MusicVideoFormats] from the player response its sound
+     * already resolved, so it costs no request of its own.
+     */
+    suspend fun videoStreamForPlayback(
+        videoId: String,
+        maxHeight: Int,
+        codecPreference: String?,
+    ): Result<VideoPlaybackStream> =
+        runCatching {
+            val playback = playerResponseForPlayback(videoId).getOrThrow()
+            val formats =
+                playback.playerResponse.streamingData
+                    ?.adaptiveFormats
+                    .orEmpty()
+            val format =
+                MusicVideoFormats.select(formats, maxHeight, codecPreference, MusicVideoFormats.hardwareCodecs)
+                    ?: throw IOException("No playable video stream for $videoId")
+            val resolved =
+                findUrlOrNull(
+                    format = format,
+                    videoId = videoId,
+                    playerResponse = playback.playerResponse,
+                    allowCipherFallback = true,
+                    allowNewPipeFallback = true,
+                    allowStreamInfoFallback = false,
+                ) ?: throw IOException("No url for video stream ${format.itag} of $videoId")
+            Log.i(TAG, "Music video $videoId: ${format.qualityLabel} ${format.mimeType}")
+            VideoPlaybackStream(
+                url = playableUrl(resolved, videoId, playback.streamingPoToken),
+                userAgent = playback.usedClient.userAgent,
+                expiresInSeconds = playback.streamExpiresInSeconds,
+                format = format,
+            )
+        }
+
+    /** A resolved stream url with its throttling parameter transformed and, for web clients, a PoToken. */
+    private suspend fun playableUrl(
+        resolved: ResolvedUrl,
+        videoId: String,
+        streamingPoToken: String?,
+    ): String {
+        val rawStreamUrl = resolved.url
+        if (!resolved.needsNTransform) return rawStreamUrl
+        return try {
+            var transformedUrl =
+                NewPipeExtractor
+                    .deobfuscateThrottling(videoId, rawStreamUrl)
+                    ?.takeIf { it != rawStreamUrl }
+                    ?: CipherDeobfuscator.transformNParamInUrl(rawStreamUrl).takeIf { it != rawStreamUrl }
+                    ?: io.github.aedev.flow.utils.cipher.PipePipeNsigDecoder
+                        .deobfuscateUrl(rawStreamUrl)
+                    ?: rawStreamUrl
+            if (streamingPoToken != null && !transformedUrl.contains("pot=")) {
+                val separator = if ("?" in transformedUrl) "&" else "?"
+                transformedUrl = "${transformedUrl}${separator}pot=${Uri.encode(streamingPoToken)}"
+            }
+            transformedUrl
+        } catch (e: Exception) {
+            Log.w(TAG, "N-transform/pot failed, using raw URL: ${e.message}")
+            rawStreamUrl
+        }
+    }
 
     private suspend fun tryExtract(
         response: PlayerResponse?,
