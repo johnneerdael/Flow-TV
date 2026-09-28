@@ -32,16 +32,18 @@ class VisualizerTapProcessor(
     override fun queueInput(inputBuffer: ByteBuffer) {
         val remaining = inputBuffer.remaining()
         if (remaining == 0) return
-        if (tap.isListening) capture(inputBuffer)
+        if (tap.isListening) capture(inputBuffer) else tap.timeline.skip(remaining / frameBytes())
         replaceOutputBuffer(remaining).put(inputBuffer).flip()
     }
+
+    private fun frameBytes(): Int =
+        inputAudioFormat.channelCount * if (inputAudioFormat.encoding == C.ENCODING_PCM_FLOAT) Float.SIZE_BYTES else Short.SIZE_BYTES
 
     private fun capture(input: ByteBuffer) {
         val channels = inputAudioFormat.channelCount
         val float = inputAudioFormat.encoding == C.ENCODING_PCM_FLOAT
         val sampleBytes = if (float) Float.SIZE_BYTES else Short.SIZE_BYTES
-        val frameBytes = sampleBytes * channels
-        val frames = input.remaining() / frameBytes
+        val frames = input.remaining() / frameBytes()
         if (mono.size < frames) mono = ShortArray(frames)
         var at = input.position()
         for (frame in 0 until frames) {

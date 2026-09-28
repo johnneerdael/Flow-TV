@@ -21,6 +21,9 @@ internal class PcmTimeline(
     private val segments = ArrayDeque<Segment>()
     private var written = 0L
 
+    // Samples before this index went past while nobody listened and were never copied.
+    private var validFrom = 0L
+
     /** Samples written from now on start at [positionUs] of [stream]; called whenever the output flushes. */
     @Synchronized
     fun begin(
@@ -50,6 +53,18 @@ internal class PcmTimeline(
     }
 
     /**
+     * Counts [count] samples that went past without being kept, so positions after them still map to
+     * the right place; the skipped stretch reads as unavailable.
+     */
+    @Synchronized
+    fun skip(count: Int) {
+        if (segments.isEmpty()) return
+        written += count
+        validFrom = written
+        trim()
+    }
+
+    /**
      * Copies the [out].size samples leading up to [positionUs] of [stream] into [out]. False when they
      * were never written or have already been overwritten.
      */
@@ -61,7 +76,7 @@ internal class PcmTimeline(
     ): Boolean {
         val end = sampleAt(stream, positionUs) ?: return false
         val start = end - out.size
-        if (start < 0 || start < written - capacity) return false
+        if (start < 0 || start < validFrom || start < written - capacity) return false
         var offset = 0
         while (offset < out.size) {
             val at = ((start + offset) % capacity).toInt()

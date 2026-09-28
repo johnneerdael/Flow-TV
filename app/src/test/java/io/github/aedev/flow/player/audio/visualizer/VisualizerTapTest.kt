@@ -59,6 +59,22 @@ class VisualizerTapTest {
     }
 
     @Test
+    fun `samples skipped while nobody listened keep later positions in place and read as unavailable`() {
+        val timeline = PcmTimeline(capacity = 4_096)
+        timeline.begin(stream = "a", positionUs = 0, sampleRate = rate)
+        timeline.write(ramp(0, 480), 480)
+        timeline.skip(960)
+        timeline.write(ramp(1_440, 480), 480)
+
+        val out = ShortArray(4)
+        // 35 ms is sample 1680, written after the gap: the stream position still maps there.
+        assertThat(timeline.read("a", 35_000, out)).isTrue()
+        assertThat(out.last()).isEqualTo(1_679.toShort())
+        // 20 ms is sample 960, inside the skipped stretch.
+        assertThat(timeline.read("a", 20_000, out)).isFalse()
+    }
+
+    @Test
     fun `reads across the ring's wrap point`() {
         val timeline = PcmTimeline(capacity = 1_000)
         timeline.begin(stream = "a", positionUs = 0, sampleRate = rate)
