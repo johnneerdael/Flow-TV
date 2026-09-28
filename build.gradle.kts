@@ -34,6 +34,7 @@ spotless {
         target(
             "app/src/**/*.kt",
             "benchmark/src/**/*.kt",
+            "catalog-api/src/**/*.kt",
         )
         targetExclude(
             "**/build/**",
@@ -47,6 +48,7 @@ spotless {
             "*.gradle.kts",
             "app/*.gradle.kts",
             "benchmark/*.gradle.kts",
+            "catalog-api/*.gradle.kts",
         )
         targetExclude(
             "**/build/**",

@@ -1,0 +1,63 @@
+package nl.neerdael.milkbeat.catalog
+
+/**
+ * One page of a provider's catalog, as an ordered list of typed blocks. The provider chooses the
+ * blocks, their order, layouts and item views; Milkbeat chooses how they look on screen.
+ */
+data class MetadataPage(
+    val id: String,
+    val blocks: List<PageBlock>,
+    val filters: FilterControl? = null,
+    val nextCursor: String? = null,
+)
+
+sealed interface PageBlock {
+    val id: String
+}
+
+/**
+ * A titled or untitled run of items in one [layout]. Items use [defaultItemView] unless they name
+ * their own, so one shelf can mix round artists, square covers and wide videos.
+ */
+data class CollectionBlock(
+    override val id: String,
+    val header: CollectionHeader?,
+    val layout: CollectionLayout,
+    val defaultItemView: ItemView,
+    val items: List<MetadataItem>,
+) : PageBlock
+
+/**
+ * A collection's title, with an optional context line and avatar, as in "SIMILAR TO / Massano".
+ * [target] is what the title names, such as that artist.
+ */
+data class CollectionHeader(
+    val title: String,
+    val context: String? = null,
+    val avatar: Artwork? = null,
+    val target: EntityRef? = null,
+)
+
+enum class CollectionLayout {
+    HORIZONTAL_SHELF,
+
+    /** Compact rows read down each column, then across, as in Quick picks. */
+    MULTI_COLUMN_LIST,
+}
+
+enum class ItemView {
+    COVER_CARD,
+    LANDSCAPE_CARD,
+    ARTIST_PORTRAIT,
+    TRACK_ROW,
+}
+
+/** Page-level filter chips, such as a home feed's moods. Option ids are opaque to the host. */
+data class FilterControl(
+    val options: List<FilterOption>,
+)
+
+data class FilterOption(
+    val id: String,
+    val label: String,
+)

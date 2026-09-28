@@ -47,6 +47,7 @@ fun TvNavHost(
             TvMusicScreen(
                 onTrackClick = onPlayTrack,
                 onOpenCollection = { navController.navigate(TvRoutes.musicCollection(it)) },
+                onOpenArtist = { navController.navigate(TvRoutes.musicArtist(it)) },
                 modifier = Modifier.fillMaxSize(),
             )
         }

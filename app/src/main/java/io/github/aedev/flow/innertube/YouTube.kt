@@ -2154,38 +2154,9 @@ object YouTube {
                 return@runCatching homeContinuation(continuation, via).getOrThrow()
             }
 
-            val response = via.browse(WEB_REMIX, browseId = "FEmusic_home", params = params).body<BrowseResponse>()
-            val continuation =
-                response.contents
-                    ?.singleColumnBrowseResultsRenderer
-                    ?.tabs
-                    ?.firstOrNull()
-                    ?.tabRenderer
-                    ?.content
-                    ?.sectionListRenderer
-                    ?.continuations
-                    ?.getContinuation()
-            val sectionListRender =
-                response.contents
-                    ?.singleColumnBrowseResultsRenderer
-                    ?.tabs
-                    ?.firstOrNull()
-                    ?.tabRenderer
-                    ?.content
-                    ?.sectionListRenderer
-            val sections =
-                sectionListRender
-                    ?.contents!!
-                    .mapNotNull { it.musicCarouselShelfRenderer }
-                    .mapNotNull {
-                        HomePage.Section.fromMusicCarouselShelfRenderer(it)
-                    }.toMutableList()
-            val chips =
-                sectionListRender.header
-                    ?.chipCloudRenderer
-                    ?.chips
-                    ?.mapNotNull { HomePage.Chip.fromChipCloudChipRenderer(it) }
-            HomePage(chips, sections, continuation)
+            HomePage.fromBrowseResponse(
+                via.browse(WEB_REMIX, browseId = "FEmusic_home", params = params).body<BrowseResponse>(),
+            )
         }
 
     private suspend fun homeContinuation(
@@ -2193,23 +2164,8 @@ object YouTube {
         via: InnerTube,
     ): Result<HomePage> =
         runCatching {
-            val response =
-                via.browse(WEB_REMIX, continuation = continuation).body<BrowseResponse>()
-            val continuation =
-                response.continuationContents
-                    ?.sectionListContinuation
-                    ?.continuations
-                    ?.getContinuation()
-            HomePage(
-                null,
-                response.continuationContents
-                    ?.sectionListContinuation
-                    ?.contents
-                    ?.mapNotNull { it.musicCarouselShelfRenderer }
-                    ?.mapNotNull {
-                        HomePage.Section.fromMusicCarouselShelfRenderer(it)
-                    }.orEmpty(),
-                continuation,
+            HomePage.fromContinuationResponse(
+                via.browse(WEB_REMIX, continuation = continuation).body<BrowseResponse>(),
             )
         }
 

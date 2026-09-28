@@ -4,13 +4,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.github.aedev.flow.data.account.AccountFeedClient
-import io.github.aedev.flow.data.account.AccountSession
-import io.github.aedev.flow.data.account.AccountSessionStore
-import io.github.aedev.flow.data.recommendation.MusicRecommendationAlgorithm
-import io.github.aedev.flow.data.recommendation.MusicSection
-import io.github.aedev.flow.innertube.YouTube
-import io.github.aedev.flow.innertube.pages.HomePage
+import io.github.aedev.flow.data.catalog.CatalogPlayback
+import io.github.aedev.flow.data.music.model.MusicTrack
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
@@ -18,44 +13,47 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import nl.neerdael.milkbeat.catalog.CollectionBlock
+import nl.neerdael.milkbeat.catalog.FilterOption
+import nl.neerdael.milkbeat.catalog.HomeRequest
+import nl.neerdael.milkbeat.catalog.MetadataItem
+import nl.neerdael.milkbeat.catalog.MetadataPage
+import nl.neerdael.milkbeat.catalog.MetadataProvider
+import nl.neerdael.milkbeat.catalog.PageBlock
+import nl.neerdael.milkbeat.catalog.ProviderAccount
 import javax.inject.Inject
 
 data class MusicHomeFeedState(
-    val chips: List<HomePage.Chip> = emptyList(),
-    val selectedChip: HomePage.Chip? = null,
-    val sections: List<MusicSection> = emptyList(),
+    val filters: List<FilterOption> = emptyList(),
+    val selectedFilterId: String? = null,
+    val blocks: List<PageBlock> = emptyList(),
     val isLoading: Boolean = false,
     val isLoadingMore: Boolean = false,
     val error: String? = null,
-) {
-    fun isSelected(chip: HomePage.Chip): Boolean = selectedChip != null && chip.endpoint?.params == selectedChip.endpoint?.params
-}
+)
 
 /**
- * The YouTube Music home feed, section for section in the order YouTube Music serves it: the
- * signed-in account's own home when a session is active, the anonymous home otherwise. Every
- * continuation page is followed, as the web client does while scrolling to the end.
+ * The music provider's home page, block for block in the order it is served. Every continuation
+ * page is followed, as YouTube Music's own client does while scrolling to the end.
  */
 @HiltViewModel
 class MusicHomeFeedViewModel
     @Inject
     constructor(
-        private val store: AccountSessionStore,
-        private val client: AccountFeedClient,
-        private val youTube: YouTube,
-        private val mapper: MusicRecommendationAlgorithm,
+        private val provider: MetadataProvider,
+        private val playback: CatalogPlayback,
     ) : ViewModel() {
         private val _state = MutableStateFlow(MusicHomeFeedState())
         val state: StateFlow<MusicHomeFeedState> = _state.asStateFlow()
 
         val isAccountExpired: StateFlow<Boolean> =
-            store.session
-                .map { it?.expired == true }
+            provider.account
+                .map { it is ProviderAccount.Expired }
                 .stateIn(viewModelScope, SharingStarted.WhileSubscribed(SUBSCRIPTION_TIMEOUT_MS), false)
 
         private var job: Job? = null
@@ -65,22 +63,21 @@ class MusicHomeFeedViewModel
         init {
             // A sign-in, sign-out or expiry swaps whose home this is; never keep showing the old one.
             viewModelScope.launch {
-                store.session
-                    .map { it.activeCookie() }
-                    .distinctUntilChanged()
-                    .collect { cookie ->
-                        val loaded = loadedKey ?: return@collect
-                        if (loaded.cookie != cookie) load(chip = null, force = true)
-                    }
+                provider.account.collect { account ->
+                    val loaded = loadedKey ?: return@collect
+                    if (loaded.account != account) load(filterId = null, force = true)
+                }
             }
         }
 
-        fun load(force: Boolean = false) = load(_state.value.selectedChip, force)
+        fun load(force: Boolean = false) = load(_state.value.selectedFilterId, force)
 
-        fun selectChip(chip: HomePage.Chip) = load(chip.takeUnless { _state.value.isSelected(it) }, force = true)
+        fun track(item: MetadataItem): MusicTrack? = playback.track(item)
+
+        fun selectFilter(option: FilterOption) = load(option.id.takeUnless { it == _state.value.selectedFilterId }, force = true)
 
         private fun load(
-            chip: HomePage.Chip?,
+            filterId: String?,
             force: Boolean,
         ) {
             if (!force && job?.isActive == true) return
@@ -88,22 +85,22 @@ class MusicHomeFeedViewModel
             job?.cancel()
             job =
                 viewModelScope.launch {
-                    val key = FeedKey(store.current().activeCookie(), chip?.endpoint?.params)
-                    // A refresh of the same feed keeps its shelves (and the focus on them) until page one replaces them.
+                    val key = FeedKey(provider.account.first(), filterId)
+                    // A refresh of the same feed keeps its blocks (and the focus on them) until page one replaces them.
                     val sameFeed = key == loadedKey
                     loadedKey = key
                     loadedAtMs = System.currentTimeMillis()
                     _state.update {
                         it.copy(
-                            selectedChip = chip,
-                            sections = if (sameFeed) it.sections else emptyList(),
+                            selectedFilterId = filterId,
+                            blocks = if (sameFeed) it.blocks else emptyList(),
                             isLoading = true,
                             isLoadingMore = false,
                             error = null,
                         )
                     }
                     val first =
-                        page(key, continuation = null).getOrElse { error ->
+                        page(HomeRequest(filterId = filterId)).getOrElse { error ->
                             Log.w(TAG, "home failed", error)
                             loadedAtMs = 0L
                             _state.update { it.copy(isLoading = false, error = error.message) }
@@ -111,50 +108,61 @@ class MusicHomeFeedViewModel
                         }
                     _state.update {
                         it.copy(
-                            chips = first.chips ?: it.chips,
-                            sections = mapper.parseHomeSections(first),
+                            filters = first.filters?.options ?: it.filters,
+                            blocks = emptyList<PageBlock>().withPage(first.blocks),
                             isLoading = false,
-                            isLoadingMore = first.continuation != null,
+                            isLoadingMore = first.nextCursor != null,
                         )
                     }
-                    var continuation = first.continuation
+                    var cursor = first.nextCursor
                     val followed = mutableSetOf<String>()
-                    while (continuation != null && followed.add(continuation)) {
+                    while (cursor != null && followed.add(cursor)) {
                         val next =
-                            page(key, continuation).getOrElse { error ->
+                            page(HomeRequest(filterId = filterId, cursor = cursor)).getOrElse { error ->
                                 Log.w(TAG, "home continuation failed", error)
                                 loadedAtMs = 0L
                                 null
                             } ?: break
-                        _state.update { it.copy(sections = it.sections + mapper.parseHomeSections(next)) }
-                        continuation = next.continuation
+                        _state.update { it.copy(blocks = it.blocks.withPage(next.blocks)) }
+                        cursor = next.nextCursor
                     }
                     _state.update { it.copy(isLoadingMore = false) }
-                    Log.d(TAG, "home: ${_state.value.sections.size} sections over ${followed.size + 1} pages")
+                    Log.d(TAG, "home: ${_state.value.blocks.size} blocks over ${followed.size + 1} pages")
                 }
         }
 
-        private suspend fun page(
-            key: FeedKey,
-            continuation: String?,
-        ): Result<HomePage> {
-            val params = key.chipParams.takeIf { continuation == null }
-            val result =
-                if (key.cookie != null) {
-                    client.musicHome(continuation = continuation, params = params)
-                } else {
-                    youTube.home(continuation = continuation, params = params)
-                }
-            // Both sources runCatching, so a superseded load comes back as a failure; it must not write state.
+        private suspend fun page(request: HomeRequest): Result<MetadataPage> {
+            val result = provider.home(request)
+            // Providers runCatching, so a superseded load comes back as a failure; it must not write state.
             currentCoroutineContext().ensureActive()
             return result
         }
 
-        private fun AccountSession?.activeCookie(): String? = this?.takeUnless { it.expired }?.cookie
+        /**
+         * Appends a page's blocks. A block served again unchanged is dropped; a different block that
+         * happens to share an id (two shelves with one title) is kept under a numbered id.
+         */
+        private fun List<PageBlock>.withPage(page: List<PageBlock>): List<PageBlock> {
+            val merged = toMutableList()
+            val ids = mapTo(HashSet()) { it.id }
+            for (block in page) {
+                if (block in merged) continue
+                var id = block.id
+                var n = 2
+                while (!ids.add(id)) id = "${block.id}#${n++}"
+                merged += if (id == block.id) block else block.withId(id)
+            }
+            return merged
+        }
+
+        private fun PageBlock.withId(id: String): PageBlock =
+            when (this) {
+                is CollectionBlock -> copy(id = id)
+            }
 
         private data class FeedKey(
-            val cookie: String?,
-            val chipParams: String?,
+            val account: ProviderAccount,
+            val filterId: String?,
         )
 
         private companion object {

@@ -2731,6 +2731,7 @@
     <string name="tv_search_prompt">Search music and videos</string>
     <string name="tv_library_likes">Liked videos</string>
     <string name="tv_library_watch_later">Watch later</string>
+    <string name="tv_catalog_open">Open %1$s</string>
     <string name="tv_music_empty">No music recommendations yet</string>
     <string name="tv_player_settings">Player settings</string>
     <string name="tv_player_queue">Queue</string>

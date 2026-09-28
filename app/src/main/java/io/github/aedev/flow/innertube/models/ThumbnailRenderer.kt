@@ -17,6 +17,7 @@ data class ThumbnailRenderer(
         val thumbnail: Thumbnails,
         val thumbnailCrop: String?,
         val thumbnailScale: String?,
+        val onTap: NavigationEndpoint? = null,
     ) {
         fun getThumbnailUrl() = thumbnail.thumbnails.lastOrNull()?.url
     }

@@ -1,33 +1,30 @@
 package io.github.aedev.flow.ui.screens.music
 
 import com.google.common.truth.Truth.assertThat
-import io.github.aedev.flow.data.account.AccountFeedClient
-import io.github.aedev.flow.data.account.AccountSession
-import io.github.aedev.flow.data.account.AccountSessionStore
-import io.github.aedev.flow.data.recommendation.MusicRecommendationAlgorithm
-import io.github.aedev.flow.data.recommendation.MusicSection
-import io.github.aedev.flow.innertube.YouTube
-import io.github.aedev.flow.innertube.models.BrowseEndpoint
-import io.github.aedev.flow.innertube.pages.HomePage
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.mockkObject
-import io.mockk.unmockkObject
+import io.github.aedev.flow.data.catalog.CatalogPlayback
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withContext
+import nl.neerdael.milkbeat.catalog.CollectionBlock
+import nl.neerdael.milkbeat.catalog.CollectionHeader
+import nl.neerdael.milkbeat.catalog.CollectionLayout
+import nl.neerdael.milkbeat.catalog.FilterControl
+import nl.neerdael.milkbeat.catalog.FilterOption
+import nl.neerdael.milkbeat.catalog.HomeRequest
+import nl.neerdael.milkbeat.catalog.ItemView
+import nl.neerdael.milkbeat.catalog.MetadataPage
+import nl.neerdael.milkbeat.catalog.MetadataProvider
+import nl.neerdael.milkbeat.catalog.ProviderAccount
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -35,107 +32,127 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class MusicHomeFeedViewModelTest {
     private val dispatcher = StandardTestDispatcher()
-    private val sessions = MutableStateFlow<AccountSession?>(null)
-    private val store =
-        mockk<AccountSessionStore> {
-            every { session } returns sessions
-            coEvery { current() } coAnswers { sessions.first() }
-        }
-    private val client = mockk<AccountFeedClient>()
-    private val youTube = YouTube
-    private val mapper =
-        mockk<MusicRecommendationAlgorithm> {
-            every { parseHomeSections(any()) } answers {
-                firstArg<HomePage>().sections.map { MusicSection(title = it.title, tracks = emptyList()) }
-            }
-        }
+    private val provider = FakeProvider()
 
     private fun page(
         vararg titles: String,
-        continuation: String? = null,
-        chips: List<HomePage.Chip>? = null,
-    ) = HomePage(
-        chips = chips,
-        sections = titles.map { HomePage.Section(title = it, label = null, thumbnail = null, endpoint = null, items = emptyList()) },
-        continuation = continuation,
+        cursor: String? = null,
+        filters: List<FilterOption>? = null,
+    ) = MetadataPage(
+        id = "home",
+        blocks =
+            titles.map {
+                CollectionBlock(
+                    id = it,
+                    header = CollectionHeader(it),
+                    layout = CollectionLayout.HORIZONTAL_SHELF,
+                    defaultItemView = ItemView.COVER_CARD,
+                    items = emptyList(),
+                )
+            },
+        filters = filters?.let(::FilterControl),
+        nextCursor = cursor,
     )
 
-    private fun viewModel() = MusicHomeFeedViewModel(store, client, youTube, mapper)
+    private val MusicHomeFeedViewModel.titles: List<String?>
+        get() = state.value.blocks.map { (it as CollectionBlock).header?.title }
+
+    private fun viewModel() = MusicHomeFeedViewModel(provider, CatalogPlayback { null })
 
     @Before
     fun setUp() {
         Dispatchers.setMain(dispatcher)
-        mockkObject(YouTube)
     }
 
     @After
     fun tearDown() {
-        unmockkObject(YouTube)
         Dispatchers.resetMain()
     }
 
     @Test
     fun `every continuation page is followed and appended in order`() =
         runTest(dispatcher) {
-            coEvery { youTube.home(continuation = null, params = null, via = any()) } returns
-                Result.success(page("Take it easy", "Long listens", continuation = "c1"))
-            coEvery { youTube.home(continuation = "c1", params = null, via = any()) } returns
-                Result.success(page("Forgotten favorites", "Quick picks", continuation = "c2"))
-            coEvery { youTube.home(continuation = "c2", params = null, via = any()) } returns
-                Result.success(page("Covers and remixes"))
+            provider.pages = { request ->
+                when (request.cursor) {
+                    null -> Result.success(page("Take it easy", "Long listens", cursor = "c1"))
+                    "c1" -> Result.success(page("Forgotten favorites", "Quick picks", cursor = "c2"))
+                    else -> Result.success(page("Covers and remixes"))
+                }
+            }
             val vm = viewModel()
 
             vm.load()
             advanceUntilIdle()
 
-            val state = vm.state.value
-            assertThat(state.sections.map { it.title })
+            assertThat(vm.titles)
                 .containsExactly("Take it easy", "Long listens", "Forgotten favorites", "Quick picks", "Covers and remixes")
                 .inOrder()
-            assertThat(state.isLoading).isFalse()
-            assertThat(state.isLoadingMore).isFalse()
+            assertThat(vm.state.value.isLoading).isFalse()
+            assertThat(vm.state.value.isLoadingMore).isFalse()
         }
 
     @Test
     fun `a repeated continuation token ends the walk instead of looping`() =
         runTest(dispatcher) {
-            coEvery { youTube.home(continuation = null, params = null, via = any()) } returns
-                Result.success(page("First", continuation = "loop"))
-            coEvery { youTube.home(continuation = "loop", params = null, via = any()) } returns
-                Result.success(page("Second", continuation = "loop"))
+            provider.pages = { request ->
+                if (request.cursor ==
+                    null
+                ) {
+                    Result.success(page("First", cursor = "loop"))
+                } else {
+                    Result.success(page("Second", cursor = "loop"))
+                }
+            }
             val vm = viewModel()
 
             vm.load()
             advanceUntilIdle()
 
-            assertThat(
-                vm.state.value.sections
-                    .map { it.title },
-            ).containsExactly("First", "Second").inOrder()
-            coVerify(exactly = 1) { youTube.home(continuation = "loop", params = null, via = any()) }
+            assertThat(vm.titles).containsExactly("First", "Second").inOrder()
+            assertThat(provider.requests.count { it.cursor == "loop" }).isEqualTo(1)
         }
 
     @Test
-    fun `a signed-in session reads the account's home, not the anonymous one`() =
+    fun `a block served twice is shown once`() =
         runTest(dispatcher) {
-            sessions.value = AccountSession(cookie = "SAPISID=a")
-            coEvery { client.musicHome(continuation = null, params = null) } returns Result.success(page("Mine"))
+            provider.pages = { request ->
+                val served = if (request.cursor == null) page("Quick picks", cursor = "c1") else page("Quick picks", "New releases")
+                Result.success(served)
+            }
             val vm = viewModel()
 
             vm.load()
             advanceUntilIdle()
 
+            assertThat(vm.titles).containsExactly("Quick picks", "New releases").inOrder()
+        }
+
+    @Test
+    fun `two different shelves with one title are both kept, under distinct ids`() =
+        runTest(dispatcher) {
+            val first = page("Recommended music videos", cursor = "c1")
+            val second =
+                page("Recommended music videos").let { served ->
+                    served.copy(blocks = served.blocks.map { (it as CollectionBlock).copy(defaultItemView = ItemView.LANDSCAPE_CARD) })
+                }
+            provider.pages = { request -> Result.success(if (request.cursor == null) first else second) }
+            val vm = viewModel()
+
+            vm.load()
+            advanceUntilIdle()
+
+            assertThat(vm.titles).containsExactly("Recommended music videos", "Recommended music videos")
             assertThat(
-                vm.state.value.sections
-                    .map { it.title },
-            ).containsExactly("Mine")
-            coVerify(exactly = 0) { youTube.home(any(), any(), any()) }
+                vm.state.value.blocks
+                    .map { it.id }
+                    .toSet(),
+            ).hasSize(2)
         }
 
     @Test
     fun `the home loads once within its freshness window`() =
         runTest(dispatcher) {
-            coEvery { youTube.home(continuation = null, params = null, via = any()) } returns Result.success(page("Once"))
+            provider.pages = { Result.success(page("Once")) }
             val vm = viewModel()
 
             vm.load()
@@ -143,155 +160,146 @@ class MusicHomeFeedViewModelTest {
             vm.load()
             advanceUntilIdle()
 
-            coVerify(exactly = 1) { youTube.home(continuation = null, params = null, via = any()) }
+            assertThat(provider.requests).hasSize(1)
         }
 
     @Test
-    fun `a chip reloads with its params and selecting it again clears it`() =
+    fun `a filter reloads the home with it and selecting it again clears it`() =
         runTest(dispatcher) {
-            val relax = HomePage.Chip("Relax", BrowseEndpoint(browseId = "FEmusic_home", params = "relax"), null)
-            coEvery { youTube.home(continuation = null, params = null, via = any()) } returns
-                Result.success(page("Default", chips = listOf(relax)))
-            coEvery { youTube.home(continuation = null, params = "relax", via = any()) } returns Result.success(page("Calm"))
+            val relax = FilterOption(id = "relax", label = "Relax")
+            provider.pages = { request ->
+                if (request.filterId == "relax") Result.success(page("Calm")) else Result.success(page("Default", filters = listOf(relax)))
+            }
             val vm = viewModel()
 
             vm.load()
             advanceUntilIdle()
-            vm.selectChip(relax)
+            vm.selectFilter(relax)
             advanceUntilIdle()
-            assertThat(vm.state.value.selectedChip).isEqualTo(relax)
-            assertThat(vm.state.value.chips).containsExactly(relax)
-            assertThat(
-                vm.state.value.sections
-                    .map { it.title },
-            ).containsExactly("Calm")
+            assertThat(vm.state.value.selectedFilterId).isEqualTo("relax")
+            assertThat(vm.state.value.filters).containsExactly(relax)
+            assertThat(vm.titles).containsExactly("Calm")
 
-            vm.selectChip(relax)
+            vm.selectFilter(relax)
             advanceUntilIdle()
-            assertThat(vm.state.value.selectedChip).isNull()
-            assertThat(
-                vm.state.value.sections
-                    .map { it.title },
-            ).containsExactly("Default")
+            assertThat(vm.state.value.selectedFilterId).isNull()
+            assertThat(vm.titles).containsExactly("Default")
         }
 
     @Test
-    fun `signing in swaps the anonymous home for the account's`() =
+    fun `another account swaps the home for that account's`() =
         runTest(dispatcher) {
-            coEvery { youTube.home(continuation = null, params = null, via = any()) } returns Result.success(page("Anonymous"))
-            coEvery { client.musicHome(continuation = null, params = null) } returns Result.success(page("Mine"))
+            provider.pages = {
+                if (provider.account.value is ProviderAccount.SignedIn) Result.success(page("Mine")) else Result.success(page("Anonymous"))
+            }
             val vm = viewModel()
             vm.load()
             advanceUntilIdle()
 
-            sessions.value = AccountSession(cookie = "SAPISID=a")
+            provider.account.value = ProviderAccount.SignedIn("account-1")
             advanceUntilIdle()
 
-            assertThat(
-                vm.state.value.sections
-                    .map { it.title },
-            ).containsExactly("Mine")
+            assertThat(vm.titles).containsExactly("Mine")
+        }
+
+    @Test
+    fun `an expired account is reported and its home reloaded`() =
+        runTest(dispatcher) {
+            provider.account.value = ProviderAccount.SignedIn("account-1")
+            provider.pages = {
+                if (provider.account.value is ProviderAccount.SignedIn) Result.success(page("Mine")) else Result.success(page("Anonymous"))
+            }
+            val vm = viewModel()
+            backgroundScope.launch { vm.isAccountExpired.collect {} }
+            vm.load()
+            advanceUntilIdle()
+
+            provider.account.value = ProviderAccount.Expired
+            advanceUntilIdle()
+
+            assertThat(vm.isAccountExpired.value).isTrue()
+            assertThat(vm.titles).containsExactly("Anonymous")
         }
 
     @Test
     fun `a failed first page is shown as an error and retried on the next visit`() =
         runTest(dispatcher) {
-            val failure = CompletableDeferred<Unit>()
-            coEvery { youTube.home(continuation = null, params = null, via = any()) } coAnswers {
-                if (failure.isCompleted) Result.success(page("Recovered")) else Result.failure(IllegalStateException("offline"))
-            }
+            var online = false
+            provider.pages = { if (online) Result.success(page("Recovered")) else Result.failure(IllegalStateException("offline")) }
             val vm = viewModel()
 
             vm.load()
             advanceUntilIdle()
             assertThat(vm.state.value.error).isEqualTo("offline")
 
-            failure.complete(Unit)
+            online = true
             vm.load()
             advanceUntilIdle()
-            assertThat(
-                vm.state.value.sections
-                    .map { it.title },
-            ).containsExactly("Recovered")
+            assertThat(vm.titles).containsExactly("Recovered")
         }
 
     @Test
     fun `a superseded load never writes over the load that replaced it`() =
         runTest(dispatcher) {
-            val relax = HomePage.Chip("Relax", BrowseEndpoint(browseId = "FEmusic_home", params = "relax"), null)
+            val relax = FilterOption(id = "relax", label = "Relax")
             val stalled = CompletableDeferred<Unit>()
-            // Mirrors YouTube.home: runCatching turns the cancellation into a failed Result, which reaches
-            // the caller only after the replacing load has finished (the HTTP call winds down first).
-            coEvery { youTube.home(continuation = null, params = null, via = any()) } coAnswers {
-                runCatching {
-                    try {
-                        stalled.await()
-                        page("Old")
-                    } finally {
-                        withContext(NonCancellable) { delay(1_000) }
+            // Mirrors a provider that runCatching-wraps its request: the cancellation surfaces as a failed
+            // Result, and only after the replacing load has finished (the HTTP call winds down first).
+            provider.pages = { request ->
+                if (request.filterId == "relax") {
+                    Result.success(page("Calm"))
+                } else {
+                    runCatching {
+                        try {
+                            stalled.await()
+                            page("Old")
+                        } finally {
+                            withContext(NonCancellable) { delay(1_000) }
+                        }
                     }
                 }
             }
-            coEvery { youTube.home(continuation = null, params = "relax", via = any()) } returns Result.success(page("Calm"))
             val vm = viewModel()
 
             vm.load()
             advanceUntilIdle()
-            vm.selectChip(relax)
+            vm.selectFilter(relax)
             advanceUntilIdle()
 
-            val state = vm.state.value
-            assertThat(state.error).isNull()
-            assertThat(state.isLoading).isFalse()
-            assertThat(state.sections.map { it.title }).containsExactly("Calm")
-        }
-
-    @Test
-    fun `an expired account falls back to the anonymous home`() =
-        runTest(dispatcher) {
-            sessions.value = AccountSession(cookie = "SAPISID=a")
-            coEvery { client.musicHome(continuation = null, params = null) } coAnswers {
-                sessions.value = AccountSession(cookie = "SAPISID=a", expired = true)
-                Result.failure(IllegalStateException("signed out"))
-            }
-            coEvery { youTube.home(continuation = null, params = null, via = any()) } returns Result.success(page("Anonymous"))
-            val vm = viewModel()
-
-            vm.load()
-            advanceUntilIdle()
-
-            assertThat(
-                vm.state.value.sections
-                    .map { it.title },
-            ).containsExactly("Anonymous")
             assertThat(vm.state.value.error).isNull()
+            assertThat(vm.state.value.isLoading).isFalse()
+            assertThat(vm.titles).containsExactly("Calm")
         }
 
     @Test
-    fun `a refresh keeps the current shelves until the new first page arrives`() =
+    fun `a refresh keeps the current blocks until the new first page arrives`() =
         runTest(dispatcher) {
-            val refreshed = CompletableDeferred<Result<HomePage>>()
+            val refreshed = CompletableDeferred<Result<MetadataPage>>()
             var calls = 0
-            coEvery { youTube.home(continuation = null, params = null, via = any()) } coAnswers {
-                if (calls++ == 0) Result.success(page("Before")) else refreshed.await()
-            }
+            provider.pages = { if (calls++ == 0) Result.success(page("Before")) else refreshed.await() }
             val vm = viewModel()
             vm.load()
             advanceUntilIdle()
 
             vm.load(force = true)
             advanceUntilIdle()
-            assertThat(
-                vm.state.value.sections
-                    .map { it.title },
-            ).containsExactly("Before")
+            assertThat(vm.titles).containsExactly("Before")
             assertThat(vm.state.value.isLoading).isTrue()
 
             refreshed.complete(Result.success(page("After")))
             advanceUntilIdle()
-            assertThat(
-                vm.state.value.sections
-                    .map { it.title },
-            ).containsExactly("After")
+            assertThat(vm.titles).containsExactly("After")
         }
+
+    private class FakeProvider : MetadataProvider {
+        override val id: String = "fake"
+        override val account = MutableStateFlow<ProviderAccount>(ProviderAccount.Anonymous)
+        var pages: suspend (HomeRequest) -> Result<MetadataPage> = { Result.failure(IllegalStateException("no page")) }
+        val requests = mutableListOf<HomeRequest>()
+
+        override suspend fun home(request: HomeRequest): Result<MetadataPage> {
+            requests += request
+            return pages(request)
+        }
+    }
 }

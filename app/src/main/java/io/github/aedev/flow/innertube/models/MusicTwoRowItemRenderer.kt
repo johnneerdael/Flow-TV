@@ -20,6 +20,7 @@ data class MusicTwoRowItemRenderer(
     val thumbnailRenderer: ThumbnailRenderer,
     val navigationEndpoint: NavigationEndpoint,
     val thumbnailOverlay: MusicResponsiveListItemRenderer.Overlay?,
+    val aspectRatio: String? = null,
 ) {
     val isSong: Boolean
         get() = navigationEndpoint.endpoint is WatchEndpoint
@@ -59,4 +60,11 @@ data class MusicTwoRowItemRenderer(
                 ?.playNavigationEndpoint
                 ?.musicVideoType
                 ?: navigationEndpoint.musicVideoType
+
+    val isLandscape: Boolean
+        get() = aspectRatio == ASPECT_RATIO_16_9
+
+    companion object {
+        const val ASPECT_RATIO_16_9 = "MUSIC_TWO_ROW_ITEM_THUMBNAIL_ASPECT_RATIO_RECTANGLE_16_9"
+    }
 }

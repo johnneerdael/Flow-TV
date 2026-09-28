@@ -35,7 +35,7 @@ fun TvMusicCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    TvFlatSquareCard(
+    TvFlatArtCard(
         title = track.title,
         subtitle = track.artist,
         thumbnailUrl = track.thumbnailUrl,
@@ -53,7 +53,7 @@ fun TvMusicCollectionCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    TvFlatSquareCard(
+    TvFlatArtCard(
         title = title,
         subtitle = subtitle,
         thumbnailUrl = thumbnailUrl,
@@ -62,13 +62,33 @@ fun TvMusicCollectionCard(
     )
 }
 
+/** Wide 16:9 card for music videos and live sets on TV music shelves. */
 @Composable
-private fun TvFlatSquareCard(
+fun TvMusicLandscapeCard(
     title: String,
     subtitle: String?,
     thumbnailUrl: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+) {
+    TvFlatArtCard(
+        title = title,
+        subtitle = subtitle,
+        thumbnailUrl = thumbnailUrl,
+        onClick = onClick,
+        modifier = modifier,
+        wide = true,
+    )
+}
+
+@Composable
+private fun TvFlatArtCard(
+    title: String,
+    subtitle: String?,
+    thumbnailUrl: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    wide: Boolean = false,
 ) {
     val dimens = LocalTvDimens.current
     val focusState = rememberTvFocusState()
@@ -77,7 +97,7 @@ private fun TvFlatSquareCard(
         onClick = onClick,
         modifier =
             modifier
-                .width(dimens.musicCardWidth)
+                .width(if (wide) dimens.videoCardWidth else dimens.musicCardWidth)
                 .tvFocusScale(focusState),
         color = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onSurface,
@@ -87,7 +107,7 @@ private fun TvFlatSquareCard(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .aspectRatio(1f),
+                        .aspectRatio(if (wide) WIDE_ASPECT_RATIO else 1f),
                 shape = MaterialTheme.shapes.medium,
                 color = MaterialTheme.colorScheme.surfaceContainer,
                 border =
@@ -190,6 +210,29 @@ fun TvMusicTrackRow(
     selected: Boolean = false,
     containerAlpha: Float = 1f,
 ) {
+    TvMusicTrackRow(
+        title = track.title,
+        subtitle = track.artist,
+        thumbnailUrl = track.listThumbnailUrl,
+        durationSeconds = track.duration,
+        onClick = onClick,
+        modifier = modifier,
+        selected = selected,
+        containerAlpha = containerAlpha,
+    )
+}
+
+@Composable
+fun TvMusicTrackRow(
+    title: String,
+    subtitle: String?,
+    thumbnailUrl: String,
+    durationSeconds: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    selected: Boolean = false,
+    containerAlpha: Float = 1f,
+) {
     TvCard(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
@@ -209,7 +252,7 @@ fun TvMusicTrackRow(
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
             ) {
                 AsyncImage(
-                    model = track.listThumbnailUrl,
+                    model = thumbnailUrl,
                     contentDescription = null,
                     modifier = Modifier.size(48.dp),
                     contentScale = ContentScale.Crop,
@@ -217,22 +260,24 @@ fun TvMusicTrackRow(
             }
             Column(Modifier.weight(1f)) {
                 Text(
-                    text = track.title,
+                    text = title,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                Text(
-                    text = track.artist,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                subtitle?.takeIf { it.isNotBlank() }?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
-            if (track.duration > 0) {
+            if (durationSeconds > 0) {
                 Text(
-                    text = formatDuration(track.duration),
+                    text = formatDuration(durationSeconds),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -240,3 +285,5 @@ fun TvMusicTrackRow(
         }
     }
 }
+
+private const val WIDE_ASPECT_RATIO = 16f / 9f

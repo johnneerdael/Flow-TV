@@ -203,6 +203,7 @@ composeCompiler {
 
 dependencies {
     implementation(project(":projectm-core"))
+    implementation(project(":catalog-api"))
     // --- Core Android ---
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)

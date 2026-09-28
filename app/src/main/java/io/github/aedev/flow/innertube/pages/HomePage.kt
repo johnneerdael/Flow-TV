@@ -14,13 +14,20 @@ import io.github.aedev.flow.innertube.models.SongItem
 import io.github.aedev.flow.innertube.models.YTItem
 import io.github.aedev.flow.innertube.models.filterExplicit
 import io.github.aedev.flow.innertube.models.filterVideoSongs
+import io.github.aedev.flow.innertube.models.getContinuation
 import io.github.aedev.flow.innertube.models.oddElements
+import io.github.aedev.flow.innertube.models.response.BrowseResponse
 import io.github.aedev.flow.innertube.utils.parseTime
 
+/**
+ * The YouTube Music home feed. [shelves] keeps every carousel as served, with the layout hints
+ * [sections] leaves out; the catalog provider reads those.
+ */
 data class HomePage(
     val chips: List<Chip>?,
     val sections: List<Section>,
     val continuation: String? = null,
+    val shelves: List<MusicCarouselShelfRenderer> = emptyList(),
 ) {
     data class Chip(
         val title: String,
@@ -86,7 +93,7 @@ data class HomePage(
 
             // List shelves (Quick picks, Long listens, …) carry the duration in a fixed column, which
             // the shared secondary-line parser would otherwise mistake for a view count.
-            private fun fromMusicResponsiveListItemRenderer(renderer: MusicResponsiveListItemRenderer): SongItem? {
+            internal fun fromMusicResponsiveListItemRenderer(renderer: MusicResponsiveListItemRenderer): SongItem? {
                 val song = RelatedPage.fromMusicResponsiveListItemRenderer(renderer) ?: return null
                 val durationText =
                     renderer.fixedColumns
@@ -295,4 +302,39 @@ data class HomePage(
         } else {
             this
         }
+
+    companion object {
+        fun fromBrowseResponse(response: BrowseResponse): HomePage {
+            val sectionList =
+                response.contents
+                    ?.singleColumnBrowseResultsRenderer
+                    ?.tabs
+                    ?.firstOrNull()
+                    ?.tabRenderer
+                    ?.content
+                    ?.sectionListRenderer
+            val shelves = sectionList?.contents!!.mapNotNull { it.musicCarouselShelfRenderer }
+            return HomePage(
+                chips =
+                    sectionList.header
+                        ?.chipCloudRenderer
+                        ?.chips
+                        ?.mapNotNull { Chip.fromChipCloudChipRenderer(it) },
+                sections = shelves.mapNotNull { Section.fromMusicCarouselShelfRenderer(it) },
+                continuation = sectionList.continuations?.getContinuation(),
+                shelves = shelves,
+            )
+        }
+
+        fun fromContinuationResponse(response: BrowseResponse): HomePage {
+            val sectionList = response.continuationContents?.sectionListContinuation
+            val shelves = sectionList?.contents?.mapNotNull { it.musicCarouselShelfRenderer }.orEmpty()
+            return HomePage(
+                chips = null,
+                sections = shelves.mapNotNull { Section.fromMusicCarouselShelfRenderer(it) },
+                continuation = sectionList?.continuations?.getContinuation(),
+                shelves = shelves,
+            )
+        }
+    }
 }

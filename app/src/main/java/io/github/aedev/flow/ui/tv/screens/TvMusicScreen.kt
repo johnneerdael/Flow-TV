@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.runtime.Composable
@@ -28,26 +29,28 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.aedev.flow.R
-import io.github.aedev.flow.data.music.model.MusicItemType
 import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.ui.screens.music.MusicHomeFeedViewModel
 import io.github.aedev.flow.ui.tv.components.TvButton
+import io.github.aedev.flow.ui.tv.components.TvCatalogCollection
 import io.github.aedev.flow.ui.tv.components.TvFilterChip
-import io.github.aedev.flow.ui.tv.components.TvMediaRow
 import io.github.aedev.flow.ui.tv.components.TvMessageState
-import io.github.aedev.flow.ui.tv.components.TvMusicCard
-import io.github.aedev.flow.ui.tv.components.TvMusicCollectionCard
 import io.github.aedev.flow.ui.tv.components.TvScreenScaffold
 import io.github.aedev.flow.ui.tv.components.TvShimmerRow
 import io.github.aedev.flow.ui.tv.focus.ProvideTvColumnPivot
 import io.github.aedev.flow.ui.tv.focus.tvRowFocus
 import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
+import nl.neerdael.milkbeat.catalog.CollectionBlock
+import nl.neerdael.milkbeat.catalog.EntityKind
+import nl.neerdael.milkbeat.catalog.EntityRef
+import nl.neerdael.milkbeat.catalog.MetadataItem
 
-/** TV music home: YouTube Music's home feed — mood chips, then every shelf in the order it is served. */
+/** TV music home: the music provider's home page — its filters, then every block in the order it is served. */
 @Composable
 fun TvMusicScreen(
     onTrackClick: (MusicTrack, List<MusicTrack>, String) -> Unit,
     onOpenCollection: (String) -> Unit,
+    onOpenArtist: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: MusicHomeFeedViewModel = hiltViewModel(),
 ) {
@@ -59,13 +62,16 @@ fun TvMusicScreen(
     // The app opens on this tab with only the rail focusable until the feed arrives; move into the
     // content once, so a later return to the tab from the rail keeps focus where the user put it.
     var openedOnContent by rememberSaveable { mutableStateOf(false) }
-    val shelves =
-        remember(state.sections) {
-            state.sections
-                .map { it.title to it.tracks.browsable() }
-                .filter { (_, items) -> items.isNotEmpty() }
+    val blocks = state.blocks
+    val trackFor = remember(viewModel) { viewModel::track }
+    val hasShelves = blocks.isNotEmpty()
+    val open: (EntityRef) -> Unit = { ref ->
+        when (ref.kind) {
+            EntityKind.ALBUM, EntityKind.PLAYLIST -> onOpenCollection(ref.providerId)
+            EntityKind.ARTIST -> onOpenArtist(ref.providerId)
+            else -> Unit
         }
-    val hasShelves = shelves.isNotEmpty()
+    }
     LaunchedEffect(hasShelves) {
         if (hasShelves && !openedOnContent) {
             withFrameNanos { }
@@ -92,29 +98,29 @@ fun TvMusicScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(bottom = dimens.overscanVertical),
             ) {
-                if (state.chips.isNotEmpty()) {
+                if (state.filters.isNotEmpty()) {
                     item(key = "music-chips") {
                         LazyRow(
                             modifier = Modifier.fillMaxWidth().tvRowFocus(),
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
                             contentPadding = PaddingValues(horizontal = dimens.overscanHorizontal, vertical = 4.dp),
                         ) {
-                            items(state.chips, key = { it.title }) { chip ->
+                            items(state.filters, key = { it.id }) { filter ->
                                 TvFilterChip(
-                                    label = chip.title,
-                                    selected = state.isSelected(chip),
-                                    onClick = { viewModel.selectChip(chip) },
+                                    label = filter.label,
+                                    selected = filter.id == state.selectedFilterId,
+                                    onClick = { viewModel.selectFilter(filter) },
                                 )
                             }
                         }
                     }
                 }
                 when {
-                    state.isLoading && shelves.isEmpty() -> {
+                    state.isLoading && blocks.isEmpty() -> {
                         item(key = "music-loading") { TvShimmerRow() }
                     }
 
-                    state.error != null && shelves.isEmpty() -> {
+                    state.error != null && blocks.isEmpty() -> {
                         item(key = "music-error") {
                             Box(Modifier.fillMaxWidth().padding(horizontal = dimens.overscanHorizontal)) {
                                 TvMessageState(title = stringResource(R.string.tv_error_loading), message = state.error)
@@ -122,7 +128,7 @@ fun TvMusicScreen(
                         }
                     }
 
-                    shelves.isEmpty() && !state.isLoadingMore -> {
+                    blocks.isEmpty() && !state.isLoadingMore -> {
                         item(key = "music-empty") {
                             Box(Modifier.fillMaxWidth().padding(horizontal = dimens.overscanHorizontal)) {
                                 TvMessageState(title = stringResource(R.string.tv_music_empty))
@@ -131,15 +137,18 @@ fun TvMusicScreen(
                     }
 
                     else -> {
-                        shelves.forEachIndexed { index, (title, items) ->
-                            item(key = "music-shelf-$index") {
-                                TvMusicHomeShelf(
-                                    title = title,
-                                    items = items,
-                                    onTrackClick = onTrackClick,
-                                    onOpenCollection = onOpenCollection,
-                                    modifier = if (index == 0) Modifier.focusRequester(firstShelfFocus).focusGroup() else Modifier,
-                                )
+                        itemsIndexed(blocks, key = { _, block -> block.id }) { index, block ->
+                            val blockModifier = if (index == 0) Modifier.focusRequester(firstShelfFocus).focusGroup() else Modifier
+                            when (block) {
+                                is CollectionBlock -> {
+                                    TvHomeCollection(
+                                        collection = block,
+                                        trackFor = trackFor,
+                                        onTrackClick = onTrackClick,
+                                        onOpen = open,
+                                        modifier = blockModifier,
+                                    )
+                                }
                             }
                         }
                         if (state.isLoadingMore) {
@@ -153,31 +162,24 @@ fun TvMusicScreen(
 }
 
 @Composable
-private fun TvMusicHomeShelf(
-    title: String,
-    items: List<MusicTrack>,
+private fun TvHomeCollection(
+    collection: CollectionBlock,
+    trackFor: (MetadataItem) -> MusicTrack?,
     onTrackClick: (MusicTrack, List<MusicTrack>, String) -> Unit,
-    onOpenCollection: (String) -> Unit,
+    onOpen: (EntityRef) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val songs = remember(items) { items.filter { it.itemType == MusicItemType.SONG } }
-    TvMediaRow(items = items, key = MusicTrack::videoId, modifier = modifier, title = title) { item ->
-        if (item.itemType == MusicItemType.SONG) {
-            TvMusicCard(track = item, onClick = { onTrackClick(item, songs, title) })
-        } else {
-            TvMusicCollectionCard(
-                title = item.title,
-                subtitle = item.artist.ifBlank { null },
-                thumbnailUrl = item.thumbnailUrl,
-                onClick = { onOpenCollection(item.videoId) },
-            )
-        }
-    }
+    val queueTitle = collection.header?.title.orEmpty()
+    val tracks = remember(collection.items) { collection.items.associate { it.id to trackFor(it) } }
+    val queue = remember(tracks) { tracks.values.filterNotNull() }
+    TvCatalogCollection(
+        collection = collection,
+        onItemClick = { item ->
+            val track = tracks[item.id]
+            if (track != null) onTrackClick(track, queue, queueTitle) else onOpen(item.entity)
+        },
+        onPlayAll = { onTrackClick(queue.first(), queue, queueTitle) }.takeIf { queue.isNotEmpty() && queue.size == collection.items.size },
+        onOpen = onOpen,
+        modifier = modifier,
+    )
 }
-
-/** Songs and videos to play plus albums and playlists to open; artists have no card on a home shelf. */
-private fun List<MusicTrack>.browsable(): List<MusicTrack> =
-    asSequence()
-        .filter { it.itemType != MusicItemType.ARTIST && it.videoId.isNotBlank() }
-        .distinctBy(MusicTrack::videoId)
-        .toList()
