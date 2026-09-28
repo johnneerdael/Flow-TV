@@ -47,9 +47,12 @@ import io.github.aedev.flow.data.music.YouTubeMusicService
 import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.data.newmusic.InnertubeMusicService
 import io.github.aedev.flow.data.recommendation.music.MusicBrainEngine
+import io.github.aedev.flow.data.recommendation.music.primaryArtistKey
 import io.github.aedev.flow.extensions.setOffloadEnabled
 import io.github.aedev.flow.innertube.YouTube
+import io.github.aedev.flow.innertube.models.SongItem
 import io.github.aedev.flow.innertube.models.WatchEndpoint
+import io.github.aedev.flow.innertube.pages.NextResult
 import io.github.aedev.flow.platform.DeviceFormFactor
 import io.github.aedev.flow.platform.DeviceFormFactorDetector
 import io.github.aedev.flow.player.MusicPlaybackRecoveryPlanner
@@ -1206,34 +1209,29 @@ class Media3MusicService : MediaLibraryService() {
         startRadio(currentId)
     }
 
+    /**
+     * Seeds the station the way YouTube Music does: the playing track's own mix, kept in the order
+     * YouTube built it. Only artists the user blocked or turned down are taken out.
+     */
     private fun startRadio(seedId: String) {
         automixJob?.cancel()
         radioTopUpJob?.cancel()
-        io.github.aedev.flow.player.EnhancedMusicPlayerManager
-            .setRadioLoading(true)
+        val manager = io.github.aedev.flow.player.EnhancedMusicPlayerManager
+        // A new session never inherits the last one's suggestions, even when this fetch fails.
+        manager.updateAutomixItems(emptyList())
+        manager.setRadioLoading(true)
         automixJob =
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
-                    var page = YouTube.next(WatchEndpoint(playlistId = "RDAMVM$seedId")).getOrNull()
-                    val nestedPlaylistId = page?.endpoint?.playlistId
-                    if (page != null && page.items.size <= 1 && !nestedPlaylistId.isNullOrBlank()) {
-                        page = YouTube.next(WatchEndpoint(playlistId = nestedPlaylistId)).getOrNull() ?: page
-                    }
+                    var page = radioPage(WatchEndpoint(videoId = seedId, playlistId = "RDAMVM$seedId"))
                     if (page == null || page.items.size <= 1) {
-                        page = YouTube.next(WatchEndpoint(videoId = seedId)).getOrNull() ?: page
+                        page = radioPage(WatchEndpoint(videoId = seedId)) ?: page
                     }
 
-                    var mapped =
-                        page
-                            ?.items
-                            .orEmpty()
-                            .mapNotNull { InnertubeMusicService.convertToMusicTrack(it) }
-                            .filterNot { it.videoId == seedId }
-                            .distinctBy { it.videoId }
-
+                    var mapped = page?.items.orEmpty().toRadioTracks(seedId)
                     if (mapped.isEmpty()) {
                         // Related fallback carries no continuation — the pool later
-                        // reseeds from its own tail instead.
+                        // reseeds from the playing track instead.
                         radioContinuation = null
                         radioEndpoint = null
                         mapped =
@@ -1246,18 +1244,10 @@ class Media3MusicService : MediaLibraryService() {
                         radioEndpoint = page?.endpoint
                     }
 
-                    // Ordered once, here: the pool IS the up-next list the user reads, so the
-                    // queue must be able to take it from the head without re-sequencing.
-                    val ranked =
-                        musicBrain.sequenceRadioBatch(
-                            musicBrain.rankTracks(mapped, "radio"),
-                            io.github.aedev.flow.player.EnhancedMusicPlayerManager.currentTrack.value,
-                            MusicRadioPlanner.MAX_POOL_SIZE,
-                        )
-                    Log.d(TAG, "Radio seeded from $seedId: ${ranked.size} tracks, continuation=${radioContinuation != null}")
-                    if (ranked.isNotEmpty()) {
-                        io.github.aedev.flow.player.EnhancedMusicPlayerManager
-                            .updateAutomixItems(ranked)
+                    val station = withoutHiddenArtists(mapped)
+                    Log.d(TAG, "Radio seeded from $seedId: ${station.size} tracks, continuation=${radioContinuation != null}")
+                    if (station.isNotEmpty()) {
+                        manager.updateAutomixItems(station)
                         // The queue may already be short (or ended) by the time the
                         // seed arrives — move pool tracks into it right away.
                         withContext(Dispatchers.Main) { maybeExtendRadio() }
@@ -1267,10 +1257,34 @@ class Media3MusicService : MediaLibraryService() {
                 } catch (e: Exception) {
                     Log.e(TAG, "Error seeding radio", e)
                 } finally {
-                    io.github.aedev.flow.player.EnhancedMusicPlayerManager
-                        .setRadioLoading(false)
+                    manager.setRadioLoading(false)
                 }
             }
+    }
+
+    /** The account's own mix when signed in, as YouTube Music would queue it; the anonymous one otherwise. */
+    private suspend fun radioPage(
+        endpoint: WatchEndpoint,
+        continuation: String? = null,
+    ): NextResult? {
+        signedInPlayback.account()?.let { account ->
+            YouTube
+                .next(endpoint, continuation, audioOnly = true, via = account.tube)
+                .onSuccess { return it }
+                .onFailure { Log.w(TAG, "Signed-in mix unavailable, using the anonymous one: ${it.message}") }
+        }
+        return YouTube.next(endpoint, continuation, audioOnly = true).getOrNull()
+    }
+
+    private fun List<SongItem>.toRadioTracks(seedId: String?): List<MusicTrack> =
+        mapNotNull { InnertubeMusicService.convertToMusicTrack(it) }
+            .filterNot { it.videoId == seedId }
+            .distinctBy { it.videoId }
+
+    private suspend fun withoutHiddenArtists(tracks: List<MusicTrack>): List<MusicTrack> {
+        musicBrain.ensureInitialized()
+        val hidden = musicBrain.hiddenArtists.value
+        return if (hidden.isEmpty()) tracks else tracks.filterNot { it.primaryArtistKey() in hidden }
     }
 
     /**
@@ -1321,56 +1335,48 @@ class Media3MusicService : MediaLibraryService() {
 
     /** Fetch the next radio page and APPEND it to the pool — never replaces. */
     private fun extendRadioPool() {
-        if (radioTopUpJob?.isActive == true) return
-        io.github.aedev.flow.player.EnhancedMusicPlayerManager
-            .setRadioLoading(true)
+        if (radioTopUpJob?.isActive == true || automixJob?.isActive == true) return
+        val manager = io.github.aedev.flow.player.EnhancedMusicPlayerManager
+        manager.setRadioLoading(true)
         radioTopUpJob =
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
-                    val manager = io.github.aedev.flow.player.EnhancedMusicPlayerManager
                     val endpoint = radioEndpoint
                     val continuation = radioContinuation
                     val page =
                         if (endpoint != null && continuation != null) {
-                            YouTube.next(endpoint, continuation).getOrNull()
+                            radioPage(endpoint, continuation)
                         } else {
-                            // Continuation exhausted: grow the tree from the newest tail.
-                            val tailId =
-                                (manager.automixItems.value.lastOrNull() ?: manager.queue.value.lastOrNull())
-                                    ?.videoId
-                                    ?.takeUnless(LocalMediaIds::isLocal)
+                            // The mix ran out: carry on with the mix of what is playing now, as
+                            // YouTube Music does, rather than drifting from the far end of the pool.
+                            val seedId =
+                                listOfNotNull(manager.currentTrack.value, manager.queue.value.lastOrNull())
+                                    .map { it.videoId }
+                                    .firstOrNull { it != radioSeedId && !LocalMediaIds.isLocal(it) }
                                     ?: return@launch
-                            YouTube.next(WatchEndpoint(playlistId = "RDAMVM$tailId")).getOrNull()
+                            radioSeedId = seedId
+                            radioPage(WatchEndpoint(videoId = seedId, playlistId = "RDAMVM$seedId"))
                         }
                     if (page == null) return@launch
                     radioContinuation = page.continuation
                     radioEndpoint = page.endpoint
 
-                    val mapped =
-                        page.items
-                            .mapNotNull { InnertubeMusicService.convertToMusicTrack(it) }
-                            .distinctBy { it.videoId }
-                    val tail = manager.automixItems.value.lastOrNull() ?: manager.queue.value.lastOrNull()
-                    val ranked =
-                        musicBrain.sequenceRadioBatch(
-                            musicBrain.rankTracks(mapped, "radio"),
-                            tail,
-                            MusicRadioPlanner.MAX_POOL_SIZE,
-                        )
-                    Log.d(TAG, "Radio pool topped up with ${ranked.size} tracks, continuation=${radioContinuation != null}")
-                    if (ranked.isNotEmpty()) {
-                        manager.appendAutomixItems(ranked)
+                    val station = withoutHiddenArtists(page.items.toRadioTracks(seedId = null))
+                    Log.d(TAG, "Radio pool topped up with ${station.size} tracks, continuation=${radioContinuation != null}")
+                    if (station.isNotEmpty()) {
+                        manager.appendAutomixItems(station)
                         // If the queue ended while this fetch was in flight, feed it
                         // now — no further transition will ever call maybeExtendRadio.
                         // Re-entry is safe: this job is still active, so a nested
                         // extendRadioPool() is a no-op.
                         withContext(Dispatchers.Main) { maybeExtendRadio() }
                     }
+                } catch (e: kotlinx.coroutines.CancellationException) {
+                    throw e
                 } catch (e: Exception) {
                     Log.w(TAG, "Radio top-up failed: ${e.message}")
                 } finally {
-                    io.github.aedev.flow.player.EnhancedMusicPlayerManager
-                        .setRadioLoading(false)
+                    manager.setRadioLoading(false)
                 }
             }
     }

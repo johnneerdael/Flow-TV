@@ -56,7 +56,6 @@ class AccountEndpointGuardTest {
         runTest {
             val blocked =
                 listOf(
-                    "next",
                     "like/like",
                     "subscription/subscribe",
                     "browse/edit_playlist",
@@ -81,10 +80,17 @@ class AccountEndpointGuardTest {
         }
 
     @Test
-    fun `an InnerTube built with a policy refuses next`() =
+    fun `the music queue is allowed, for the account's own mixes`() =
+        runTest {
+            client().post("next")
+            assertThat(served).containsExactly("music.youtube.com/youtubei/v1/next")
+        }
+
+    @Test
+    fun `an InnerTube built with a policy refuses what the account may not do`() =
         runTest {
             val tube = InnerTube(AccountEndpointPolicy.ACCOUNT)
-            val error = runCatching { tube.next(YouTubeClient.WEB_REMIX, "dQw4w9WgXcQ", null, null, null, null, null) }.exceptionOrNull()
+            val error = runCatching { tube.nextForLiveChat("dQw4w9WgXcQ") }.exceptionOrNull()
             assertThat(error.isBlocked()).isTrue()
         }
 }

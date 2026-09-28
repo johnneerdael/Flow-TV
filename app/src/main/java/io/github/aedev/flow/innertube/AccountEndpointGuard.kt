@@ -16,9 +16,9 @@ data class AccountEndpointPolicy(
 
     companion object {
         /**
-         * Feed reads, plus what adding a play to the account's history takes: the YouTube Music player
-         * response (for its playback-tracking URL) and that URL's playback ping. Nothing that likes,
-         * subscribes or edits is allowed.
+         * Feed reads, the account's own radio mixes (the YouTube Music queue), plus what adding a play to
+         * the account's history takes: the YouTube Music player response (for its playback-tracking URL)
+         * and that URL's playback ping. Nothing that likes, subscribes or edits is allowed.
          */
         val ACCOUNT =
             AccountEndpointPolicy(
@@ -26,6 +26,7 @@ data class AccountEndpointPolicy(
                     "music.youtube.com/youtubei/v1/browse",
                     "music.youtube.com/youtubei/v1/account/account_menu",
                     "www.youtube.com/youtubei/v1/browse",
+                    "music.youtube.com/youtubei/v1/next",
                     "music.youtube.com/youtubei/v1/player",
                     "music.youtube.com/api/stats/playback",
                 ),
