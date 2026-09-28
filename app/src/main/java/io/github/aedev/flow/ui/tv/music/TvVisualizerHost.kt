@@ -6,6 +6,7 @@ import android.content.res.Configuration
 import android.opengl.GLSurfaceView
 import android.os.Handler
 import android.os.Looper
+import io.github.aedev.flow.player.audio.visualizer.VisualizerRenderStats
 import nl.neerdael.projectm.core.DisplayInfo
 import nl.neerdael.projectm.core.PcmConverter
 import nl.neerdael.projectm.core.ProjectMJNI
@@ -15,6 +16,7 @@ import nl.neerdael.projectm.core.VisualizerView
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 /**
  * One visualizer on screen: the projectM view, fed each frame with the samples the tap says are
@@ -29,12 +31,13 @@ internal class TvVisualizerHost(
     private val main = Handler(Looper.getMainLooper())
     private val display = DisplayInfo.detect(context)
     private var quality: QualityController? = null
+    private var targetFps = 0
     private var listening = false
     private val renderer =
         VisualizerRenderer(
             object : VisualizerRenderer.StatsListener {
                 override fun onFpsSample(fps: Float) {
-                    main.post { if (quality?.onFpsSample(fps) == QualityController.ACTION_SKIP) ProjectMJNI.skipCurrentPreset() }
+                    main.post { onFps(fps) }
                 }
 
                 override fun onPresetChanged() {
@@ -49,6 +52,7 @@ internal class TvVisualizerHost(
         engine.start()
         val profile = engine.profile
         val divisor = frameDivisor(display.refreshRate, profile.defaultFrameRateCap())
+        targetFps = (display.refreshRate / divisor).roundToInt()
         quality =
             QualityController(display, profile, profile.memorySafeHeight(), ::applyRenderHeight).apply {
                 setTransitionSeconds(profile.defaultTransitionSeconds())
@@ -76,8 +80,15 @@ internal class TvVisualizerHost(
     /** projectM owns GL objects, so it is released on the GL thread; a later start cleans up if that thread is gone. */
     fun close() {
         pause()
+        engine.renderStats = null
         main.removeCallbacksAndMessages(null)
         view.queueEvent(renderer::release)
+    }
+
+    private fun onFps(fps: Float) {
+        val quality = quality ?: return
+        if (quality.onFpsSample(fps) == QualityController.ACTION_SKIP) ProjectMJNI.skipCurrentPreset()
+        engine.renderStats = VisualizerRenderStats(fps, targetFps, renderer.surfaceWidth, renderer.surfaceHeight, quality.isAuto)
     }
 
     private fun applyRenderHeight(height: Int) {

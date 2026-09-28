@@ -31,8 +31,8 @@ import io.github.aedev.flow.ui.screens.music.MusicPlayerViewModel
 import io.github.aedev.flow.ui.screens.player.VideoPlayerViewModel
 import io.github.aedev.flow.ui.screens.search.SearchViewModel
 import io.github.aedev.flow.ui.tv.music.TvMusicNowPlayingScreen
-import io.github.aedev.flow.ui.tv.music.TvVisualizerBackground
 import io.github.aedev.flow.ui.tv.music.TvVisualizerViewModel
+import io.github.aedev.flow.ui.tv.music.rememberTvNowPlayingVisual
 import io.github.aedev.flow.ui.tv.screens.TvPlayerScreen
 import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 import io.github.aedev.flow.ui.tv.theme.TvTheme
@@ -142,8 +142,7 @@ fun FlowTvApp(
                     TvMusicNowPlayingScreen(
                         viewModel = musicPlayerViewModel,
                         onCollapse = { musicExpanded = false },
-                        background = if (visualizerActive) ({ TvVisualizerBackground(visualizerViewModel) }) else null,
-                        onPresetStep = if (visualizerActive) visualizerViewModel::stepPreset else null,
+                        visualizer = rememberTvNowPlayingVisual(visualizerViewModel).takeIf { visualizerActive },
                     )
                 } else if (video == null) {
                     TvShell(

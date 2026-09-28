@@ -39,7 +39,15 @@ class VisualizerPreferences
             appContext.visualizerDataStore.edit { it[ENABLED] = enabled }
         }
 
+        /** Whether the controls bar shows the engine's diagnostics under the audio meter. */
+        val diagnostics: Flow<Boolean> = appContext.visualizerDataStore.data.map { it[DIAGNOSTICS] ?: false }
+
+        suspend fun setDiagnostics(enabled: Boolean) {
+            appContext.visualizerDataStore.edit { it[DIAGNOSTICS] = enabled }
+        }
+
         private companion object {
             val ENABLED = booleanPreferencesKey("enabled")
+            val DIAGNOSTICS = booleanPreferencesKey("diagnostics")
         }
     }

@@ -46,9 +46,9 @@ private val ControlsWidth = 480.dp
 private val ControlButtonSize = 48.dp
 private val ControlsPadding = 12.dp
 
-// The controls bar and the track corner stay see-through so the visual behind them is never lost, but
-// solid enough to read over the brightest presets.
-internal const val NOW_PLAYING_BAR_ALPHA = 0.65f
+// The controls bar stays see-through so the visual behind it is never lost, but solid enough to read
+// over the brightest presets.
+private const val CONTROLS_BAR_ALPHA = 0.65f
 
 /** What the controls bar shows; the screen owns the state and the player calls. */
 internal data class TvNowPlayingControlsState(
@@ -86,18 +86,20 @@ internal fun TvNowPlayingControls(
     buttonColors: TvIconButtonColors,
     playPauseFocusRequester: FocusRequester,
     modifier: Modifier = Modifier,
+    status: (@Composable () -> Unit)? = null,
 ) {
     var seekBarFocused by remember { mutableStateOf(false) }
     Surface(
         modifier = modifier.width(ControlsWidth),
         shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = NOW_PLAYING_BAR_ALPHA),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = CONTROLS_BAR_ALPHA),
         tonalElevation = 3.dp,
     ) {
         Column(
             modifier = Modifier.padding(ControlsPadding),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            status?.invoke()
             Surface(
                 modifier =
                     Modifier

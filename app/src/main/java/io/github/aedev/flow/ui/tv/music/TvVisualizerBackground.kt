@@ -43,3 +43,20 @@ internal fun TvVisualizerBackground(
     }
     AndroidView(factory = { host.view }, modifier = modifier.fillMaxSize())
 }
+
+/** What the visualizer adds to now-playing: its backdrop, preset steps on the remote, and its line in the controls bar. */
+class TvNowPlayingVisual(
+    val background: @Composable () -> Unit,
+    val onPresetStep: (forward: Boolean) -> Unit,
+    val status: @Composable () -> Unit,
+)
+
+@Composable
+internal fun rememberTvNowPlayingVisual(viewModel: TvVisualizerViewModel): TvNowPlayingVisual =
+    remember(viewModel) {
+        TvNowPlayingVisual(
+            background = { TvVisualizerBackground(viewModel) },
+            onPresetStep = viewModel::stepPreset,
+            status = { TvVisualizerStatus(viewModel) },
+        )
+    }

@@ -2760,6 +2760,17 @@
     <string name="visualizer_enabled">Enable visualizations</string>
     <string name="visualizer_enabled_subtitle">projectM visuals that move with the music behind now playing</string>
     <string name="visualizer_unavailable">This device can\'t run the visualizer</string>
+    <string name="visualizer_diagnostics">Show diagnostics</string>
+    <string name="visualizer_diagnostics_subtitle">Frame rate, render size, transition, audio level and preset in the playback controls</string>
+    <string name="visualizer_audio_none">No sound</string>
+    <string name="visualizer_audio_quiet">Very quiet</string>
+    <string name="visualizer_audio_listening">Listening</string>
+    <string name="visualizer_transition_lightweight">lightweight</string>
+    <string name="visualizer_transition_blend">blend</string>
+    <string name="visualizer_transition_blend_at">blend at %1$d%%</string>
+    <string name="visualizer_resolution_auto">auto</string>
+    <string name="visualizer_resolution_fixed">fixed</string>
+    <string name="visualizer_diagnostics_line">%1$.1f of %2$d fps · %3$d×%4$d %5$s · %6$s · audio %7$.2f</string>
     <string name="tv_settings_account">Account</string>
     <string name="tv_account_not_signed_in">Not signed in</string>
     <string name="tv_account_signed_in">Signed in</string>

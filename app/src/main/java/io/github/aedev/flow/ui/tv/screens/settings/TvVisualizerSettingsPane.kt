@@ -19,6 +19,7 @@ fun TvVisualizerSettingsPane(
     viewModel: TvVisualizerSettingsViewModel = hiltViewModel(),
 ) {
     val enabled by viewModel.enabled.collectAsStateWithLifecycle()
+    val diagnostics by viewModel.diagnostics.collectAsStateWithLifecycle()
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -34,6 +35,16 @@ fun TvVisualizerSettingsPane(
                 checked = enabled && viewModel.supported,
                 onCheckedChange = { if (viewModel.supported) viewModel.setEnabled(it) },
             )
+        }
+        if (enabled && viewModel.supported) {
+            item(key = "visualizer-diagnostics") {
+                TvToggleRow(
+                    label = stringResource(R.string.visualizer_diagnostics),
+                    supportingText = stringResource(R.string.visualizer_diagnostics_subtitle),
+                    checked = diagnostics,
+                    onCheckedChange = viewModel::setDiagnostics,
+                )
+            }
         }
     }
 }

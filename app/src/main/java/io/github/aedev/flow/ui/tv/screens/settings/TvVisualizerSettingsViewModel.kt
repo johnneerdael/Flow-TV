@@ -27,7 +27,13 @@ class TvVisualizerSettingsViewModel
                 preferences.enabledByDefault,
             )
 
+        val diagnostics: StateFlow<Boolean> = preferences.diagnostics.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
         fun setEnabled(enabled: Boolean) {
             viewModelScope.launch { preferences.setEnabled(enabled) }
+        }
+
+        fun setDiagnostics(enabled: Boolean) {
+            viewModelScope.launch { preferences.setDiagnostics(enabled) }
         }
     }

@@ -39,6 +39,10 @@ class VisualizerEngine
         /** The auto-resolution height reached last time, so reopening starts there instead of ramping again. */
         var lastAutoHeight = 0
 
+        /** The on-screen visualizer's latest once-a-second frame-rate sample, for the diagnostics line. */
+        @Volatile
+        var renderStats: VisualizerRenderStats? = null
+
         val profile: DeviceProfile by lazy { DeviceProfile.detect(context) }
 
         fun start() {
@@ -61,3 +65,12 @@ class VisualizerEngine
             const val DEFAULT_PRESET_SECONDS = 30
         }
     }
+
+/** How the visualizer on screen is rendering: frames per second against its target, and at what size. */
+data class VisualizerRenderStats(
+    val fps: Float,
+    val targetFps: Int,
+    val width: Int,
+    val height: Int,
+    val autoResolution: Boolean,
+)

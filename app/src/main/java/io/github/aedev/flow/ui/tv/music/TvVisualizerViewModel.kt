@@ -4,6 +4,7 @@ import android.view.KeyEvent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.aedev.flow.data.local.VisualizerPreferences
 import io.github.aedev.flow.player.audio.visualizer.VisualizerAudioTap
 import io.github.aedev.flow.player.audio.visualizer.VisualizerEngine
 import kotlinx.coroutines.flow.SharingStarted
@@ -19,8 +20,31 @@ class TvVisualizerViewModel
     constructor(
         val engine: VisualizerEngine,
         private val tap: VisualizerAudioTap,
+        preferences: VisualizerPreferences,
     ) : ViewModel() {
         val active: StateFlow<Boolean> = engine.active.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
+        val diagnosticsShown: StateFlow<Boolean> =
+            preferences.diagnostics.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
+        /** The engine's recent input level (RMS, 0..1); 0 when no audio arrived in the last second. */
+        fun audioLevel(): Float = ProjectMJNI.getAudioLevel()
+
+        /** A reading for the diagnostics line; null until the visualizer has rendered for a second. */
+        internal fun diagnostics(): VisualizerDiagnostics? {
+            val stats = engine.renderStats ?: return null
+            return VisualizerDiagnostics(
+                fps = stats.fps,
+                targetFps = stats.targetFps,
+                width = stats.width,
+                height = stats.height,
+                autoResolution = stats.autoResolution,
+                lightweightTransition = ProjectMJNI.isLightweightTransition(),
+                blendPercent = ProjectMJNI.getBlendScalePercent(),
+                preset = presetDisplayName(ProjectMJNI.getCurrentPresetName()),
+                audioLevel = ProjectMJNI.getAudioLevel(),
+            )
+        }
 
         fun startListening() = tap.acquire()
 

@@ -84,18 +84,17 @@ private const val CORNER_WIDTH_FRACTION = 0.6f
 private val PanelGap = 24.dp
 
 /**
- * Full-screen music now-playing: the track sits in the top-left corner over a full-screen
- * [background] (the artwork backdrop by default; the visualizer plugs in here), and the seek bar and
- * transport occupy the bottom-left corner only while the remote is in use — they hide after
- * [TvPlayerOverlayController.AUTO_HIDE_DELAY_MS] without a key press. While hidden, left and right go to [onPresetStep].
+ * Full-screen music now-playing: the track sits in the top-left corner over a full-screen backdrop
+ * (the artwork, or the [visualizer]), and the seek bar and transport occupy the bottom-left corner
+ * only while the remote is in use — they hide after [TvPlayerOverlayController.AUTO_HIDE_DELAY_MS]
+ * without a key press. While they are hidden, left and right step the visualizer's presets.
  */
 @Composable
 fun TvMusicNowPlayingScreen(
     viewModel: MusicPlayerViewModel,
     onCollapse: () -> Unit,
     modifier: Modifier = Modifier,
-    background: (@Composable () -> Unit)? = null,
-    onPresetStep: ((forward: Boolean) -> Unit)? = null,
+    visualizer: TvNowPlayingVisual? = null,
 ) {
     val manager = EnhancedMusicPlayerManager
     val context = LocalContext.current
@@ -219,10 +218,10 @@ fun TvMusicNowPlayingScreen(
                 .fillMaxSize()
                 .onPreviewKeyEvent { event ->
                     val keyCode = event.nativeKeyEvent.keyCode
-                    if (event.type == KeyEventType.KeyDown && !controlsVisible && onPresetStep != null) {
+                    if (event.type == KeyEventType.KeyDown && !controlsVisible && visualizer != null) {
                         val forward = presetStepFor(keyCode)
                         if (forward != null) {
-                            onPresetStep(forward)
+                            visualizer.onPresetStep(forward)
                             return@onPreviewKeyEvent true
                         }
                     }
@@ -299,8 +298,8 @@ fun TvMusicNowPlayingScreen(
                     }
                 },
     ) {
-        if (background != null) {
-            background()
+        if (visualizer != null) {
+            visualizer.background()
         } else {
             PlayerBackground(
                 thumbnailUrl = artworkUrl,
@@ -371,6 +370,7 @@ fun TvMusicNowPlayingScreen(
                 durationMs = durationMs,
                 buttonColors = playerButtonColors,
                 playPauseFocusRequester = playPauseFocusRequester,
+                status = visualizer?.status,
             )
         }
         if (!controlsVisible) {
