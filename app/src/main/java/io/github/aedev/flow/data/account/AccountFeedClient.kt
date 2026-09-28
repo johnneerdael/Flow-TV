@@ -59,20 +59,24 @@ class AccountFeedClient
         suspend fun watchHistory(): Result<AccountVideoFeed> = videoFeed(WATCH_HISTORY_BROWSE_ID)
 
         /**
-         * Adds a play of [videoId] to the account's YouTube Music history: the account's own player
-         * response carries a playback-tracking URL tied to the signed-in session, and pinging it is what
-         * YouTube Music itself does when a track starts. Stream loading stays on the anonymous client.
+         * Adds a play of [videoId] to the account's YouTube Music history by pinging its playback-tracking
+         * URL on the signed-in session, as YouTube Music itself does. [trackingUrl] is the one from the
+         * signed-in stream request; a track that streamed anonymously asks the account's player for one.
          */
-        suspend fun recordPlay(videoId: String): Result<Unit> =
+        suspend fun recordPlay(
+            videoId: String,
+            trackingUrl: String? = null,
+        ): Result<Unit> =
             withTube { tube ->
                 runCatching {
                     val tracking =
-                        YouTube
-                            .player(videoId, client = YouTubeClient.WEB_REMIX, via = tube)
-                            .getOrThrow()
-                            .playbackTracking
-                            ?.videostatsPlaybackUrl
-                            ?.baseUrl
+                        trackingUrl
+                            ?: YouTube
+                                .player(videoId, client = YouTubeClient.WEB_REMIX, via = tube)
+                                .getOrThrow()
+                                .playbackTracking
+                                ?.videostatsPlaybackUrl
+                                ?.baseUrl
                             ?: error("No playback tracking for $videoId")
                     YouTube.registerPlayback(playbackTracking = tracking, via = tube).getOrThrow()
                     Unit

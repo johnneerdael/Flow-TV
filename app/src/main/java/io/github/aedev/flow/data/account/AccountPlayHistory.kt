@@ -41,6 +41,7 @@ class AccountPlayHistory
     constructor(
         @ApplicationContext context: Context,
         private val client: AccountFeedClient,
+        private val signedInPlayback: SignedInPlayback,
     ) {
         private val dataStore = context.applicationContext.accountPlayHistoryDataStore
 
@@ -63,7 +64,8 @@ class AccountPlayHistory
             scope.launch {
                 if (!enabled.first()) return@launch
                 client
-                    .recordPlay(videoId)
+                    .recordPlay(videoId, signedInPlayback.trackingFor(videoId))
+                    .onSuccess { Log.d(TAG, "Play of $videoId added to the history") }
                     .onFailure { if (it !is AccountSignedOutException) Log.w(TAG, "Play of $videoId not added to the history", it) }
             }
         }

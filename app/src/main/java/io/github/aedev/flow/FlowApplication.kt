@@ -34,6 +34,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
@@ -59,13 +61,39 @@ class FlowApplication :
     @Inject
     lateinit var channelReelIndex: io.github.aedev.flow.data.shorts.ChannelReelIndex
 
+    @Inject
+    lateinit var signedInPlayback: io.github.aedev.flow.data.account.SignedInPlayback
+
     override fun newImageLoader(context: PlatformContext): ImageLoader = imageLoader
+
+    /**
+     * The last session's track is restored paused at start; resolving its stream now, after the
+     * PoToken prewarm, means pressing play starts it without waiting on the token, the signature
+     * timestamp or the player request.
+     */
+    private suspend fun warmRestoredTrack() {
+        val track =
+            withTimeoutOrNull(RESTORED_TRACK_WAIT_MS) {
+                io.github.aedev.flow.player.EnhancedMusicPlayerManager.currentTrack
+                    .filterNotNull()
+                    .first()
+            } ?: return
+        if (io.github.aedev.flow.data.localmedia.LocalMediaIds
+                .isLocal(track.videoId)
+        ) {
+            return
+        }
+        io.github.aedev.flow.utils.MusicPlayerUtils
+            .playerResponseForPlayback(track.videoId)
+            .onSuccess { Log.d(TAG, "Restored track ${track.videoId} ready to play (${it.usedClient.clientName})") }
+    }
 
     companion object {
         private const val TAG = "FlowApplication"
         private const val VISITOR_DATA_KEY = "visitor_data"
         private const val VISITOR_DATA_FETCHED_AT_KEY = "visitor_data_fetched_at"
         private const val VISITOR_DATA_MAX_AGE_MS = 7L * 24L * 60L * 60L * 1_000L
+        private const val RESTORED_TRACK_WAIT_MS = 20_000L
         lateinit var appContext: Context
             private set
     }
@@ -167,15 +195,23 @@ class FlowApplication :
             }
         }
 
+        io.github.aedev.flow.utils.MusicPlayerUtils.signedIn = signedInPlayback
+
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             try {
                 val prefs = getSharedPreferences("flow_prefs", MODE_PRIVATE)
                 val cached = prefs.getString(VISITOR_DATA_KEY, null)
+                // Signed in, the app is the account's own visitor, so the PoToken minted below is the
+                // one the account's first stream needs, ready before anything is played.
+                val accountVisitor = signedInPlayback.identity.first()
                 val cachedAt = prefs.getLong(VISITOR_DATA_FETCHED_AT_KEY, 0L)
                 val cacheIsFresh =
                     cachedAt > 0L &&
                         System.currentTimeMillis() - cachedAt < VISITOR_DATA_MAX_AGE_MS
-                if (!cached.isNullOrEmpty() && cacheIsFresh) {
+                if (accountVisitor != null) {
+                    YouTube.visitorData = accountVisitor
+                    Log.d(TAG, "visitorData set to the signed-in account's")
+                } else if (!cached.isNullOrEmpty() && cacheIsFresh) {
                     YouTube.visitorData = cached
                     Log.d(TAG, "visitorData restored from prefs")
                 } else {
@@ -204,6 +240,25 @@ class FlowApplication :
             } catch (e: Exception) {
                 Log.w(TAG, "WebPoTokenSession prewarm failed: ${e.message}")
             }
+            warmRestoredTrack()
+        }
+
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            signedInPlayback.identity.drop(1).collect { accountVisitor ->
+                YouTube.visitorData =
+                    accountVisitor
+                        ?: getSharedPreferences("flow_prefs", MODE_PRIVATE).getString(VISITOR_DATA_KEY, null)
+                io.github.aedev.flow.utils.MusicPlayerUtils
+                    .clearPlaybackCache()
+                io.github.aedev.flow.player.EnhancedMusicPlayerManager
+                    .clearUrlCache()
+                signedInPlayback.forgetTracking()
+                Log.d(TAG, "Account ${if (accountVisitor != null) "signed in" else "signed out"}; playback identity switched")
+                runCatching {
+                    io.github.aedev.flow.utils.potoken.WebPoTokenSession
+                        .prewarm()
+                }
+            }
         }
 
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
@@ -227,7 +282,8 @@ class FlowApplication :
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             var lastRegion: String? = null
             playerPreferences.trendingRegion.collectLatest { region ->
-                if (lastRegion != null && lastRegion != region) {
+                // A signed-in account keeps its own visitor identity whatever the region.
+                if (lastRegion != null && lastRegion != region && signedInPlayback.identity.first() == null) {
                     Log.d(TAG, "Trending region changed from $lastRegion to $region. Invalidate visitor data.")
                     val prefs = getSharedPreferences("flow_prefs", MODE_PRIVATE)
                     prefs

@@ -74,6 +74,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
@@ -196,6 +197,9 @@ class Media3MusicService : MediaLibraryService() {
 
     @Inject
     lateinit var visualizerTap: VisualizerAudioTap
+
+    @Inject
+    lateinit var signedInPlayback: io.github.aedev.flow.data.account.SignedInPlayback
 
     @Inject
     lateinit var visualizerEngine: VisualizerEngine
@@ -382,6 +386,8 @@ class Media3MusicService : MediaLibraryService() {
         player.setOffloadEnabled(shouldOffloadAudio(isTv, equalizerRepository.needsProcessing.value))
         player.addListener(VisualizerClockListener(visualizerTap))
         lifecycleScope.launch { followPlayerClock(visualizerTap, player) }
+        // Stream URLs belong to the identity that requested them; a sign-in or sign-out starts fresh.
+        lifecycleScope.launch { signedInPlayback.identity.drop(1).collect { downloadUtil.clearUrlCache() } }
 
         player.addListener(
             object : Player.Listener {

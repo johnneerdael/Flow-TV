@@ -3,6 +3,7 @@ package io.github.aedev.flow.utils
 import android.net.Uri
 import android.util.Log
 import io.github.aedev.flow.FlowApplication
+import io.github.aedev.flow.data.account.SignedInPlayback
 import io.github.aedev.flow.data.local.MusicAudioQuality
 import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.innertube.YouTube
@@ -26,9 +27,14 @@ import io.github.aedev.flow.utils.cipher.CipherDeobfuscator
 import io.github.aedev.flow.utils.potoken.PoTokenGenerator
 import io.github.aedev.flow.utils.potoken.PoTokenResult
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
@@ -51,6 +57,13 @@ object MusicPlayerUtils {
     }
 
     private val poTokenGenerator = PoTokenGenerator
+
+    /** Set at app start: plays music as the signed-in account when there is one. */
+    @Volatile
+    var signedIn: SignedInPlayback? = null
+
+    // Outlives one resolve: the signed-in player request finishes after the stream has started.
+    private val signedInScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private val MAIN_CLIENT: YouTubeClient = WEB_REMIX
 
@@ -96,6 +109,7 @@ object MusicPlayerUtils {
     private const val LOUDNESS_TARGET_LKFS = -14.0
     private const val MIN_LOUDNESS_GAIN_DB = -20f
     private const val ESCALATION_WINDOW_MS = 120_000L
+    private const val SIGNED_IN_TIMEOUT_MS = 10_000L
 
     private val videoRefreshTimestamps = ConcurrentHashMap<String, Long>()
 
@@ -247,6 +261,45 @@ object MusicPlayerUtils {
             var usedClient: YouTubeClient? = null
             var extraction: Pair<PlayerResponse.StreamingData.Format, ResolvedUrl>? = null
             var mainPlayerResponse: PlayerResponse? = null
+
+            // Signed in, the account's own player request runs alongside the stream lookup, as
+            // Metrolist and Meld do: its playback-tracking address is what adds the play to the
+            // account's history, and it never delays the start. The audio still comes from the fast
+            // direct clients; the account's cipher streams are only the last rescue.
+            val account = signedIn?.account()
+            val signedInResponse =
+                account?.let { signed ->
+                    signedInScope.async {
+                        withTimeoutOrNull(SIGNED_IN_TIMEOUT_MS) {
+                            runCatching {
+                                val token = poTokenGenerator.getWebClientPoTokenSuspend(videoId, signed.visitorData)
+                                YouTube
+                                    .player(
+                                        videoId,
+                                        playlistId,
+                                        MAIN_CLIENT,
+                                        getStsForClient(MAIN_CLIENT),
+                                        token?.playerRequestPoToken,
+                                        localeOverride = YouTubeLocale.EXTRACTION,
+                                        via = signed.tube,
+                                    ).getOrNull()
+                                    ?.also { Log.d(TAG, "Signed-in player: ${it.playabilityStatus?.status}") }
+                                    ?.takeIf { it.playabilityStatus?.status == "OK" }
+                            }.onFailure { Log.w(TAG, "Signed-in player failed: ${it.message}") }
+                                .getOrNull()
+                        }
+                    }
+                }
+            signedInResponse?.let { pending ->
+                signedInScope.launch {
+                    pending
+                        .await()
+                        ?.playbackTracking
+                        ?.videostatsPlaybackUrl
+                        ?.baseUrl
+                        ?.let { signedIn?.rememberTracking(videoId, it) }
+                }
+            }
 
             val escalate =
                 videoRefreshTimestamps[videoId]
@@ -418,6 +471,27 @@ object MusicPlayerUtils {
                         } catch (e: Exception) {
                             Log.w(TAG, "Slow fallback ${client.clientName} threw exception: ${e.message}")
                         }
+                    }
+                }
+            }
+
+            if (usedClient == null) {
+                signedInResponse?.await()?.let { signedInPlayer ->
+                    tryExtract(
+                        response = signedInPlayer,
+                        client = MAIN_CLIENT,
+                        videoId = videoId,
+                        audioPreferences = audioPreferences(),
+                        validate = false,
+                        requireDirectUrl = false,
+                        allowCipherFallback = true,
+                        allowNewPipeFallback = true,
+                        allowStreamInfoFallback = false,
+                    )?.let {
+                        response = signedInPlayer
+                        extraction = it
+                        usedClient = MAIN_CLIENT
+                        Log.i(TAG, "Signed-in stream rescued $videoId")
                     }
                 }
             }
