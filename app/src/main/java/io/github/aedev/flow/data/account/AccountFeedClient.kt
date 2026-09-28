@@ -26,7 +26,8 @@ private const val WATCH_HISTORY_BROWSE_ID = "FEhistory"
 
 /**
  * The only object that ever holds the account cookie. Its InnerTube is separate from the anonymous
- * `YouTube` one that playback uses, and its HTTP client refuses everything except feed reads.
+ * `YouTube` one that playback uses, and its HTTP client refuses everything except feed reads and
+ * adding plays to the account's history.
  */
 @Singleton
 class AccountFeedClient
@@ -57,6 +58,27 @@ class AccountFeedClient
 
         suspend fun watchHistory(): Result<AccountVideoFeed> = videoFeed(WATCH_HISTORY_BROWSE_ID)
 
+        /**
+         * Adds a play of [videoId] to the account's YouTube Music history: the account's own player
+         * response carries a playback-tracking URL tied to the signed-in session, and pinging it is what
+         * YouTube Music itself does when a track starts. Stream loading stays on the anonymous client.
+         */
+        suspend fun recordPlay(videoId: String): Result<Unit> =
+            withTube { tube ->
+                runCatching {
+                    val tracking =
+                        YouTube
+                            .player(videoId, client = YouTubeClient.WEB_REMIX, via = tube)
+                            .getOrThrow()
+                            .playbackTracking
+                            ?.videostatsPlaybackUrl
+                            ?.baseUrl
+                            ?: error("No playback tracking for $videoId")
+                    YouTube.registerPlayback(playbackTracking = tracking, via = tube).getOrThrow()
+                    Unit
+                }
+            }
+
         internal suspend fun tube(): InnerTube? = active()?.second
 
         private suspend fun active(): Pair<AccountSession, InnerTube>? =
@@ -81,7 +103,7 @@ class AccountFeedClient
         }
 
         private fun newTube(session: AccountSession) =
-            InnerTube(AccountEndpointPolicy.FEEDS_ONLY).apply {
+            InnerTube(AccountEndpointPolicy.ACCOUNT).apply {
                 cacheDirectory = File(System.getProperty("java.io.tmpdir"), ACCOUNT_HTTP_CACHE)
                 locale = YouTube.locale
                 cookie = session.cookie

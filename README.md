@@ -72,11 +72,12 @@ attached to each release if you prefer a smaller download.
 ### Library
 - History, likes, watch later and playlists, plus your account's library when signed in
 
-### Privacy
-- Playback stays anonymous: a signed-in account is only used to read your feeds, and plays are
-  not added to your YouTube history
-- An on-device recommendation engine; nothing is sent to a server
-- No ads, analytics or tracking
+### Your account
+- Signed in, the Music tab and Library show your YouTube Music feeds, and tracks you listen to for
+  30 seconds or more go to your YouTube history so YouTube's recommendations learn your taste
+  (Settings > Account can switch that off)
+- Streams still load without the account
+- An on-device recommendation engine on top; no ads, analytics or tracking
 
 ## Verifying authenticity
 <a id="cert"></a>

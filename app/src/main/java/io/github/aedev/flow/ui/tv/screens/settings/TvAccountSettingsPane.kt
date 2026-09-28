@@ -28,6 +28,7 @@ import io.github.aedev.flow.R
 import io.github.aedev.flow.data.account.AccountSession
 import io.github.aedev.flow.ui.screens.account.sharedAccountFeedsViewModel
 import io.github.aedev.flow.ui.tv.components.TvNavRow
+import io.github.aedev.flow.ui.tv.components.TvToggleRow
 import io.github.aedev.flow.ui.tv.focus.ProvideTvColumnPivot
 
 @Composable
@@ -37,6 +38,7 @@ fun TvAccountSettingsPane(
 ) {
     val viewModel = sharedAccountFeedsViewModel()
     val session by viewModel.session.collectAsStateWithLifecycle()
+    val playHistory by viewModel.playHistoryEnabled.collectAsStateWithLifecycle()
 
     ProvideTvColumnPivot {
         LazyColumn(
@@ -52,6 +54,16 @@ fun TvAccountSettingsPane(
                         supportingText = stringResource(R.string.tv_account_sign_in_with_phone_summary),
                         leadingIcon = Icons.Outlined.QrCode2,
                         onClick = onSignIn,
+                    )
+                }
+            }
+            if (session?.expired == false) {
+                item(key = "play-history") {
+                    TvToggleRow(
+                        label = stringResource(R.string.tv_account_play_history),
+                        supportingText = stringResource(R.string.tv_account_play_history_summary),
+                        checked = playHistory,
+                        onCheckedChange = viewModel::setPlayHistoryEnabled,
                     )
                 }
             }

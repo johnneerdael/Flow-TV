@@ -2,6 +2,7 @@ package io.github.aedev.flow.ui.screens.account
 
 import com.google.common.truth.Truth.assertThat
 import io.github.aedev.flow.data.account.AccountFeedClient
+import io.github.aedev.flow.data.account.AccountPlayHistory
 import io.github.aedev.flow.data.account.AccountSession
 import io.github.aedev.flow.data.account.AccountSessionStore
 import io.github.aedev.flow.data.model.Video
@@ -37,6 +38,8 @@ class AccountFeedsViewModelTest {
     private val client = mockk<AccountFeedClient>()
     private val mapper = mockk<MusicRecommendationAlgorithm>(relaxed = true)
 
+    private val playHistory = mockk<AccountPlayHistory> { every { enabled } returns flowOf(true) }
+
     private fun video(id: String) =
         Video(id = id, title = id, channelName = "c", channelId = "c", thumbnailUrl = "", duration = 0, viewCount = 0, uploadDate = "")
 
@@ -48,7 +51,7 @@ class AccountFeedsViewModelTest {
     fun `history loads once within its freshness window`() =
         runTest(dispatcher) {
             coEvery { client.watchHistory() } returns Result.success(AccountVideoFeed(listOf(video("a")), "NEXT", true))
-            val vm = AccountFeedsViewModel(store, client, mapper)
+            val vm = AccountFeedsViewModel(store, client, mapper, playHistory)
             vm.loadHistory()
             advanceUntilIdle()
             vm.loadHistory()
@@ -64,7 +67,7 @@ class AccountFeedsViewModelTest {
     fun `a failure is shown as an error`() =
         runTest(dispatcher) {
             coEvery { client.watchHistory() } returns Result.failure(IllegalStateException("boom"))
-            val vm = AccountFeedsViewModel(store, client, mapper)
+            val vm = AccountFeedsViewModel(store, client, mapper, playHistory)
             vm.loadHistory()
             advanceUntilIdle()
             assertThat(vm.history.value.error).isEqualTo("boom")
@@ -75,7 +78,7 @@ class AccountFeedsViewModelTest {
         runTest(dispatcher) {
             val gate = CompletableDeferred<Result<AccountVideoFeed>>()
             coEvery { client.watchHistory() } coAnswers { gate.await() }
-            val vm = AccountFeedsViewModel(store, client, mapper)
+            val vm = AccountFeedsViewModel(store, client, mapper, playHistory)
             vm.loadHistory()
             advanceUntilIdle()
             vm.signOut()
@@ -99,7 +102,7 @@ class AccountFeedsViewModelTest {
                     io.github.aedev.flow.innertube.pages
                         .LibraryPage(emptyList(), null),
                 )
-            val vm = AccountFeedsViewModel(store, client, mapper)
+            val vm = AccountFeedsViewModel(store, client, mapper, playHistory)
             vm.loadMusicLibrary()
             advanceUntilIdle()
             val state = vm.musicLibrary.value
@@ -114,7 +117,7 @@ class AccountFeedsViewModelTest {
             val sessions = kotlinx.coroutines.flow.MutableStateFlow<AccountSession?>(AccountSession(cookie = "SAPISID=a"))
             val switching = mockk<AccountSessionStore> { every { session } returns sessions }
             coEvery { client.watchHistory() } returns Result.success(AccountVideoFeed(listOf(video("from-a")), null, true))
-            val vm = AccountFeedsViewModel(switching, client, mapper)
+            val vm = AccountFeedsViewModel(switching, client, mapper, playHistory)
             vm.loadHistory()
             advanceUntilIdle()
             sessions.value = AccountSession(cookie = "SAPISID=b")

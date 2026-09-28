@@ -15,12 +15,19 @@ data class AccountEndpointPolicy(
     ): Boolean = "$host$encodedPath" in allowed
 
     companion object {
-        val FEEDS_ONLY =
+        /**
+         * Feed reads, plus what adding a play to the account's history takes: the YouTube Music player
+         * response (for its playback-tracking URL) and that URL's playback ping. Nothing that likes,
+         * subscribes or edits is allowed.
+         */
+        val ACCOUNT =
             AccountEndpointPolicy(
                 setOf(
                     "music.youtube.com/youtubei/v1/browse",
                     "music.youtube.com/youtubei/v1/account/account_menu",
                     "www.youtube.com/youtubei/v1/browse",
+                    "music.youtube.com/youtubei/v1/player",
+                    "music.youtube.com/api/stats/playback",
                 ),
             )
     }

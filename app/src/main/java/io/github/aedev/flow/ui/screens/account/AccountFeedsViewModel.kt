@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.aedev.flow.data.account.AccountFeedClient
+import io.github.aedev.flow.data.account.AccountPlayHistory
 import io.github.aedev.flow.data.account.AccountSession
 import io.github.aedev.flow.data.account.AccountSessionStore
 import io.github.aedev.flow.data.account.LIKED_MUSIC_PLAYLIST_ID
@@ -55,7 +56,16 @@ class AccountFeedsViewModel
         private val store: AccountSessionStore,
         private val client: AccountFeedClient,
         private val musicMapper: MusicRecommendationAlgorithm,
+        private val playHistory: AccountPlayHistory,
     ) : ViewModel() {
+        /** Whether finished listens go to the account's YouTube history. */
+        val playHistoryEnabled: StateFlow<Boolean> =
+            playHistory.enabled.stateIn(viewModelScope, SharingStarted.WhileSubscribed(SUBSCRIPTION_TIMEOUT_MS), true)
+
+        fun setPlayHistoryEnabled(enabled: Boolean) {
+            viewModelScope.launch { playHistory.setEnabled(enabled) }
+        }
+
         val session: StateFlow<AccountSession?> =
             store.session.stateIn(viewModelScope, SharingStarted.WhileSubscribed(SUBSCRIPTION_TIMEOUT_MS), null)
         val isSignedIn: StateFlow<Boolean> =

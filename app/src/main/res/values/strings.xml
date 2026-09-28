@@ -2778,9 +2778,11 @@
     <string name="tv_account_not_signed_in">Not signed in</string>
     <string name="tv_account_signed_in">Signed in</string>
     <string name="tv_account_signed_in_as">Signed in as %1$s</string>
-    <string name="tv_account_signed_in_summary">Home, Subscriptions, Music and Library show your YouTube and YouTube Music feeds. Playback stays anonymous.</string>
+    <string name="tv_account_signed_in_summary">Music and Library show your YouTube Music feeds, and what you listen to goes to your YouTube history so the recommendations learn your taste.</string>
+    <string name="tv_account_play_history">Add plays to your YouTube history</string>
+    <string name="tv_account_play_history_summary">Tracks you listen to for 30 seconds or more appear in your YouTube Music history and shape your recommendations</string>
     <string name="tv_account_sign_in_with_phone">Sign in with phone</string>
-    <string name="tv_account_sign_in_with_phone_summary">Scan a QR code and type on your phone. Only your feeds use the account; playback stays anonymous.</string>
+    <string name="tv_account_sign_in_with_phone_summary">Scan a QR code and type on your phone. Your feeds, library and listening history then come from your account.</string>
     <string name="tv_account_sign_out">Sign out</string>
     <string name="tv_account_session_expired">Your sign-in expired. Sign in again to see your feeds.</string>
     <string name="tv_account_sign_in_title">Sign in with your phone</string>

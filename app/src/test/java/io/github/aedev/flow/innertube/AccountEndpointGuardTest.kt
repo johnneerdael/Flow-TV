@@ -25,7 +25,7 @@ class AccountEndpointGuardTest {
             },
         ) {
             defaultRequest { url(YouTubeClient.API_URL_YOUTUBE_MUSIC) }
-            install(AccountEndpointGuard) { policy = AccountEndpointPolicy.FEEDS_ONLY }
+            install(AccountEndpointGuard) { policy = AccountEndpointPolicy.ACCOUNT }
         }
 
     private fun Throwable?.isBlocked() = generateSequence(this) { it.cause }.any { it is AccountEndpointBlockedException }
@@ -52,11 +52,10 @@ class AccountEndpointGuardTest {
         }
 
     @Test
-    fun `playback and write endpoints are blocked before reaching the network`() =
+    fun `write endpoints and the web player are blocked before reaching the network`() =
         runTest {
             val blocked =
                 listOf(
-                    "player",
                     "next",
                     "like/like",
                     "subscription/subscribe",
@@ -74,10 +73,18 @@ class AccountEndpointGuardTest {
         }
 
     @Test
-    fun `an InnerTube built with a policy refuses player`() =
+    fun `the music player response and its playback ping are allowed, for the account's play history`() =
         runTest {
-            val tube = InnerTube(AccountEndpointPolicy.FEEDS_ONLY)
-            val error = runCatching { tube.player(YouTubeClient.WEB_REMIX, "dQw4w9WgXcQ", null, null) }.exceptionOrNull()
+            client().post("player")
+            client().get("https://music.youtube.com/api/stats/playback?docid=x")
+            assertThat(served).containsExactly("music.youtube.com/youtubei/v1/player", "music.youtube.com/api/stats/playback").inOrder()
+        }
+
+    @Test
+    fun `an InnerTube built with a policy refuses next`() =
+        runTest {
+            val tube = InnerTube(AccountEndpointPolicy.ACCOUNT)
+            val error = runCatching { tube.next(YouTubeClient.WEB_REMIX, "dQw4w9WgXcQ", null, null, null, null, null) }.exceptionOrNull()
             assertThat(error.isBlocked()).isTrue()
         }
 }

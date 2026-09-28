@@ -112,8 +112,13 @@ it, the app shows the regular signed-out YouTube Music home.
   sign-in page's buttons so they can be tapped from the phone.
 - After sign-in, only the resulting session cookie is kept, encrypted with a key in the Android
   Keystore and excluded from backups and device transfers. It is sent only to YouTube and YouTube
-  Music, and only to read feeds (the YouTube Music home, library and history, and the YouTube watch
-  history). Playback stays anonymous and plays are not added to the account's history.
+  Music: to read feeds (the YouTube Music home, library and history, and the YouTube watch history),
+  and to add plays to the account's history.
+- Plays: when a track has played for 30 seconds (or half of a shorter track), the app asks YouTube
+  Music for that track's playback-tracking address with the session and reports the play there, as
+  YouTube Music itself does. The play then appears in the account's history and shapes its
+  recommendations. Settings > Account > Add plays to your YouTube history switches this off. The
+  audio streams themselves are still fetched without the account.
 - Settings > Account > Sign out deletes the stored session.
 
 ## The remaining permissions

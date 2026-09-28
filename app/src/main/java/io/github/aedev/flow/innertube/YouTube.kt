@@ -2667,9 +2667,10 @@ object YouTube {
         poToken: String? = null,
         localeOverride: YouTubeLocale? = null,
         apiUrl: String? = null,
+        via: InnerTube = innerTube,
     ): Result<PlayerResponse> =
         runCatching {
-            innerTube.player(client, videoId, playlistId, signatureTimestamp, poToken, localeOverride, apiUrl).body<PlayerResponse>()
+            via.player(client, videoId, playlistId, signatureTimestamp, poToken, localeOverride, apiUrl).body<PlayerResponse>()
         }
 
     suspend fun playerWeb(
@@ -2803,6 +2804,7 @@ object YouTube {
     suspend fun registerPlayback(
         playlistId: String? = null,
         playbackTracking: String,
+        via: InnerTube = innerTube,
     ) = runCatching {
         val cpn =
             (1..16)
@@ -2821,7 +2823,7 @@ object YouTube {
                 "https://music.youtube.com",
             )
 
-        innerTube.registerPlayback(
+        via.registerPlayback(
             url = playbackUrl,
             playlistId = playlistId,
             cpn = cpn,

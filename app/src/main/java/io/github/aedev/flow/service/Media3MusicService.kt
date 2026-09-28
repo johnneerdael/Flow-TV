@@ -39,6 +39,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.aedev.flow.MainActivity
 import io.github.aedev.flow.R
+import io.github.aedev.flow.data.account.AccountPlayHistory
 import io.github.aedev.flow.data.audio.eq.EqualizerRepository
 import io.github.aedev.flow.data.download.DownloadUtil
 import io.github.aedev.flow.data.localmedia.LocalMediaIds
@@ -198,6 +199,9 @@ class Media3MusicService : MediaLibraryService() {
 
     @Inject
     lateinit var visualizerEngine: VisualizerEngine
+
+    @Inject
+    lateinit var accountPlayHistory: AccountPlayHistory
 
     @OptIn(UnstableApi::class)
     override fun onCreate() {
@@ -615,6 +619,7 @@ class Media3MusicService : MediaLibraryService() {
         // Engine-scoped, NOT lifecycleScope: the finalize from onDestroy runs after
         // this service's scope is already cancelled, and the session must still land.
         musicBrain.onListenSessionAsync(track, playedMs.toDouble() / durationMs, pinnedGenre, playedMs)
+        accountPlayHistory.onListened(track.videoId, playedMs, durationMs)
     }
 
     /**

@@ -43,11 +43,11 @@ class AccountFeedClientTest {
         }
 
     @Test
-    fun `the tube refuses playback endpoints`() =
+    fun `the tube refuses what playback itself uses`() =
         runBlocking {
             val store = testAccountSessionStore(tmp.root, scope).also { it.save(session) }
             val tube = AccountFeedClient(store).tube()!!
-            val error = runCatching { tube.player(YouTubeClient.WEB_REMIX, "dQw4w9WgXcQ", null, null) }.exceptionOrNull()
+            val error = runCatching { tube.next(YouTubeClient.WEB_REMIX, "dQw4w9WgXcQ", null, null, null, null, null) }.exceptionOrNull()
             assertThat(generateSequence(error) { it.cause }.any { it is AccountEndpointBlockedException }).isTrue()
         }
 
