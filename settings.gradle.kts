@@ -18,6 +18,7 @@ dependencyResolutionManagement {
 rootProject.name = "Milkbeat"
 include(":app")
 include(":catalog-api")
+include(":spike-plugin-runtime")
 include(":benchmark")
 include(":projectm-core")
 project(":projectm-core").projectDir = file("third_party/projectm-tv/core")
