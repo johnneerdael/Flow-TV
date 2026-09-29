@@ -30,6 +30,7 @@ data class UpdateUiState(
     val notes: ReleaseNotes? = null,
     val stage: UpdateStage = UpdateStage.Available,
     val loading: Boolean = false,
+    val checkFailed: Boolean = false,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -43,6 +44,7 @@ class UpdateViewModel
         private val canInstall = MutableStateFlow(installer.canInstall())
         private val installing = MutableStateFlow(false)
         private val loading = MutableStateFlow(updates.latest.value == null)
+        private val checkFailed = MutableStateFlow(false)
 
         val state: StateFlow<UpdateUiState> =
             combine(
@@ -62,15 +64,21 @@ class UpdateViewModel
                     }
                 },
                 loading,
-            ) { state, isLoading -> state.copy(loading = isLoading && state.release == null) }
-                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), UpdateUiState(loading = loading.value))
+                checkFailed,
+            ) { state, isLoading, failed ->
+                state.copy(loading = isLoading && state.release == null, checkFailed = failed && state.release == null)
+            }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), UpdateUiState(loading = loading.value))
 
         init {
-            if (loading.value) {
-                viewModelScope.launch {
-                    runCatching { updates.fetch() }
-                    loading.value = false
-                }
+            if (loading.value) check()
+        }
+
+        /** Asks GitHub again, e.g. when the user wants to know whether a release came out. */
+        fun check() {
+            loading.value = true
+            viewModelScope.launch {
+                checkFailed.value = runCatching { updates.fetch() }.isFailure
+                loading.value = false
             }
         }
 
@@ -84,6 +92,11 @@ class UpdateViewModel
                 UpdateStage.Ready -> install(release)
                 else -> Unit
             }
+        }
+
+        /** Installs without the install-apps grant; Android then asks for it in its own confirmation. */
+        fun installNow() {
+            state.value.release?.let(::install)
         }
 
         fun cancelDownload() = installer.cancel()

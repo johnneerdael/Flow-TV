@@ -2,7 +2,7 @@ package io.github.aedev.flow.data.update
 
 import java.time.Instant
 
-/** A published Flow release that is newer than the running build. */
+/** A published Milkbeat release that is newer than the running build. */
 data class AppRelease(
     val version: String,
     val tag: String,
@@ -12,7 +12,7 @@ data class AppRelease(
     val apk: ReleaseApk?,
 )
 
-/** The APK this device should install: the build for its ABI, with the size and digest GitHub reports. */
+/** The APK to install: the release's universal build, with the SHA-256 its checksum listing gives. */
 data class ReleaseApk(
     val name: String,
     val url: String,

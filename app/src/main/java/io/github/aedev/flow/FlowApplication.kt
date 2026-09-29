@@ -21,6 +21,8 @@ import io.github.aedev.flow.innertube.pages.NewPipeExtractor
 import io.github.aedev.flow.network.AppProxyManager
 import io.github.aedev.flow.notification.NotificationHelper
 import io.github.aedev.flow.notification.SubscriptionCheckWorker
+import io.github.aedev.flow.platform.DeviceFormFactor
+import io.github.aedev.flow.platform.DeviceFormFactorDetector
 import io.github.aedev.flow.utils.AppLanguageManager
 import io.github.aedev.flow.utils.FlowCrashHandler
 import io.github.aedev.flow.utils.PerformanceDispatcher
@@ -168,10 +170,15 @@ class FlowApplication :
                 intervalMinutes = savedIntervalMinutes.toLong(),
             )
 
-            // Schedule periodic update checks (every 12 hours) — github flavor only
+            // Update notifications are for phones, github flavor only; a TV checks while it is open instead.
             if (BuildConfig.UPDATER_ENABLED) {
-                io.github.aedev.flow.notification.UpdateCheckWorker
-                    .schedulePeriodicCheck(this@FlowApplication)
+                if (DeviceFormFactorDetector.detect(this@FlowApplication) == DeviceFormFactor.TV) {
+                    io.github.aedev.flow.notification.UpdateCheckWorker
+                        .cancelScheduledChecks(this@FlowApplication)
+                } else {
+                    io.github.aedev.flow.notification.UpdateCheckWorker
+                        .schedulePeriodicCheck(this@FlowApplication)
+                }
             }
         }
 

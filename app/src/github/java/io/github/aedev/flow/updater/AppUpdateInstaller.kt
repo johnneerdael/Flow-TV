@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
@@ -76,32 +77,35 @@ class AppUpdateInstaller
         }
 
         fun state(version: String): Flow<UpdateDownload> =
-            WorkManager.getInstance(context).getWorkInfosForUniqueWorkFlow(WORK_NAME).map { infos ->
-                val info = infos.lastOrNull { tagFor(version) in it.tags }
-                val ready = UpdateFiles.apkFile(context, version).exists()
-                when (info?.state) {
-                    WorkInfo.State.RUNNING -> {
-                        if (info.progress.getString(UpdateDownloadWorker.KEY_PHASE) == UpdateDownloadWorker.PHASE_VERIFY) {
-                            UpdateDownload.Verifying
-                        } else {
-                            UpdateDownload.Running(info.progress.getFloat(UpdateDownloadWorker.KEY_PROGRESS, -1f).takeIf { it >= 0f })
+            WorkManager
+                .getInstance(context)
+                .getWorkInfosForUniqueWorkFlow(WORK_NAME)
+                .map { infos ->
+                    val info = infos.lastOrNull { tagFor(version) in it.tags }
+                    val ready = UpdateFiles.apkFile(context, version).exists()
+                    when (info?.state) {
+                        WorkInfo.State.RUNNING -> {
+                            if (info.progress.getString(UpdateDownloadWorker.KEY_PHASE) == UpdateDownloadWorker.PHASE_VERIFY) {
+                                UpdateDownload.Verifying
+                            } else {
+                                UpdateDownload.Running(info.progress.getFloat(UpdateDownloadWorker.KEY_PROGRESS, -1f).takeIf { it >= 0f })
+                            }
+                        }
+
+                        WorkInfo.State.ENQUEUED, WorkInfo.State.BLOCKED -> {
+                            UpdateDownload.Running(null)
+                        }
+
+                        WorkInfo.State.FAILED -> {
+                            val reason = info.outputData.getString(UpdateDownloadWorker.KEY_FAILURE)
+                            UpdateDownload.Failed(UpdateFailure.entries.firstOrNull { it.name == reason } ?: UpdateFailure.NETWORK)
+                        }
+
+                        else -> {
+                            if (ready) UpdateDownload.Ready else UpdateDownload.Idle
                         }
                     }
-
-                    WorkInfo.State.ENQUEUED, WorkInfo.State.BLOCKED -> {
-                        UpdateDownload.Running(null)
-                    }
-
-                    WorkInfo.State.FAILED -> {
-                        val reason = info.outputData.getString(UpdateDownloadWorker.KEY_FAILURE)
-                        UpdateDownload.Failed(UpdateFailure.entries.firstOrNull { it.name == reason } ?: UpdateFailure.NETWORK)
-                    }
-
-                    else -> {
-                        if (ready) UpdateDownload.Ready else UpdateDownload.Idle
-                    }
-                }
-            }
+                }.flowOn(Dispatchers.IO)
 
         fun canInstall(): Boolean = context.packageManager.canRequestPackageInstalls()
 

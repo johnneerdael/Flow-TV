@@ -21,8 +21,8 @@ env:
   # be installed as an update. Changing it forces a reinstall.
   EXPECTED_SIGNER_SHA256: fefb39d0d5f3df3bbbd0b7ccf7fed716a0a13ebd17ac529b0c1a8ec3c1f7a3f8
 
-# Milkbeat ships the Android TV build only: the foss flavor (no in-app updater).
-# The github and nightly variants are not built or published here.
+# Milkbeat ships the Android TV build only: the github flavor, whose in-app updater installs these releases.
+# The foss and nightly variants are not built or published here.
 jobs:
   build:
     name: Build TV APK
@@ -90,24 +90,24 @@ jobs:
 
       - name: Run unit tests
         run: >
-          ./gradlew :app:testFossDebugUnitTest
+          ./gradlew :app:testGithubDebugUnitTest :app:compileFossDebugKotlin
           --max-workers=1 --build-cache --stacktrace
 
       # Instrumentation tests are not executed in CI, but they must still
       # compile: breakage here otherwise lands on main unnoticed.
       - name: Compile instrumentation tests
         run: >
-          ./gradlew :app:compileFossDebugAndroidTestKotlin
+          ./gradlew :app:compileGithubDebugAndroidTestKotlin
           --build-cache --stacktrace
 
       - name: Lint TV release
         run: >
-          ./gradlew :app:lintFossRelease
+          ./gradlew :app:lintGithubRelease
           --build-cache --stacktrace
 
       - name: Build TV release APKs
         run: >
-          ./gradlew :app:assembleFossRelease
+          ./gradlew :app:assembleGithubRelease
           --max-workers=1 --build-cache --stacktrace
         env:
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
@@ -129,9 +129,9 @@ jobs:
 
           status=0
           for apk in \
-            app/build/outputs/apk/foss/release/app-foss-universal-release.apk \
-            app/build/outputs/apk/foss/release/app-foss-arm64-v8a-release.apk \
-            app/build/outputs/apk/foss/release/app-foss-armeabi-v7a-release.apk
+            app/build/outputs/apk/github/release/app-github-universal-release.apk \
+            app/build/outputs/apk/github/release/app-github-arm64-v8a-release.apk \
+            app/build/outputs/apk/github/release/app-github-armeabi-v7a-release.apk
           do
             if [ ! -f "$apk" ]; then
               echo "::error::Missing expected APK $apk"
@@ -153,9 +153,9 @@ jobs:
         run: |
           shopt -s nullglob
           apks=(
-            app/build/outputs/apk/foss/release/app-foss-universal-release*.apk
-            app/build/outputs/apk/foss/release/app-foss-arm64-v8a-release*.apk
-            app/build/outputs/apk/foss/release/app-foss-armeabi-v7a-release*.apk
+            app/build/outputs/apk/github/release/app-github-universal-release*.apk
+            app/build/outputs/apk/github/release/app-github-arm64-v8a-release*.apk
+            app/build/outputs/apk/github/release/app-github-armeabi-v7a-release*.apk
           )
           expected=3
 
@@ -180,7 +180,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: milkbeat-universal-release-apk
-          path: app/build/outputs/apk/foss/release/app-foss-universal-release*.apk
+          path: app/build/outputs/apk/github/release/app-github-universal-release*.apk
           if-no-files-found: error
           retention-days: 14
           compression-level: 0
@@ -189,7 +189,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: milkbeat-arm64-release-apk
-          path: app/build/outputs/apk/foss/release/app-foss-arm64-v8a-release*.apk
+          path: app/build/outputs/apk/github/release/app-github-arm64-v8a-release*.apk
           if-no-files-found: error
           retention-days: 14
           compression-level: 0
@@ -198,7 +198,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: milkbeat-armeabi-v7a-release-apk
-          path: app/build/outputs/apk/foss/release/app-foss-armeabi-v7a-release*.apk
+          path: app/build/outputs/apk/github/release/app-github-armeabi-v7a-release*.apk
           if-no-files-found: error
           retention-days: 14
           compression-level: 0
@@ -232,9 +232,9 @@ jobs:
       - name: Rename APKs for release
         run: |
           set -euo pipefail
-          mv dist/app-foss-universal-release.apk     dist/milkbeat-universal.apk
-          mv dist/app-foss-arm64-v8a-release.apk     dist/milkbeat-arm64-v8a.apk
-          mv dist/app-foss-armeabi-v7a-release.apk   dist/milkbeat-armeabi-v7a.apk
+          mv dist/app-github-universal-release.apk     dist/milkbeat-universal.apk
+          mv dist/app-github-arm64-v8a-release.apk     dist/milkbeat-arm64-v8a.apk
+          mv dist/app-github-armeabi-v7a-release.apk   dist/milkbeat-armeabi-v7a.apk
           # Downloader code 4718521 and older links point at the MusicViz-era name; keep serving it.
           cp dist/milkbeat-universal.apk dist/musicviz-universal.apk
           cd dist && sha256sum milkbeat*.apk > checksums.txt && cat checksums.txt

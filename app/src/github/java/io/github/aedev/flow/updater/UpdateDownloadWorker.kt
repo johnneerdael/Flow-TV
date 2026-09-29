@@ -18,6 +18,8 @@ import io.github.aedev.flow.R
 import io.github.aedev.flow.data.update.UpdateEntryPoint
 import io.github.aedev.flow.data.update.UpdateFailure
 import io.github.aedev.flow.notification.NotificationHelper
+import io.github.aedev.flow.platform.DeviceFormFactor
+import io.github.aedev.flow.platform.DeviceFormFactorDetector
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
@@ -26,6 +28,7 @@ import okhttp3.Request
 import java.io.File
 import java.io.IOException
 import java.security.MessageDigest
+import java.util.concurrent.TimeUnit
 
 private const val PROGRESS_NOTIFICATION_ID = 9998
 private const val READY_NOTIFICATION_ID = 9999
@@ -36,8 +39,8 @@ private const val PERCENT = 100
 
 /**
  * Downloads one release APK in the foreground, hashing it as it arrives. The file is kept only if
- * its SHA-256 matches the digest GitHub published and it is a Flow package; anything else is
- * deleted and reported as a failure.
+ * its SHA-256 matches the release's checksum listing and it is this app's package; anything else,
+ * or a release without a checksum, is deleted and reported as a failure.
  */
 class UpdateDownloadWorker(
     context: Context,
@@ -50,17 +53,13 @@ class UpdateDownloadWorker(
     override suspend fun doWork(): Result =
         withContext(Dispatchers.IO) {
             val url = inputData.getString(KEY_URL) ?: return@withContext fail(UpdateFailure.NETWORK)
-            val expectedSha = inputData.getString(KEY_SHA256)
+            val expectedSha = inputData.getString(KEY_SHA256) ?: return@withContext fail(UpdateFailure.CHECKSUM)
             setForeground(foregroundInfo(null))
             val part = UpdateFiles.partFile(applicationContext, version)
             try {
                 val actualSha = download(url, part)
                 setProgress(workDataOf(KEY_PHASE to PHASE_VERIFY))
-                if (expectedSha != null &&
-                    !expectedSha.equals(actualSha, ignoreCase = true)
-                ) {
-                    return@withContext fail(UpdateFailure.CHECKSUM, part)
-                }
+                if (!expectedSha.equals(actualSha, ignoreCase = true)) return@withContext fail(UpdateFailure.CHECKSUM, part)
                 if (!isFlowPackage(part)) return@withContext fail(UpdateFailure.PACKAGE, part)
                 if (!part.renameTo(UpdateFiles.apkFile(applicationContext, version))) return@withContext fail(UpdateFailure.STORAGE, part)
                 notifyReady()
@@ -80,6 +79,8 @@ class UpdateDownloadWorker(
                 .okHttpClient()
                 .newBuilder()
                 .cache(null)
+                // The shared client's call timeout covers the whole body; a full APK on slow Wi-Fi takes longer.
+                .callTimeout(0, TimeUnit.SECONDS)
                 .build()
         val digest = MessageDigest.getInstance("SHA-256")
         client.newCall(Request.Builder().url(url).build()).execute().use { response ->
@@ -146,6 +147,8 @@ class UpdateDownloadWorker(
     }
 
     private fun notifyReady() {
+        // On TV the app says so itself while it is open, and the TV shell has no route for the tap.
+        if (DeviceFormFactorDetector.detect(applicationContext) == DeviceFormFactor.TV) return
         val open =
             Intent(applicationContext, MainActivity::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)

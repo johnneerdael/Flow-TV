@@ -20,9 +20,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.compose.rememberNavController
+import io.github.aedev.flow.R
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.player.EnhancedMusicPlayerManager
@@ -34,9 +38,11 @@ import io.github.aedev.flow.ui.tv.music.TvMusicNowPlayingScreen
 import io.github.aedev.flow.ui.tv.music.TvVisualizerViewModel
 import io.github.aedev.flow.ui.tv.music.rememberTvNowPlayingVisual
 import io.github.aedev.flow.ui.tv.screens.TvPlayerScreen
+import io.github.aedev.flow.ui.tv.screens.settings.TvUpdatesViewModel
 import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 import io.github.aedev.flow.ui.tv.theme.TvTheme
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
@@ -81,6 +87,22 @@ fun FlowTvApp(
         EnhancedMusicPlayerManager.playbackWarnings.collectLatest { message ->
             snackbarHostState.currentSnackbarData?.dismiss()
             snackbarHostState.showSnackbar(message = message, duration = SnackbarDuration.Long)
+        }
+    }
+
+    val updatesViewModel: TvUpdatesViewModel = hiltViewModel(activity)
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            launch { updatesViewModel.checkWhileForeground() }
+            // Only a notice the user saw counts as shown; one that lands while the app is away waits for its return.
+            updatesViewModel.readyToInstall.collect { version ->
+                snackbarHostState.showSnackbar(
+                    message = context.getString(R.string.tv_update_ready, version),
+                    duration = SnackbarDuration.Long,
+                )
+                updatesViewModel.markAnnounced(version)
+            }
         }
     }
 

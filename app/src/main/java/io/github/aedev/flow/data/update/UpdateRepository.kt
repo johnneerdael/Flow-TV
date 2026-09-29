@@ -1,6 +1,5 @@
 package io.github.aedev.flow.data.update
 
-import android.os.Build
 import io.github.aedev.flow.BuildConfig
 import io.github.aedev.flow.data.local.LocalDataManager
 import kotlinx.coroutines.Dispatchers
@@ -18,9 +17,6 @@ import java.io.IOException
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
-
-private const val RELEASES_API = "https://api.github.com/repos/johnneerdael/Milkbeat/releases/latest"
-private const val GITHUB_JSON = "application/vnd.github+json"
 
 /** Where an automatic check may surface a release; each announces a version once. */
 enum class UpdateAnnouncement { LAUNCH_PAGE, NOTIFICATION }
@@ -42,7 +38,7 @@ internal object UpdateSchedule {
 }
 
 /**
- * The one place Flow asks GitHub about releases. The launch check, the background worker and the
+ * The one place Milkbeat asks GitHub about releases. The launch check, the background worker and the
  * Settings button all come through here, so a cold start never fetches twice and a skipped version
  * stays skipped everywhere.
  */
@@ -91,23 +87,44 @@ class UpdateRepository
         suspend fun skip(version: String) = dataManager.setSkippedUpdateVersion(version)
 
         private suspend fun fetchLocked(): AppRelease? {
-            val body =
+            val release =
                 withContext(Dispatchers.IO) {
-                    val request =
-                        Request
-                            .Builder()
-                            .url(RELEASES_API)
-                            .header("Accept", GITHUB_JSON)
-                            .cacheControl(CacheControl.FORCE_NETWORK)
-                            .build()
-                    client.newCall(request).execute().use { response ->
-                        if (!response.isSuccessful) throw IOException("Update check failed: HTTP ${response.code}")
-                        response.body.string()
-                    }
+                    val tag = latestTag()
+                    if (!AppVersions.isNewer(tag, BuildConfig.VERSION_NAME)) return@withContext null
+                    val checksums = get(releaseAssetUrl(tag, RELEASE_CHECKSUMS))
+                    val sha256 = releaseChecksum(checksums, RELEASE_APK) ?: throw IOException("No checksum for $RELEASE_APK in $tag")
+                    releaseIfNewer(tag, BuildConfig.VERSION_NAME, sha256)
                 }
-            val release = parseGitHubRelease(body).toAppReleaseIfNewer(BuildConfig.VERSION_NAME, Build.SUPPORTED_ABIS.toList())
             dataManager.setLastUpdateCheck(System.currentTimeMillis())
             _latest.value = release
             return release
+        }
+
+        /** The newest tag, read from where the stable APK link redirects; nothing is downloaded. */
+        private fun latestTag(): String {
+            val request =
+                Request
+                    .Builder()
+                    .url(LATEST_RELEASE_APK_URL)
+                    .head()
+                    .cacheControl(CacheControl.FORCE_NETWORK)
+                    .build()
+            return client.newBuilder().followRedirects(false).build().newCall(request).execute().use { response ->
+                releaseTagFromRedirect(response.header("Location"))
+                    ?: throw IOException("Update check failed: HTTP ${response.code} without a release redirect")
+            }
+        }
+
+        private fun get(url: String): String {
+            val request =
+                Request
+                    .Builder()
+                    .url(url)
+                    .cacheControl(CacheControl.FORCE_NETWORK)
+                    .build()
+            return client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("Update check failed: HTTP ${response.code}")
+                response.body.string()
+            }
         }
     }

@@ -62,6 +62,9 @@ fun TvAboutSettingsPane(modifier: Modifier = Modifier) {
             item(key = "identity") {
                 TvAboutIdentity()
             }
+            item(key = "updates") {
+                TvUpdateSettings()
+            }
 
             item(key = "app-header") {
                 TvAboutSectionHeader(stringResource(R.string.section_app))

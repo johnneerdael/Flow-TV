@@ -45,6 +45,7 @@ class LocalDataManager
             private val UPDATE_SKIPPED_VERSION = stringPreferencesKey("update_skipped_version")
             private val UPDATE_PROMPTED_VERSION = stringPreferencesKey("update_prompted_version")
             private val UPDATE_NOTIFIED_VERSION = stringPreferencesKey("update_notified_version")
+            private val UPDATE_AUTOMATIC = booleanPreferencesKey("update_automatic")
             private val BEDTIME_REMINDER =
                 androidx.datastore.preferences.core
                     .booleanPreferencesKey("bedtime_reminder")
@@ -115,6 +116,13 @@ class LocalDataManager
 
         suspend fun setNotifiedUpdateVersion(version: String) {
             context.dataStore.edit { it[UPDATE_NOTIFIED_VERSION] = version }
+        }
+
+        /** Whether new releases download by themselves and are offered for install; on unless switched off. */
+        val automaticUpdates: Flow<Boolean> = context.dataStore.data.map { it[UPDATE_AUTOMATIC] ?: true }
+
+        suspend fun setAutomaticUpdates(enabled: Boolean) {
+            context.dataStore.edit { it[UPDATE_AUTOMATIC] = enabled }
         }
 
         // Theme Settings
