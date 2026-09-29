@@ -15,11 +15,16 @@ import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -199,10 +204,17 @@ private fun LazyListScope.consentItems(
         }
     }
     item(key = "consent-actions") {
+        // A plugin link opens this from outside the app, with focus nowhere near it.
+        val installFocus = remember { FocusRequester() }
+        LaunchedEffect(pending) {
+            withFrameNanos { }
+            runCatching { installFocus.requestFocus() }
+        }
         Row(modifier = Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             TvButton(
                 text = stringResource(if (pending.isUpdate) R.string.tv_plugins_update else R.string.tv_plugins_install),
                 onClick = onInstall,
+                modifier = Modifier.focusRequester(installFocus),
             )
             TvButton(text = stringResource(R.string.cancel), onClick = onCancel)
         }

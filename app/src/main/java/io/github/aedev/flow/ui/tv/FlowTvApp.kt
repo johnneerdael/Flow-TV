@@ -61,7 +61,14 @@ fun FlowTvApp(
     val navController = rememberNavController()
     // A plugin link opens Settings, where Plugins picks it up and asks the listener.
     LaunchedEffect(pluginLinkPending) {
-        if (pluginLinkPending) navController.navigate(TvDestination.SETTINGS.route) { launchSingleTop = true }
+        if (pluginLinkPending) {
+            // Exactly as the rail opens a tab, or the tabs' saved states no longer match the rail.
+            navController.navigate(TvDestination.SETTINGS.route) {
+                popUpTo(TvDestination.start.route) { saveState = true }
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
     }
     val activeVideo by GlobalPlayerState.currentVideo.collectAsStateWithLifecycle()
     val activeMusicTrack by EnhancedMusicPlayerManager.currentTrack.collectAsStateWithLifecycle()
