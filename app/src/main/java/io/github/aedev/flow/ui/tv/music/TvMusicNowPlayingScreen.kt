@@ -391,6 +391,7 @@ fun TvMusicNowPlayingScreen(
         TvMusicQueuePanel(
             visible = panel == TvMusicPanel.QUEUE,
             manager = manager,
+            onPlayRadioTrack = viewModel::playRadioTrack,
             onClose = { panel = TvMusicPanel.NONE },
         )
     }
