@@ -1887,25 +1887,16 @@
         },
         "nl.neerdael.milkbeat.plugin.BrowserOpenRequest": {
             "type": "object",
-            "required": [],
+            "required": [
+                "html",
+                "baseUrl"
+            ],
             "properties": {
-                "url": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
                 "html": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "baseUrl": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "timeoutMs": {
                     "type": [

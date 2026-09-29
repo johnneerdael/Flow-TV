@@ -150,6 +150,8 @@ android {
 
     sourceSets {
         getByName("androidTest").assets.directories.add("$projectDir/schemas")
+        // The fixture plugin, built by `npm run build` in plugins/fixture, for the plugin host tests.
+        getByName("androidTest").assets.directories.add("$rootDir/plugins/fixture/build")
     }
 
     compileOptions {
@@ -204,6 +206,7 @@ composeCompiler {
 dependencies {
     implementation(project(":projectm-core"))
     implementation(project(":plugin-api"))
+    implementation(libs.quickjs.kt)
     // --- Core Android ---
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)

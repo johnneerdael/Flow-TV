@@ -110,13 +110,13 @@ data class LogRequest(
 
 /**
  * A hidden web view for pages only a browser can run, such as a provider's attestation script. It
- * loads [html] from the plugin's assets with [baseUrl] as its origin, or navigates to [url].
+ * loads [html] from the plugin's assets with [baseUrl] (an origin in `permissions.browser`) as its
+ * origin. The page cannot reach the network: the plugin fetches through `mb.http` and passes data in.
  */
 @Serializable
 data class BrowserOpenRequest(
-    val url: String? = null,
-    val html: String? = null,
-    val baseUrl: String? = null,
+    val html: String,
+    val baseUrl: String,
     val timeoutMs: Long? = null,
 )
 

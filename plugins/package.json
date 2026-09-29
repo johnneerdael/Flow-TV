@@ -2,6 +2,12 @@
   "name": "milkbeat-plugins",
   "private": true,
   "type": "module",
-  "workspaces": ["sdk"],
-  "engines": { "node": ">=22" }
+  "workspaces": [
+    "sdk",
+    "cli",
+    "fixture"
+  ],
+  "engines": {
+    "node": ">=22"
+  }
 }

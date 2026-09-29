@@ -630,9 +630,8 @@ export interface LogRequest {
   message: string;
 }
 export interface BrowserOpenRequest {
-  url?: string | null;
-  html?: string | null;
-  baseUrl?: string | null;
+  html: string;
+  baseUrl: string;
   timeoutMs?: number | null;
 }
 export interface BrowserSession {

@@ -55,3 +55,4 @@ debug/
 
 # Plugin tooling
 node_modules/
+plugins/*/build/
