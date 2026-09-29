@@ -5,7 +5,8 @@
   "workspaces": [
     "sdk",
     "cli",
-    "fixture"
+    "fixture",
+    "youtube-music"
   ],
   "engines": {
     "node": ">=22"

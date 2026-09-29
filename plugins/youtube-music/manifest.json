@@ -1,0 +1,50 @@
+{
+  "format": 1,
+  "api": { "min": 1, "target": 1 },
+  "id": "nl.neerdael.youtube-music",
+  "name": "YouTube Music",
+  "version": "0.1.0",
+  "versionCode": 1,
+  "description": "YouTube Music and YouTube: home, search, artist, album and playlist pages, radio, music videos and videos.",
+  "author": { "name": "Milkbeat", "url": "https://github.com/johnneerdael/Milkbeat" },
+  "updateUrl": "https://github.com/johnneerdael/Milkbeat/releases/latest/download/youtube-music.mbplugin",
+  "roles": {
+    "metadata": {
+      "surfaces": ["HOME", "SEARCH", "SUGGEST", "ENTITY", "TRACKS", "LIBRARY", "RADIO"],
+      "entities": ["TRACK", "MUSIC_VIDEO", "ALBUM", "PLAYLIST", "ARTIST", "PROFILE", "MIX", "RADIO"],
+      "idSpace": "ytm"
+    },
+    "audio": { "idSpaces": ["ytm", "yt"], "radio": true, "musicVideo": true, "reportPlayback": true },
+    "video": {
+      "idSpace": "yt",
+      "surfaces": ["SEARCH", "SUGGEST", "CHANNEL", "PLAYLIST", "RELATED", "COMMENTS", "LIVE_CHAT"],
+      "live": true
+    }
+  },
+  "signIn": [
+    {
+      "type": "webLogin",
+      "id": "google",
+      "label": "Sign in with Google",
+      "startUrl": "https://accounts.google.com/ServiceLogin?continue=https%3A%2F%2Fmusic.youtube.com",
+      "successUrlPrefix": "https://music.youtube.com",
+      "cookieUrl": "https://music.youtube.com",
+      "requiredCookies": ["SAPISID"],
+      "extractScript": "({visitorData: String((window.ytcfg && ytcfg.get && ytcfg.get('VISITOR_DATA')) || (window.yt && yt.config_ && yt.config_.VISITOR_DATA) || ''), dataSyncId: String((window.ytcfg && ytcfg.get && ytcfg.get('DATASYNC_ID')) || (window.yt && yt.config_ && yt.config_.DATASYNC_ID) || '')})"
+    }
+  ],
+  "permissions": {
+    "network": [
+      "music.youtube.com",
+      "www.youtube.com",
+      "*.googlevideo.com",
+      "*.ytimg.com",
+      "*.ggpht.com",
+      "*.googleusercontent.com",
+      "sponsor.ajay.app"
+    ],
+    "browser": ["www.youtube.com"],
+    "storage": 2097152
+  },
+  "settings": []
+}

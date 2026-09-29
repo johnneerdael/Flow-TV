@@ -1,0 +1,20 @@
+{
+  "name": "@milkbeat/youtube-music",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "YouTube Music and YouTube for Milkbeat: home, search, pages, radio, music videos and videos.",
+  "scripts": {
+    "build": "mbplugin build .",
+    "pack": "mbplugin build . && mbplugin pack . --key \"${MBPLUGIN_KEY:-../../../.secrets/milkbeat-plugins/plugins-signing.pem}\"",
+    "check": "tsc --noEmit -p .",
+    "test": "mbplugin build . && node --test test/"
+  },
+  "dependencies": {
+    "@milkbeat/mbplugin": "1.0.0",
+    "@milkbeat/plugin-sdk": "1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2"
+  }
+}
