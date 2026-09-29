@@ -17,14 +17,14 @@ import io.github.aedev.flow.ui.screens.music.CatalogPageViewModel
 import io.github.aedev.flow.ui.screens.music.sharedMusicViewModel
 import io.github.aedev.flow.ui.screens.search.SearchViewModel
 import io.github.aedev.flow.ui.tv.screens.TvCatalogPageScreen
-import io.github.aedev.flow.ui.tv.screens.TvChannelScreen
 import io.github.aedev.flow.ui.tv.screens.TvLibraryScreen
 import io.github.aedev.flow.ui.tv.screens.TvMusicCollectionScreen
 import io.github.aedev.flow.ui.tv.screens.TvMusicScreen
-import io.github.aedev.flow.ui.tv.screens.TvPlaylistDetailScreen
 import io.github.aedev.flow.ui.tv.screens.TvSearchScreen
 import io.github.aedev.flow.ui.tv.screens.TvSettingsScreen
 import io.github.aedev.flow.ui.tv.screens.account.TvAccountSignInScreen
+import io.github.aedev.flow.ui.tv.screens.channel.TvChannelScreen
+import io.github.aedev.flow.ui.tv.screens.playlist.TvPlaylistDetailScreen
 import nl.neerdael.milkbeat.catalog.EntityRef
 
 /** Top-level TV navigation graph plus detail routes (channel, …). */
@@ -130,14 +130,8 @@ fun TvNavHost(
                         defaultValue = ""
                     },
                 ),
-        ) { entry ->
-            val channelRef =
-                entry.arguments
-                    ?.getString(TvRoutes.CHANNEL_ARG)
-                    ?.let { java.net.URLDecoder.decode(it, "UTF-8") }
-                    .orEmpty()
+        ) {
             TvChannelScreen(
-                channelUrl = channelRef,
                 onVideoClick = onPlayVideo,
                 onOpenPlaylist = { navController.navigate(TvRoutes.playlist(it)) },
                 modifier = Modifier.fillMaxSize(),
