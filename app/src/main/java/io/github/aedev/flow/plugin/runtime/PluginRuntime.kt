@@ -1,5 +1,6 @@
 package io.github.aedev.flow.plugin.runtime
 
+import android.os.SystemClock
 import android.util.Log
 import com.dokar.quickjs.QuickJs
 import com.dokar.quickjs.QuickJsException
@@ -109,9 +110,11 @@ internal class PluginRuntime(
     /** Runs the plugin's warm-up, if it has one, in a context of its own that is gone afterwards. */
     suspend fun warmUp() {
         if (disabled) return
+        val startedMs = SystemClock.elapsedRealtime()
         val warm = start(WARM_UP_MEMORY_LIMIT, WARM_UP_TIMEOUT_MS)
         try {
             invoke(warm.js, PluginOperations.warmUp, Unit, WARM_UP_TIMEOUT_MS)
+            Log.i(TAG, "Warm-up of ${plugin.id} took ${SystemClock.elapsedRealtime() - startedMs} ms")
         } catch (e: PluginCallException) {
             if (e.error.code != PluginErrorCode.UNSUPPORTED) Log.w(TAG, "Warm-up of ${plugin.id} failed: ${e.error.message}")
         } finally {
