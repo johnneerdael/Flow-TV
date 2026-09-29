@@ -1,37 +1,46 @@
 package io.github.aedev.flow.data.account.signin
 
-import io.github.aedev.flow.data.account.AccountSession
-import io.github.aedev.flow.innertube.utils.parseCookieString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import nl.neerdael.milkbeat.plugin.WebLoginMethod
 
 internal object SignInCapture {
-    private const val MUSIC_ORIGIN = "https://music.youtube.com/"
-
-    fun hasSession(cookie: String?): Boolean = cookie != null && "SAPISID" in parseCookieString(cookie)
-
-    fun isYouTubeMusic(url: String?): Boolean = url != null && (url == MUSIC_ORIGIN.dropLast(1) || url.startsWith(MUSIC_ORIGIN))
-
-    fun parseYtcfg(raw: String?): Pair<String?, String?> {
-        val inner = runCatching { Json.parseToJsonElement(raw.orEmpty()).jsonPrimitive.contentOrNull }.getOrNull() ?: return null to null
-        val obj = runCatching { Json.parseToJsonElement(inner).jsonObject }.getOrNull() ?: return null to null
-        return obj["v"]?.jsonPrimitive?.contentOrNull to obj["d"]?.jsonPrimitive?.contentOrNull
+    /** Whether [url] is under the method's success prefix, and not a host that merely starts with it. */
+    fun isSuccessPage(
+        url: String?,
+        method: WebLoginMethod,
+    ): Boolean {
+        val prefix = method.successUrlPrefix
+        if (url == null || !url.startsWith(prefix)) return false
+        return url.length == prefix.length || prefix.endsWith("/") || url[prefix.length] in "/?#"
     }
 
-    fun session(
-        cookie: String,
-        visitorData: String?,
-        rawDataSyncId: String?,
-    ): AccountSession =
-        AccountSession(
-            cookie = cookie,
-            visitorData = visitorData?.takeIf { it.isNotBlank() },
-            dataSyncId = rawDataSyncId?.takeIf { it.isNotBlank() }?.substringBefore("||"),
-        )
+    fun hasRequiredCookies(
+        cookie: String?,
+        method: WebLoginMethod,
+    ): Boolean {
+        val names =
+            cookie
+                ?.split(';')
+                .orEmpty()
+                .map { it.substringBefore('=').trim() }
+                .toSet()
+        return cookie != null && method.requiredCookies.all { it in names }
+    }
+
+    /** The plugin's extraction script, turned into JSON text the web view hands back as a string. */
+    fun extractionScript(method: WebLoginMethod): String = "JSON.stringify(${method.extractScript ?: "{}"})"
+
+    /** The extracted values from `evaluateJavascript` output, which wraps the JSON text in a string. */
+    fun parseExtracted(raw: String?): Map<String, String> {
+        val inner = runCatching { Json.parseToJsonElement(raw.orEmpty()).jsonPrimitive.contentOrNull }.getOrNull() ?: return emptyMap()
+        val obj = runCatching { Json.parseToJsonElement(inner).jsonObject }.getOrNull() ?: return emptyMap()
+        return obj.mapNotNull { (key, value) -> (value as? JsonPrimitive)?.contentOrNull?.let { key to it } }.toMap()
+    }
 
     /**
      * Marks the page's visible buttons, links and checkboxes (footer links aside) with their index and

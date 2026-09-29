@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
@@ -38,6 +39,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import io.github.aedev.flow.R
 import kotlinx.coroutines.flow.drop
@@ -56,6 +58,10 @@ fun TvSearchField(
     onSearch: () -> Unit,
     modifier: Modifier = Modifier,
     onVoice: (() -> Unit)? = null,
+    placeholder: String = stringResource(R.string.tv_search_prompt),
+    leadingIcon: ImageVector = Icons.Outlined.Search,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    imeAction: ImeAction = ImeAction.Search,
 ) {
     val keyboard = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
@@ -130,11 +136,11 @@ fun TvSearchField(
                         if (event.type == KeyEventType.KeyDown) focusManager.moveFocus(leave)
                         true
                     },
-            placeholder = { Text(stringResource(R.string.tv_search_prompt)) },
-            leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
+            placeholder = { Text(placeholder) },
+            leadingIcon = { Icon(leadingIcon, contentDescription = null) },
             lineLimits = TextFieldLineLimits.SingleLine,
             shape = MaterialTheme.shapes.extraLarge,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search, showKeyboardOnFocus = typing),
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction, showKeyboardOnFocus = typing),
             onKeyboardAction = {
                 keyboard?.hide()
                 typing = false

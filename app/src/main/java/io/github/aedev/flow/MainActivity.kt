@@ -27,6 +27,7 @@ import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.core.content.IntentCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.aedev.flow.data.local.AppUiModePreferences
@@ -44,6 +45,7 @@ import io.github.aedev.flow.player.GlobalPlayerState
 import io.github.aedev.flow.player.LifecyclePlaybackPreferences
 import io.github.aedev.flow.player.MemoryPressurePolicy
 import io.github.aedev.flow.player.PictureInPictureHelper
+import io.github.aedev.flow.plugin.install.PluginLinks
 import io.github.aedev.flow.ui.FlowApp
 import io.github.aedev.flow.ui.components.library.message
 import io.github.aedev.flow.ui.components.shared.ProvideChannelGroupLabels
@@ -94,6 +96,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var playlistTransfer: dagger.Lazy<PlaylistTransfer>
+
+    @Inject
+    lateinit var pluginLinks: PluginLinks
 
     // A recreated activity gets its launch intent again; a playlist file in it was already imported.
     private var isRestoringState = false
@@ -264,10 +269,12 @@ class MainActivity : ComponentActivity() {
 
                                 if (appUiRoot == AppUiRoot.TV) {
                                     SideEffect { splashController.contentReady = true }
+                                    val pluginLink by pluginLinks.pending.collectAsStateWithLifecycle()
                                     FlowTvApp(
                                         deeplinkVideoId = deeplinkVideoId,
                                         isShort = isDeeplinkShort,
                                         onDeeplinkConsumed = { consumeDeeplink() },
+                                        pluginLinkPending = pluginLink != null,
                                     )
                                 } else {
                                     ProvideChannelGroupLabels {
@@ -355,6 +362,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handleIntent(intent: Intent) {
+        if (pluginLinks.offer(intent.data)) return
         if (intent.getBooleanExtra(NotificationHelper.EXTRA_OPEN_UPDATE, false)) {
             intent.removeExtra(NotificationHelper.EXTRA_OPEN_UPDATE)
             _pendingRoute.value = UPDATE_ROUTE

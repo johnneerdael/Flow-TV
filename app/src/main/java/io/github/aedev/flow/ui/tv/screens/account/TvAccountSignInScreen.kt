@@ -46,9 +46,16 @@ fun TvAccountSignInScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val supported = remember { loginProfileSupported() }
+    val method = viewModel.method
     val controller =
-        remember(supported) {
-            if (supported) LoginWebViewController(context, viewModel::onPageTitle, viewModel::onSessionCaptured) else null
+        remember(supported, method) {
+            if (supported &&
+                method != null
+            ) {
+                LoginWebViewController(context, viewModel::onPageTitle, method, viewModel::onCaptured)
+            } else {
+                null
+            }
         }
     DisposableEffect(controller) { onDispose { controller?.destroy() } }
     LaunchedEffect(state) { if (state == AccountSignInState.Starting) viewModel.start(supported) }
@@ -149,6 +156,11 @@ private fun TvAccountSignInPanel(
 
             AccountSignInState.TimedOut -> {
                 TvMessageState(title = stringResource(R.string.tv_account_sign_in_timed_out))
+                TvButton(text = stringResource(R.string.retry), onClick = onRetry, modifier = Modifier.tvInitialFocus(state))
+            }
+
+            is AccountSignInState.Failed -> {
+                TvMessageState(title = state.message)
                 TvButton(text = stringResource(R.string.retry), onClick = onRetry, modifier = Modifier.tvInitialFocus(state))
             }
 

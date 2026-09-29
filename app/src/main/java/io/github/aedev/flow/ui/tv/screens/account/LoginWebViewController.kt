@@ -10,32 +10,29 @@ import android.webkit.WebViewClient
 import androidx.webkit.ProfileStore
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
-import io.github.aedev.flow.data.account.AccountSession
 import io.github.aedev.flow.data.account.signin.PhoneKey
 import io.github.aedev.flow.data.account.signin.SignInCapture
 import kotlinx.coroutines.suspendCancellableCoroutine
+import nl.neerdael.milkbeat.plugin.WebLoginMethod
+import nl.neerdael.milkbeat.plugin.WebLoginResult
 import kotlin.coroutines.resume
 
 internal const val LOGIN_PROFILE = "flow-account-signin"
-private const val LOGIN_URL = "https://accounts.google.com/ServiceLogin?continue=https%3A%2F%2Fmusic.youtube.com"
-private const val MUSIC_URL = "https://music.youtube.com"
-private const val YTCFG_SCRIPT =
-    "JSON.stringify({" +
-        "v: (window.ytcfg && ytcfg.get && ytcfg.get('VISITOR_DATA')) || (window.yt && yt.config_ && yt.config_.VISITOR_DATA) || null," +
-        "d: (window.ytcfg && ytcfg.get && ytcfg.get('DATASYNC_ID')) || (window.yt && yt.config_ && yt.config_.DATASYNC_ID) || null" +
-        "})"
 
 internal fun loginProfileSupported(): Boolean = WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE)
 
 /**
- * Google sign-in in its own WebView profile. The default profile's cookie store is shared with the
- * PoToken and cipher WebViews that playback depends on, so the login must never touch it.
+ * A plugin's web sign-in ([method]) in its own WebView profile, so the login never touches the
+ * default profile's cookies. Once a page under the method's success prefix has loaded with every
+ * required cookie set, the cookies and the method's extracted values go to [onCaptured] and the
+ * profile is wiped.
  */
 @SuppressLint("SetJavaScriptEnabled")
 internal class LoginWebViewController(
     context: Context,
     private val onPageTitle: (String) -> Unit,
-    private val onSessionCaptured: (AccountSession) -> Unit,
+    private val method: WebLoginMethod,
+    private val onCaptured: (WebLoginResult) -> Unit,
 ) {
     val webView: WebView = WebView(context)
     private val cookies: CookieManager
@@ -56,10 +53,10 @@ internal class LoginWebViewController(
                     url: String?,
                 ) {
                     onPageTitle(view.title.orEmpty())
-                    if (!captured && SignInCapture.isYouTubeMusic(url)) capture()
+                    if (!captured && SignInCapture.isSuccessPage(url, method)) capture()
                 }
             }
-        webView.loadUrl(LOGIN_URL)
+        webView.loadUrl(method.startUrl)
     }
 
     /** Suspends until the text is in the page, so a following key press can never overtake it. */
@@ -113,12 +110,11 @@ internal class LoginWebViewController(
     }
 
     private fun capture() {
-        val cookie = cookies.getCookie(MUSIC_URL)
-        if (cookie == null || !SignInCapture.hasSession(cookie)) return
+        val cookie = cookies.getCookie(method.cookieUrl)
+        if (cookie == null || !SignInCapture.hasRequiredCookies(cookie, method)) return
         captured = true
-        webView.evaluateJavascript(YTCFG_SCRIPT) { raw ->
-            val (visitorData, dataSyncId) = SignInCapture.parseYtcfg(raw)
-            onSessionCaptured(SignInCapture.session(cookie, visitorData, dataSyncId))
+        webView.evaluateJavascript(SignInCapture.extractionScript(method)) { raw ->
+            onCaptured(WebLoginResult(method = method.id, cookies = cookie, extracted = SignInCapture.parseExtracted(raw)))
             cookies.removeAllCookies(null)
             cookies.flush()
         }

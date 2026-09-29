@@ -1,15 +1,16 @@
 package io.github.aedev.flow.ui.screens.account
 
 import android.util.Log
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.github.aedev.flow.data.account.AccountFeedClient
-import io.github.aedev.flow.data.account.AccountSession
-import io.github.aedev.flow.data.account.AccountSessionStore
 import io.github.aedev.flow.data.account.signin.PhoneChannel
 import io.github.aedev.flow.data.account.signin.PhoneInput
 import io.github.aedev.flow.data.account.signin.PhoneStatus
+import io.github.aedev.flow.plugin.catalog.PluginAccounts
+import io.github.aedev.flow.plugin.registry.PluginRegistry
+import io.github.aedev.flow.plugin.runtime.PluginCallException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -19,8 +20,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import nl.neerdael.milkbeat.catalog.ProviderAccount
+import nl.neerdael.milkbeat.plugin.WebLoginMethod
+import nl.neerdael.milkbeat.plugin.WebLoginResult
 import java.io.IOException
 import javax.inject.Inject
+
+/** Navigation arguments of the sign-in route. */
+const val PLUGIN_ARG = "pluginId"
+const val METHOD_ARG = "methodId"
 
 fun interface LanAddressProvider {
     fun resolve(): String?
@@ -57,17 +65,38 @@ sealed interface AccountSignInState {
     data class SignedIn(
         val accountName: String?,
     ) : AccountSignInState
+
+    /** The plugin did not accept the sign-in. */
+    data class Failed(
+        val message: String,
+    ) : AccountSignInState
 }
 
+/**
+ * A plugin's web sign-in, driven from the listener's phone: the TV shows the provider's login page,
+ * the phone types and taps through it, and what the page yields goes to the plugin to keep.
+ */
 @HiltViewModel
 class AccountSignInViewModel
     @Inject
     constructor(
-        private val store: AccountSessionStore,
-        private val feeds: AccountFeedClient,
+        savedStateHandle: SavedStateHandle,
+        registry: PluginRegistry,
+        private val accounts: PluginAccounts,
         private val lan: LanAddressProvider,
         private val launcher: PhoneServerLauncher,
     ) : ViewModel() {
+        private val pluginId: String = checkNotNull(savedStateHandle[PLUGIN_ARG])
+
+        /** The sign-in the plugin declared under the route's method id, or null when it has none. */
+        val method: WebLoginMethod? =
+            registry.state.value
+                .plugin(pluginId)
+                ?.manifest
+                ?.signIn
+                ?.filterIsInstance<WebLoginMethod>()
+                ?.firstOrNull { it.id == savedStateHandle.get<String>(METHOD_ARG) }
+
         private val _state = MutableStateFlow<AccountSignInState>(AccountSignInState.Starting)
         val state: StateFlow<AccountSignInState> = _state.asStateFlow()
 
@@ -86,7 +115,7 @@ class AccountSignInViewModel
 
         fun start(loginSupported: Boolean) {
             if (_state.value != AccountSignInState.Starting || channel != null) return
-            if (!loginSupported) {
+            if (!loginSupported || method == null) {
                 _state.value = AccountSignInState.Unsupported
                 return
             }
@@ -125,16 +154,19 @@ class AccountSignInViewModel
             actions = labels
         }
 
-        fun onSessionCaptured(session: AccountSession) {
+        fun onCaptured(result: WebLoginResult) {
             viewModelScope.launch {
                 done = true
                 timeoutJob?.cancel()
-                store.save(session)
-                val name = feeds.accountInfo().getOrNull()?.name
-                if (name != null) store.save(session.copy(accountName = name))
+                val next =
+                    try {
+                        AccountSignInState.SignedIn((accounts.complete(pluginId, result) as? ProviderAccount.SignedIn)?.name)
+                    } catch (e: PluginCallException) {
+                        AccountSignInState.Failed(e.error.userMessage ?: e.error.message)
+                    }
                 delay(STATUS_GRACE_MS)
                 stopServer()
-                _state.value = AccountSignInState.SignedIn(name)
+                _state.value = next
             }
         }
 

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.aedev.flow.data.catalog.CatalogPlayback
 import io.github.aedev.flow.data.music.model.MusicTrack
+import io.github.aedev.flow.plugin.catalog.listenerMessage
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
@@ -102,7 +103,7 @@ class MusicHomeFeedViewModel
                         page(HomeRequest(filterId = filterId)).getOrElse { error ->
                             Log.w(TAG, "home failed", error)
                             loadedAtMs = 0L
-                            _state.update { it.copy(isLoading = false, error = error.message) }
+                            _state.update { it.copy(isLoading = false, error = error.listenerMessage) }
                             return@launch
                         }
                     _state.update {

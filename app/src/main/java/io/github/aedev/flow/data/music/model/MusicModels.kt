@@ -42,6 +42,10 @@ data class MusicTrack(
     val albumId: String? = null,
     val artists: List<MusicArtist> = emptyList(),
     val itemType: MusicItemType = MusicItemType.SONG,
+    /** The plugin that described this track; its audio plugins resolve it from [descriptor]. */
+    val provider: String? = null,
+    /** The plugin's `TrackDescriptor`, as PluginJson text, so the queue survives a restart intact. */
+    val descriptor: String? = null,
 ) {
     val highResThumbnailUrl: String
         get() = ThumbnailUrlResolver.resolveMusicThumbnail(videoId, thumbnailUrl, 1080)

@@ -9,6 +9,7 @@ import io.github.aedev.flow.data.catalog.CatalogPlayback
 import io.github.aedev.flow.data.local.ChannelSubscription
 import io.github.aedev.flow.data.local.SubscriptionRepository
 import io.github.aedev.flow.data.music.model.MusicTrack
+import io.github.aedev.flow.plugin.catalog.listenerMessage
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -90,7 +91,7 @@ class CatalogPageViewModel
                     val first =
                         provider.page(entity).getOrElse { error ->
                             Log.w(TAG, "page ${entity.kind} ${entity.providerId} failed", error)
-                            _state.update { it.copy(isLoading = false, error = error.message) }
+                            _state.update { it.copy(isLoading = false, error = error.listenerMessage) }
                             return@launch
                         }
                     _state.update { it.copy(blocks = emptyList<PageBlock>().withPage(first.blocks), isLoading = false) }

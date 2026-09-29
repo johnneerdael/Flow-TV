@@ -1,21 +1,23 @@
 package io.github.aedev.flow.ui.screens.account
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModelStore
 import com.google.common.truth.Truth.assertThat
-import io.github.aedev.flow.data.account.AccountFeedClient
-import io.github.aedev.flow.data.account.AccountSession
-import io.github.aedev.flow.data.account.AccountSessionStore
 import io.github.aedev.flow.data.account.signin.PhoneChannel
 import io.github.aedev.flow.data.account.signin.PhoneInput
 import io.github.aedev.flow.data.account.signin.PhoneStatus
-import io.github.aedev.flow.innertube.models.AccountInfo
+import io.github.aedev.flow.plugin.catalog.PluginAccounts
+import io.github.aedev.flow.plugin.registry.InstalledPlugin
+import io.github.aedev.flow.plugin.registry.PluginRegistry
+import io.github.aedev.flow.plugin.registry.PluginRegistryState
+import io.github.aedev.flow.plugin.runtime.PluginCallException
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.just
+import io.mockk.every
 import io.mockk.mockk
-import io.mockk.runs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -23,6 +25,15 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import nl.neerdael.milkbeat.catalog.ProviderAccount
+import nl.neerdael.milkbeat.plugin.ApiRange
+import nl.neerdael.milkbeat.plugin.AudioRole
+import nl.neerdael.milkbeat.plugin.PluginError
+import nl.neerdael.milkbeat.plugin.PluginErrorCode
+import nl.neerdael.milkbeat.plugin.PluginManifest
+import nl.neerdael.milkbeat.plugin.Roles
+import nl.neerdael.milkbeat.plugin.WebLoginMethod
+import nl.neerdael.milkbeat.plugin.WebLoginResult
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -30,12 +41,37 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class AccountSignInViewModelTest {
     private val dispatcher = StandardTestDispatcher()
-    private val store = mockk<AccountSessionStore> { coEvery { save(any()) } just runs }
-    private val feeds =
-        mockk<AccountFeedClient> {
-            coEvery { accountInfo() } returns
-                Result.success(AccountInfo("Test User", null, null, null))
-        }
+    private val method =
+        WebLoginMethod(
+            id = "google",
+            label = "Sign in",
+            startUrl = "https://accounts.example/login",
+            successUrlPrefix = "https://music.example",
+            cookieUrl = "https://music.example",
+            requiredCookies = listOf("SAPISID"),
+        )
+    private val plugin =
+        InstalledPlugin(
+            manifest =
+                PluginManifest(
+                    format = 1,
+                    api = ApiRange(1, 1),
+                    id = "dev.example.music",
+                    name = "Music",
+                    version = "1.0",
+                    versionCode = 1,
+                    roles = Roles(audio = AudioRole(idSpaces = setOf("example"))),
+                    signIn = listOf(method),
+                ),
+            signerFingerprint = "f",
+            sourceUrl = "https://example.org/music.mbplugin",
+            installedAtMs = 0,
+            grantedNetwork = emptyList(),
+            grantedBrowser = emptyList(),
+        )
+    private val registry = mockk<PluginRegistry> { every { state } returns MutableStateFlow(PluginRegistryState(plugins = listOf(plugin))) }
+    private val accounts =
+        mockk<PluginAccounts> { coEvery { complete(any(), any()) } returns ProviderAccount.SignedIn(key = "k", name = "Test User") }
     private var launches = 0
     private var stops = 0
     private var lastStatus: () -> PhoneStatus = { PhoneStatus("") }
@@ -63,7 +99,16 @@ class AccountSignInViewModelTest {
 
     @After fun tearDown() = Dispatchers.resetMain()
 
-    private fun viewModel(lan: String? = "192.168.50.101") = AccountSignInViewModel(store, feeds, { lan }, launcher)
+    private fun viewModel(
+        lan: String? = "192.168.50.101",
+        methodId: String = "google",
+    ) = AccountSignInViewModel(
+        SavedStateHandle(mapOf(PLUGIN_ARG to plugin.id, METHOD_ARG to methodId)),
+        registry,
+        accounts,
+        { lan },
+        launcher,
+    )
 
     @Test
     fun `no LAN address shows NoNetwork and starts nothing`() =
@@ -106,17 +151,39 @@ class AccountSignInViewModelTest {
         }
 
     @Test
-    fun `a captured session is saved with the account name and the server stops`() =
+    fun `a captured sign-in goes to the plugin, whose account name is shown, and the server stops`() =
         runTest(dispatcher) {
             val vm = viewModel()
             vm.start(loginSupported = true)
             runCurrent()
-            vm.onSessionCaptured(AccountSession(cookie = "SAPISID=x"))
+            val result = WebLoginResult(method = "google", cookies = "SAPISID=x")
+            vm.onCaptured(result)
             advanceUntilIdle()
-            coVerify { store.save(AccountSession(cookie = "SAPISID=x")) }
-            coVerify { store.save(AccountSession(cookie = "SAPISID=x", accountName = "Test User")) }
+            coVerify { accounts.complete(plugin.id, result) }
             assertThat(vm.state.value).isEqualTo(AccountSignInState.SignedIn("Test User"))
             assertThat(stops).isEqualTo(1)
+        }
+
+    @Test
+    fun `a sign-in the plugin refuses shows its reason`() =
+        runTest(dispatcher) {
+            coEvery { accounts.complete(any(), any()) } throws
+                PluginCallException(plugin.id, PluginError(PluginErrorCode.SIGN_IN_REQUIRED, "no", userMessage = "Try again"))
+            val vm = viewModel()
+            vm.start(loginSupported = true)
+            runCurrent()
+            vm.onCaptured(WebLoginResult(method = "google", cookies = "SAPISID=x"))
+            advanceUntilIdle()
+            assertThat(vm.state.value).isEqualTo(AccountSignInState.Failed("Try again"))
+        }
+
+    @Test
+    fun `a method the plugin does not declare shows Unsupported`() =
+        runTest(dispatcher) {
+            val vm = viewModel(methodId = "other")
+            vm.start(loginSupported = true)
+            assertThat(vm.state.value).isEqualTo(AccountSignInState.Unsupported)
+            assertThat(launches).isEqualTo(0)
         }
 
     @Test
@@ -144,7 +211,14 @@ class AccountSignInViewModelTest {
                         onInput: suspend (PhoneInput) -> Unit,
                     ): PhoneServerHandle = throw java.net.BindException("address in use")
                 }
-            val vm = AccountSignInViewModel(store, feeds, { "192.168.50.101" }, failing)
+            val vm =
+                AccountSignInViewModel(
+                    SavedStateHandle(mapOf(PLUGIN_ARG to plugin.id, METHOD_ARG to "google")),
+                    registry,
+                    accounts,
+                    { "192.168.50.101" },
+                    failing,
+                )
             vm.start(loginSupported = true)
             runCurrent()
             assertThat(vm.state.value).isEqualTo(AccountSignInState.NoNetwork)

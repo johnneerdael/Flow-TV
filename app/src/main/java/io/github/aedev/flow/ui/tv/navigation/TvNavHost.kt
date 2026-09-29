@@ -11,6 +11,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.music.model.MusicTrack
+import io.github.aedev.flow.ui.screens.account.METHOD_ARG
+import io.github.aedev.flow.ui.screens.account.PLUGIN_ARG
 import io.github.aedev.flow.ui.screens.music.CatalogPageViewModel
 import io.github.aedev.flow.ui.screens.music.sharedMusicViewModel
 import io.github.aedev.flow.ui.screens.search.SearchViewModel
@@ -105,11 +107,18 @@ fun TvNavHost(
         }
         composable(TvDestination.SETTINGS.route) {
             TvSettingsScreen(
-                onOpenAccountSignIn = { navController.navigate(TvRoutes.ACCOUNT_SIGN_IN) },
+                onOpenPluginSignIn = { plugin, method -> navController.navigate(TvRoutes.pluginSignIn(plugin, method)) },
                 modifier = Modifier.fillMaxSize(),
             )
         }
-        composable(TvRoutes.ACCOUNT_SIGN_IN) {
+        composable(
+            route = TvRoutes.PLUGIN_SIGN_IN,
+            arguments =
+                listOf(
+                    navArgument(PLUGIN_ARG) { type = NavType.StringType },
+                    navArgument(METHOD_ARG) { type = NavType.StringType },
+                ),
+        ) {
             TvAccountSignInScreen(onNavigateBack = { navController.popBackStack() })
         }
         composable(

@@ -1,6 +1,8 @@
 package io.github.aedev.flow.ui.tv.navigation
 
 import android.net.Uri
+import io.github.aedev.flow.ui.screens.account.METHOD_ARG
+import io.github.aedev.flow.ui.screens.account.PLUGIN_ARG
 import io.github.aedev.flow.ui.screens.music.CatalogPageViewModel
 import nl.neerdael.milkbeat.catalog.EntityRef
 
@@ -17,7 +19,12 @@ object TvRoutes {
 
     const val CATALOG = "catalog/{${CatalogPageViewModel.KIND_ARG}}/{${CatalogPageViewModel.ID_ARG}}"
 
-    const val ACCOUNT_SIGN_IN = "accountSignIn"
+    const val PLUGIN_SIGN_IN = "pluginSignIn/{$PLUGIN_ARG}/{$METHOD_ARG}"
+
+    fun pluginSignIn(
+        pluginId: String,
+        methodId: String,
+    ) = "pluginSignIn/${Uri.encode(pluginId)}/${Uri.encode(methodId)}"
 
     /** [channelRef] is a full channel URL (preferred) or a bare channel id. */
     fun channel(channelRef: String): String = "channel?ref=${Uri.encode(channelRef)}"

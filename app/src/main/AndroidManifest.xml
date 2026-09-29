@@ -128,6 +128,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- milkbeat://add-plugin?url=… opens Settings, Plugins with that plugin ready to install. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="milkbeat" android:host="add-plugin" />
+            </intent-filter>
+
             <!-- Deep Links for YouTube URLs -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />

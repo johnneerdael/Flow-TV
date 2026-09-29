@@ -1,37 +1,45 @@
 package io.github.aedev.flow.data.account.signin
 
 import com.google.common.truth.Truth.assertThat
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonPrimitive
+import nl.neerdael.milkbeat.plugin.WebLoginMethod
 import org.junit.Test
 
 class SignInCaptureTest {
+    private val method =
+        WebLoginMethod(
+            id = "google",
+            label = "Sign in",
+            startUrl = "https://accounts.google.com/ServiceLogin",
+            successUrlPrefix = "https://music.youtube.com",
+            cookieUrl = "https://music.youtube.com",
+            requiredCookies = listOf("SAPISID"),
+            extractScript = "({v: 'x'})",
+        )
+
     @Test
-    fun `a session needs SAPISID`() {
-        assertThat(SignInCapture.hasSession("YSC=x; VISITOR_INFO1_LIVE=y")).isFalse()
-        assertThat(SignInCapture.hasSession("SID=a; SAPISID=b; LOGIN_INFO=c")).isTrue()
-        assertThat(SignInCapture.hasSession(null)).isFalse()
+    fun `a sign-in needs every required cookie`() {
+        assertThat(SignInCapture.hasRequiredCookies("YSC=x; VISITOR_INFO1_LIVE=y", method)).isFalse()
+        assertThat(SignInCapture.hasRequiredCookies("SID=a; SAPISID=b; LOGIN_INFO=c", method)).isTrue()
+        assertThat(SignInCapture.hasRequiredCookies(null, method)).isFalse()
     }
 
     @Test
-    fun `only music youtube completes sign in`() {
-        assertThat(SignInCapture.isYouTubeMusic("https://music.youtube.com/")).isTrue()
-        assertThat(SignInCapture.isYouTubeMusic("https://accounts.google.com/v3/signin")).isFalse()
-        assertThat(SignInCapture.isYouTubeMusic("https://music.youtube.com.evil.test/")).isFalse()
+    fun `only the success prefix completes sign in, not a host that merely starts with it`() {
+        assertThat(SignInCapture.isSuccessPage("https://music.youtube.com/", method)).isTrue()
+        assertThat(SignInCapture.isSuccessPage("https://music.youtube.com", method)).isTrue()
+        assertThat(SignInCapture.isSuccessPage("https://accounts.google.com/v3/signin", method)).isFalse()
+        assertThat(SignInCapture.isSuccessPage("https://music.youtube.com.evil.test/", method)).isFalse()
     }
 
     @Test
-    fun `ytcfg values are unwrapped from evaluateJavascript output`() {
-        val raw = "\"{\\\"v\\\":\\\"CgtABC\\\",\\\"d\\\":\\\"123||456\\\"}\""
-        assertThat(SignInCapture.parseYtcfg(raw)).isEqualTo("CgtABC" to "123||456")
-        assertThat(SignInCapture.parseYtcfg("null")).isEqualTo(null to null)
-    }
-
-    @Test
-    fun `the data sync id keeps only the account part`() {
-        val session = SignInCapture.session("SAPISID=b", "CgtABC", "123||456")
-        assertThat(session.dataSyncId).isEqualTo("123")
-        assertThat(session.visitorData).isEqualTo("CgtABC")
+    fun `the extraction runs the plugin's script and unwraps the values`() {
+        assertThat(SignInCapture.extractionScript(method)).isEqualTo("JSON.stringify(({v: 'x'}))")
+        val raw = Json.encodeToString(String.serializer(), """{"visitorData":"Cgt","dataSyncId":"123||x","n":1}""")
+        assertThat(SignInCapture.parseExtracted(raw)).containsExactly("visitorData", "Cgt", "dataSyncId", "123||x", "n", "1")
+        assertThat(SignInCapture.parseExtracted("null")).isEmpty()
     }
 
     @Test

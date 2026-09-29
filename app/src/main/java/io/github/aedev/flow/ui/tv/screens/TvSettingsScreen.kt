@@ -37,6 +37,7 @@ import io.github.aedev.flow.ui.tv.screens.settings.TvAccountSettingsPane
 import io.github.aedev.flow.ui.tv.screens.settings.TvContentSettingsPane
 import io.github.aedev.flow.ui.tv.screens.settings.TvFlowEngineSettingsPane
 import io.github.aedev.flow.ui.tv.screens.settings.TvPlaybackSettingsPane
+import io.github.aedev.flow.ui.tv.screens.settings.TvPluginsSettingsPane
 import io.github.aedev.flow.ui.tv.screens.settings.TvQualitySettingsPane
 import io.github.aedev.flow.ui.tv.screens.settings.TvSettingsCategory
 import io.github.aedev.flow.ui.tv.screens.settings.TvVisualizerSettingsPane
@@ -49,11 +50,12 @@ import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 @Composable
 fun TvSettingsScreen(
     modifier: Modifier = Modifier,
-    onOpenAccountSignIn: () -> Unit = {},
+    onOpenPluginSignIn: (pluginId: String, methodId: String) -> Unit = { _, _ -> },
+    initialCategory: TvSettingsCategory = TvSettingsCategory.PLUGINS,
 ) {
     val context = LocalContext.current
     val playerPreferences = remember { PlayerPreferences(context.applicationContext) }
-    var selectedCategory by rememberSaveable { mutableStateOf(TvSettingsCategory.ACCOUNT) }
+    var selectedCategory by rememberSaveable { mutableStateOf(initialCategory) }
     val categoryFocus = remember { TvSettingsCategory.entries.associateWith { FocusRequester() } }
     val dimens = LocalTvDimens.current
 
@@ -92,7 +94,8 @@ fun TvSettingsScreen(
 
             androidx.compose.foundation.layout.Box(modifier = Modifier.weight(1f)) {
                 when (selectedCategory) {
-                    TvSettingsCategory.ACCOUNT -> TvAccountSettingsPane(onSignIn = onOpenAccountSignIn)
+                    TvSettingsCategory.PLUGINS -> TvPluginsSettingsPane(onSignIn = onOpenPluginSignIn)
+                    TvSettingsCategory.ACCOUNT -> TvAccountSettingsPane(onSignIn = { selectedCategory = TvSettingsCategory.PLUGINS })
                     TvSettingsCategory.PLAYBACK -> TvPlaybackSettingsPane(playerPreferences)
                     TvSettingsCategory.VISUALIZATIONS -> TvVisualizerSettingsPane()
                     TvSettingsCategory.QUALITY -> TvQualitySettingsPane(playerPreferences)

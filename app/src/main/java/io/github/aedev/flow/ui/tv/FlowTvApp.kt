@@ -37,6 +37,7 @@ import io.github.aedev.flow.ui.screens.search.SearchViewModel
 import io.github.aedev.flow.ui.tv.music.TvMusicNowPlayingScreen
 import io.github.aedev.flow.ui.tv.music.TvVisualizerViewModel
 import io.github.aedev.flow.ui.tv.music.rememberTvNowPlayingVisual
+import io.github.aedev.flow.ui.tv.navigation.TvDestination
 import io.github.aedev.flow.ui.tv.screens.TvPlayerScreen
 import io.github.aedev.flow.ui.tv.screens.settings.TvUpdatesViewModel
 import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
@@ -50,6 +51,7 @@ fun FlowTvApp(
     deeplinkVideoId: String? = null,
     isShort: Boolean = false,
     onDeeplinkConsumed: () -> Unit = {},
+    pluginLinkPending: Boolean = false,
 ) {
     val context = LocalContext.current
     val activity = context as ComponentActivity
@@ -59,6 +61,10 @@ fun FlowTvApp(
     val visualizerViewModel: TvVisualizerViewModel = hiltViewModel(activity)
     val visualizerActive by visualizerViewModel.active.collectAsStateWithLifecycle()
     val navController = rememberNavController()
+    // A plugin link opens Settings, where Plugins picks it up and asks the listener.
+    LaunchedEffect(pluginLinkPending) {
+        if (pluginLinkPending) navController.navigate(TvDestination.SETTINGS.route) { launchSingleTop = true }
+    }
     val activeVideo by GlobalPlayerState.currentVideo.collectAsStateWithLifecycle()
     val activeMusicTrack by EnhancedMusicPlayerManager.currentTrack.collectAsStateWithLifecycle()
     val musicPlayerState by EnhancedMusicPlayerManager.playerState.collectAsStateWithLifecycle()
