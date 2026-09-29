@@ -15,23 +15,11 @@
     public static int d(...);
 }
 
-## Rules for NewPipeExtractor
--keep class org.schabi.newpipe.extractor.timeago.patterns.** { *; }
--keep class org.schabi.newpipe.extractor.** { *; }
--keep class com.grack.nanojson.** { *; }
--keep class org.schabi.newpipe.extractor.services.** { *; }
--keep class * extends org.schabi.newpipe.extractor.Extractor { *; }
--keep class * implements org.schabi.newpipe.extractor.Service { *; }
+## NewPipeExtractor: the video player only uses its stream model and DASH manifest creator, which
+## it calls directly, so nothing of it needs keeping; its extraction stack (Rhino) is unused.
 -keepattributes Exceptions, InnerClasses
-
-## Rules for Rhino and Rhino Engine (JavaScript engine used by NewPipe)
--keep class org.mozilla.javascript.* { *; }
--keep class org.mozilla.javascript.** { *; }
--keep class org.mozilla.javascript.engine.** { *; }
--keep class org.mozilla.classfile.ClassFileWriter
--dontwarn org.mozilla.javascript.JavaToJSONConverters
--dontwarn org.mozilla.javascript.tools.**
--keep class javax.script.** { *; }
+-dontwarn org.mozilla.javascript.**
+-dontwarn org.mozilla.classfile.**
 -dontwarn javax.script.**
 -dontwarn jdk.dynalink.**
 
@@ -51,7 +39,6 @@
 -keep class io.github.aedev.flow.data.model.** { *; }
 -keep class io.github.aedev.flow.data.local.** { *; }
 -keep class io.github.aedev.flow.data.lyrics.** { *; }
--keep class io.github.aedev.flow.innertube.models.** { *; }
 
 ## Gson-persisted models that live OUTSIDE the packages above (issue #996): without an
 ## explicit keep, R8 may strip the generic Signature of MusicTrack.artists, and cached
@@ -65,24 +52,13 @@
 -keep class io.github.aedev.flow.data.music.DownloadedTrack { *; }
 -keep class io.github.aedev.flow.data.music.DownloadStatus { *; }
 
-## Shazam recognition models + kotlinx serializers
--keepclasseswithmembers class io.github.aedev.flow.data.recognition.shazam.** {
-    kotlinx.serialization.KSerializer serializer(...);
-}
--keepclassmembers class io.github.aedev.flow.data.recognition.shazam.** {
-    *** Companion;
-}
-
 ## Rules for Ktor
 -dontwarn io.ktor.**
 -keep class io.ktor.** { *; }
 
-## Rules for Brotli & re2j
--dontwarn org.brotli.**
--keep class org.brotli.** { *; }
+## Optional classes other libraries reference
 -dontwarn org.conscrypt.**
 -dontwarn com.google.re2j.**
--keep class com.google.re2j.** { *; }
 -dontwarn org.jsoup.helper.Re2jRegex
 -dontwarn org.jsoup.helper.Re2jRegex$Re2jMatcher
 

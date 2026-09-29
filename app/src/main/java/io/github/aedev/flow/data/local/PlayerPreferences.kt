@@ -708,10 +708,6 @@ class PlayerPreferences(
         context.playerPreferencesDataStore.data
             .map { preferences -> preferences[Keys.NOTIFICATIONS_ENABLED] ?: true }
 
-    val notifRemindersEnabled: Flow<Boolean> =
-        context.playerPreferencesDataStore.data
-            .map { preferences -> preferences[Keys.NOTIF_REMINDERS_ENABLED] ?: true }
-
     val notifUpdatesEnabled: Flow<Boolean> =
         context.playerPreferencesDataStore.data
             .map { preferences -> preferences[Keys.NOTIF_UPDATES_ENABLED] ?: true }

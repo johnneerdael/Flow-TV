@@ -165,26 +165,6 @@
             </intent-filter>
         </service>
 
-        <!-- Notification action receiver for downloads and other actions -->
-        <receiver 
-            android:name=".notification.NotificationActionReceiver"
-            android:enabled="true"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="io.github.aedev.flow.action.CANCEL_DOWNLOAD" />
-                <action android:name="io.github.aedev.flow.action.RETRY_DOWNLOAD" />
-                <action android:name="io.github.aedev.flow.action.PAUSE_DOWNLOAD" />
-                <action android:name="io.github.aedev.flow.action.RESUME_DOWNLOAD" />
-                <action android:name="io.github.aedev.flow.action.DISMISS_NOTIFICATION" />
-            </intent-filter>
-        </receiver>
-
-        <!-- Time Management Reminder Receiver -->
-        <receiver
-            android:name=".notification.ReminderReceiver"
-            android:enabled="true"
-            android:exported="false" />
-
         <!-- Files Flow hands to other apps: recap cards and playlist files, only from their cache folders. -->
         <provider
             android:name="androidx.core.content.FileProvider"

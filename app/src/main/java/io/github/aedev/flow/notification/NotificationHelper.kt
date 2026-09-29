@@ -35,7 +35,6 @@ object NotificationHelper {
     const val CHANNEL_IMPORTS = "imports_channel"
 
     const val NOTIFICATION_PLAYBACK = 3001
-    const val NOTIFICATION_REMINDER = 5000
     const val NOTIFICATION_IMPORT_PROGRESS = 6001
     const val NOTIFICATION_IMPORT_COMPLETE = 6002
 
@@ -280,61 +279,5 @@ object NotificationHelper {
                 .build()
 
         NotificationManagerCompat.from(context).notify(9999, notification)
-    }
-
-    // ========== UTILITY FUNCTIONS ==========
-
-    /**
-     * Cancel a specific notification
-     */
-    fun cancelNotification(
-        context: Context,
-        notificationId: Int,
-    ) {
-        NotificationManagerCompat.from(context).cancel(notificationId)
-    }
-
-    /**
-     * Show reminder notification (Bedtime, Take a break)
-     */
-    fun showReminderNotification(
-        context: Context,
-        title: String,
-        message: String,
-    ) {
-        if (!hasNotificationPermission(context)) return
-        if (!runBlocking { PlayerPreferences(context).notifRemindersEnabled.first() }) return
-
-        val intent =
-            Intent(context, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            }
-
-        val pendingIntent =
-            PendingIntent.getActivity(
-                context,
-                0,
-                intent,
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0,
-            )
-
-        val builder =
-            NotificationCompat
-                .Builder(context, CHANNEL_REMINDERS)
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(title)
-                .setContentText(message)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setContentIntent(pendingIntent)
-                .setAutoCancel(true)
-
-        try {
-            with(NotificationManagerCompat.from(context)) {
-                notify(NOTIFICATION_REMINDER, builder.build())
-            }
-        } catch (e: SecurityException) {
-            // Should be covered by hasNotificationPermission check, but safety first
-            e.printStackTrace()
-        }
     }
 }

@@ -226,18 +226,10 @@ dependencies {
     // --- Lifecycle & Architecture ---
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.androidx.window)
-    implementation(libs.androidx.window.core)
-    implementation(libs.androidx.material3.adaptive.layout)
-    implementation(libs.androidx.material3.adaptive.navigation)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-
-    // --- Layouts ---
-    implementation(libs.androidx.constraintlayout.compose)
 
     // --- Image Loading ---
     implementation(libs.coil.compose)
-    implementation(libs.compose.reorderable)
     implementation(libs.coil.video)
     implementation(libs.coil.network.okhttp)
     implementation("androidx.palette:palette-ktx:1.0.0")
@@ -253,14 +245,7 @@ dependencies {
     // Networking
     implementation(libs.okhttp)
 
-    // Ktor (Managed in libs.versions.toml)
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.okhttp)
-    implementation(libs.ktor.client.content.negotiation)
-    implementation(libs.ktor.serialization.kotlinx.json)
-    implementation(libs.ktor.client.encoding)
-
-    // --- Device Sync (FLOW-SYNC/1) ---
+    // --- Account sign-in: the phone input server and its QR code ---
     implementation(libs.ktor.server.core) {
         exclude(group = "org.fusesource.jansi", module = "jansi")
     }
@@ -268,10 +253,6 @@ dependencies {
     implementation(libs.ktor.server.websockets)
     implementation(libs.zxing.core)
     implementation(libs.androidx.webkit)
-    implementation(libs.androidx.camera.core)
-    implementation(libs.androidx.camera.camera2)
-    implementation(libs.androidx.camera.lifecycle)
-    implementation(libs.androidx.camera.view)
 
     // Serialization & JSON
     implementation(libs.kotlinx.serialization.json)
@@ -289,7 +270,6 @@ dependencies {
     implementation(libs.androidx.media3.exoplayer.dash)
     implementation(libs.androidx.media3.datasource)
     implementation(libs.androidx.media3.datasource.okhttp)
-    implementation(libs.androidx.media)
 
     // --- Database & Storage ---
     implementation(libs.androidx.room.runtime)
@@ -299,20 +279,12 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     // implementation(libs.androidx.datastore) // In TOML if needed
 
-    // --- Home-screen widgets (Jetpack Glance) ---
-    implementation(libs.androidx.glance.appwidget)
-    implementation(libs.androidx.glance.material3)
-    implementation(libs.androidx.graphics.shapes)
-
     // --- Async & Utils ---
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.paging.runtime.ktx)
     implementation(libs.androidx.paging.compose)
 
     implementation(libs.androidx.work.runtime.ktx)
-
-    implementation(libs.brotli)
-    implementation(libs.re2j)
 
     // --- Baseline profiles ---
     // Runtime installer for the merged baseline profile. AGP merges profiles shipped inside
@@ -331,7 +303,6 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.truth)
     testImplementation(libs.turbine)
-    testImplementation(libs.ktor.client.mock)
     testImplementation(libs.hilt.android.testing)
     kspTest(libs.hilt.android.compiler)
 
