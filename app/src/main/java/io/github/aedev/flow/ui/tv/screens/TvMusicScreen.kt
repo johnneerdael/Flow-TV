@@ -20,6 +20,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -32,6 +33,7 @@ import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.ui.screens.music.MusicHomeFeedViewModel
 import io.github.aedev.flow.ui.tv.catalog.TvCatalogActions
 import io.github.aedev.flow.ui.tv.catalog.catalogBlocks
+import io.github.aedev.flow.ui.tv.components.TvButton
 import io.github.aedev.flow.ui.tv.components.TvFilterChip
 import io.github.aedev.flow.ui.tv.components.TvMessageState
 import io.github.aedev.flow.ui.tv.components.TvScreenScaffold
@@ -47,6 +49,7 @@ fun TvMusicScreen(
     onPlayCollection: (MusicTrack, List<MusicTrack>, String, String?) -> Unit,
     onPlayMix: (MusicTrack) -> Unit,
     onOpen: (EntityRef) -> Unit,
+    onOpenPlugins: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: MusicHomeFeedViewModel = hiltViewModel(),
 ) {
@@ -72,8 +75,8 @@ fun TvMusicScreen(
                 onOpen = { open(it) },
             )
         }
-    LaunchedEffect(hasShelves) {
-        if (hasShelves && !openedOnContent) {
+    LaunchedEffect(hasShelves, state.needsPlugin) {
+        if ((hasShelves || state.needsPlugin) && !openedOnContent) {
             withFrameNanos { }
             runCatching { firstShelfFocus.requestFocus() }
             openedOnContent = true
@@ -112,6 +115,25 @@ fun TvMusicScreen(
                     when {
                         state.isLoading && blocks.isEmpty() -> {
                             item(key = "music-loading") { TvShimmerRow() }
+                        }
+
+                        state.needsPlugin && blocks.isEmpty() -> {
+                            item(key = "music-needs-plugin") {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = dimens.overscanHorizontal),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                ) {
+                                    TvMessageState(
+                                        title = stringResource(R.string.tv_plugins_empty_home),
+                                        message = stringResource(R.string.tv_plugins_empty_home_message),
+                                    )
+                                    TvButton(
+                                        text = stringResource(R.string.tv_plugins_add),
+                                        onClick = onOpenPlugins,
+                                        modifier = Modifier.focusRequester(firstShelfFocus),
+                                    )
+                                }
+                            }
                         }
 
                         state.error != null && blocks.isEmpty() -> {

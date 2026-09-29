@@ -2,12 +2,13 @@ package io.github.aedev.flow.ui.screens.music
 
 import com.google.common.truth.Truth.assertThat
 import io.github.aedev.flow.data.catalog.CatalogPlayback
+import io.github.aedev.flow.plugin.catalog.NoMetadataPluginException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -191,13 +192,13 @@ class MusicHomeFeedViewModelTest {
     fun `another account swaps the home for that account's`() =
         runTest(dispatcher) {
             provider.pages = {
-                if (provider.account.value is ProviderAccount.SignedIn) Result.success(page("Mine")) else Result.success(page("Anonymous"))
+                if (provider.current is ProviderAccount.SignedIn) Result.success(page("Mine")) else Result.success(page("Anonymous"))
             }
             val vm = viewModel()
             vm.load()
             advanceUntilIdle()
 
-            provider.account.value = ProviderAccount.SignedIn("account-1")
+            provider.current = ProviderAccount.SignedIn("account-1")
             advanceUntilIdle()
 
             assertThat(vm.titles).containsExactly("Mine")
@@ -206,20 +207,38 @@ class MusicHomeFeedViewModelTest {
     @Test
     fun `an expired account is reported and its home reloaded`() =
         runTest(dispatcher) {
-            provider.account.value = ProviderAccount.SignedIn("account-1")
+            provider.current = ProviderAccount.SignedIn("account-1")
             provider.pages = {
-                if (provider.account.value is ProviderAccount.SignedIn) Result.success(page("Mine")) else Result.success(page("Anonymous"))
+                if (provider.current is ProviderAccount.SignedIn) Result.success(page("Mine")) else Result.success(page("Anonymous"))
             }
             val vm = viewModel()
             backgroundScope.launch { vm.isAccountExpired.collect {} }
             vm.load()
             advanceUntilIdle()
 
-            provider.account.value = ProviderAccount.Expired
+            provider.current = ProviderAccount.Expired
             advanceUntilIdle()
 
             assertThat(vm.isAccountExpired.value).isTrue()
             assertThat(vm.titles).containsExactly("Anonymous")
+        }
+
+    @Test
+    fun `without a music plugin the page asks for one, and choosing one loads its home`() =
+        runTest(dispatcher) {
+            provider.id = "none"
+            provider.pages = { if (provider.id == "none") Result.failure(NoMetadataPluginException()) else Result.success(page("Home")) }
+            val vm = viewModel()
+            vm.load()
+            advanceUntilIdle()
+            assertThat(vm.state.value.needsPlugin).isTrue()
+
+            provider.id = "dev.example.music"
+            provider.current = ProviderAccount.Anonymous
+            advanceUntilIdle()
+
+            assertThat(vm.state.value.needsPlugin).isFalse()
+            assertThat(vm.titles).containsExactly("Home")
         }
 
     @Test
@@ -293,8 +312,15 @@ class MusicHomeFeedViewModelTest {
         }
 
     private class FakeProvider : MetadataProvider {
-        override val id: String = "fake"
-        override val account = MutableStateFlow<ProviderAccount>(ProviderAccount.Anonymous)
+        override var id: String = "fake"
+
+        // Like the plugin provider, it emits an equal account again when another provider is chosen.
+        override val account = MutableSharedFlow<ProviderAccount>(replay = 1).apply { tryEmit(ProviderAccount.Anonymous) }
+        var current: ProviderAccount
+            get() = account.replayCache.last()
+            set(value) {
+                account.tryEmit(value)
+            }
         var pages: suspend (HomeRequest) -> Result<MetadataPage> = { Result.failure(IllegalStateException("no page")) }
         val requests = mutableListOf<HomeRequest>()
 

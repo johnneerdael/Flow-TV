@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.aedev.flow.data.catalog.CatalogPlayback
 import io.github.aedev.flow.data.music.model.MusicTrack
+import io.github.aedev.flow.plugin.catalog.NoMetadataPluginException
 import io.github.aedev.flow.plugin.catalog.listenerMessage
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
@@ -35,6 +36,8 @@ data class MusicHomeFeedState(
     val isLoading: Boolean = false,
     val isLoadingMore: Boolean = false,
     val error: String? = null,
+    /** No music plugin is chosen: the page offers to add one instead of an error. */
+    val needsPlugin: Boolean = false,
 )
 
 /**
@@ -65,7 +68,7 @@ class MusicHomeFeedViewModel
             viewModelScope.launch {
                 provider.account.collect { account ->
                     val loaded = loadedKey ?: return@collect
-                    if (loaded.account != account) load(filterId = null, force = true)
+                    if (loaded.account != account || loaded.providerId != provider.id) load(filterId = null, force = true)
                 }
             }
         }
@@ -85,7 +88,7 @@ class MusicHomeFeedViewModel
             job?.cancel()
             job =
                 viewModelScope.launch {
-                    val key = FeedKey(provider.account.first(), filterId)
+                    val key = FeedKey(provider.id, provider.account.first(), filterId)
                     // A refresh of the same feed keeps its blocks (and the focus on them) until page one replaces them.
                     val sameFeed = key == loadedKey
                     loadedKey = key
@@ -97,13 +100,16 @@ class MusicHomeFeedViewModel
                             isLoading = true,
                             isLoadingMore = false,
                             error = null,
+                            needsPlugin = false,
                         )
                     }
                     val first =
                         page(HomeRequest(filterId = filterId)).getOrElse { error ->
                             Log.w(TAG, "home failed", error)
                             loadedAtMs = 0L
-                            _state.update { it.copy(isLoading = false, error = error.listenerMessage) }
+                            _state.update {
+                                it.copy(isLoading = false, error = error.listenerMessage, needsPlugin = error is NoMetadataPluginException)
+                            }
                             return@launch
                         }
                     _state.update {
@@ -139,6 +145,7 @@ class MusicHomeFeedViewModel
         }
 
         private data class FeedKey(
+            val providerId: String,
             val account: ProviderAccount,
             val filterId: String?,
         )

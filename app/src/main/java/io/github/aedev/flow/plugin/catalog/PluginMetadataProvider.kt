@@ -45,10 +45,11 @@ class PluginMetadataProvider
         override val id: String
             get() = selected ?: "none"
 
+        /** Emits again when another plugin is chosen, even if both are signed out, so pages reload. */
         override val account: Flow<ProviderAccount> =
             combine(registry.state.map { it.selection.metadata }.distinctUntilChanged(), accounts.accounts) { plugin, known ->
-                plugin?.let { known[it] } ?: ProviderAccount.Anonymous
-            }.distinctUntilChanged()
+                plugin to (plugin?.let { known[it] } ?: ProviderAccount.Anonymous)
+            }.distinctUntilChanged().map { it.second }
 
         override suspend fun home(request: HomeRequest): Result<MetadataPage> = call(PluginOperations.home, request)
 

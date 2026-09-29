@@ -150,6 +150,7 @@ fun TvShell(
                     searchViewModel = searchViewModel,
                     onPlayVideo = onPlayVideo,
                     onPlayPlaylist = onPlayPlaylist,
+                    onOpenPlugins = { selectTab(TvDestination.SETTINGS) },
                     modifier = Modifier.fillMaxSize(),
                 )
             }

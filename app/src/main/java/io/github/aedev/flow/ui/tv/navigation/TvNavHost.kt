@@ -38,6 +38,7 @@ fun TvNavHost(
     searchViewModel: SearchViewModel,
     onPlayVideo: (Video) -> Unit,
     onPlayPlaylist: (List<Video>, String) -> Unit,
+    onOpenPlugins: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val openChannel: (String) -> Unit = { channelRef ->
@@ -55,6 +56,7 @@ fun TvNavHost(
                 onPlayCollection = onPlayCollection,
                 onPlayMix = onPlayMix,
                 onOpen = openCatalog,
+                onOpenPlugins = onOpenPlugins,
                 modifier = Modifier.fillMaxSize(),
             )
         }
