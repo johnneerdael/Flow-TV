@@ -1,5 +1,6 @@
 package io.github.aedev.flow.di
 
+import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -8,6 +9,8 @@ import io.github.aedev.flow.data.localmedia.LocalMediaIds
 import io.github.aedev.flow.data.video.VideoDownloadManager
 import io.github.aedev.flow.player.EnhancedPlayerManager
 import io.github.aedev.flow.player.LocalCopySource
+import io.github.aedev.flow.player.VideoStreamSource
+import io.github.aedev.flow.plugin.playback.PluginVideoStreamSource
 import io.github.aedev.flow.utils.PerformanceDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Qualifier
@@ -29,12 +32,16 @@ annotation class IoDispatcher
 @InstallIn(SingletonComponent::class)
 object PlayerManagerModule {
     @Provides
-    fun provideEnhancedPlayerManager(videoDownloadManager: VideoDownloadManager): EnhancedPlayerManager =
+    fun provideEnhancedPlayerManager(
+        videoDownloadManager: VideoDownloadManager,
+        pluginStreams: Lazy<PluginVideoStreamSource>,
+    ): EnhancedPlayerManager =
         EnhancedPlayerManager.getInstance().also {
             it.localCopySource =
                 LocalCopySource { videoId ->
                     LocalMediaIds.videoUri(videoId)?.toString() ?: videoDownloadManager.localCopyPath(videoId)
                 }
+            it.videoStreamSource = VideoStreamSource { video -> pluginStreams.get().resolve(video) }
         }
 
     @Provides
