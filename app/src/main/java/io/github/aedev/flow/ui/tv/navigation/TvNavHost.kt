@@ -102,6 +102,9 @@ fun TvNavHost(
                 onOpenPlaylist = { navController.navigate(TvRoutes.playlist(it)) },
                 onPlayTrack = onPlayTrack,
                 onOpenMusicCollection = { navController.navigate(TvRoutes.musicCollection(it)) },
+                onPlayMix = onPlayMix,
+                onPlayCollection = onPlayCollection,
+                onOpenCatalog = openCatalog,
                 modifier = Modifier.fillMaxSize(),
             )
         }

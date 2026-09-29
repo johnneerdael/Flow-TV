@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.aedev.flow.R
 import io.github.aedev.flow.data.local.LikedVideoInfo
@@ -34,7 +35,6 @@ import io.github.aedev.flow.data.model.Playlist
 import io.github.aedev.flow.data.model.PlaylistInfo
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.music.model.MusicTrack
-import io.github.aedev.flow.ui.screens.account.sharedAccountFeedsViewModel
 import io.github.aedev.flow.ui.tv.components.TvFilterChip
 import io.github.aedev.flow.ui.tv.components.TvMediaRow
 import io.github.aedev.flow.ui.tv.components.TvMessageState
@@ -45,12 +45,17 @@ import io.github.aedev.flow.ui.tv.components.TvScreenScaffold
 import io.github.aedev.flow.ui.tv.components.TvVideoCard
 import io.github.aedev.flow.ui.tv.focus.ProvideTvColumnPivot
 import io.github.aedev.flow.ui.tv.focus.tvRowFocus
+import io.github.aedev.flow.ui.tv.screens.account.TvAccountLibraryCallbacks
 import io.github.aedev.flow.ui.tv.screens.account.TvAccountLibraryContent
 import io.github.aedev.flow.ui.tv.screens.account.TvAccountLibrarySection
+import io.github.aedev.flow.ui.tv.screens.account.TvAccountLibraryViewModel
+import io.github.aedev.flow.ui.tv.screens.account.TvAccountStatus
+import io.github.aedev.flow.ui.tv.screens.account.TvPluginAccountViewModel
 import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 import io.github.aedev.flow.ui.tv.toTvMusicTrack
 import io.github.aedev.flow.ui.tv.toTvVideo
 import io.github.aedev.flow.ui.tv.tvWatchProgress
+import nl.neerdael.milkbeat.catalog.EntityRef
 
 private const val LIBRARY_GRID_COLUMNS = 3
 
@@ -66,7 +71,8 @@ private enum class TvLibrarySection(
 /**
  * Library hub mirroring mobile's mixed video + music library: every section
  * surfaces its played/saved songs as a music shelf above the video grid, and
- * Playlists covers both video and music playlists.
+ * Playlists covers both video and music playlists. When the music plugin has a
+ * signed-in account, its library sections come first.
  */
 @Composable
 fun TvLibraryScreen(
@@ -75,6 +81,11 @@ fun TvLibraryScreen(
     onOpenPlaylist: (String) -> Unit = {},
     onPlayTrack: (MusicTrack, List<MusicTrack>, String) -> Unit = { _, _, _ -> },
     onOpenMusicCollection: (String) -> Unit = {},
+    onPlayMix: (MusicTrack) -> Unit = {},
+    onPlayCollection: (MusicTrack, List<MusicTrack>, String, String?) -> Unit = { _, _, _, _ -> },
+    onOpenCatalog: (EntityRef) -> Unit = {},
+    accountViewModel: TvPluginAccountViewModel = hiltViewModel(),
+    accountLibrary: TvAccountLibraryViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
     val historyRepository = remember { ViewHistory.getInstance(context.applicationContext) }
@@ -97,18 +108,18 @@ fun TvLibraryScreen(
         .collectAsStateWithLifecycle(initialValue = emptyList())
     var selectedSection by rememberSaveable { mutableStateOf(TvLibrarySection.HISTORY) }
     val dimens = LocalTvDimens.current
-    val accountFeeds = sharedAccountFeedsViewModel()
-    val signedIn by accountFeeds.isSignedIn.collectAsStateWithLifecycle()
-    val accountExpired by accountFeeds.isExpired.collectAsStateWithLifecycle()
+    val accountStatus by accountViewModel.status.collectAsStateWithLifecycle()
+    val signedIn = accountStatus is TvAccountStatus.SignedIn
     var selectedAccountSection by rememberSaveable { mutableStateOf<TvAccountLibrarySection?>(null) }
+    LaunchedEffect(accountViewModel) { accountViewModel.refresh() }
     LaunchedEffect(signedIn) {
-        selectedAccountSection = if (signedIn) selectedAccountSection ?: TvAccountLibrarySection.YOUTUBE_HISTORY else null
+        selectedAccountSection = if (signedIn) selectedAccountSection ?: TvAccountLibrarySection.entries.first() else null
     }
 
     TvScreenScaffold(
         title = null,
         modifier = modifier,
-        subtitle = if (accountExpired) stringResource(R.string.tv_account_session_expired) else null,
+        subtitle = if (accountStatus == TvAccountStatus.Expired) stringResource(R.string.tv_account_session_expired) else null,
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -147,9 +158,15 @@ fun TvLibraryScreen(
             if (accountSection != null) {
                 TvAccountLibraryContent(
                     section = accountSection,
-                    viewModel = accountFeeds,
-                    onVideoClick = onVideoClick,
-                    onPlayTrack = onPlayTrack,
+                    viewModel = accountLibrary,
+                    callbacks =
+                        TvAccountLibraryCallbacks(
+                            onVideoClick = onVideoClick,
+                            onOpenPlaylist = onOpenPlaylist,
+                            onPlayMix = onPlayMix,
+                            onPlayCollection = onPlayCollection,
+                            onOpenCatalog = onOpenCatalog,
+                        ),
                 )
             } else {
                 when (selectedSection) {
