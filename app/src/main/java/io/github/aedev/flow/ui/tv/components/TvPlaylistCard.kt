@@ -28,12 +28,13 @@ import io.github.aedev.flow.R
 import io.github.aedev.flow.data.model.Playlist
 import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 
-/** Playlist card with a count badge over the cover art. */
+/** Playlist card with a count badge over the cover art; a null [badge] leaves the art bare. */
 @Composable
 fun TvPlaylistCard(
     playlist: Playlist,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    badge: String? = pluralStringResource(R.plurals.tv_playlist_video_count, playlist.videoCount, playlist.videoCount),
 ) {
     TvCard(
         onClick = onClick,
@@ -51,34 +52,28 @@ fun TvPlaylistCard(
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
             )
-            Surface(
-                modifier =
-                    Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(8.dp),
-                shape = MaterialTheme.shapes.extraSmall,
-                color = Color.Black.copy(alpha = 0.7f),
-                contentColor = Color.White,
-            ) {
-                androidx.compose.foundation.layout.Row(
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+            if (badge != null) {
+                Surface(
+                    modifier =
+                        Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(8.dp),
+                    shape = MaterialTheme.shapes.extraSmall,
+                    color = Color.Black.copy(alpha = 0.7f),
+                    contentColor = Color.White,
                 ) {
-                    Icon(
-                        Icons.AutoMirrored.Outlined.PlaylistPlay,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                    )
-                    Text(
-                        text =
-                            pluralStringResource(
-                                R.plurals.tv_playlist_video_count,
-                                playlist.videoCount,
-                                playlist.videoCount,
-                            ),
-                        style = MaterialTheme.typography.labelMedium,
-                    )
+                    androidx.compose.foundation.layout.Row(
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Outlined.PlaylistPlay,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Text(text = badge, style = MaterialTheme.typography.labelMedium)
+                    }
                 }
             }
         }
