@@ -19,6 +19,7 @@ import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.ui.tv.catalog.TvCatalogActions
 import io.github.aedev.flow.ui.tv.catalog.catalogBlocks
+import io.github.aedev.flow.ui.tv.catalog.toTvVideo
 import io.github.aedev.flow.ui.tv.components.TvLoadingState
 import io.github.aedev.flow.ui.tv.components.TvMessageState
 import io.github.aedev.flow.ui.tv.components.TvShimmerRow
@@ -95,7 +96,7 @@ internal fun rememberTvSearchActions(
                         when (entity.kind) {
                             EntityKind.CHANNEL -> openChannel(entity.providerId)
                             EntityKind.PLAYLIST -> openPlaylist(entity.providerId)
-                            else -> playVideo(page.itemFor(entity).toSearchVideo(entity))
+                            else -> playVideo(entity.toTvVideo(page.itemFor(entity)))
                         }
                     },
                     onShowAllFilter = viewModel::showAll,
@@ -185,23 +186,6 @@ private fun LazyListState.nearsEnd(): Boolean {
     val info = layoutInfo
     val last = info.visibleItemsInfo.lastOrNull()?.index ?: return false
     return info.totalItemsCount > 0 && last >= info.totalItemsCount - 1 - LOAD_MORE_AHEAD
-}
-
-/** A video to hand the player; it looks the rest up from the id, so a missing item still plays. */
-private fun MetadataItem?.toSearchVideo(entity: EntityRef): Video {
-    val channel = this?.artists?.firstOrNull()
-    return Video(
-        id = entity.providerId,
-        title = this?.title.orEmpty(),
-        channelName = channel?.name ?: this?.subtitle.orEmpty(),
-        channelId = channel?.entity?.providerId.orEmpty(),
-        thumbnailUrl = this?.artwork?.url.orEmpty(),
-        duration = this?.durationSeconds ?: 0,
-        viewCount = 0L,
-        uploadDate = "",
-        isLive = this?.live == true,
-        isUpcoming = this?.upcoming == true,
-    )
 }
 
 private val TvSearchSource.noPluginTitle: Int
