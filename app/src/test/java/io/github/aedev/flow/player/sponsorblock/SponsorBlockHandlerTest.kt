@@ -42,4 +42,21 @@ class SponsorBlockHandlerTest {
         assertThat(handler.checkForSkip(120_000L)).isNull()
         assertThat(handler.checkForSkip(156_700L)).isEqualTo(157_200L)
     }
+
+    @Test
+    fun `segments the stream source provided follow the setting and need no lookup`() {
+        val handler = SponsorBlockHandler(CoroutineScope(UnconfinedTestDispatcher()))
+        handler.useProvidedSegments("sh04x4jzCPw", listOf(outro))
+
+        assertThat(handler.sponsorSegments.value).isEmpty()
+        assertThat(handler.checkForSkip(156_700L)).isNull()
+
+        handler.setEnabled(true)
+        assertThat(handler.sponsorSegments.value).containsExactly(outro)
+        assertThat(handler.checkForSkip(156_700L)).isEqualTo(157_200L)
+
+        handler.setEnabled(false)
+        assertThat(handler.sponsorSegments.value).isEmpty()
+        assertThat(handler.checkForSkip(156_700L)).isNull()
+    }
 }
