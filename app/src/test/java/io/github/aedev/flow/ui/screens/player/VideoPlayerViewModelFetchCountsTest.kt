@@ -15,6 +15,7 @@ import io.mockk.Called
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.verify
 import io.mockk.verifyOrder
@@ -28,23 +29,24 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import nl.neerdael.milkbeat.catalog.CommentsPage
+import nl.neerdael.milkbeat.plugin.VideoPlayback
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.schabi.newpipe.extractor.Page
 import org.schabi.newpipe.extractor.stream.StreamInfo
+import nl.neerdael.milkbeat.catalog.Comment as PluginComment
 
 /**
- * Pins how many times each network entry point is entered per user-visible cause, with both
- * extraction failing (InnerTube returns null). Nothing here is a spec: every count is today's
- * behaviour, recorded so a refactor can prove it did not change it.
+ * Pins how many times each network entry point is entered per user-visible cause, with the video
+ * plugin failing every resolve. Nothing here is a spec: every count is today's behaviour, recorded so
+ * a refactor can prove it did not change it.
  *
  * Entry points counted:
- *  - InnerTube: [InnerTubeVideoStreamExtractor.extract]
- *  - Return YouTube Dislike: gated by `playerPreferences.rytdEnabled` — the HTTP call itself uses
- *    HttpURLConnection and cannot be intercepted, so the gate read is what is counted (it is
- *    disabled in the harness so no socket is ever opened)
- *  - premiere probe: [YouTube.player], entered from the both-failed error path
+ *  - the video plugin: [io.github.aedev.flow.plugin.playback.PluginVideo.resolve]
+ *  - the in-app YouTube stack, which the player no longer reaches: InnerTube extraction, the Return
+ *    YouTube Dislike gate and the premiere probe ([YouTube.player])
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class VideoPlayerViewModelFetchCountsTest {
@@ -73,8 +75,14 @@ class VideoPlayerViewModelFetchCountsTest {
         clearAllMocks(answers = false, childMocks = false)
     }
 
+    private fun verifyNoYouTubeStack() {
+        coVerify(exactly = 0) { InnerTubeVideoStreamExtractor.extract(any(), any()) }
+        verify(exactly = 0) { harness.playerPreferences.rytdEnabled }
+        coVerify(exactly = 0) { YouTube.player(any(), any(), any(), any(), any(), any(), any()) }
+    }
+
     @Test
-    fun `playVideo resets state then makes 1 InnerTube extraction 1 RYD gate read and 1 premiere probe`() =
+    fun `playVideo resets state then makes 1 plugin resolve and no YouTube call`() =
         runTest {
             val viewModel = newViewModel()
             val video = video("vid_a")
@@ -106,9 +114,8 @@ class VideoPlayerViewModelFetchCountsTest {
                 cancelAndIgnoreRemainingEvents()
             }
 
-            coVerify(exactly = 1) { InnerTubeVideoStreamExtractor.extract("vid_a", forceSabr = false) }
-            verify(exactly = 1) { harness.playerPreferences.rytdEnabled }
-            coVerify(exactly = 1) { YouTube.player("vid_a", any(), any(), any(), any(), any(), any()) }
+            coVerify(exactly = 1) { harness.pluginVideo.resolve("vid_a") }
+            verifyNoYouTubeStack()
             verifyOrder {
                 harness.playerManager.pause()
                 harness.playerManager.clearAll()
@@ -119,7 +126,7 @@ class VideoPlayerViewModelFetchCountsTest {
         }
 
     @Test
-    fun `retryLoadVideo clears the player and repeats the full ladder`() =
+    fun `retryLoadVideo clears the player drops the cached resolve and resolves once more`() =
         runTest {
             val viewModel = newViewModel()
             viewModel.playVideo(video("vid_a"))
@@ -133,21 +140,48 @@ class VideoPlayerViewModelFetchCountsTest {
             assertThat(retrying.error).isNull()
             assertThat(retrying.errorHint).isNull()
             verify(exactly = 1) { harness.playerManager.clearCurrentVideo() }
+            verify(exactly = 1) { harness.pluginVideo.forget("vid_a") }
 
             advanceUntilIdle()
 
             val terminal = viewModel.uiState.value
             assertThat(terminal.isLoading).isFalse()
             assertThat(terminal.error).isEqualTo("res:${R.string.error_generic}")
-            coVerify(exactly = 1) { InnerTubeVideoStreamExtractor.extract("vid_a", forceSabr = false) }
-            verify(exactly = 1) { harness.playerPreferences.rytdEnabled }
-            coVerify(exactly = 1) { YouTube.player("vid_a", any(), any(), any(), any(), any(), any()) }
+            coVerify(exactly = 1) { harness.pluginVideo.resolve("vid_a") }
+            verifyNoYouTubeStack()
             verify(exactly = 0) { harness.playerManager.pause() }
             verify(exactly = 0) { harness.playerManager.clearAll() }
         }
 
     @Test
-    fun `stream expiry reload escalates to SABR then retries the direct ladder once`() =
+    fun `stream expiry tells the plugin which URL failed and resolves once more`() =
+        runTest {
+            val viewModel = newViewModel()
+            viewModel.playVideo(video("vid_a"))
+            advanceUntilIdle()
+            forgetRecordedCalls()
+            every { harness.playerManager.lastStreamHttpFailure } returns ("https://cdn.invalid/a" to 403)
+
+            assertThat(harness.streamExpiredEvent.tryEmit(Unit)).isTrue()
+            runCurrent()
+            advanceUntilIdle()
+
+            val terminal = viewModel.uiState.value
+            assertThat(terminal.isLoading).isFalse()
+            assertThat(terminal.error).isEqualTo("res:${R.string.error_generic}")
+            assertThat(terminal.errorHint).isEqualTo("res:${R.string.error_generic_hint}")
+            coVerifyOrder {
+                harness.pluginVideo.failed("vid_a", "https://cdn.invalid/a", 403)
+                harness.pluginVideo.resolve("vid_a")
+            }
+            coVerify(exactly = 1) { harness.pluginVideo.resolve("vid_a") }
+            verifyNoYouTubeStack()
+            coVerify(exactly = 0) { harness.playerManager.clearCacheForCurrentVideo() }
+            coVerify(exactly = 0) { harness.playerPreferences.markVideoUnplayable(any()) }
+        }
+
+    @Test
+    fun `stream expiry without an HTTP failure only drops the cached resolve`() =
         runTest {
             val viewModel = newViewModel()
             viewModel.playVideo(video("vid_a"))
@@ -155,19 +189,11 @@ class VideoPlayerViewModelFetchCountsTest {
             forgetRecordedCalls()
 
             assertThat(harness.streamExpiredEvent.tryEmit(Unit)).isTrue()
-            runCurrent()
+            advanceUntilIdle()
 
-            val terminal = viewModel.uiState.value
-            assertThat(terminal.isLoading).isFalse()
-            assertThat(terminal.error).isEqualTo("res:${R.string.error_generic}")
-            assertThat(terminal.errorHint).isEqualTo("res:${R.string.error_generic_hint}")
-            // NewPipe is still started by the reload and only cancelled after its first attempt.
-            coVerify(exactly = 1) { InnerTubeVideoStreamExtractor.extract("vid_a", forceSabr = true) }
-            coVerify(exactly = 1) { InnerTubeVideoStreamExtractor.extract("vid_a", forceSabr = false) }
-            verify(exactly = 1) { harness.playerPreferences.rytdEnabled }
-            coVerify(exactly = 0) { YouTube.player(any(), any(), any(), any(), any(), any(), any()) }
-            coVerify(exactly = 0) { harness.playerManager.clearCacheForCurrentVideo() }
-            coVerify(exactly = 0) { harness.playerPreferences.markVideoUnplayable(any()) }
+            verify(exactly = 1) { harness.pluginVideo.forget("vid_a") }
+            verify(exactly = 0) { harness.pluginVideo.failed(any(), any(), any()) }
+            coVerify(exactly = 1) { harness.pluginVideo.resolve("vid_a") }
         }
 
     @Test
@@ -179,30 +205,29 @@ class VideoPlayerViewModelFetchCountsTest {
 
             repeat(2) {
                 assertThat(harness.streamExpiredEvent.tryEmit(Unit)).isTrue()
-                runCurrent()
+                advanceUntilIdle()
             }
             coVerify(exactly = 1) { harness.playerManager.clearCacheForCurrentVideo() }
             forgetRecordedCalls()
 
             assertThat(harness.streamExpiredEvent.tryEmit(Unit)).isTrue()
-            runCurrent()
+            advanceUntilIdle()
             coVerify(exactly = 1) { harness.playerManager.clearCacheForCurrentVideo() }
             forgetRecordedCalls()
 
             assertThat(harness.streamExpiredEvent.tryEmit(Unit)).isTrue()
-            runCurrent()
+            advanceUntilIdle()
 
             val terminal = viewModel.uiState.value
             assertThat(terminal.isLoading).isFalse()
             assertThat(terminal.error).isEqualTo("res:${R.string.error_all_stream_sources_failed}")
             assertThat(terminal.errorHint).isEqualTo("res:${R.string.error_playback_retry_hint}")
             coVerify(exactly = 1) { harness.playerPreferences.markVideoUnplayable("vid_a") }
-            coVerify(exactly = 0) { harness.repository.getVideoStreamInfo(any()) }
-            coVerify(exactly = 0) { InnerTubeVideoStreamExtractor.extract(any(), any()) }
+            coVerify(exactly = 0) { harness.pluginVideo.resolve(any()) }
 
             assertThat(harness.streamExpiredEvent.tryEmit(Unit)).isTrue()
-            runCurrent()
-            coVerify(exactly = 0) { harness.repository.getVideoStreamInfo(any()) }
+            advanceUntilIdle()
+            coVerify(exactly = 0) { harness.pluginVideo.resolve(any()) }
         }
 
     @Test
@@ -215,7 +240,7 @@ class VideoPlayerViewModelFetchCountsTest {
 
             repeat(4) {
                 assertThat(harness.streamExpiredEvent.tryEmit(Unit)).isTrue()
-                runCurrent()
+                advanceUntilIdle()
             }
 
             verify(exactly = 1) { harness.playerManager.skipAbandonedVideo() }
@@ -234,22 +259,21 @@ class VideoPlayerViewModelFetchCountsTest {
             assertThat(terminal.cachedVideo).isNull()
             assertThat(terminal.isLoading).isFalse()
             assertThat(terminal.error).isEqualTo("res:${R.string.error_generic}")
-            coVerify(exactly = 1) { InnerTubeVideoStreamExtractor.extract("ext_1", forceSabr = false) }
-            verify(exactly = 1) { harness.playerPreferences.rytdEnabled }
-            coVerify(exactly = 1) { YouTube.player("ext_1", any(), any(), any(), any(), any(), any()) }
+            coVerify(exactly = 1) { harness.pluginVideo.resolve("ext_1") }
+            verifyNoYouTubeStack()
             verify(exactly = 0) { harness.playerManager.startBackgroundService(any(), any(), any(), any()) }
         }
 
     @Test
-    fun `a superseded load is cancelled at its first attempt and its outcome never reaches the ui`() =
+    fun `a superseded load is cancelled and its outcome never reaches the ui`() =
         runTest {
             val viewModel = newViewModel()
             val videoA = video("vid_a")
             val videoB = video("vid_b")
-            val gateA = CompletableDeferred<InnerTubeVideoStreamExtractor.VideoExtractionResult?>()
-            val gateB = CompletableDeferred<InnerTubeVideoStreamExtractor.VideoExtractionResult?>()
-            coEvery { InnerTubeVideoStreamExtractor.extract("vid_a", forceSabr = false) } coAnswers { gateA.await() }
-            coEvery { InnerTubeVideoStreamExtractor.extract("vid_b", forceSabr = false) } coAnswers { gateB.await() }
+            val gateA = CompletableDeferred<Result<VideoPlayback>>()
+            val gateB = CompletableDeferred<Result<VideoPlayback>>()
+            coEvery { harness.pluginVideo.resolve("vid_a") } coAnswers { gateA.await() }
+            coEvery { harness.pluginVideo.resolve("vid_b") } coAnswers { gateB.await() }
 
             viewModel.uiState.test {
                 awaitItem()
@@ -265,13 +289,13 @@ class VideoPlayerViewModelFetchCountsTest {
                 assertThat(loadingB.isLoading).isTrue()
                 assertThat(loadingB.error).isNull()
 
-                gateA.completeExceptionally(RuntimeException("A failed"))
+                gateA.complete(Result.failure(RuntimeException("A failed")))
                 runCurrent()
                 expectNoEvents()
                 assertThat(viewModel.uiState.value.cachedVideo).isEqualTo(videoB)
                 assertThat(viewModel.uiState.value.isLoading).isTrue()
 
-                gateB.completeExceptionally(RuntimeException("B failed"))
+                gateB.complete(Result.failure(IllegalStateException()))
                 advanceUntilIdle()
                 val terminal = expectMostRecentItem()
                 assertThat(terminal.cachedVideo).isEqualTo(videoB)
@@ -280,8 +304,8 @@ class VideoPlayerViewModelFetchCountsTest {
                 cancelAndIgnoreRemainingEvents()
             }
 
-            coVerify(exactly = 1) { InnerTubeVideoStreamExtractor.extract("vid_a", forceSabr = false) }
-            coVerify(exactly = 1) { InnerTubeVideoStreamExtractor.extract("vid_b", forceSabr = false) }
+            coVerify(exactly = 1) { harness.pluginVideo.resolve("vid_a") }
+            coVerify(exactly = 1) { harness.pluginVideo.resolve("vid_b") }
         }
 
     @Test
@@ -352,19 +376,19 @@ class VideoPlayerViewModelFetchCountsTest {
                     likeCount = 0,
                     publishedTime = "",
                 )
-            coEvery { harness.repository.getVideoComments("vid_a", null) } coAnswers {
+            coEvery { harness.pluginVideo.comments(any()) } coAnswers {
                 gate.await()
-                CommentsPageResult(comments = listOf(comment))
+                Result.success(CommentsPage(comments = listOf(PluginComment(id = "c1", author = "author", text = "first"))))
             }
 
             viewModel.loadComments("vid_a")
             runCurrent()
             assertThat(viewModel.isLoadingComments.value).isTrue()
-            coVerify(exactly = 1) { harness.repository.getVideoComments("vid_a", null) }
+            coVerify(exactly = 1) { harness.pluginVideo.comments(any()) }
 
             viewModel.loadComments("vid_a")
             runCurrent()
-            coVerify(exactly = 1) { harness.repository.getVideoComments("vid_a", null) }
+            coVerify(exactly = 1) { harness.pluginVideo.comments(any()) }
             assertThat(viewModel.isLoadingComments.value).isTrue()
 
             gate.complete(Unit)
@@ -384,7 +408,7 @@ class VideoPlayerViewModelFetchCountsTest {
             viewModel.loadComments("vid_other")
             advanceUntilIdle()
 
-            coVerify(exactly = 0) { harness.repository.getComments(any()) }
+            coVerify(exactly = 0) { harness.pluginVideo.comments(any()) }
             assertThat(viewModel.isLoadingComments.value).isFalse()
         }
 
@@ -396,6 +420,7 @@ class VideoPlayerViewModelFetchCountsTest {
             viewModel.loadComments("local_1")
 
             verify { harness.repository wasNot Called }
+            coVerify(exactly = 0) { harness.pluginVideo.comments(any()) }
             assertThat(viewModel.isLoadingComments.value).isFalse()
             assertThat(viewModel.hasMoreComments.value).isFalse()
         }

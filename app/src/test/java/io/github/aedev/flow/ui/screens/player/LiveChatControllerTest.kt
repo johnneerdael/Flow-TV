@@ -2,11 +2,6 @@ package io.github.aedev.flow.ui.screens.player
 
 import com.google.common.truth.Truth.assertThat
 import io.github.aedev.flow.data.model.LiveChatMessage
-import io.github.aedev.flow.data.repository.LiveChatRepository
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.mockk
-import io.mockk.unmockkAll
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -23,30 +18,30 @@ import org.junit.Before
 import org.junit.Test
 
 /**
- * Pins the visibility gate on [LiveChatController]: the availability probe always runs (the chat
- * affordance is hidden until it answers), the poll loop only runs while a panel is showing it, and
- * closing that panel keeps the transcript so reopening costs no wait.
+ * Pins the gates on [LiveChatController]: the availability probe always runs and its batch is kept,
+ * polling runs only while the panel shows the chat and the video plays, it waits the time each batch
+ * asks for, and hiding the panel keeps the transcript so reopening costs no wait.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class LiveChatControllerTest {
     private val testDispatcher = StandardTestDispatcher()
-    private val repository: LiveChatRepository = mockk(relaxed = true)
     private val controllerScope = CoroutineScope(testDispatcher)
-    private var pollCount = 0
+    private val requests = mutableListOf<Pair<String, String?>>()
+    private var firstBatch: LiveChatPoll? = poll(listOf(message("m1"), message("m2")))
+    private var nextBatch: () -> LiveChatPoll? = { poll(listOf(message("n${requests.size}"))) }
 
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
-        coEvery { repository.initialContinuation(any()) } returns SEED
-        coEvery { repository.poll(any()) } answers { page(listOf(message("m1"), message("m2"))) }
     }
 
     @After
     fun tearDown() {
         controllerScope.cancel()
         Dispatchers.resetMain()
-        unmockkAll()
     }
+
+    private val polls: Int get() = requests.count { it.second != null }
 
     /**
      * The drip loop never ends on its own, so every test hands its scope back before [runTest]
@@ -56,7 +51,10 @@ class LiveChatControllerTest {
         runTest(testDispatcher) {
             val controller =
                 LiveChatController(
-                    repository = repository,
+                    fetch = { videoId, cursor ->
+                        requests += videoId to cursor
+                        if (cursor == null) firstBatch else nextBatch()
+                    },
                     scope = controllerScope,
                     dispatcher = testDispatcher,
                 )
@@ -68,53 +66,84 @@ class LiveChatControllerTest {
         }
 
     @Test
-    fun `a hidden panel probes availability but never polls`() =
+    fun `a hidden panel probes availability once but never polls`() =
         liveChatTest { controller ->
-
             controller.start("v1")
-            advanceTimeBy(POLL_WINDOW_MS)
+            advanceTimeBy(POLL_WINDOW_MS * 3)
             runCurrent()
 
-            coVerify(exactly = 1) { repository.initialContinuation("v1") }
-            coVerify(exactly = 0) { repository.poll(any()) }
+            assertThat(requests).containsExactly("v1" to null)
             assertThat(controller.isAvailable.value).isTrue()
             assertThat(controller.isLoading.value).isFalse()
             assertThat(controller.messages.value).isEmpty()
         }
 
     @Test
-    fun `an unavailable chat resolves without polling`() =
+    fun `a chat the plugin cannot give resolves unavailable without polling`() =
         liveChatTest { controller ->
-            coEvery { repository.initialContinuation("v1") } returns null
-
+            firstBatch = null
             controller.setPanelVisible(true)
             controller.start("v1")
-            advanceTimeBy(POLL_WINDOW_MS)
+            advanceTimeBy(POLL_WINDOW_MS * 3)
             runCurrent()
 
             assertThat(controller.isAvailable.value).isFalse()
             assertThat(controller.isLoading.value).isFalse()
-            coVerify(exactly = 0) { repository.poll(any()) }
+            assertThat(requests).containsExactly("v1" to null)
         }
 
     @Test
-    fun `showing the panel starts the drip`() =
+    fun `showing the panel shows the probed batch first, then polls with its cursor`() =
         liveChatTest { controller ->
+            controller.start("v1")
+            runCurrent()
+            controller.setPanelVisible(true)
+            advanceTimeBy(PAGE_WAIT_MS + 100)
+            runCurrent()
 
+            assertThat(controller.messages.value.map { it.id }).containsAtLeast("m1", "m2").inOrder()
+            assertThat(requests.first()).isEqualTo("v1" to null)
+            assertThat(requests.drop(1).map { it.second }).containsExactly(CURSOR)
+        }
+
+    @Test
+    fun `polling waits the time each batch asks for`() =
+        liveChatTest { controller ->
+            controller.setPanelVisible(true)
+            controller.start("v1")
+            runCurrent()
+            advanceTimeBy(PAGE_WAIT_MS - 100)
+            runCurrent()
+            assertThat(polls).isEqualTo(0)
+
+            advanceTimeBy(200)
+            runCurrent()
+            assertThat(polls).isEqualTo(1)
+        }
+
+    @Test
+    fun `pausing playback stops the polling until it resumes`() =
+        liveChatTest { controller ->
+            controller.setPanelVisible(true)
             controller.start("v1")
             advanceTimeBy(POLL_WINDOW_MS)
             runCurrent()
-            controller.setPanelVisible(true)
+
+            controller.setPlaying(false)
+            val pollsWhilePaused = polls
+            advanceTimeBy(POLL_WINDOW_MS * 4)
+            runCurrent()
+            assertThat(polls).isEqualTo(pollsWhilePaused)
+
+            controller.setPlaying(true)
             advanceTimeBy(POLL_WINDOW_MS)
             runCurrent()
-
-            assertThat(controller.messages.value.map { it.id }).containsExactly("m1", "m2").inOrder()
+            assertThat(polls).isGreaterThan(pollsWhilePaused)
         }
 
     @Test
     fun `hiding the panel stops the polling and keeps the transcript`() =
         liveChatTest { controller ->
-
             controller.setPanelVisible(true)
             controller.start("v1")
             advanceTimeBy(POLL_WINDOW_MS)
@@ -123,42 +152,37 @@ class LiveChatControllerTest {
             assertThat(bufferedMessages).isNotEmpty()
 
             controller.setPanelVisible(false)
-            val pollsBeforeHiding = pollCount
+            val pollsBeforeHiding = polls
             advanceTimeBy(POLL_WINDOW_MS * 4)
             runCurrent()
 
-            assertThat(pollCount).isEqualTo(pollsBeforeHiding)
+            assertThat(polls).isEqualTo(pollsBeforeHiding)
             assertThat(controller.messages.value).isEqualTo(bufferedMessages)
         }
 
     @Test
-    fun `reopening the panel resumes polling on the messages already buffered`() =
+    fun `a failed poll starts the chat afresh`() =
         liveChatTest { controller ->
-
+            var failNext = true
+            nextBatch = {
+                if (failNext) {
+                    failNext = false
+                    null
+                } else {
+                    poll(listOf(message("late")))
+                }
+            }
             controller.setPanelVisible(true)
             controller.start("v1")
-            advanceTimeBy(POLL_WINDOW_MS)
-            runCurrent()
-            controller.setPanelVisible(false)
+            advanceTimeBy(PAGE_WAIT_MS + RETRY_MS + 100)
             runCurrent()
 
-            val buffered = controller.messages.value
-            val pollsWhileHidden = pollCount
-
-            coEvery { repository.poll(any()) } answers { page(listOf(message("m3"))) }
-            controller.setPanelVisible(true)
-            advanceTimeBy(POLL_WINDOW_MS)
-            runCurrent()
-
-            assertThat(pollCount).isGreaterThan(pollsWhileHidden)
-            assertThat(controller.messages.value).containsAtLeastElementsIn(buffered).inOrder()
-            assertThat(controller.messages.value.map { it.id }).contains("m3")
+            assertThat(requests.map { it.second }).containsExactly(null, CURSOR, null).inOrder()
         }
 
     @Test
     fun `a new video clears the transcript`() =
         liveChatTest { controller ->
-
             controller.setPanelVisible(true)
             controller.start("v1")
             advanceTimeBy(POLL_WINDOW_MS)
@@ -172,19 +196,13 @@ class LiveChatControllerTest {
             assertThat(controller.isAvailable.value).isFalse()
         }
 
-    private fun page(messages: List<LiveChatMessage>): LiveChatRepository.LiveChatPage {
-        pollCount++
-        return LiveChatRepository.LiveChatPage(
-            messages = messages,
-            nextContinuation = SEED,
-            timeoutMs = PAGE_TIMEOUT_MS,
-        )
-    }
-
     private companion object {
-        const val SEED = "seed"
-        const val PAGE_TIMEOUT_MS = 1_000L
+        const val CURSOR = "cursor"
+        const val PAGE_WAIT_MS = 1_000L
         const val POLL_WINDOW_MS = 2_000L
+        const val RETRY_MS = 3_000L
+
+        fun poll(messages: List<LiveChatMessage>) = LiveChatPoll(messages, next = CURSOR, pollAfterMs = PAGE_WAIT_MS)
 
         fun message(id: String) =
             LiveChatMessage(

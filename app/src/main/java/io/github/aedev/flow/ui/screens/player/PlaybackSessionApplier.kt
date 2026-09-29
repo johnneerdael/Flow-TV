@@ -60,6 +60,7 @@ internal class PlaybackSessionApplier(
     private val isLoadCurrent: (Long) -> Boolean,
     private val playbackPreparer: PlaybackPreparer,
     private val streamPreparer: PlaybackStreamPreparer,
+    private val pluginPlayback: PluginPlaybackApplier,
     private val secondaryMetadata: PlayerSecondaryMetadataLoader,
     private val liveChat: LiveChatController,
     private val repository: YouTubeRepository,
@@ -109,6 +110,14 @@ internal class PlaybackSessionApplier(
 
             is ResolvedPlayback.VodFromInnerTube -> {
                 applyVodFromInnerTube(load, step)
+            }
+
+            is ResolvedPlayback.FromPlugin -> {
+                pluginPlayback.apply(load, step)
+            }
+
+            is ResolvedPlayback.PluginFailed -> {
+                pluginPlayback.fail(load, step)
             }
 
             is ResolvedPlayback.Upcoming -> {
@@ -209,7 +218,7 @@ internal class PlaybackSessionApplier(
      * leg won; a load InnerTube resolved by itself taught the engine nothing. Off the startup path
      * because it takes the brain mutex and updates vectors, none of which first frame needs.
      */
-    private fun recordWatchClick(video: Video) {
+    fun recordWatchClick(video: Video) {
         scope.launch(ioDispatcher) {
             try {
                 FlowNeuroEngine.onVideoInteraction(context, video, InteractionType.CLICK)

@@ -6,7 +6,6 @@ import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.player.EnhancedMusicPlayerManager
 import io.github.aedev.flow.player.GlobalPlayerState
 import io.github.aedev.flow.player.state.EnhancedPlayerState
-import io.github.aedev.flow.player.stream.InnerTubeVideoStreamExtractor
 import io.github.aedev.flow.ui.screens.player.VideoPlayerViewModelHarness.Companion.historyEntity
 import io.github.aedev.flow.ui.screens.player.VideoPlayerViewModelHarness.Companion.video
 import io.github.aedev.flow.ui.screens.player.state.VideoPlayerUiState
@@ -63,7 +62,7 @@ class VideoPlayerViewModelEntryPointsTest {
 
             assertThat(viewModel.uiState.value).isEqualTo(VideoPlayerUiState())
             verify { harness.repository wasNot Called }
-            coVerify(exactly = 0) { InnerTubeVideoStreamExtractor.extract(any(), any()) }
+            coVerify(exactly = 0) { harness.pluginVideo.resolve(any()) }
             coVerify(exactly = 1) { harness.viewHistory.getLatestUnfinishedVideo() }
             coVerify(exactly = 0) { harness.viewHistory.touchHistoryEntry(any(), any(), any(), any(), any(), any(), any()) }
             verify(exactly = 0) { harness.playerManager.pause() }
@@ -134,13 +133,13 @@ class VideoPlayerViewModelEntryPointsTest {
 
             advanceUntilIdle()
             assertThat(viewModel.uiState.value.resumedInMiniPlayer).isTrue()
-            coVerify(exactly = 1) { InnerTubeVideoStreamExtractor.extract("hist_1", forceSabr = false) }
+            coVerify(exactly = 1) { harness.pluginVideo.resolve("hist_1") }
 
             viewModel.clearResumedInMiniPlayer()
             assertThat(viewModel.uiState.value.resumedInMiniPlayer).isFalse()
 
             viewModel.resumeRestoredSession()
-            coVerify(exactly = 1) { InnerTubeVideoStreamExtractor.extract("hist_1", forceSabr = false) }
+            coVerify(exactly = 1) { harness.pluginVideo.resolve("hist_1") }
         }
 
     @Test
@@ -177,7 +176,7 @@ class VideoPlayerViewModelEntryPointsTest {
             verify(exactly = 1) { GlobalPlayerState.setCurrentVideo(video) }
             assertThat(GlobalPlayerState.currentVideo.value).isEqualTo(video)
             verify { harness.repository wasNot Called }
-            coVerify(exactly = 0) { InnerTubeVideoStreamExtractor.extract(any(), any()) }
+            coVerify(exactly = 0) { harness.pluginVideo.resolve(any()) }
             coVerify(exactly = 1) { harness.viewHistory.getSavedPosition("local_1") }
             coVerify(exactly = 0) { harness.viewHistory.touchHistoryEntry(any(), any(), any(), any(), any(), any(), any()) }
         }

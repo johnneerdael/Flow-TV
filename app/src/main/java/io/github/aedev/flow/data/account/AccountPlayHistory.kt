@@ -11,6 +11,7 @@ import io.github.aedev.flow.data.local.safePreferencesDataStore
 import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.player.MusicVideoItems
 import io.github.aedev.flow.plugin.playback.PluginAudio
+import io.github.aedev.flow.plugin.playback.PluginVideo
 import io.github.aedev.flow.plugin.runtime.PluginCallException
 import io.github.aedev.flow.utils.PerformanceDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -45,6 +46,7 @@ class AccountPlayHistory
     constructor(
         @ApplicationContext context: Context,
         private val pluginAudio: PluginAudio,
+        private val pluginVideo: PluginVideo,
     ) {
         private val dataStore = context.applicationContext.accountPlayHistoryDataStore
 
@@ -71,6 +73,27 @@ class AccountPlayHistory
                     Log.d(TAG, "Play of ${track.videoId} reported")
                 } catch (e: PluginCallException) {
                     Log.w(TAG, "Play of ${track.videoId} not reported: ${e.error.message}")
+                }
+            }
+        }
+
+        /**
+         * Called once per finished video view; reports it to the video plugin under the same rule and
+         * setting as a listen. A live view has no length, so it counts once it runs past the threshold.
+         */
+        fun onWatched(
+            videoId: String,
+            watchedMs: Long,
+            durationMs: Long,
+        ) {
+            if (!countsAsPlay(watchedMs, durationMs.takeIf { it > 0 } ?: Long.MAX_VALUE)) return
+            scope.launch {
+                if (!enabled.first()) return@launch
+                try {
+                    pluginVideo.reportView(videoId, watchedMs, durationMs.takeIf { it > 0 })
+                    Log.d(TAG, "View of $videoId reported")
+                } catch (e: PluginCallException) {
+                    Log.w(TAG, "View of $videoId not reported: ${e.error.message}")
                 }
             }
         }

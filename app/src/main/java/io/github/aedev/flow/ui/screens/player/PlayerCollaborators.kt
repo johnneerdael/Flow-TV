@@ -1,6 +1,7 @@
 package io.github.aedev.flow.ui.screens.player
 
 import android.content.Context
+import io.github.aedev.flow.data.account.AccountPlayHistory
 import io.github.aedev.flow.data.comments.CommentsPager
 import io.github.aedev.flow.data.comments.CommentsPlaybackState
 import io.github.aedev.flow.data.engagement.VideoEngagementUseCase
@@ -8,7 +9,6 @@ import io.github.aedev.flow.data.local.HomeFeedCacheRepository
 import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.data.local.ViewHistory
 import io.github.aedev.flow.data.model.Video
-import io.github.aedev.flow.data.repository.LiveChatRepository
 import io.github.aedev.flow.data.repository.SponsorBlockRepository
 import io.github.aedev.flow.data.repository.YouTubeRepository
 import io.github.aedev.flow.data.stats.VideoStatsRecorder
@@ -17,6 +17,9 @@ import io.github.aedev.flow.data.video.OfflineSubtitleStore
 import io.github.aedev.flow.data.video.VideoDownloadManager
 import io.github.aedev.flow.player.EnhancedPlayerManager
 import io.github.aedev.flow.player.stream.UpcomingPremiereProbe
+import io.github.aedev.flow.plugin.playback.PluginCommentsSource
+import io.github.aedev.flow.plugin.playback.PluginVideo
+import io.github.aedev.flow.plugin.playback.PluginVideoPages.toAppMessage
 import io.github.aedev.flow.ui.screens.player.state.VideoPlayerUiState
 import io.github.aedev.flow.ui.screens.player.state.richVideoFor
 import kotlinx.coroutines.CoroutineDispatcher
@@ -42,7 +45,8 @@ internal class PlayerCollaborators(
     videoDownloadManager: VideoDownloadManager,
     offlineSubtitleStore: OfflineSubtitleStore,
     sponsorBlockRepository: SponsorBlockRepository,
-    liveChatRepository: LiveChatRepository,
+    pluginVideo: PluginVideo,
+    accountPlayHistory: AccountPlayHistory,
     homeFeedCacheRepository: HomeFeedCacheRepository,
     playerManager: EnhancedPlayerManager,
     upcomingPremiereProbe: UpcomingPremiereProbe,
@@ -58,7 +62,7 @@ internal class PlayerCollaborators(
 ) {
     val comments =
         CommentsPager(
-            repository = repository,
+            source = PluginCommentsSource(pluginVideo),
             scope = scope,
             playbackState =
                 uiState.map {
@@ -105,13 +109,14 @@ internal class PlayerCollaborators(
             blockedChannelIds = blockedChannelIds,
             isPlaybackCurrent = isLoadCurrent,
             onResult = { result -> sessionApplier.applySecondary(result) },
+            fetchRelated = pluginVideo::related,
         )
 
     val watchSessions =
         WatchSessionTracker(
             context = context,
             viewHistory = viewHistory,
-            repository = repository,
+            fetchRelated = pluginVideo::related,
             homeFeedCacheRepository = homeFeedCacheRepository,
             videoStats = videoStats,
             scope = scope,
@@ -119,11 +124,16 @@ internal class PlayerCollaborators(
             shortsEnabled = shortsEnabled,
             relatedVideosFor = ::relatedVideosFor,
             richVideoFor = { videoId -> uiState.value.richVideoFor(videoId) },
+            onViewFinished = accountPlayHistory::onWatched,
         )
 
     val liveChat =
         LiveChatController(
-            repository = liveChatRepository,
+            fetch = { videoId, cursor ->
+                pluginVideo.liveChat(videoId, cursor).getOrNull()?.let { batch ->
+                    LiveChatPoll(batch.messages.map { it.toAppMessage() }, batch.next, batch.pollAfterMs)
+                }
+            },
             scope = scope,
             dispatcher = networkDispatcher,
         )
@@ -150,6 +160,19 @@ internal class PlayerCollaborators(
             },
         )
 
+    private val pluginPlayback =
+        PluginPlaybackApplier(
+            context = context,
+            uiState = uiState,
+            isLoadCurrent = isLoadCurrent,
+            playbackPreparer = playbackPreparer,
+            secondaryMetadata = secondaryMetadata,
+            liveChat = liveChat,
+            viewHistory = viewHistory,
+            playerPreferences = playerPreferences,
+            recordWatchClick = { video -> sessionApplier.recordWatchClick(video) },
+        )
+
     val sessionApplier: PlaybackSessionApplier =
         PlaybackSessionApplier(
             context = context,
@@ -157,6 +180,7 @@ internal class PlayerCollaborators(
             isLoadCurrent = isLoadCurrent,
             playbackPreparer = playbackPreparer,
             streamPreparer = PlaybackStreamPreparer(),
+            pluginPlayback = pluginPlayback,
             secondaryMetadata = secondaryMetadata,
             liveChat = liveChat,
             repository = repository,

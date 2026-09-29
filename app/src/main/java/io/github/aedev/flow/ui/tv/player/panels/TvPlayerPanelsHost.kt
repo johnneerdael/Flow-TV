@@ -93,13 +93,11 @@ fun BoxScope.TvPlayerPanelsHost(
     val playerState by manager.playerState.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Live chat lifecycle follows the panel.
+    // The chat polls only while its panel is open; closing it keeps the transcript for the next open.
     LaunchedEffect(activePanel) {
-        if (activePanel == TvPlayerPanel.LIVE_CHAT) {
-            viewModel.maybeStartLiveChat(video.id)
-        } else {
-            viewModel.stopLiveChat()
-        }
+        val chatOpen = activePanel == TvPlayerPanel.LIVE_CHAT
+        if (chatOpen) viewModel.maybeStartLiveChat(video.id)
+        viewModel.setLiveChatPanelVisible(chatOpen)
     }
 
     val title =
@@ -524,7 +522,7 @@ private fun TvCommentsPanelContent(
                                     )
                                 }
                             }
-                            if (comment.repliesPage != null) {
+                            if (comment.repliesPage != null || comment.continuationToken != null) {
                                 TvCard(onClick = { viewModel.loadMoreCommentReplies(comment) }) {
                                     Text(
                                         text = stringResource(R.string.tv_more_replies),
@@ -608,7 +606,14 @@ private fun TvCommentRow(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    if (comment.likeCount > 0) {
+                    val likes =
+                        comment.likeCountText.ifBlank {
+                            comment.likeCount
+                                .takeIf { it > 0 }
+                                ?.toString()
+                                .orEmpty()
+                        }
+                    if (likes.isNotBlank()) {
                         Icon(
                             imageVector = Icons.Outlined.ThumbUp,
                             contentDescription = null,
@@ -616,7 +621,7 @@ private fun TvCommentRow(
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Text(
-                            text = comment.likeCount.toString(),
+                            text = likes,
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
