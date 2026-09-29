@@ -17,7 +17,6 @@ import io.github.aedev.flow.data.model.Comment
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.data.recommendation.FlowNeuroEngine
-import io.github.aedev.flow.data.repository.LiveChatRepository
 import io.github.aedev.flow.data.repository.SponsorBlockRepository
 import io.github.aedev.flow.data.repository.YouTubeRepository
 import io.github.aedev.flow.data.transcript.TranscriptRepository
@@ -32,8 +31,9 @@ import io.github.aedev.flow.player.error.PlayerDiagnostics
 import io.github.aedev.flow.player.state.EnhancedPlayerState
 import io.github.aedev.flow.player.stream.CaptionTrackResolver
 import io.github.aedev.flow.player.stream.InnerTubeVideoStreamExtractor
-import io.github.aedev.flow.player.stream.PlaybackLoadResolver
+import io.github.aedev.flow.player.stream.PluginPlaybackResolver
 import io.github.aedev.flow.player.stream.UpcomingPremiereProbe
+import io.github.aedev.flow.plugin.playback.PluginVideo
 import io.github.aedev.flow.utils.NetworkState
 import io.mockk.Runs
 import io.mockk.coEvery
@@ -70,7 +70,7 @@ internal class VideoPlayerViewModelHarness(
     val videoDownloadManager: VideoDownloadManager = mockk(relaxed = true)
     val offlineSubtitleStore: OfflineSubtitleStore = mockk(relaxed = true)
     val sponsorBlockRepository: SponsorBlockRepository = mockk(relaxed = true)
-    val liveChatRepository: LiveChatRepository = mockk(relaxed = true)
+    val pluginVideo: PluginVideo = mockk(relaxed = true)
     val homeFeedCacheRepository: HomeFeedCacheRepository = mockk(relaxed = true)
     val playerManager: EnhancedPlayerManager = mockk(relaxed = true)
     val videoStats: io.github.aedev.flow.data.stats.VideoStatsRecorder = mockk(relaxed = true)
@@ -114,6 +114,11 @@ internal class VideoPlayerViewModelHarness(
         every { playerManager.getPlayer() } returns null
         every { playerManager.isPreparedForPlayback(any()) } returns false
         every { playerManager.isReachedByQueueAdvance(any()) } returns false
+        every { playerManager.lastStreamHttpFailure } returns null
+
+        // No video plugin answers: every load ends on the generic error, as a failed extraction did.
+        coEvery { pluginVideo.resolve(any()) } returns Result.failure(IllegalStateException())
+        coEvery { pluginVideo.related(any()) } returns emptyList()
 
         // Reset the real singleton before spying it so the reset is not a recorded call.
         GlobalPlayerState.setCurrentVideo(null)
@@ -193,21 +198,18 @@ internal class VideoPlayerViewModelHarness(
             watchLaterCleanup = mockk(relaxed = true),
             offlineSubtitleStore = offlineSubtitleStore,
             sponsorBlockRepository = sponsorBlockRepository,
-            liveChatRepository = liveChatRepository,
             homeFeedCacheRepository = homeFeedCacheRepository,
             playerManager = playerManager,
             upcomingPremiereProbe = UpcomingPremiereProbe(),
             playbackResolver =
-                PlaybackLoadResolver(
-                    context = context,
-                    repository = repository,
-                    viewHistory = viewHistory,
-                    playerPreferences = playerPreferences,
+                PluginPlaybackResolver(
+                    pluginVideo = pluginVideo,
                     videoDownloadManager = videoDownloadManager,
                     sponsorBlockRepository = sponsorBlockRepository,
-                    networkDispatcher = testDispatcher,
                     ioDispatcher = testDispatcher,
                 ),
+            pluginVideo = pluginVideo,
+            accountPlayHistory = mockk(relaxed = true),
             notesRepository = mockk(relaxed = true),
             videoStats = videoStats,
             networkDispatcher = testDispatcher,

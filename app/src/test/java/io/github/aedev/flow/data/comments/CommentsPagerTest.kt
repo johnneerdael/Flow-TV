@@ -54,7 +54,7 @@ class CommentsPagerTest {
         fetchTimeoutMs: Long? = null,
         prefetchPages: Int = 0,
     ) = CommentsPager(
-        repository = repository,
+        source = YouTubeCommentsSource(repository),
         scope = scope,
         playbackState = playbackState,
         isCurrentVideo = isCurrentVideo,

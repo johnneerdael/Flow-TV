@@ -9,7 +9,6 @@ import io.github.aedev.flow.data.local.ViewHistory
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.recommendation.FlowNeuroEngine
 import io.github.aedev.flow.data.recommendation.InteractionType
-import io.github.aedev.flow.data.repository.YouTubeRepository
 import io.github.aedev.flow.data.stats.VideoStatsRecorder
 import io.github.aedev.flow.data.stats.ViewEvent
 import io.github.aedev.flow.data.stats.ViewFormat
@@ -124,7 +123,7 @@ internal fun positionBelongsTo(
 internal class WatchSessionTracker(
     private val context: Context,
     private val viewHistory: ViewHistory,
-    private val repository: YouTubeRepository,
+    private val fetchRelated: suspend (String) -> List<Video>,
     private val homeFeedCacheRepository: HomeFeedCacheRepository,
     private val videoStats: VideoStatsRecorder,
     private val scope: CoroutineScope,
@@ -132,6 +131,8 @@ internal class WatchSessionTracker(
     private val shortsEnabled: () -> Boolean,
     private val relatedVideosFor: (String) -> List<Video>,
     private val richVideoFor: (String) -> Video?,
+    /** A finished view, for the provider's own history: the video, the time really watched and its length (0 when live). */
+    private val onViewFinished: (videoId: String, watchedMs: Long, durationMs: Long) -> Unit = { _, _, _ -> },
     private val elapsedRealtime: () -> Long = SystemClock::elapsedRealtime,
 ) {
     private inner class Session(
@@ -309,6 +310,7 @@ internal class WatchSessionTracker(
         val video = richVideoFor(session.video.id) ?: session.video
         val signal = watchSignalFor(session.maxPositionMs, session.durationMs)
         recordView(session, final = true)
+        if (session.format != ViewFormat.SHORT) onViewFinished(video.id, session.watchedMs, session.durationMs)
 
         // Shorts played here teach the engine through the Shorts classifier's rules, not these.
         if (session.format != ViewFormat.LONG || signal == null || video.id == lastReportedVideoId) return
@@ -368,7 +370,7 @@ internal class WatchSessionTracker(
                         candidates =
                             playerRelated.ifEmpty {
                                 withTimeoutOrNull(RELATED_PREWARM_TIMEOUT_MS) {
-                                    repository.getRelatedCandidates(videoId)
+                                    fetchRelated(videoId)
                                 }.orEmpty()
                             },
                         shortsEnabled = shortsEnabled(),

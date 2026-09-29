@@ -9,6 +9,7 @@ import io.github.aedev.flow.data.video.OfflineSubtitleStore
 import io.github.aedev.flow.innertube.models.response.PlayerResponse
 import io.github.aedev.flow.player.EnhancedPlayerManager
 import io.github.aedev.flow.player.PlaybackResumePolicy
+import io.github.aedev.flow.player.StreamRequestHeaders
 import io.github.aedev.flow.player.sabr.SabrRoutingPolicy
 import io.github.aedev.flow.player.sabr.integration.SabrStreamInfo
 import io.github.aedev.flow.player.stream.ResolvedPlayback
@@ -184,6 +185,7 @@ internal class PlaybackPreparer(
         dashManifestUrl: String?,
         subtitles: List<SubtitlesStream>,
         isCurrent: () -> Boolean,
+        requestHeaders: StreamRequestHeaders = StreamRequestHeaders.NONE,
     ): Boolean =
         withContext(Dispatchers.Main) {
             if (!isCurrent()) return@withContext false
@@ -203,6 +205,7 @@ internal class PlaybackPreparer(
                 startPosition = 0L,
                 preferredVideoCodec = playerPreferences.videoCodecPriority.first(),
                 preferredLiveQualityHeight = preferredDefaultQualityHeight(),
+                requestHeaders = requestHeaders,
             )
             applyRememberedPlaybackSpeed(isLive = true)
 
@@ -228,6 +231,8 @@ internal class PlaybackPreparer(
         preferredVideoCodec: String,
         preferredLiveQualityHeight: Int,
         isCurrent: () -> Boolean,
+        requestHeaders: StreamRequestHeaders = StreamRequestHeaders.NONE,
+        skipSegments: List<SponsorBlockSegment>? = null,
     ) = withContext(Dispatchers.Main) {
         if (!isCurrent()) return@withContext
         if (playerManager.isPreparedForPlayback(videoId)) return@withContext
@@ -264,6 +269,8 @@ internal class PlaybackPreparer(
             preferredVideoCodec = preferredVideoCodec,
             preferSabr = preferSabr,
             preferredLiveQualityHeight = preferredLiveQualityHeight,
+            requestHeaders = requestHeaders,
+            skipSegments = skipSegments,
         )
         applyRememberedPlaybackSpeed(isLive = false)
 

@@ -70,7 +70,7 @@ class WatchSessionTrackerTest {
         WatchSessionTracker(
             context = context,
             viewHistory = viewHistory,
-            repository = repository,
+            fetchRelated = { videoId -> repository.getRelatedCandidates(videoId) },
             homeFeedCacheRepository = homeFeedCacheRepository,
             videoStats = videoStats,
             scope = trackerScope,

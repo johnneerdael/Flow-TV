@@ -77,6 +77,7 @@ class PlaybackSessionApplierTest {
             isLoadCurrent = { token -> token == CURRENT_TOKEN },
             playbackPreparer = playbackPreparer,
             streamPreparer = PlaybackStreamPreparer(),
+            pluginPlayback = mockk(relaxed = true),
             secondaryMetadata = secondaryMetadata,
             liveChat = liveChat,
             repository = harness.repository,

@@ -3,9 +3,7 @@ package io.github.aedev.flow.ui.screens.player
 import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.data.local.VideoQuality
 import io.github.aedev.flow.player.EnhancedPlayerManager
-import io.github.aedev.flow.player.stream.MergedPlaybackAssembly
 import io.github.aedev.flow.ui.screens.player.state.VideoPlayerUiState
-import io.github.aedev.flow.ui.screens.player.state.applySelectedQuality
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -67,20 +65,10 @@ internal class PlaybackSettingsController(
         playerManager.toggleLoop(enabled)
     }
 
+    /** Switches the player to [quality] (AUTO hands the choice back to adaptive selection) and shows it selected. */
     fun switchQuality(quality: VideoQuality) {
-        val state = uiState.value
-        scope.launch {
-            val streams =
-                MergedPlaybackAssembly.selectQualityStreams(
-                    innerTubeVideoFormats = state.innerTubeVideoFormats,
-                    innerTubeAudioFormats = state.innerTubeAudioFormats,
-                    quality = quality,
-                    preferredAudioLanguage = playerPreferences.preferredAudioLanguage.first(),
-                    preferredCodecKey = playerPreferences.videoCodecPriority.first(),
-                )
-
-            uiState.value = state.applySelectedQuality(quality, streams.first, streams.second)
-        }
+        playerManager.switchQualityByHeight(quality.height)
+        uiState.update { it.copy(selectedQuality = quality, isAdaptiveMode = quality == VideoQuality.AUTO) }
     }
 
     fun toggleSkipSilence(isEnabled: Boolean) {

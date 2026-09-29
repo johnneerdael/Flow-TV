@@ -95,6 +95,8 @@ internal class PlayerSecondaryMetadataLoader(
     private val blockedChannelIds: () -> Set<String>,
     private val isPlaybackCurrent: (Long) -> Boolean,
     private val onResult: (SecondaryMetadata) -> Unit,
+    /** The related lane's source; the video plugin on the TV. */
+    private val fetchRelated: suspend (String) -> List<Video> = { videoId -> repository.getRelatedCandidates(videoId) },
 ) {
     private class ConcurrentLoad {
         var job: Job? = null
@@ -350,7 +352,7 @@ internal class PlayerSecondaryMetadataLoader(
 
                 val fallbackCandidates =
                     withTimeoutOrNull(RELATED_FALLBACK_TIMEOUT_MS) {
-                        repository.getRelatedCandidates(videoId)
+                        fetchRelated(videoId)
                     }.orEmpty()
                 if (!isPlaybackCurrent(loadToken) || !relatedLoad.holds(videoId, loadToken)) return@launch
 

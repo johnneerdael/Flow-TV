@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.github.aedev.flow.data.account.AccountPlayHistory
 import io.github.aedev.flow.data.engagement.FeedInvalidationBus
 import io.github.aedev.flow.data.engagement.VideoEngagementUseCase
 import io.github.aedev.flow.data.local.*
@@ -27,14 +28,14 @@ import io.github.aedev.flow.player.EnhancedPlayerManager
 import io.github.aedev.flow.player.GlobalPlayerState
 import io.github.aedev.flow.player.MiniPlayerExpansionState
 import io.github.aedev.flow.player.state.EnhancedPlayerState
-import io.github.aedev.flow.player.stream.PlaybackLoadResolver
 import io.github.aedev.flow.player.stream.PlaybackResolutionRequest
+import io.github.aedev.flow.player.stream.PluginPlaybackResolver
 import io.github.aedev.flow.player.stream.UpcomingPremiereProbe
+import io.github.aedev.flow.plugin.playback.PluginVideo
 import io.github.aedev.flow.ui.screens.player.state.*
 import io.github.aedev.flow.utils.NetworkState
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
@@ -48,12 +49,12 @@ import javax.inject.Inject
 private const val QUEUE_SAVE_DEBOUNCE_MS = 1_000L
 
 /**
- * Owns the player screen's state and every session entry point the UI calls: what plays, what the
- * player reports back, and what the surrounding controllers are armed with.
+ * Owns the player screen's state and the API the UI calls: what plays, what the player reports back,
+ * and what the surrounding controllers are armed with.
  *
- * The state has two writers by responsibility: this class writes what an entry point and the
- * player's own state changes land on, [PlaybackSessionApplier] writes what a resolved load lands on.
- * Both hold the one flow constructed here and gate on the same load token.
+ * The state has two writers by responsibility: [PlayerSessionController] and this class write what an
+ * entry point and the player's own state changes land on, [PlaybackSessionApplier] writes what a
+ * resolved load lands on. All hold the one flow constructed here and gate on the same load token.
  */
 @OptIn(FlowPreview::class)
 @HiltViewModel
@@ -72,11 +73,12 @@ class VideoPlayerViewModel
         private val watchLaterCleanup: WatchLaterCleanup,
         private val offlineSubtitleStore: io.github.aedev.flow.data.video.OfflineSubtitleStore,
         private val sponsorBlockRepository: SponsorBlockRepository,
-        private val liveChatRepository: io.github.aedev.flow.data.repository.LiveChatRepository,
         private val homeFeedCacheRepository: HomeFeedCacheRepository,
         private val playerManager: EnhancedPlayerManager,
         private val upcomingPremiereProbe: UpcomingPremiereProbe,
-        private val playbackResolver: PlaybackLoadResolver,
+        private val playbackResolver: PluginPlaybackResolver,
+        private val pluginVideo: PluginVideo,
+        accountPlayHistory: AccountPlayHistory,
         notesRepository: io.github.aedev.flow.data.notes.NotesRepository,
         private val videoStats: io.github.aedev.flow.data.stats.VideoStatsRecorder,
         @NetworkIoDispatcher private val networkDispatcher: CoroutineDispatcher,
@@ -87,6 +89,8 @@ class VideoPlayerViewModel
 
         private val notes = PlayerNotes(notesRepository, playerPreferences, viewModelScope)
 
+        private val loads: PlaybackLoadJobs = PlaybackLoadJobs(viewModelScope, networkDispatcher, onCancel = { secondaryMetadata.cancel() })
+
         val videoNote: StateFlow<String?> = notes.note
         val videoNotesEnabled: StateFlow<Boolean> = notes.enabled
 
@@ -95,7 +99,7 @@ class VideoPlayerViewModel
             text: String,
         ) = notes.save(videoId, text)
 
-        private val collaborators =
+        private val collaborators: PlayerCollaborators =
             PlayerCollaborators(
                 context = context,
                 repository = repository,
@@ -106,7 +110,8 @@ class VideoPlayerViewModel
                 videoDownloadManager = videoDownloadManager,
                 offlineSubtitleStore = offlineSubtitleStore,
                 sponsorBlockRepository = sponsorBlockRepository,
-                liveChatRepository = liveChatRepository,
+                pluginVideo = pluginVideo,
+                accountPlayHistory = accountPlayHistory,
                 homeFeedCacheRepository = homeFeedCacheRepository,
                 playerManager = playerManager,
                 upcomingPremiereProbe = upcomingPremiereProbe,
@@ -115,8 +120,8 @@ class VideoPlayerViewModel
                 scope = viewModelScope,
                 networkDispatcher = networkDispatcher,
                 ioDispatcher = ioDispatcher,
-                isLoadCurrent = ::isPlaybackLoadCurrent,
-                currentLoadToken = { playbackLoadToken },
+                isLoadCurrent = loads::isCurrent,
+                currentLoadToken = { loads.token },
                 shortsEnabled = { shortsContentEnabled },
                 blockedChannelIds = { blockedChannelIds },
             )
@@ -140,14 +145,9 @@ class VideoPlayerViewModel
         val descriptionState: StateFlow<VideoDescriptionPage?> = descriptions.description
         val transcriptState: StateFlow<TranscriptState> = transcripts.state
 
-        private val navigationHistory = PlayerNavigationHistory()
-
-        private var activeLoadJob: Job? = null
-        private var playbackLoadToken: Long = 0L
-        private var loadingVideoId: String? = null
         private var clearedUnplayableVideoId: String? = null
 
-        private val recovery =
+        private val recovery: PlaybackRecoveryController =
             PlaybackRecoveryController(
                 context = context,
                 uiState = _uiState,
@@ -155,20 +155,18 @@ class VideoPlayerViewModel
                 playerPreferences = playerPreferences,
                 watchSessions = watchSessions,
                 scope = viewModelScope,
-                isLoadInFlight = { activeLoadJob?.isActive == true },
-                cancelLoad = { cancelActivePlaybackLoad(invalidateToken = true) },
+                isLoadInFlight = { loads.isInFlight },
+                cancelLoad = { loads.cancel(invalidateToken = true) },
                 reloadStreams = { videoId, resumePositionMs ->
-                    loadVideoInfo(
-                        videoId = videoId,
-                        isWifi = detectIsWifi(),
-                        forceRefresh = true,
-                        escalateToSabr = true,
-                        resumePositionOverrideMs = resumePositionMs,
-                    )
+                    // The plugin is told which URL failed, so it hands back a different one.
+                    playerManager.lastStreamHttpFailure
+                        ?.let { (url, status) -> pluginVideo.failed(videoId, url, status) }
+                        ?: pluginVideo.forget(videoId)
+                    loadVideoInfo(videoId, isWifi = detectIsWifi(), forceRefresh = true, resumePositionOverrideMs = resumePositionMs)
                 },
             )
 
-        private val settings =
+        private val settings: PlaybackSettingsController =
             PlaybackSettingsController(
                 uiState = _uiState,
                 playerManager = playerManager,
@@ -176,7 +174,7 @@ class VideoPlayerViewModel
                 scope = viewModelScope,
             )
 
-        private val presence =
+        private val presence: PlaybackPresenceController =
             PlaybackPresenceController(
                 uiState = _uiState,
                 playerManager = playerManager,
@@ -189,30 +187,32 @@ class VideoPlayerViewModel
                 resumeQueue = { videos, index, title -> playPlaylist(videos, index, title) },
             )
 
-        private val _canGoPrevious = MutableStateFlow(false)
-        val canGoPrevious: StateFlow<Boolean> = _canGoPrevious.asStateFlow()
-
         private val _expandPlayerRequest = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
         val expandPlayerRequest: SharedFlow<Unit> = _expandPlayerRequest.asSharedFlow()
 
-        private fun nextPlaybackLoadToken(): Long {
-            playbackLoadToken += 1L
-            return playbackLoadToken
-        }
+        private val session: PlayerSessionController =
+            PlayerSessionController(
+                context = context,
+                uiState = _uiState,
+                scope = viewModelScope,
+                playerManager = playerManager,
+                viewHistory = viewHistory,
+                resolver = playbackResolver,
+                pluginVideo = pluginVideo,
+                loads = loads,
+                collaborators = collaborators,
+                recovery = recovery,
+                presence = presence,
+                notes = notes,
+                shortsEnabled = { shortsContentEnabled },
+                blockedChannelIds = { blockedChannelIds },
+                refreshBlockedChannels = ::refreshBlockedChannels,
+                requestExpandPlayer = { _expandPlayerRequest.tryEmit(Unit) },
+            )
 
-        private fun isPlaybackLoadCurrent(token: Long): Boolean = playbackLoadToken == token
+        val canGoPrevious: StateFlow<Boolean> = session.canGoPrevious
 
         private fun isLocalMediaId(id: String?): Boolean = LocalMediaIds.isLocal(id)
-
-        private fun cancelActivePlaybackLoad(invalidateToken: Boolean = false) {
-            if (invalidateToken) {
-                nextPlaybackLoadToken()
-            }
-            activeLoadJob?.cancel()
-            activeLoadJob = null
-            loadingVideoId = null
-            secondaryMetadata.cancel()
-        }
 
         /** Arms the live chat for [videoId]; the drip loop itself waits for a visible panel. */
         fun maybeStartLiveChat(videoId: String) = liveChat.start(videoId)
@@ -301,6 +301,7 @@ class VideoPlayerViewModel
 
         private suspend fun onPlayerStateChanged(playerState: EnhancedPlayerState) {
             _uiState.update { it.mirrorPlayerState(playerState) }
+            liveChat.setPlaying(playerState.playWhenReady)
 
             // A video that prepares successfully is not unplayable, whatever a past failure said.
             playerState.currentVideoId
@@ -310,13 +311,7 @@ class VideoPlayerViewModel
                     playerPreferences.clearVideoUnplayable(preparedVideoId)
                 }
 
-            val videoId = _uiState.value.foreignVideoIdNeedingLoad(playerState) ?: return
-            GlobalPlayerState.currentVideo.value?.takeIf { it.id == videoId }?.let { currentVideo ->
-                _uiState.update { it.resetForVideo(currentVideo) }
-                presence.armNotificationFor(currentVideo)
-                watchSessions.saveHistoryEntry(currentVideo)
-            }
-            loadVideoInfo(videoId, isWifi = detectIsWifi(), forceRefresh = true)
+            session.followPlayer(playerState)
         }
 
         fun resumeRestoredSession(stayMini: Boolean = false) = presence.resumeRestoredSession(stayMini)
@@ -329,107 +324,17 @@ class VideoPlayerViewModel
 
         fun toggleUpcomingReminder() = upcomingPremiere.toggleReminder()
 
-        fun syncWithCurrentPlayerVideo(video: Video) {
-            val state = _uiState.value
-            val alreadySynced =
-                state.cachedVideo?.id == video.id &&
-                    (state.isLoading || state.isLive || !state.hlsUrl.isNullOrEmpty() || state.localFileVideoId == video.id)
-            if (alreadySynced) return
+        fun syncWithCurrentPlayerVideo(video: Video) = session.syncWithCurrentPlayerVideo(video)
 
-            if (upcomingPremiere.applyCountdown(video)) {
-                return
-            }
-
-            _uiState.update { it.resetForVideo(video) }
-            loadVideoInfo(video.id, isWifi = detectIsWifi(), forceRefresh = true)
-        }
-
-        /**
-         * Plays a video by immediately caching metadata and triggering stream load.
-         * This ensures the UI shows video info immediately while streams are fetched.
-         */
-        fun playVideo(video: Video) {
-            val isMiniPlayerCollapsed =
-                GlobalPlayerState.miniPlayerExpansionState.value == MiniPlayerExpansionState.COLLAPSED
-            if (_uiState.value.shouldReopenInsteadOfPlaying(video.id, playerManager.playerState.value, isMiniPlayerCollapsed)) {
-                presence.showVideoPlayer()
-                _expandPlayerRequest.tryEmit(Unit)
-                return
-            }
-
-            nextPlaybackLoadToken()
-            takeOverPlayback()
-
-            _uiState.value = _uiState.value.startPlaybackOf(video)
-            GlobalPlayerState.setCurrentVideo(video)
-            GlobalPlayerState.setExplicitBackgroundPlaybackActive(false)
-            watchSessions.saveHistoryEntry(video)
-            presence.armNotificationFor(video)
-            if (upcomingPremiere.applyCountdown(video)) {
-                return
-            }
-            loadVideoInfo(video.id, isWifi = detectIsWifi(), forceRefresh = true)
-        }
+        /** Shows [video]'s metadata at once and starts loading its streams. */
+        fun playVideo(video: Video) = session.playVideo(video)
 
         fun playLocalVideo(
             video: Video,
             contentUri: String,
-        ) {
-            takeOverPlayback()
-            prepareDeviceFile(video, contentUri)
-        }
+        ) = session.playLocalVideo(video, contentUri)
 
-        /** Plays a file on the device, keeping whatever queue it belongs to. */
-        private fun prepareDeviceFile(
-            video: Video,
-            contentUri: String,
-        ) {
-            val loadToken = nextPlaybackLoadToken()
-            _uiState.value = _uiState.value.startLocalPlaybackOf(video, contentUri)
-            GlobalPlayerState.setCurrentVideo(video)
-            GlobalPlayerState.setExplicitBackgroundPlaybackActive(false)
-            presence.armNotificationFor(video)
-
-            viewModelScope.launch {
-                sessionApplier.prepareLocalMedia(
-                    load = LoadContext(video.id, loadToken),
-                    localFilePath = contentUri,
-                    offlineSegments = null,
-                    savedPosition = runCatching { viewHistory.getSavedPosition(video.id) }.getOrDefault(0L),
-                )
-            }
-        }
-
-        /** Drops the load, the queue and the music player so this screen owns playback outright. */
-        private fun takeOverPlayback() {
-            cancelActivePlaybackLoad()
-            recovery.onPlaybackRequested()
-            playerManager.pause()
-            playerManager.clearAll()
-            EnhancedMusicPlayerManager.stop()
-            EnhancedMusicPlayerManager.clearCurrentTrack()
-        }
-
-        fun clearVideo() {
-            nextPlaybackLoadToken()
-            cancelActivePlaybackLoad()
-            recovery.onPlaybackRequested()
-            playerManager.stop()
-            playerManager.stopBackgroundService()
-            playerManager.clearAll()
-            GlobalPlayerState.setCurrentVideo(null)
-            GlobalPlayerState.setExplicitBackgroundPlaybackActive(false)
-            GlobalPlayerState.hideMiniPlayer()
-
-            _uiState.update { it.clearedForNoVideo() }
-
-            navigationHistory.clear()
-            _canGoPrevious.value = false
-
-            comments.clear()
-            descriptions.clear()
-            transcripts.clear()
-        }
+        fun clearVideo() = session.clearVideo()
 
         fun startBackgroundPlayback() = presence.startBackgroundPlayback()
 
@@ -437,35 +342,9 @@ class VideoPlayerViewModel
 
         fun showVideoPlayer() = presence.showVideoPlayer()
 
-        fun retryLoadVideo() {
-            val videoId = _uiState.value.cachedVideo?.id ?: return
-            Log.d("VideoPlayerViewModel", "Retrying video load for $videoId")
-            if (upcomingPremiere.applyCountdown(_uiState.value.cachedVideo ?: return)) {
-                return
-            }
-            val deviceFileUri = LocalMediaIds.videoUri(videoId)
-            if (deviceFileUri != null) {
-                playLocalVideo(_uiState.value.cachedVideo ?: return, deviceFileUri.toString())
-                return
-            }
-            recovery.onPlaybackRequested()
-            playerManager.clearCurrentVideo()
-            _uiState.update { it.copy(error = null, errorHint = null, isLoading = true) }
-            loadVideoInfo(videoId, isWifi = detectIsWifi(), forceRefresh = true)
-        }
+        fun retryLoadVideo() = session.retryLoadVideo()
 
-        fun ensurePlaybackPrepared(videoId: String) {
-            val state = _uiState.value
-            if (state.blocksLatePrepare() || !state.holdsVideo(videoId)) return
-            if (playerManager.isPreparedForPlayback(videoId)) return
-
-            viewModelScope.launch {
-                val latest = _uiState.value
-                if (latest.blocksLatePrepare()) return@launch
-                if (playerManager.isPreparedForPlayback(videoId)) return@launch
-                sessionApplier.armLatePrepare(LoadContext(videoId, playbackLoadToken), latest)
-            }
-        }
+        fun ensurePlaybackPrepared(videoId: String) = session.ensurePlaybackPrepared(videoId)
 
         /** [shuffle] turns the queue's shuffle on or off for this list; null keeps the current setting. */
         fun playPlaylist(
@@ -473,136 +352,21 @@ class VideoPlayerViewModel
             startIndex: Int,
             title: String? = null,
             shuffle: Boolean? = null,
-        ) {
-            if (videos.isEmpty()) return
-            val startVideo = videos.getOrNull(startIndex) ?: videos.first()
+        ) = session.playPlaylist(videos, startIndex, title, shuffle)
 
-            EnhancedMusicPlayerManager.stop()
-            EnhancedMusicPlayerManager.clearCurrentTrack()
+        fun playNext() = session.playNext()
 
-            playerManager.setQueue(videos, startIndex, title, shuffle)
+        fun playPrevious() = session.playPrevious()
 
-            _uiState.update { it.resetForVideo(startVideo).copy(queueTitle = title) }
-            watchSessions.saveHistoryEntry(startVideo)
-            presence.armNotificationFor(startVideo)
-            if (upcomingPremiere.applyCountdown(startVideo, preserveQueueTitle = title)) {
-                return
-            }
-            loadVideoInfo(startVideo.id, isWifi = detectIsWifi(), forceRefresh = true)
-        }
-
-        fun playNext() {
-            val handledByPlayer = playerManager.playNext(loadStreamsInPlayer = false)
-            if (!handledByPlayer) {
-                _uiState.value.relatedVideos.firstOrNull()?.let { nextVideo ->
-                    playVideo(nextVideo)
-                    io.github.aedev.flow.player.GlobalPlayerState
-                        .setCurrentVideo(nextVideo)
-                }
-            }
-        }
-
-        fun playPrevious() {
-            val handledByPlayer = playerManager.playPrevious(loadStreamsInPlayer = false)
-            if (!handledByPlayer) {
-                getPreviousVideoId()?.let { prevId ->
-                    val prevVideo = blankVideo(prevId, cached = null)
-                    playVideo(prevVideo)
-                    GlobalPlayerState.setCurrentVideo(prevVideo)
-                }
-            }
-        }
-
-        /**
-         * PERFORMANCE OPTIMIZED: Load video info with aggressive parallel fetching
-         * Uses SupervisorScope for error isolation and optimized dispatcher for network operations
-         * @param forceRefresh If true, forces a fresh load even if the video appears to be already loaded
-         * @param escalateToSabr If true (a 403-expiry reload), skip the fast direct-URL clients and
-         *   extract straight through the durable WEB+PoToken+SABR path — fast clients return the same
-         *   session-gated URLs that just 403'd, so re-trying them loops.
-         */
+        /** Resolves [videoId] through the video plugin; see [PlayerSessionController.loadVideoInfo]. */
         fun loadVideoInfo(
             videoId: String,
             isWifi: Boolean = true,
             forceRefresh: Boolean = false,
-            escalateToSabr: Boolean = false,
             resumePositionOverrideMs: Long? = null,
-        ) {
-            notes.observe(videoId)
-            if (isLocalMediaId(videoId)) {
-                // A device file never touches the network; a queue of them arrives here one by one.
-                val uri = LocalMediaIds.videoUri(videoId) ?: return
-                val video = _uiState.value.cachedVideo?.takeIf { it.id == videoId } ?: return
-                prepareDeviceFile(video, uri.toString())
-                return
-            }
-            val currentState = _uiState.value
-            Log.d(
-                "VideoPlayerViewModel",
-                "loadVideoInfo: Request=$videoId. Current=${currentState.cachedVideo?.id}, " +
-                    "IsLoading=${currentState.isLoading}, ForceRefresh=$forceRefresh, " +
-                    "escalateToSabr=$escalateToSabr",
-            )
-            recovery.onLoadStarted(videoId)
-
-            if (upcomingPremiere.applyCachedCountdown(videoId)) return
-
-            currentState.loadSkipReason(videoId, forceRefresh)?.let { skip ->
-                Log.d("VideoPlayerViewModel", "Video $videoId skipped: $skip")
-                return
-            }
-
-            refreshBlockedChannels()
-            navigationHistory.push(videoId)
-            _canGoPrevious.value = navigationHistory.canGoPrevious
-
-            _uiState.value = _uiState.value.beginLoadFor(videoId)
-            stopLiveChat()
-
-            if (activeLoadJob?.isActive == true && loadingVideoId == videoId) {
-                Log.d("VideoPlayerViewModel", "loadVideoInfo: extraction already in flight for $videoId — ignoring redundant trigger")
-                return
-            }
-
-            cancelActivePlaybackLoad()
-            val loadToken = nextPlaybackLoadToken()
-            loadingVideoId = videoId
-
-            val load = LoadContext(videoId, loadToken)
-            activeLoadJob =
-                viewModelScope.launch(networkDispatcher) {
-                    Log.d("VideoPlayerViewModel", "Starting loadVideoInfo for $videoId")
-                    sessionApplier.startDislikeLoad(load)
-                    try {
-                        playbackResolver.resolve(
-                            scope = this,
-                            request =
-                                PlaybackResolutionRequest(
-                                    videoId = videoId,
-                                    isWifi = isWifi,
-                                    escalateToSabr = escalateToSabr,
-                                    resumePositionOverrideMs = resumePositionOverrideMs,
-                                    allowShorts = shortsContentEnabled,
-                                    blockedChannelIds = blockedChannelIds,
-                                ),
-                            isCurrent = { isPlaybackLoadCurrent(loadToken) },
-                            resolveUpcoming = upcomingPremiere::resolve,
-                            onStep = { step -> sessionApplier.apply(step, load) },
-                        )
-                    } finally {
-                        if (isPlaybackLoadCurrent(loadToken)) {
-                            activeLoadJob = null
-                        }
-                    }
-                }
-        }
+        ) = session.loadVideoInfo(videoId, isWifi, forceRefresh, resumePositionOverrideMs)
 
         fun switchQuality(quality: VideoQuality) = settings.switchQuality(quality)
-
-        private fun getPreviousVideoId(): String? =
-            navigationHistory.previous()?.also {
-                _canGoPrevious.value = navigationHistory.canGoPrevious
-            }
 
         fun savePlaybackPosition(
             videoId: String,

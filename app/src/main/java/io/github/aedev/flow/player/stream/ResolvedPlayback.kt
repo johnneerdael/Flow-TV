@@ -3,6 +3,7 @@ package io.github.aedev.flow.player.stream
 import io.github.aedev.flow.data.local.VideoQuality
 import io.github.aedev.flow.data.model.SponsorBlockSegment
 import io.github.aedev.flow.data.model.Video
+import io.github.aedev.flow.plugin.playback.PlayableVideo
 
 /** Everything [PlaybackLoadResolver] needs that the player screen owns. */
 data class PlaybackResolutionRequest(
@@ -77,6 +78,17 @@ sealed interface ResolvedPlayback {
         val preferredCodecKey: String,
         val preferredSubtitleLanguage: String,
         val resumePositionOverrideMs: Long?,
+    ) : ResolvedPlayback
+
+    /** A VOD or live stream the video plugin resolved. */
+    data class FromPlugin(
+        val playable: PlayableVideo,
+        val resumePositionOverrideMs: Long?,
+    ) : ResolvedPlayback
+
+    /** The video plugin could not resolve the video, or no video plugin is chosen; [cause] says which. */
+    data class PluginFailed(
+        val cause: Throwable,
     ) : ResolvedPlayback
 
     /** The video has not premiered yet, so the screen shows a countdown rather than an error. */

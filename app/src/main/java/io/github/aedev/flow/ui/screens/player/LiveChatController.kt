@@ -1,7 +1,6 @@
 package io.github.aedev.flow.ui.screens.player
 
 import io.github.aedev.flow.data.model.LiveChatMessage
-import io.github.aedev.flow.data.repository.LiveChatRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -13,17 +12,27 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
+/** One batch of a live chat: its messages, the cursor that continues it and how long to wait before asking. */
+internal data class LiveChatPoll(
+    val messages: List<LiveChatMessage>,
+    val next: String?,
+    val pollAfterMs: Long,
+)
+
 /**
  * The live chat transcript and the loop that drips it in.
  *
  * Availability is probed as soon as a live video starts, because the whole chat affordance is
- * hidden until it resolves. The polling loop behind it is gated on [setPanelVisible]: a chat
- * nobody is looking at is a network round trip and a state write every few hundred milliseconds
- * for the length of a stream, and the player keeps its surfaces composed while they are hidden.
- * Leaving the panel keeps the transcript, so reopening it is instant.
+ * hidden until it resolves; the probe's batch is kept, so it is the first one shown. The polling
+ * behind it runs only while the chat is on screen and the video is playing: a chat nobody is
+ * looking at is a request every few seconds for the length of a stream, and the player keeps its
+ * surfaces composed while they are hidden. Hiding it keeps the transcript and the cursor, so
+ * reopening it picks up where it left off.
+ *
+ * [fetch] asks for the batch after a cursor, or the first one for a null cursor; null means it failed.
  */
 internal class LiveChatController(
-    private val repository: LiveChatRepository,
+    private val fetch: suspend (videoId: String, cursor: String?) -> LiveChatPoll?,
     private val scope: CoroutineScope,
     private val dispatcher: CoroutineDispatcher,
 ) {
@@ -38,33 +47,38 @@ internal class LiveChatController(
 
     private var videoId: String? = null
     private var panelVisible = false
+    private var playing = true
     private var probeJob: Job? = null
     private var dripJob: Job? = null
-    private var pendingContinuation: String? = null
+    private var pendingBatch: LiveChatPoll? = null
+    private var cursor: String? = null
+    private var shownFirstBatch = false
     private val seen = LinkedHashSet<String>()
+
+    private val shouldPoll: Boolean get() = panelVisible && playing
 
     fun start(videoId: String) {
         if (this.videoId == videoId) return
         stop()
         this.videoId = videoId
         seen.clear()
+        shownFirstBatch = false
         _messages.value = emptyList()
         _isLoading.value = true
         _isAvailable.value = false
 
         probeJob =
             scope.launch(dispatcher) {
-                val seed = repository.initialContinuation(videoId)
+                val first = fetch(videoId, null)
                 if (this@LiveChatController.videoId != videoId) return@launch
-                if (seed == null) {
+                _isLoading.value = false
+                if (first == null) {
                     _isAvailable.value = false
-                    _isLoading.value = false
                     return@launch
                 }
                 _isAvailable.value = true
-                _isLoading.value = false
-                pendingContinuation = seed
-                if (panelVisible) startDrip(videoId)
+                pendingBatch = first
+                if (shouldPoll) startDrip(videoId)
             }
     }
 
@@ -74,13 +88,25 @@ internal class LiveChatController(
         dripJob?.cancel()
         dripJob = null
         videoId = null
-        pendingContinuation = null
+        pendingBatch = null
+        cursor = null
     }
 
     fun setPanelVisible(visible: Boolean) {
         if (panelVisible == visible) return
         panelVisible = visible
-        if (!visible) {
+        onGateChanged()
+    }
+
+    /** Paused playback stops the polling; resuming picks it up again if the chat is on screen. */
+    fun setPlaying(isPlaying: Boolean) {
+        if (playing == isPlaying) return
+        playing = isPlaying
+        onGateChanged()
+    }
+
+    private fun onGateChanged() {
+        if (!shouldPoll) {
             dripJob?.cancel()
             dripJob = null
             return
@@ -93,56 +119,59 @@ internal class LiveChatController(
 
         dripJob =
             scope.launch(dispatcher) {
-                var continuation = pendingContinuation ?: repository.initialContinuation(videoId)
-                pendingContinuation = null
                 var consecutiveFailures = 0
-                var isInitialPage = true
-                while (isActive && continuation != null && this@LiveChatController.videoId == videoId) {
-                    val page = repository.poll(continuation)
-                    if (page == null) {
+                while (isActive && this@LiveChatController.videoId == videoId) {
+                    val batch = pendingBatch ?: fetch(videoId, cursor)
+                    pendingBatch = null
+                    if (batch == null) {
                         consecutiveFailures++
                         if (consecutiveFailures >= MAX_FAILURES) break
+                        // A cursor held across a long pause may have lapsed; start the chat afresh.
+                        cursor = null
                         delay(RETRY_MS)
                         continue
                     }
                     consecutiveFailures = 0
-
-                    val fresh = page.messages.filter { seen.add(it.id) }
-                    val visibleFresh =
-                        if (isInitialPage) {
-                            isInitialPage = false
-                            fresh.takeLast(INITIAL_BACKFILL_MESSAGES)
-                        } else {
-                            fresh
-                        }
-                    while (seen.size > MAX_SEEN_IDS) {
-                        val it = seen.iterator()
-                        if (it.hasNext()) {
-                            it.next()
-                            it.remove()
-                        } else {
-                            break
-                        }
-                    }
-                    continuation = page.nextContinuation
-
-                    if (visibleFresh.isEmpty()) {
-                        delay(page.timeoutMs)
-                    } else {
-                        val interval =
-                            (page.timeoutMs / visibleFresh.size)
-                                .coerceIn(MIN_DRIP_MS, MAX_DRIP_MS)
-                        var consumed = 0L
-                        for (msg in visibleFresh) {
-                            if (!isActive || this@LiveChatController.videoId != videoId) break
-                            append(msg)
-                            delay(interval)
-                            consumed += interval
-                        }
-                        if (consumed < page.timeoutMs) delay(page.timeoutMs - consumed)
-                    }
+                    cursor = batch.next
+                    show(batch, videoId)
+                    if (cursor == null) break
                 }
             }
+    }
+
+    /** Drips [batch]'s new messages across the wait it asks for, so a busy chat reads as a stream. */
+    private suspend fun show(
+        batch: LiveChatPoll,
+        videoId: String,
+    ) {
+        val fresh = batch.messages.filter { seen.add(it.id) }
+        val visibleFresh =
+            if (shownFirstBatch) {
+                fresh
+            } else {
+                shownFirstBatch = true
+                fresh.takeLast(INITIAL_BACKFILL_MESSAGES)
+            }
+        while (seen.size > MAX_SEEN_IDS) {
+            val oldest = seen.iterator()
+            if (!oldest.hasNext()) break
+            oldest.next()
+            oldest.remove()
+        }
+        val waitMs = batch.pollAfterMs.coerceAtLeast(MIN_POLL_MS)
+        if (visibleFresh.isEmpty()) {
+            delay(waitMs)
+            return
+        }
+        val interval = (waitMs / visibleFresh.size).coerceIn(MIN_DRIP_MS, MAX_DRIP_MS)
+        var consumed = 0L
+        for (message in visibleFresh) {
+            if (this.videoId != videoId) return
+            append(message)
+            delay(interval)
+            consumed += interval
+        }
+        if (consumed < waitMs) delay(waitMs - consumed)
     }
 
     private fun append(message: LiveChatMessage) {
@@ -158,6 +187,7 @@ internal class LiveChatController(
         const val RETRY_MS = 3000L
         const val MAX_FAILURES = 6
         const val INITIAL_BACKFILL_MESSAGES = 12
+        const val MIN_POLL_MS = 1_000L
         const val MIN_DRIP_MS = 90L
         const val MAX_DRIP_MS = 250L
     }

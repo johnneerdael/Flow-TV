@@ -8,6 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.aedev.flow.R
 import io.github.aedev.flow.data.comments.CommentsPager
+import io.github.aedev.flow.data.comments.YouTubeCommentsSource
 import io.github.aedev.flow.data.engagement.FeedInvalidationBus
 import io.github.aedev.flow.data.engagement.VideoEngagementUseCase
 import io.github.aedev.flow.data.feed.FeedPrefetchQueue
@@ -82,7 +83,7 @@ class ShortsViewModel
 
         private val comments =
             CommentsPager(
-                repository = repository,
+                source = YouTubeCommentsSource(repository),
                 scope = viewModelScope,
                 fetchTimeoutMs = COMMENTS_FETCH_TIMEOUT_MS,
             )

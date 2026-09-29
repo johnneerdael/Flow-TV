@@ -4,7 +4,6 @@ import android.util.Log
 import io.github.aedev.flow.data.model.Comment
 import io.github.aedev.flow.data.model.distinctByNonBlankKey
 import io.github.aedev.flow.data.model.mergeDistinctByNonBlankKey
-import io.github.aedev.flow.data.repository.YouTubeRepository
 import io.github.aedev.flow.innertube.pages.VideoCommentSort
 import io.github.aedev.flow.player.PlaybackStartupPolicy
 import kotlinx.coroutines.CancellationException
@@ -57,7 +56,7 @@ internal data class CommentsPlaybackState(
  * video. [fetchTimeoutMs] bounds the fetch itself for a surface that wants one.
  */
 internal class CommentsPager(
-    private val repository: YouTubeRepository,
+    private val source: CommentsSource,
     private val scope: CoroutineScope,
     private val playbackState: Flow<CommentsPlaybackState> = flowOf(CommentsPlaybackState.READY),
     private val isCurrentVideo: (String) -> Boolean = { true },
@@ -150,7 +149,7 @@ internal class CommentsPager(
                         }
                     }
                     if (!isCurrentVideo(videoId)) return@launch
-                    val page = fetch { repository.getVideoComments(videoId, sortToken) } ?: return@launch
+                    val page = fetch { source.first(videoId, sortToken) } ?: return@launch
                     if (!isCurrentVideo(videoId)) return@launch
                     _comments.value = page.comments.distinctByNonBlankKey(Comment::id)
                     next = page
@@ -211,23 +210,7 @@ internal class CommentsPager(
     }
 
     private suspend fun appendNextPage(videoId: String) {
-        val continuation = next.continuation
-        val legacyPage = next.legacyPage
-        val page =
-            when {
-                continuation != null -> {
-                    repository.getMoreVideoComments(videoId, continuation)
-                }
-
-                legacyPage != null -> {
-                    val (comments, nextLegacy) = repository.getMoreComments(videoId, legacyPage)
-                    CommentsPageResult(comments = comments, legacyPage = nextLegacy)
-                }
-
-                else -> {
-                    return
-                }
-            }
+        val page = source.next(videoId, next) ?: return
         if (!isCurrentVideo(videoId)) return
         _comments.value = _comments.value.mergeDistinctByNonBlankKey(page.comments, Comment::id)
         next = page
@@ -255,15 +238,7 @@ internal class CommentsPager(
         if (!repliesInFlight.add(comment.id)) return
         scope.launch {
             try {
-                val (replies, nextContinuation, nextLegacyPage) =
-                    if (continuation != null) {
-                        val page = repository.getVideoCommentReplies(videoId, continuation)
-                        Triple(page.comments, page.continuation, null)
-                    } else {
-                        val url = "https://www.youtube.com/watch?v=$videoId"
-                        val (items, nextPage) = repository.getCommentReplies(url, requireNotNull(repliesPage))
-                        Triple(items, null, nextPage)
-                    }
+                val (replies, nextContinuation, nextLegacyPage) = source.replies(videoId, comment)
                 _comments.value =
                     _comments.value.map { current ->
                         if (current.id != comment.id) {

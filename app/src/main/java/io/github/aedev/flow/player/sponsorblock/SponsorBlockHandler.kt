@@ -59,6 +59,9 @@ class SponsorBlockHandler(
      */
     private var offlineSegmentsLoaded: Boolean = false
 
+    /** Segments the stream's source handed over with it; they follow the setting without a network lookup. */
+    private var providedSegments: List<SponsorBlockSegment>? = null
+
     var isEnabled: Boolean = false
         private set
 
@@ -72,7 +75,10 @@ class SponsorBlockHandler(
         if (isEnabled != enabled) {
             isEnabled = enabled
             if (enabled) {
-                if (!offlineSegmentsLoaded) {
+                val provided = providedSegments
+                if (provided != null) {
+                    _sponsorSegments.value = provided
+                } else if (!offlineSegmentsLoaded) {
                     currentVideoId?.let { loadSegments(it) }
                 } else {
                     Log.d(TAG, "setEnabled(true): keeping offline segments, skipping network refresh")
@@ -101,8 +107,26 @@ class SponsorBlockHandler(
         lastSkippedSegmentUuid = null
         currentMutedSegmentUuid = null
         offlineSegmentsLoaded = segments.isNotEmpty()
+        providedSegments = null
         _sponsorSegments.value = segments
         Log.d(TAG, "Loaded ${segments.size} offline SponsorBlock segments for video $videoId")
+    }
+
+    /**
+     * Uses [segments] the stream's source resolved with the video instead of asking SponsorBlock. Unlike
+     * [loadSegmentsFromList], they are skipped only while the setting is on.
+     */
+    fun useProvidedSegments(
+        videoId: String,
+        segments: List<SponsorBlockSegment>,
+    ) {
+        currentVideoId = videoId
+        loadJob?.cancel()
+        lastSkippedSegmentUuid = null
+        currentMutedSegmentUuid = null
+        offlineSegmentsLoaded = false
+        providedSegments = segments
+        _sponsorSegments.value = if (isEnabled) segments else emptyList()
     }
 
     /**
@@ -110,6 +134,7 @@ class SponsorBlockHandler(
      */
     fun loadSegments(videoId: String) {
         currentVideoId = videoId
+        providedSegments = null
 
         if (!isEnabled) return
 
@@ -146,6 +171,7 @@ class SponsorBlockHandler(
         currentMutedSegmentUuid = null
         currentVideoId = null
         offlineSegmentsLoaded = false
+        providedSegments = null
     }
 
     /**

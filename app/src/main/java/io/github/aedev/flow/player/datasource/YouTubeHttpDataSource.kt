@@ -51,6 +51,7 @@ class YouTubeHttpDataSource private constructor(
 
     companion object {
         private const val TAG = "YouTubeHttpDataSource"
+        private const val USER_AGENT = "User-Agent"
         private val clientLock = Any()
 
         /** Clients whose URLs a browser minted, and which therefore send browser CORS headers. */
@@ -98,11 +99,25 @@ class YouTubeHttpDataSource private constructor(
     override fun open(dataSpec: DataSpec): Long {
         currentUri = dataSpec.uri
 
-        val requestUserAgent =
-            if (isYouTubeUri(dataSpec.uri)) {
-                resolveYouTubeUserAgent(dataSpec.uri)
+        // A user agent the stream's source asked for wins; OkHttpDataSource would otherwise send two.
+        val askedUserAgent =
+            dataSpec.httpRequestHeaders.entries
+                .firstOrNull { it.key.equals(USER_AGENT, ignoreCase = true) }
+                ?.value
+        val openSpec =
+            if (askedUserAgent == null) {
+                dataSpec
             } else {
-                userAgent
+                dataSpec
+                    .buildUpon()
+                    .setHttpRequestHeaders(dataSpec.httpRequestHeaders.filterKeys { !it.equals(USER_AGENT, ignoreCase = true) })
+                    .build()
+            }
+        val requestUserAgent =
+            when {
+                askedUserAgent != null -> askedUserAgent
+                isYouTubeUri(dataSpec.uri) -> resolveYouTubeUserAgent(dataSpec.uri)
+                else -> userAgent
             }
         val factory =
             OkHttpDataSource
@@ -120,7 +135,7 @@ class YouTubeHttpDataSource private constructor(
 
         dataSource = factory.createDataSource()
         return try {
-            dataSource!!.open(dataSpec)
+            dataSource!!.open(openSpec)
         } catch (e: HttpDataSource.InvalidResponseCodeException) {
             if (e.responseCode == 403) logForbidden(dataSpec)
             throw e

@@ -45,6 +45,7 @@ import io.github.aedev.flow.player.cache.PlayerCacheManager
 import io.github.aedev.flow.player.config.PlayerConfig
 import io.github.aedev.flow.player.error.PlayerDiagnostics
 import io.github.aedev.flow.player.error.PlayerErrorHandler
+import io.github.aedev.flow.player.error.StreamHttpFailure
 import io.github.aedev.flow.player.factory.PlayerFactory
 import io.github.aedev.flow.player.media.MediaLoader
 import io.github.aedev.flow.player.preload.GaplessPreloadController
@@ -200,6 +201,17 @@ class EnhancedPlayerManager private constructor() {
     @Volatile
     var localCopySource: LocalCopySource? = null
 
+    /** Set by the DI graph: where queue advance, autoplay and preload resolve streams. Null keeps InnerTube. */
+    @Volatile
+    var videoStreamSource: VideoStreamSource? = null
+
+    /** The last HTTP status a stream request failed with, and the URL, for the source to be told about. */
+    @Volatile
+    var lastStreamHttpFailure: Pair<String, Int>? = null
+        private set
+
+    private var currentRequestHeaders: StreamRequestHeaders = StreamRequestHeaders.NONE
+
     // Coroutine scope
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
@@ -236,6 +248,7 @@ class EnhancedPlayerManager private constructor() {
                         resolved.enrichedVideo
                             .toVideoSessionMetadata()
                             .toMedia3Metadata(),
+                    requestHeaders = resolved.requestHeaders,
                 )
             },
             log = { autoNextLog(it) },
@@ -878,6 +891,7 @@ class EnhancedPlayerManager private constructor() {
                 }
 
                 override fun onPlayerError(error: PlaybackException) {
+                    StreamHttpFailure.of(error)?.let { lastStreamHttpFailure = it }
                     errorHandler?.handleError(error, player)
                 }
 
@@ -961,6 +975,8 @@ class EnhancedPlayerManager private constructor() {
         keepAudioOnly: Boolean = false,
         preferSabr: Boolean = false,
         preferredLiveQualityHeight: Int = 0,
+        requestHeaders: StreamRequestHeaders = StreamRequestHeaders.NONE,
+        skipSegments: List<SponsorBlockSegment>? = null,
     ) {
         if (!isOnMainThread()) {
             autoNextLog("setStreams switching to main id=$videoId from=${Thread.currentThread().name}")
@@ -985,6 +1001,8 @@ class EnhancedPlayerManager private constructor() {
                     keepAudioOnly = keepAudioOnly,
                     preferSabr = preferSabr,
                     preferredLiveQualityHeight = preferredLiveQualityHeight,
+                    requestHeaders = requestHeaders,
+                    skipSegments = skipSegments,
                 )
             }
             return
@@ -1008,12 +1026,16 @@ class EnhancedPlayerManager private constructor() {
         sabrPreferred = preferSabr
         innerTubeVideoFormats = itVideoFormats
         innerTubeAudioFormats = itAudioFormats
+        currentRequestHeaders = requestHeaders
         audioOnlyMode.applyStreams(keepAudioOnly)
         setVideoTracksDisabled(keepAudioOnly)
 
-        // Reset and load SponsorBlock
         sponsorBlockHandler?.reset()
-        sponsorBlockHandler?.loadSegments(videoId)
+        if (skipSegments != null) {
+            sponsorBlockHandler?.useProvidedSegments(videoId, skipSegments)
+        } else {
+            sponsorBlockHandler?.loadSegments(videoId)
+        }
 
         this.currentDurationSeconds = durationSeconds
         this.currentDashManifestUrl = dashManifestUrl
@@ -1119,6 +1141,8 @@ class EnhancedPlayerManager private constructor() {
         clearedMediaRecoveryState.clear()
         innerTubeVideoFormats = emptyList()
         innerTubeAudioFormats = emptyList()
+        currentRequestHeaders = StreamRequestHeaders.NONE
+        lastStreamHttpFailure = null
         currentVideoStream = null
         currentAudioStream = null
         currentDashManifestUrl = null
@@ -1301,6 +1325,7 @@ class EnhancedPlayerManager private constructor() {
                 innerTubeAudioFormats = innerTubeAudioFormats,
                 mediaId = sessionMetadata?.mediaId.orEmpty(),
                 mediaMetadata = sessionMetadata?.toMedia3Metadata() ?: MediaMetadata.EMPTY,
+                requestHeaders = currentRequestHeaders,
             ) ?: false
         if (result) {
             qualityManager?.isDashSource = !currentDashManifestUrl.isNullOrEmpty()
@@ -1754,6 +1779,11 @@ class EnhancedPlayerManager private constructor() {
                         return@launch
                     }
 
+                    videoStreamSource?.let { source ->
+                        playFromStreamSource(source, video, reason, resumeInAudioOnly)
+                        return@launch
+                    }
+
                     val extractionDeferred =
                         async(Dispatchers.IO) {
                             try {
@@ -1885,6 +1915,55 @@ class EnhancedPlayerManager private constructor() {
             }
     }
 
+    /** The service-layer load through [VideoStreamSource]: resolve, then commit exactly as the InnerTube path does. */
+    private suspend fun playFromStreamSource(
+        source: VideoStreamSource,
+        video: Video,
+        reason: String,
+        resumeInAudioOnly: Boolean,
+    ) {
+        val data =
+            source.resolve(video) ?: run {
+                autoNextLog("playVideoFromServiceLayer source resolved nothing video=${video.id}")
+                _playerState.value =
+                    _playerState.value.copy(
+                        isBuffering = false,
+                        error = appContext?.getString(io.github.aedev.flow.R.string.error_unable_to_load_next_video).orEmpty(),
+                    )
+                releaseAdvanceWakeLock()
+                return
+            }
+        if (shouldAbortServicePlaybackLoad(video.id, reason, checkpoint = "streams-resolved")) return
+        GlobalPlayerState.setCurrentVideo(data.enrichedVideo)
+        startBackgroundService(
+            videoId = data.enrichedVideo.id,
+            title = data.enrichedVideo.title,
+            channel = data.enrichedVideo.channelName,
+            thumbnail = data.enrichedVideo.thumbnailUrl,
+        )
+        setAutoplayCandidates(sourceVideoId = data.enrichedVideo.id, videos = data.relatedVideos, enabled = autoplayEnabled)
+        if (shouldAbortServicePlaybackLoad(video.id, reason, checkpoint = "before-commit")) return
+        setStreams(
+            videoId = data.enrichedVideo.id,
+            videoStream = data.videoStream,
+            audioStream = data.audioStream,
+            videoStreams = data.videoStreams,
+            audioStreams = data.audioStreams,
+            subtitles = data.subtitles,
+            durationSeconds = data.durationSeconds,
+            dashManifestUrl = data.dashManifestUrl,
+            hlsUrl = data.hlsUrl,
+            streamType = data.streamType,
+            startPosition = 0L,
+            preferredVideoCodec = data.preferredCodec,
+            keepAudioOnly = resumeInAudioOnly,
+            requestHeaders = data.requestHeaders,
+            skipSegments = data.skipSegments,
+        )
+        play()
+        autoNextLog("playVideoFromServiceLayer loaded video=${video.id} reason=$reason via source")
+    }
+
     fun relatedCandidatesFor(videoId: String): List<Video> =
         relatedCandidatesSnapshot.takeIf { it.sourceVideoId == videoId }?.videos.orEmpty()
 
@@ -1918,8 +1997,9 @@ class EnhancedPlayerManager private constructor() {
     private suspend fun resolveStreamsForVideo(
         video: Video,
         context: Context,
-    ): ResolvedStreamData? =
-        coroutineScope {
+    ): ResolvedStreamData? {
+        videoStreamSource?.let { return it.resolve(video) }
+        return coroutineScope {
             val extractionDeferred =
                 async(Dispatchers.IO) {
                     try {
@@ -1982,6 +2062,7 @@ class EnhancedPlayerManager private constructor() {
                 itAudioFormats = extraction.audioFormats,
             )
         }
+    }
 
     private fun nextPreloadTarget(): PreloadTarget? {
         if (autoplayCountdownSeconds > 0) return null
@@ -2014,6 +2095,8 @@ class EnhancedPlayerManager private constructor() {
 
         innerTubeVideoFormats = data.itVideoFormats
         innerTubeAudioFormats = data.itAudioFormats
+        currentRequestHeaders = data.requestHeaders
+        lastStreamHttpFailure = null
         currentDurationSeconds = data.durationSeconds
         currentDashManifestUrl = data.dashManifestUrl
         currentHlsUrl = null
@@ -2042,7 +2125,12 @@ class EnhancedPlayerManager private constructor() {
         startPlaybackTracker()
 
         sponsorBlockHandler?.reset()
-        sponsorBlockHandler?.loadSegments(data.enrichedVideo.id)
+        val providedSegments = data.skipSegments
+        if (providedSegments != null) {
+            sponsorBlockHandler?.useProvidedSegments(data.enrichedVideo.id, providedSegments)
+        } else {
+            sponsorBlockHandler?.loadSegments(data.enrichedVideo.id)
+        }
 
         GlobalPlayerState.setCurrentVideo(data.enrichedVideo)
         startBackgroundService(
