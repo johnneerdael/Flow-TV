@@ -110,6 +110,12 @@ data class VideoPlayback(
     val headers: Map<String, String> = emptyMap(),
     val expiresInMs: Long? = null,
     val startsInMs: Long? = null,
+    /**
+     * The URLs open only this long after the answer, e.g. once a provider's pre-roll ad could have
+     * been skipped; the host waits out what is left when playback starts, so a resolve made ahead
+     * (a queued or autoplayed video) waits for nothing.
+     */
+    val availableInMs: Long? = null,
     /** A live stream the listener can seek back in. */
     val dvr: Boolean = false,
     val trackingToken: String? = null,

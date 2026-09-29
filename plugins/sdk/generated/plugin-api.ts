@@ -479,6 +479,7 @@ export interface VideoPlayback {
   };
   expiresInMs?: number | null;
   startsInMs?: number | null;
+  availableInMs?: number | null;
   dvr?: boolean;
   trackingToken?: string | null;
 }
