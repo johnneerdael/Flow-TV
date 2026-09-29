@@ -4,9 +4,10 @@
 // SignedInPlayback, AccountFeedClient.recordPlay and InnerTube.registerPlayback.
 import type { ReportPlaybackRequest } from '@milkbeat/plugin-sdk';
 import { fail, mb } from '@milkbeat/plugin-sdk';
+import { accountHeaders } from '../innertube/auth';
 import { WEB_REMIX } from '../innertube/clients';
-import { usableSession, visitorData } from '../innertube/session';
-import { type Json, parseCookies } from '../util';
+import { type AccountSession, usableSession, visitorData } from '../innertube/session';
+import type { Json } from '../util';
 import { randomCpn } from './bytes';
 import { MUSIC_MAIN_CLIENT } from './ladder';
 import { playability, requestPlayer } from './player';
@@ -79,12 +80,10 @@ export async function signedInPlayer(videoId: string): Promise<Json | undefined>
   }
 }
 
-async function registerPlayback(trackingUrl: string, cookie: string, visitor: string): Promise<void> {
+async function registerPlayback(trackingUrl: string, session: AccountSession, visitor: string): Promise<void> {
   const origin = 'https://music.youtube.com';
   let url = trackingUrl.replace('https://s.youtube.com', origin);
   url = withQueryParam(withQueryParam(withQueryParam(url, 'ver', '2'), 'c', WEB_REMIX.clientName), 'cpn', randomCpn());
-  const now = Math.floor(Date.now() / 1000);
-  const hash = await mb.crypto.hash({ algorithm: 'SHA1', text: `${now} ${parseCookies(cookie).SAPISID} ${origin}` });
   const response = await mb.http.fetch({
     url,
     headers: {
@@ -92,11 +91,9 @@ async function registerPlayback(trackingUrl: string, cookie: string, visitor: st
       'x-goog-api-format-version': '1',
       'x-youtube-client-name': WEB_REMIX.clientId,
       'x-youtube-client-version': WEB_REMIX.clientVersion,
-      'x-origin': origin,
       referer: `${origin}/`,
       'x-goog-visitor-id': visitor,
-      cookie,
-      authorization: `SAPISIDHASH ${now}_${hash.hex}`,
+      ...(await accountHeaders(session, origin)),
     },
   });
   if (response.status < 200 || response.status >= 300) fail('NETWORK', `Playback tracking answered ${response.status}`);
@@ -110,5 +107,5 @@ export async function reportPlayback(request: ReportPlaybackRequest): Promise<vo
   const videoId = token?.v ?? request.entity.providerId;
   const url = token?.u ?? trackingUrls.get(videoId) ?? trackingUrlOf(await signedInPlayer(videoId));
   if (!url) fail('UNAVAILABLE', `No playback tracking for ${videoId}`);
-  await registerPlayback(url, session.cookie, session.visitorData ?? (await visitorData()));
+  await registerPlayback(url, session, session.visitorData ?? (await visitorData()));
 }

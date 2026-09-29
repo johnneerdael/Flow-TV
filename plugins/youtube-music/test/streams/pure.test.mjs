@@ -332,3 +332,23 @@ test('the solver cache: player id, signature timestamp and the prepared script',
   assert.equal(context.__solvers.sig('ab'), 'AB');
   assert.equal(context.leaked, undefined, 'the player script runs in its own scope');
 });
+
+test('adWaitMs: the skip point when skippable, else the ad length, over placements and slots', async () => {
+  const { adWaitMs } = await importSource('streams/player.ts');
+  const start = (ad) => ({ adPlacementRenderer: { config: { adPlacementConfig: { kind: 'AD_PLACEMENT_KIND_START' } }, renderer: { instreamVideoAdRenderer: ad } } });
+  assert.equal(adWaitMs({}), 0);
+  assert.equal(adWaitMs({ adPlacements: [start({ skipOffsetMilliseconds: 5000, playerVars: 'length_seconds=30' })] }), 5000);
+  assert.equal(adWaitMs({ adPlacements: [start({ playerVars: 'video_id=x&length_seconds=15' })] }), 15000);
+  const midRoll = { adPlacementRenderer: { config: { adPlacementConfig: { kind: 'AD_PLACEMENT_KIND_MILLISECONDS' } }, renderer: { instreamVideoAdRenderer: { playerVars: 'length_seconds=20' } } } };
+  assert.equal(adWaitMs({ adPlacements: [midRoll] }), 0, 'only pre-rolls hold the video back');
+  const slot = {
+    adSlotRenderer: {
+      adSlotMetadata: { triggerEvent: 'SLOT_TRIGGER_EVENT_BEFORE_CONTENT' },
+      fulfillmentContent: { fulfilledLayout: { playerBytesAdLayoutRenderer: { renderingContent: { playerBytesSequentialLayoutRenderer: { sequentialLayouts: [
+        { playerBytesAdLayoutRenderer: { renderingContent: { instreamVideoAdRenderer: { skipOffsetMilliseconds: 5000 } } } },
+        { playerBytesAdLayoutRenderer: { renderingContent: { instreamVideoAdRenderer: { playerVars: 'length_seconds=6' } } } },
+      ] } } } } },
+    },
+  };
+  assert.equal(adWaitMs({ adSlots: [slot] }), 11000, 'a sequence of ads adds up');
+});

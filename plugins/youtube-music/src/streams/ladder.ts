@@ -9,6 +9,7 @@ import {
   MOBILE,
   MWEB,
   TVHTML5,
+  TVHTML5_DOWNGRADED,
   TVHTML5_SIMPLY_EMBEDDED_PLAYER,
   VISIONOS,
   WEB,
@@ -111,6 +112,9 @@ export class Escalations {
 
 /** Token-free, n-free direct URLs GVS honours for the whole video. */
 export const VIDEO_FAST_CLIENTS: YouTubeClient[] = [VISIONOS];
+
+/** Signed in, asked as the account: every format it may watch, including what VISIONOS refuses. */
+export const VIDEO_SIGNED_IN_CLIENTS: YouTubeClient[] = [TVHTML5_DOWNGRADED];
 
 /** Web clients whose PO Token the plugin can mint; ranked above every unattested client. */
 export const VIDEO_WEB_CLIENTS: YouTubeClient[] = [MWEB, WEB];

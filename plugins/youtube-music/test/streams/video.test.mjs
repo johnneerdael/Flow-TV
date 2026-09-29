@@ -131,3 +131,61 @@ test('without BotGuard the web path is skipped and the ladder carries on', async
   assert.ok(!playerCalls().includes('MWEB'));
   assert.ok(browser.calls.some((call) => call.op === 'close'), 'a failed attestation closes its page');
 });
+
+const account = JSON.stringify({
+  cookie: '__Secure-1PAPISID=fixture-1p; __Secure-3PAPISID=fixture-3p; SID=fixture-sid',
+  visitorData: 'CgtGaXh0dXJlSWQxMSiAgICAgAY%3D',
+  dataSyncId: 'fixture-user',
+  datasyncIdRaw: 'fixture-user||',
+});
+
+const withPreRoll = (response, ad) => ({ ...response, adPlacements: [{ adPlacementRenderer: { config: { adPlacementConfig: { kind: 'AD_PLACEMENT_KIND_START' } }, renderer: { instreamVideoAdRenderer: ad } } }] });
+
+test('a video VISIONOS plays needs no signed-in request', async () => {
+  const { plugin, playerCalls } = offlinePlugin({ players: { VISIONOS: vod, TVHTML5: cipheredWeb }, prepared: true, secrets: { session: account } });
+  const playback = await plugin.call('video.resolve', { entity: entity('xF_QkfZI1mM') });
+  assert.deepEqual(playerCalls(), ['VISIONOS']);
+  assert.equal(playback.availableInMs, undefined);
+});
+
+test('what VISIONOS refuses plays signed in on the downgraded TV client, signed the way YouTube signs its own requests', async () => {
+  const { plugin, requests, playerCalls } = offlinePlugin({ players: { TVHTML5: cipheredWeb }, prepared: true, secrets: { session: account } });
+  const playback = await plugin.call('video.resolve', { entity: entity('g6LvR32cdyQ') });
+  assert.deepEqual(playerCalls(), ['VISIONOS', 'TVHTML5']);
+  const tv = requests.find((r) => r.path === '/youtubei/v1/player' && r.json.context.client.clientName === 'TVHTML5');
+  assert.equal(tv.json.context.client.clientVersion, '5.20260707');
+  assert.match(
+    tv.headers.authorization,
+    /^SAPISIDHASH (\d+)_[0-9a-f]{40}_u SAPISID1PHASH \1_[0-9a-f]{40}_u SAPISID3PHASH \1_[0-9a-f]{40}_u$/,
+    'three hashes salted with the user session; SAPISID falls back to the third-party one',
+  );
+  assert.equal(tv.headers['x-goog-authuser'], '0');
+  assert.equal(tv.headers['x-youtube-bootstrap-logged-in'], 'true');
+  assert.equal(tv.headers['x-goog-pageid'], undefined, 'a primary account acts as itself');
+  assert.equal(tv.json.context.user?.onBehalfOfUser, undefined);
+  assert.equal(tv.json.serviceIntegrityDimensions, undefined, 'the TV client needs no PO Token');
+  assert.ok(playback.formats.every((format) => /[?&]n=solved_/.test(format.url)));
+  assert.equal(playback.availableInMs, undefined, 'no pre-roll, nothing to wait for');
+});
+
+test('a signed-in pre-roll is reported as availableInMs rather than waited out in the call', async () => {
+  const sleeps = [];
+  const { plugin } = offlinePlugin({
+    players: { TVHTML5: withPreRoll(cipheredWeb, { skipOffsetMilliseconds: 5000, playerVars: 'length_seconds=30' }) },
+    prepared: true,
+    secrets: { session: account },
+    hostOverrides: { 'time.sleep': ({ ms }) => (sleeps.push(ms), {}) },
+  });
+  const playback = await plugin.call('video.resolve', { entity: entity('g6LvR32cdyQ') });
+  assert.ok(playback.availableInMs > 4000 && playback.availableInMs <= 5000, `skip point, not ad length: ${playback.availableInMs}`);
+  assert.deepEqual(sleeps, []);
+});
+
+test('a brand account acts as its page', async () => {
+  const brand = JSON.stringify({ cookie: 'SAPISID=fixture-sapisid', dataSyncId: 'fixture-page', datasyncIdRaw: 'fixture-page||fixture-user' });
+  const { plugin, requests } = offlinePlugin({ players: { TVHTML5: cipheredWeb }, prepared: true, secrets: { session: brand } });
+  await plugin.call('video.resolve', { entity: entity('g6LvR32cdyQ') });
+  const tv = requests.find((r) => r.path === '/youtubei/v1/player' && r.json.context.client.clientName === 'TVHTML5');
+  assert.equal(tv.headers['x-goog-pageid'], 'fixture-page');
+  assert.equal(tv.json.context.user.onBehalfOfUser, 'fixture-page');
+});

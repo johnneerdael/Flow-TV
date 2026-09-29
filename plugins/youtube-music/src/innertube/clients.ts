@@ -73,6 +73,20 @@ export const TVHTML5: YouTubeClient = {
   useWebPoTokens: true,
 };
 
+/**
+ * yt-dlp's `tv_downgraded`. Signed in, it answers with direct or ciphered URLs for everything the
+ * account may watch (4K, made-for-kids, age-restricted) where the current TV and WEB builds are
+ * SABR-only; it needs no PO Token. Verified against a live account on 2026-09-30.
+ */
+export const TVHTML5_DOWNGRADED: YouTubeClient = {
+  clientName: 'TVHTML5',
+  clientVersion: '5.20260707',
+  clientId: '7',
+  userAgent: 'Mozilla/5.0 (ChromiumStylePlatform) Cobalt/Version',
+  loginSupported: true,
+  useSignatureTimestamp: true,
+};
+
 export const TVHTML5_SIMPLY_EMBEDDED_PLAYER: YouTubeClient = {
   clientName: 'TVHTML5_SIMPLY_EMBEDDED_PLAYER',
   clientVersion: '2.0',

@@ -4,8 +4,9 @@ import type { PluginDefinition, ProviderAccount, WebLoginResult } from '@milkbea
 import { fail, mb } from '@milkbeat/plugin-sdk';
 import { WEB_REMIX } from './innertube/clients';
 import { innertube } from './innertube/request';
+import { apiSid } from './innertube/auth';
 import { type AccountSession, accountSession, clearSession, resetCaches, saveSession } from './innertube/session';
-import { artwork, dig, parseCookies, text } from './util';
+import { artwork, dig, text } from './util';
 
 /** A key that changes whenever another account signs in, and carries no credentials. */
 async function accountKey(session: AccountSession): Promise<string> {
@@ -25,11 +26,13 @@ async function describe(session: AccountSession | undefined): Promise<ProviderAc
 }
 
 async function complete(result: WebLoginResult): Promise<ProviderAccount> {
-  if (!parseCookies(result.cookies).SAPISID) fail('SIGN_IN_REQUIRED', 'The sign-in did not finish');
+  if (!apiSid(result.cookies)) fail('SIGN_IN_REQUIRED', 'The sign-in did not finish');
   const session: AccountSession = {
     cookie: result.cookies,
     visitorData: result.extracted?.visitorData || undefined,
     dataSyncId: result.extracted?.dataSyncId?.split('||')[0] || undefined,
+    datasyncIdRaw: result.extracted?.dataSyncId || undefined,
+    sessionIndex: result.extracted?.sessionIndex || undefined,
   };
   await saveSession(session);
   resetCaches();

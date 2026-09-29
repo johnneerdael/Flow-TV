@@ -30,7 +30,7 @@
       "successUrlPrefix": "https://music.youtube.com",
       "cookieUrl": "https://music.youtube.com",
       "requiredCookies": ["SAPISID"],
-      "extractScript": "({visitorData: String((window.ytcfg && ytcfg.get && ytcfg.get('VISITOR_DATA')) || (window.yt && yt.config_ && yt.config_.VISITOR_DATA) || ''), dataSyncId: String((window.ytcfg && ytcfg.get && ytcfg.get('DATASYNC_ID')) || (window.yt && yt.config_ && yt.config_.DATASYNC_ID) || '')})"
+      "extractScript": "({visitorData: String((window.ytcfg && ytcfg.get && ytcfg.get('VISITOR_DATA')) || (window.yt && yt.config_ && yt.config_.VISITOR_DATA) || ''), dataSyncId: String((window.ytcfg && ytcfg.get && ytcfg.get('DATASYNC_ID')) || (window.yt && yt.config_ && yt.config_.DATASYNC_ID) || ''), sessionIndex: String((window.ytcfg && ytcfg.get && ytcfg.get('SESSION_INDEX')) ?? (window.yt && yt.config_ && yt.config_.SESSION_INDEX) ?? '')})"
     }
   ],
   "permissions": {

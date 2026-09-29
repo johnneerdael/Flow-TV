@@ -1,7 +1,8 @@
-// One InnerTube call: the client's identity and headers, the context body, the account's SAPISIDHASH
+// One InnerTube call: the client's identity and headers, the context body, the account's headers
 // when signed in, and YouTube's failures mapped to the plugin error codes the host understands.
 import { fail, mb } from '@milkbeat/plugin-sdk';
-import { type Json, parseCookies, query } from '../util';
+import { type Json, query } from '../util';
+import { accountHeaders, sessionIds } from './auth';
 import type { YouTubeClient } from './clients';
 import { locale, markExpired, usableSession, visitorData } from './session';
 
@@ -37,14 +38,8 @@ export async function innertube(endpoint: string, options: InnerTubeOptions): Pr
     'x-origin': origin,
     referer: `${origin}/`,
     'x-goog-visitor-id': visitor,
+    ...(session ? await accountHeaders(session, origin) : {}),
   };
-  if (session) {
-    headers.cookie = session.cookie;
-    const sapisid = parseCookies(session.cookie).SAPISID;
-    const now = Math.floor(Date.now() / 1000);
-    const hash = await mb.crypto.hash({ algorithm: 'SHA1', text: `${now} ${sapisid} ${origin}` });
-    headers.authorization = `SAPISIDHASH ${now}_${hash.hex}`;
-  }
 
   const context = {
     client: {
@@ -63,7 +58,7 @@ export async function innertube(endpoint: string, options: InnerTubeOptions): Pr
       visitorData: visitor,
       userAgent: client.sendUserAgentInContext ? client.userAgent : undefined,
     },
-    user: { onBehalfOfUser: session?.dataSyncId },
+    user: { onBehalfOfUser: session ? sessionIds(session).delegated : undefined },
   };
 
   const response = await mb.http.fetch({

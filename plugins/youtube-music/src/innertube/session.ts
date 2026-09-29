@@ -1,12 +1,16 @@
 // Who the plugin is to YouTube: the anonymous visitor identity, the listener's locale, and the signed-in
 // account when there is one. The account lives in the host's sealed secrets and is read once per start.
 import { fail, mb } from '@milkbeat/plugin-sdk';
-import { parseCookies } from '../util';
+import { apiSid } from './auth';
 
 export interface AccountSession {
   cookie: string;
   visitorData?: string;
   dataSyncId?: string;
+  /** ytcfg's DATASYNC_ID as given: `USER||`, or `DELEGATED||USER` for a brand account. */
+  datasyncIdRaw?: string;
+  /** ytcfg's SESSION_INDEX: which of the signed-in Google accounts this is. */
+  sessionIndex?: string;
   name?: string;
   avatarUrl?: string;
   expired?: boolean;
@@ -28,10 +32,10 @@ export async function accountSession(): Promise<AccountSession | undefined> {
   return cachedSession ?? undefined;
 }
 
-/** The session when it can make authenticated calls: signed in, not expired, with a SAPISID cookie. */
+/** The session when it can make authenticated calls: signed in, not expired, with an API SID cookie. */
 export async function usableSession(): Promise<AccountSession | undefined> {
   const session = await accountSession();
-  return session && !session.expired && parseCookies(session.cookie).SAPISID ? session : undefined;
+  return session && !session.expired && apiSid(session.cookie) ? session : undefined;
 }
 
 export async function saveSession(session: AccountSession): Promise<void> {

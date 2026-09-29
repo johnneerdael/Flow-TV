@@ -2,6 +2,7 @@
 // en/US so the response is the same everywhere, as the app's YouTubeLocale.EXTRACTION did.
 import type { YouTubeClient } from '../innertube/clients';
 import { innertube, type Site } from '../innertube/request';
+import { sessionIds } from '../innertube/auth';
 import { usableSession, visitorData } from '../innertube/session';
 import type { Json } from '../util';
 import type { RawFormat } from './formats';
@@ -61,7 +62,7 @@ export async function requestPlayer(call: PlayerCall): Promise<Json> {
       visitorData: visitor,
       userAgent: client.sendUserAgentInContext ? client.userAgent : undefined,
     },
-    user: { onBehalfOfUser: session?.dataSyncId },
+    user: { onBehalfOfUser: session ? sessionIds(session).delegated : undefined },
     thirdParty: client.isEmbedded ? { embedUrl: `https://www.youtube.com/watch?v=${call.videoId}` } : undefined,
   };
   return innertube('player', {
@@ -110,6 +111,41 @@ export function liveManifests(response: Json): { hls?: string; dash?: string } |
   const hls: string | undefined = response?.streamingData?.hlsManifestUrl || undefined;
   const dash: string | undefined = response?.streamingData?.dashManifestUrl || undefined;
   return hls || dash ? { hls, dash } : undefined;
+}
+
+/**
+ * How long GVS keeps this response's URLs closed: a signed-in account without Premium gets a pre-roll
+ * ad, and the video only opens once that ad could have been skipped (or has run). Ported from
+ * yt-dlp's _get_available_at_timestamp; its URLs answer 403 until then.
+ */
+export function adWaitMs(response: Json): number {
+  const renderers: Json[] = [];
+  for (const placement of response?.adPlacements ?? []) {
+    const renderer = placement?.adPlacementRenderer;
+    if (renderer?.config?.adPlacementConfig?.kind === 'AD_PLACEMENT_KIND_START') renderers.push(renderer?.renderer?.instreamVideoAdRenderer);
+  }
+  for (const slot of response?.adSlots ?? []) {
+    const renderer = slot?.adSlotRenderer;
+    if (renderer?.adSlotMetadata?.triggerEvent !== 'SLOT_TRIGGER_EVENT_BEFORE_CONTENT') continue;
+    const content = renderer?.fulfillmentContent?.fulfilledLayout?.playerBytesAdLayoutRenderer?.renderingContent;
+    renderers.push(content?.instreamVideoAdRenderer);
+    for (const layout of content?.playerBytesSequentialLayoutRenderer?.sequentialLayouts ?? []) {
+      renderers.push(layout?.playerBytesAdLayoutRenderer?.renderingContent?.instreamVideoAdRenderer);
+    }
+  }
+  let waitMs = 0;
+  for (const renderer of renderers) {
+    if (!renderer || typeof renderer !== 'object') continue;
+    const skipMs = Number(renderer.skipOffsetMilliseconds);
+    if (Number.isFinite(skipMs) && renderer.skipOffsetMilliseconds !== undefined) {
+      waitMs += skipMs;
+      continue;
+    }
+    const lengths = [...String(renderer.playerVars ?? '').matchAll(/(?:^|&)length_seconds=(\d+)/g)];
+    const seconds = Number(lengths[lengths.length - 1]?.[1]);
+    if (Number.isFinite(seconds)) waitMs += seconds * 1000;
+  }
+  return waitMs;
 }
 
 /** How long the response's URLs stay valid, relative to now: TV clocks are often wrong. */

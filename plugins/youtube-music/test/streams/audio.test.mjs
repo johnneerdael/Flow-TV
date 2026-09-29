@@ -102,8 +102,8 @@ test('signed in, the account request records the listen through its tracking URL
   const stream = await plugin.call('audio.resolve', track());
   const signedIn = requests.find((r) => r.json?.context?.client?.clientName === 'WEB_REMIX');
   assert.ok(signedIn, 'the account player request runs beside the stream lookup');
-  assert.match(signedIn.headers.authorization, /^SAPISIDHASH \d+_[0-9a-f]{40}$/);
-  assert.equal(signedIn.json.context.user.onBehalfOfUser, 'sync');
+  assert.match(signedIn.headers.authorization, /^SAPISIDHASH \d+_[0-9a-f]{40}_u$/, 'salted with the user session from DATASYNC_ID');
+  assert.equal(signedIn.json.context.user?.onBehalfOfUser, undefined, 'a primary account acts as itself');
   await plugin.call('audio.reportPlayback', { entity: { kind: 'TRACK', providerId: 'g6LvR32cdyQ' }, trackingToken: stream.trackingToken, playedMs: 60_000 });
   const ping = requests.find((r) => r.path === '/api/stats/playback');
   assert.equal(ping.host, 'music.youtube.com');
