@@ -4,10 +4,7 @@ import android.content.Context
 import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.player.GlobalPlayerState
-import io.github.aedev.flow.player.error.PlayerDiagnostics
 import io.github.aedev.flow.player.stream.UpcomingDetails
-import io.github.aedev.flow.player.stream.UpcomingPremiere
-import io.github.aedev.flow.player.stream.UpcomingPremiereProbe
 import io.github.aedev.flow.ui.screens.player.state.UpcomingPremierePolicy
 import io.github.aedev.flow.ui.screens.player.state.VideoPlayerUiState
 import io.github.aedev.flow.ui.screens.player.state.applyCachedUpcoming
@@ -24,20 +21,17 @@ import kotlinx.coroutines.flow.update
  * Everything the player screen does with a video that has not started yet: deciding whether it is a
  * premiere, showing the countdown instead of playback, and the reminder the user can arm on it.
  *
- * The decisions themselves live in [UpcomingPremierePolicy]; this class owns the network probe, the
- * countdown's place in a load, and the reminder work. It writes the same state flow the ViewModel
- * constructs, and asks it whether a load is still current before any countdown replaces the screen.
- *
- * The probe is entered once per resolution, from the one lookup the load resolver calls back into.
+ * The decisions themselves live in [UpcomingPremierePolicy]; this class owns the countdown's place
+ * in a load and the reminder state. It writes the same state flow the ViewModel constructs, and asks
+ * it whether a load is still current before any countdown replaces the screen.
  */
 internal class UpcomingPremiereController(
     private val context: Context,
     private val uiState: MutableStateFlow<VideoPlayerUiState>,
     private val playerPreferences: PlayerPreferences,
-    private val probe: UpcomingPremiereProbe,
     private val scope: CoroutineScope,
     private val isLoadCurrent: (Long) -> Boolean,
-    private val armMetadata: (videoId: String, channelId: String?) -> Unit,
+    private val armMetadata: (videoId: String) -> Unit,
 ) {
     /** Mirrors the stored reminder ids onto the video the screen currently holds. */
     fun collectReminderState() {
@@ -58,7 +52,7 @@ internal class UpcomingPremiereController(
     ): Boolean {
         val releaseTimeMs = UpcomingPremierePolicy.releaseTimeFor(video) ?: return false
         uiState.update { UpcomingPremierePolicy.applyTo(it, video, releaseTimeMs, preserveQueueTitle) }
-        armMetadata(video.id, video.channelId)
+        armMetadata(video.id)
         return true
     }
 
@@ -69,7 +63,7 @@ internal class UpcomingPremiereController(
                 ?.takeIf { it.id == videoId && it.isUpcoming }
                 ?.let(UpcomingPremierePolicy::releaseTimeFor) ?: return false
         uiState.update { it.applyCachedUpcoming(releaseTimeMs) }
-        armMetadata(videoId, uiState.value.cachedVideo?.channelId)
+        armMetadata(videoId)
         return true
     }
 
@@ -87,35 +81,5 @@ internal class UpcomingPremiereController(
         uiState.update { UpcomingPremierePolicy.enterFrom(it, upcomingVideo, relatedVideos, releaseMs) }
         GlobalPlayerState.setCurrentVideo(upcomingVideo)
         return true
-    }
-
-    /** Reports whether [videoId] turned out to be a premiere, entering the countdown when it is. */
-    suspend fun tryEnterCountdown(
-        videoId: String,
-        relatedVideos: List<Video>,
-        loadToken: Long,
-    ): Boolean {
-        val resolved = resolve(videoId, knownUpcoming = false)
-        if (!resolved.isUpcoming) return false
-        return enterCountdown(videoId, resolved.scheduledStartMs, relatedVideos, loadToken, resolved.details)
-    }
-
-    suspend fun resolve(
-        videoId: String,
-        knownUpcoming: Boolean,
-    ): UpcomingPremiere {
-        val cached = uiState.value.cachedVideo?.takeIf { it.id == videoId }
-        val flagged = knownUpcoming || cached?.isUpcoming == true
-        val listReleaseMs = cached?.let { UpcomingPremierePolicy.releaseTimeFor(it) }
-        if (!UpcomingPremierePolicy.needsProbe(flagged, listReleaseMs)) {
-            return UpcomingPremiere(isUpcoming = true, scheduledStartMs = listReleaseMs)
-        }
-        val probed = probe.probe(videoId)
-        PlayerDiagnostics.logWarning(
-            "Upcoming",
-            "videoId=$videoId flagged=$flagged known=$knownUpcoming " +
-                "probe=${probed.isUpcoming} probeTime=${probed.scheduledStartMs}",
-        )
-        return UpcomingPremierePolicy.resolve(flagged, listReleaseMs, probed)
     }
 }

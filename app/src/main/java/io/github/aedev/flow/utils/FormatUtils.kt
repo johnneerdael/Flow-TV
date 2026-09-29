@@ -2,9 +2,6 @@ package io.github.aedev.flow.utils
 
 import android.icu.text.CompactDecimalFormat
 import android.icu.text.RelativeDateTimeFormatter
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 /**
@@ -204,11 +201,6 @@ fun formatPremiereDate(timestampMs: Long): String {
     out.timeZone = java.util.TimeZone.getDefault()
     return out.format(java.util.Date(timestampMs))
 }
-
-/** The form [formatPremiereDate] reads back, in the device's zone. */
-fun premiereDateText(epochMs: Long): String = Instant.ofEpochMilli(epochMs).atZone(ZoneId.systemDefault()).format(PREMIERE_DATE_FORMAT)
-
-private val PREMIERE_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
 
 fun parsePremiereTimestamp(dateString: String): Long? = parsePremiereDate(dateString)?.time
 

@@ -55,18 +55,6 @@ object ThumbnailUrlResolver {
             .distinct()
     }
 
-    fun preferredVideoThumbnail(
-        videoId: String,
-        urls: List<String?>,
-    ): String =
-        urls
-            .asSequence()
-            .map { it?.trim().orEmpty() }
-            .filter { it.isNotBlank() }
-            .map { normalizeVideoThumbnail(videoId, it) }
-            .maxWithOrNull(compareBy<String> { videoThumbnailQualityRank(it) }.thenBy { it.length })
-            ?: normalizeVideoThumbnail(videoId, null)
-
     fun normalizeVideoThumbnail(
         videoId: String,
         rawUrl: String?,
@@ -108,38 +96,6 @@ object ThumbnailUrlResolver {
         }
     }
 
-    /**
-     * Edge length for channel avatars on list/card surfaces, where they render at roughly
-     * 24-48 dp. 176 px stays sharp past 4x density while requesting ~8x fewer pixels than the
-     * previous 512 px default. Pass an explicit [size] for genuinely large avatar surfaces.
-     */
-    const val AVATAR_SIZE_LIST = 176
-
-    fun resolveChannelAvatar(
-        rawUrl: String?,
-        size: Int = AVATAR_SIZE_LIST,
-    ): String {
-        val raw = rawUrl?.trim().orEmpty()
-        if (raw.isEmpty()) return ""
-
-        val isGoogleCdn = raw.contains("googleusercontent.com") || raw.contains("ggpht.com")
-        if (!isGoogleCdn) return raw
-
-        if (googleCdnSizePattern.containsMatchIn(raw)) {
-            return raw.replace(googleCdnSizePattern, "s$size")
-        }
-
-        val sizeParamRegex = Regex("""=([wsh])\d+""")
-        val match = sizeParamRegex.find(raw)
-        if (match != null) {
-            return raw.replaceFirst(match.value, "=s$size")
-        }
-
-        val paramStart = googleCdnParamStartPattern.find(raw)?.range?.first
-        val baseUrl = if (paramStart != null) raw.substring(0, paramStart) else raw
-        return "$baseUrl=s$size"
-    }
-
     fun isYoutubeVideoThumbnail(rawUrl: String?): Boolean {
         val raw = rawUrl?.trim().orEmpty()
         return youtubeVideoThumbnailPattern.containsMatchIn(raw)
@@ -155,18 +111,6 @@ object ThumbnailUrlResolver {
             ?.getOrNull(1)
             ?.takeIf { it.isNotBlank() }
             ?: videoId.trim()
-
-    private fun videoThumbnailQualityRank(rawUrl: String): Int {
-        val raw = rawUrl.lowercase()
-        return when {
-            "maxresdefault" in raw -> 5
-            "hq720" in raw || "sddefault" in raw -> 4
-            "hqdefault" in raw -> 3
-            "mqdefault" in raw -> 2
-            "default" in raw -> 1
-            else -> 0
-        }
-    }
 
     fun resizeImageThumbnail(
         rawUrl: String?,

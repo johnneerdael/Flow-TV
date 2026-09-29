@@ -50,7 +50,6 @@ internal fun VideoPlayerUiState.beginLoadFor(videoId: String): VideoPlayerUiStat
         errorHint = null,
         videoStream = null,
         audioStream = null,
-        streamSizes = emptyMap(),
         savedPosition = null,
         relatedVideos = emptyList(),
         channelAvatarUrl =

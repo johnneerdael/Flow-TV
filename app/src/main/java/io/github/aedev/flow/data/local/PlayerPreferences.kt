@@ -22,7 +22,6 @@ private val Context.playerPreferencesDataStore: DataStore<Preferences> by safePr
 
 const val DEEP_FLOW_NEVER_EXPIRES_HOURS = 0
 private const val PLAYLIST_SORT_SEPARATOR = "|"
-const val CONTENT_LANGUAGE_FOLLOW_APP = "app"
 const val DEFAULT_PORTRAIT_SEEKBAR_PADDING_DP = 16
 const val MAX_PORTRAIT_SEEKBAR_PADDING_DP = 64
 const val DEFAULT_FULLSCREEN_SEEKBAR_PADDING_DP = 48
@@ -496,19 +495,6 @@ class PlayerPreferences(
                 preferences[Keys.SHORTS_CONTENT_ENABLED] ?: true
             }
 
-    // Home subscription rotation cursor
-    val homeSubsRotationCursor: Flow<Int> =
-        context.playerPreferencesDataStore.data
-            .map { preferences ->
-                preferences[Keys.HOME_SUBS_ROTATION_CURSOR] ?: 0
-            }
-
-    suspend fun setHomeSubsRotationCursor(cursor: Int) {
-        context.playerPreferencesDataStore.edit { preferences ->
-            preferences[Keys.HOME_SUBS_ROTATION_CURSOR] = cursor.coerceAtLeast(0)
-        }
-    }
-
     val trendingRegion: Flow<String> =
         context.playerPreferencesDataStore.data
             .map { preferences ->
@@ -520,18 +506,6 @@ class PlayerPreferences(
             preferences[Keys.TRENDING_REGION] = region
         }
     }
-
-    val appLanguage: Flow<String> =
-        context.playerPreferencesDataStore.data
-            .map { preferences ->
-                preferences[Keys.APP_LANGUAGE] ?: "system"
-            }
-
-    val contentLanguage: Flow<String> =
-        context.playerPreferencesDataStore.data
-            .map { preferences ->
-                preferences[Keys.CONTENT_LANGUAGE] ?: CONTENT_LANGUAGE_FOLLOW_APP
-            }
 
     val musicLoudnessNormalizationEnabled: Flow<Boolean> =
         context.playerPreferencesDataStore.data
@@ -734,10 +708,6 @@ class PlayerPreferences(
         context.playerPreferencesDataStore.data
             .map { preferences -> preferences[Keys.NOTIFICATIONS_ENABLED] ?: true }
 
-    val notifNewVideosEnabled: Flow<Boolean> =
-        context.playerPreferencesDataStore.data
-            .map { preferences -> preferences[Keys.NOTIF_NEW_VIDEOS_ENABLED] ?: true }
-
     val notifRemindersEnabled: Flow<Boolean> =
         context.playerPreferencesDataStore.data
             .map { preferences -> preferences[Keys.NOTIF_REMINDERS_ENABLED] ?: true }
@@ -829,33 +799,9 @@ class PlayerPreferences(
                 preferences[Keys.REMEMBER_PLAYBACK_SPEED] ?: false
             }
 
-    // Subscription check interval (default: 360 minutes / 6 hours)
-    val subscriptionCheckIntervalMinutes: Flow<Int> =
-        context.playerPreferencesDataStore.data
-            .map { preferences ->
-                preferences[Keys.SUBSCRIPTION_CHECK_INTERVAL_MINUTES] ?: 360
-            }
-
-    suspend fun setSubscriptionLastRefresh(
-        timeMillis: Long,
-        count: Int,
-    ) {
-        context.playerPreferencesDataStore.edit { preferences ->
-            preferences[Keys.SUBS_LAST_REFRESH_TIME] = timeMillis
-            preferences[Keys.SUBS_LAST_REFRESHED_COUNT] = count
-        }
-    }
-
     val commentsEnabled: Flow<Boolean> =
         context.playerPreferencesDataStore.data
             .map { preferences -> preferences[Keys.COMMENTS_ENABLED] ?: true }
-
-    val subscriptionShowShorts: Flow<Boolean> =
-        context.playerPreferencesDataStore.data
-            .map { preferences -> preferences[Keys.SUBSCRIPTION_SHOW_SHORTS] ?: true }
-
-    val effectiveSubscriptionShowShorts: Flow<Boolean> =
-        combine(shortsContentEnabled, subscriptionShowShorts) { master, own -> master && own }
 
     // PiP Preferences
     val autoPipEnabled: Flow<Boolean> =
@@ -981,45 +927,6 @@ class PlayerPreferences(
                 preferences[Keys.BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS] ?: BufferProfile.STABLE.rebufferBuffer
             }
 
-    // Download Preferences
-    val downloadThreads: Flow<Int> =
-        context.playerPreferencesDataStore.data
-            .map { preferences ->
-                preferences[Keys.DOWNLOAD_THREADS] ?: 3
-            }
-
-    val downloadOverWifiOnly: Flow<Boolean> =
-        context.playerPreferencesDataStore.data
-            .map { preferences ->
-                preferences[Keys.DOWNLOAD_OVER_WIFI_ONLY] ?: false
-            }
-
-    val defaultDownloadQuality: Flow<VideoQuality> =
-        context.playerPreferencesDataStore.data
-            .map { preferences ->
-                VideoQuality.fromString(preferences[Keys.DEFAULT_DOWNLOAD_QUALITY] ?: "720p")
-            }
-
-    val defaultDownloadCodec: Flow<VideoCodec> =
-        context.playerPreferencesDataStore.data
-            .map { preferences ->
-                VideoCodec.fromString(preferences[Keys.DEFAULT_DOWNLOAD_CODEC] ?: VideoCodec.AUTO.label)
-            }
-
-    /** Custom download directory path (null = default Movies/Flow or Music/Flow) */
-    val downloadLocation: Flow<String?> =
-        context.playerPreferencesDataStore.data
-            .map { preferences ->
-                preferences[Keys.DOWNLOAD_LOCATION]
-            }
-
-    /** Custom music download directory path (null = use the video/global download location defaults) */
-    val musicDownloadLocation: Flow<String?> =
-        context.playerPreferencesDataStore.data
-            .map { preferences ->
-                preferences[Keys.MUSIC_DOWNLOAD_LOCATION]
-            }
-
     val proxyType: Flow<AppProxyType> =
         context.playerPreferencesDataStore.data
             .map { preferences ->
@@ -1050,13 +957,6 @@ class PlayerPreferences(
                     password = KeystoreSecretBox.open(preferences[Keys.PROXY_PASSWORD]),
                 )
             }.flowOn(Dispatchers.IO)
-
-    // Return YouTube Dislikes
-    val rytdEnabled: Flow<Boolean> =
-        context.playerPreferencesDataStore.data
-            .map { preferences ->
-                preferences[Keys.RYTD_ENABLED] ?: true
-            }
 
     // Lyrics Provider ordering and enable/disable
     val lyricsProviderOrder: Flow<String> =

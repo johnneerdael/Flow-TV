@@ -8,7 +8,6 @@ import io.github.aedev.flow.player.state.EnhancedPlayerState
 import io.github.aedev.flow.ui.screens.player.VideoPlayerViewModelHarness.Companion.historyEntity
 import io.github.aedev.flow.ui.screens.player.VideoPlayerViewModelHarness.Companion.video
 import io.github.aedev.flow.ui.screens.player.state.VideoPlayerUiState
-import io.mockk.Called
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -60,7 +59,6 @@ class VideoPlayerViewModelEntryPointsTest {
             val viewModel = newViewModel()
 
             assertThat(viewModel.uiState.value).isEqualTo(VideoPlayerUiState())
-            verify { harness.repository wasNot Called }
             coVerify(exactly = 0) { harness.pluginVideo.resolve(any()) }
             coVerify(exactly = 1) { harness.viewHistory.getLatestUnfinishedVideo() }
             coVerify(exactly = 0) { harness.viewHistory.touchHistoryEntry(any(), any(), any(), any(), any(), any(), any()) }
@@ -116,7 +114,6 @@ class VideoPlayerViewModelEntryPointsTest {
             assertThat(restored.cachedVideo?.copy(timestamp = 0L)).isEqualTo(expected)
             assertThat(restored.isRestoredSession).isTrue()
             assertThat(restored.isLoading).isFalse()
-            verify { harness.repository wasNot Called }
             verify(exactly = 0) { harness.playerManager.startBackgroundService(any(), any(), any(), any()) }
             assertThat(GlobalPlayerState.currentVideo.value).isNull()
 
@@ -174,7 +171,6 @@ class VideoPlayerViewModelEntryPointsTest {
             }
             verify(exactly = 1) { GlobalPlayerState.setCurrentVideo(video) }
             assertThat(GlobalPlayerState.currentVideo.value).isEqualTo(video)
-            verify { harness.repository wasNot Called }
             coVerify(exactly = 0) { harness.pluginVideo.resolve(any()) }
             coVerify(exactly = 1) { harness.viewHistory.getSavedPosition("local_1") }
             coVerify(exactly = 0) { harness.viewHistory.touchHistoryEntry(any(), any(), any(), any(), any(), any(), any()) }

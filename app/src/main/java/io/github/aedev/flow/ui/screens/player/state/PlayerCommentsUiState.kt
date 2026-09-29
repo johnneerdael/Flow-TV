@@ -2,8 +2,8 @@ package io.github.aedev.flow.ui.screens.player.state
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
+import io.github.aedev.flow.data.comments.VideoCommentSort
 import io.github.aedev.flow.data.model.Comment
-import io.github.aedev.flow.innertube.pages.VideoCommentSort
 import io.github.aedev.flow.ui.components.shared.CommentSortFilter
 import io.github.aedev.flow.ui.components.shared.videoCommentSortFor
 import io.github.aedev.flow.ui.screens.player.VideoPlayerViewModel

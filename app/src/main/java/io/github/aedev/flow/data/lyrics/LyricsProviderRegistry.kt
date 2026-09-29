@@ -20,8 +20,6 @@ class LyricsProviderRegistry(
             "KuGou",
             "Paxsenix",
             "LrcLib",
-            "YouTubeSubtitle",
-            "YouTube",
         ).filter { it in providerNames }
 
     fun getOrderedProviders(orderString: String): List<LyricsProvider> {
@@ -41,8 +39,6 @@ class LyricsProviderRegistry(
                     KuGouLyricsProvider(),
                     PaxsenixLyricsProvider(),
                     LrcLibLyricsProvider(),
-                    YouTubeSubtitleLyricsProvider(),
-                    YouTubeLyricsProvider(),
                 )
             return LyricsProviderRegistry(providers.associateBy { it.name })
         }

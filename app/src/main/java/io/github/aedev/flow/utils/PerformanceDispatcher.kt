@@ -60,11 +60,6 @@ object PerformanceDispatcher {
     val networkIO: CoroutineDispatcher = networkExecutor.asCoroutineDispatcher()
 
     /**
-     * Dispatcher for CPU-intensive parsing operations
-     */
-    val parsing: CoroutineDispatcher = Dispatchers.Default
-
-    /**
      * Dispatcher for disk I/O operations (database, file)
      */
     val diskIO: CoroutineDispatcher = Dispatchers.IO
@@ -76,35 +71,6 @@ object PerformanceDispatcher {
 
     // Global supervisor scope for background tasks
     private val supervisorJob = SupervisorJob()
-
-    /**
-     * Execute a task with automatic retry on failure
-     *
-     * @param maxAttempts Maximum retry attempts
-     * @param delayMs Delay between attempts (uses exponential backoff)
-     * @param task The task to execute
-     */
-    suspend fun <T> withRetry(
-        maxAttempts: Int = 3,
-        initialDelayMs: Long = 500L,
-        maxDelayMs: Long = 5000L,
-        task: suspend () -> T,
-    ): T? =
-        withContext(networkIO) {
-            var currentDelay = initialDelayMs
-            repeat(maxAttempts) { attempt ->
-                try {
-                    return@withContext task()
-                } catch (e: Exception) {
-                    android.util.Log.w("PerformanceDispatcher", "Attempt ${attempt + 1}/$maxAttempts failed: ${e.message}")
-                    if (attempt < maxAttempts - 1) {
-                        kotlinx.coroutines.delay(currentDelay)
-                        currentDelay = (currentDelay * 2).coerceAtMost(maxDelayMs)
-                    }
-                }
-            }
-            null
-        }
 
     /**
      * Execute a task with timeout protection

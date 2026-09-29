@@ -2,7 +2,6 @@ package io.github.aedev.flow.player.stream
 
 import io.github.aedev.flow.data.model.SponsorBlockSegment
 import io.github.aedev.flow.data.model.Video
-import io.github.aedev.flow.innertube.models.response.PlayerResponse
 import io.github.aedev.flow.player.StreamRequestHeaders
 import org.schabi.newpipe.extractor.stream.AudioStream
 import org.schabi.newpipe.extractor.stream.StreamType
@@ -25,8 +24,6 @@ data class ResolvedStreamData(
     val streamType: StreamType?,
     val relatedVideos: List<Video>,
     val preferredCodec: String,
-    val itVideoFormats: List<PlayerResponse.StreamingData.Format>,
-    val itAudioFormats: List<PlayerResponse.StreamingData.Format>,
     val hlsUrl: String? = null,
     val requestHeaders: StreamRequestHeaders = StreamRequestHeaders.NONE,
     /** Segments the source already knows; null leaves them to the player's own SponsorBlock lookup. */

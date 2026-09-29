@@ -4,14 +4,11 @@ import android.content.ContentUris
 import android.content.Context
 import android.media.MediaScannerConnection
 import android.os.Build
-import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.aedev.flow.R
 import io.github.aedev.flow.data.local.dao.DownloadDao
-import io.github.aedev.flow.data.local.entity.DownloadEntity
-import io.github.aedev.flow.data.local.entity.DownloadFileType
 import io.github.aedev.flow.data.local.entity.DownloadItemEntity
 import io.github.aedev.flow.data.local.entity.DownloadItemStatus
 import io.github.aedev.flow.data.local.entity.DownloadWithItems
@@ -84,24 +81,6 @@ class VideoDownloadManager
             context.getSharedPreferences("flow_file_tombstones", Context.MODE_PRIVATE)
         }
 
-        // Progress updates emitted by FlowDownloadService
-
-        // ===== Directory Management =====
-
-        /** Custom download location set by user (null = use defaults) */
-        @Volatile
-        var customDownloadPath: String? = null
-
-        /** Check if the app has All Files Access (MANAGE_EXTERNAL_STORAGE) on Android 11+ */
-        fun hasAllFilesAccess(): Boolean =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                Environment.isExternalStorageManager()
-            } else {
-                // Pre-Android 11: WRITE_EXTERNAL_STORAGE would be needed but
-                // we just use app-private dirs which need no permissions
-                false
-            }
-
         /**
          * Tell the Android system to scan the newly downloaded file.
          * This adds the file into the system's MediaStore index so it's instantly
@@ -130,102 +109,12 @@ class VideoDownloadManager
             }
         }
 
-        /**
-         * Get the video download directory.
-*/
-        fun getVideoDownloadDir(): File {
-            customDownloadPath?.let { custom ->
-                val dir = File(custom)
-                if (!dir.exists()) dir.mkdirs()
-                if (dir.exists() && dir.canWrite()) return dir
-                Log.w(TAG, "Custom download path not writable: $custom, falling back to defaults")
-            }
-            // Downloads folder is always writable without extra permissions on all API levels
-            try {
-                val downloadsDir =
-                    File(
-                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                        VIDEO_DIR,
-                    )
-                if (!downloadsDir.exists()) downloadsDir.mkdirs()
-                if (downloadsDir.canWrite()) return downloadsDir
-            } catch (e: Exception) {
-                Log.w(TAG, "Could not use Downloads dir", e)
-            }
-            // Use public Movies dir if MANAGE_EXTERNAL_STORAGE is granted (Android 11+)
-            if (hasAllFilesAccess()) {
-                try {
-                    val dir =
-                        File(
-                            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),
-                            VIDEO_DIR,
-                        )
-                    if (!dir.exists()) dir.mkdirs()
-                    if (dir.canWrite()) return dir
-                } catch (e: Exception) {
-                    Log.w(TAG, "Could not use Movies dir with MANAGE_EXTERNAL_STORAGE", e)
-                }
-            }
-            // Final fallback: app-private external storage (no permissions needed)
-            val dir = File(context.getExternalFilesDir(Environment.DIRECTORY_MOVIES), VIDEO_DIR)
-            if (!dir.exists()) dir.mkdirs()
-            return dir
-        }
-
-        /**
-         * Get the audio download directory.
-         * Priority: custom path > public Music/Flow > public Downloads/Flow
-         */
-        fun getAudioDownloadDir(): File {
-            customDownloadPath?.let { custom ->
-                val dir = File(custom)
-                if (!dir.exists()) dir.mkdirs()
-                if (dir.exists() && dir.canWrite()) return dir
-                Log.w(TAG, "Custom audio download path not writable: $custom, falling back to defaults")
-            }
-            try {
-                val musicDir =
-                    File(
-                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
-                        AUDIO_DIR,
-                    )
-                if (!musicDir.exists()) musicDir.mkdirs()
-                if (musicDir.canWrite()) return musicDir
-            } catch (e: Exception) {
-                Log.w(TAG, "Could not use Music dir for audio", e)
-            }
-            try {
-                val downloadsDir =
-                    File(
-                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                        AUDIO_DIR,
-                    )
-                if (!downloadsDir.exists()) downloadsDir.mkdirs()
-                if (downloadsDir.canWrite()) return downloadsDir
-            } catch (e: Exception) {
-                Log.w(TAG, "Could not use Downloads dir for audio", e)
-            }
-            val dir = File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), AUDIO_DIR)
-            if (!dir.exists()) dir.mkdirs()
-            return dir
-        }
-
         /** Fallback to internal app storage if external isn't available */
         fun getInternalDownloadDir(): File {
             val dir = File(context.filesDir, "downloads")
             if (!dir.exists()) dir.mkdirs()
             return dir
         }
-
-        /** Get appropriate download dir based on file type and storage availability */
-        fun getDownloadDir(fileType: DownloadFileType): File =
-            try {
-                val externalDir = if (fileType == DownloadFileType.AUDIO) getAudioDownloadDir() else getVideoDownloadDir()
-                if (externalDir.canWrite()) externalDir else getInternalDownloadDir()
-            } catch (e: Exception) {
-                Log.w(TAG, "External storage not available, using internal", e)
-                getInternalDownloadDir()
-            }
 
         // ===== Database Operations =====
 
@@ -251,24 +140,6 @@ class VideoDownloadManager
                                     dwi.primaryFilePath?.let { File(it).exists() } == true
                             }.map { toDownloadedVideo(it) }
                     }.flowOn(Dispatchers.IO)
-
-        /** Save a new download with its items */
-        suspend fun saveDownload(
-            video: Video,
-            items: List<DownloadItemEntity>,
-        ) {
-            downloadDao.insertDownload(
-                DownloadEntity(
-                    videoId = video.id,
-                    title = video.title,
-                    uploader = video.channelName,
-                    duration = video.duration.toLong(),
-                    thumbnailUrl = video.thumbnailUrl,
-                    createdAt = System.currentTimeMillis(),
-                ),
-            )
-            downloadDao.insertItems(items)
-        }
 
         /** Insert a download item and return its generated ID */
         suspend fun insertItem(item: DownloadItemEntity): Int = downloadDao.insertItem(item).toInt()
@@ -333,18 +204,6 @@ class VideoDownloadManager
                     ?.takeIf { it.overallStatus == DownloadItemStatus.COMPLETED && !it.isAudioOnly }
                     ?.primaryFilePath
                     ?.takeIf { File(it).exists() }
-            }
-
-        /**
-         * Removes [videoId]'s row and partial files before returning, unlike [deleteDownload], so a
-         * retry that writes to the same paths can't have its new file deleted behind it.
-         */
-        suspend fun discardForRetry(videoId: String) =
-            withContext(Dispatchers.IO) {
-                val download = downloadDao.getDownloadWithItems(videoId) ?: return@withContext
-                val filePaths = download.items.flatMap { artifactPathsFor(it.filePath) }.distinct()
-                downloadDao.deleteDownload(videoId)
-                filePaths.forEach { deleteFileFromDisk(it) }
             }
 
         /** Delete download and its files from disk.
@@ -462,27 +321,4 @@ class VideoDownloadManager
                 quality = dwi.items.firstOrNull()?.quality ?: "Unknown",
                 isAudioOnly = dwi.isAudioOnly,
             )
-
-        /** Generate a safe filename from title and quality.
-         *
-         * Supports international characters (Arabic, Chinese, Japanese, etc.) by using
-         * Unicode-aware character classes instead of ASCII-only ranges.
-         * Only characters that are illegal in filenames on Android/FAT filesystems
-         * are replaced with underscores.
-         */
-        fun generateFileName(
-            title: String,
-            quality: String,
-            extension: String = "mp4",
-        ): String {
-            val safeTitle =
-                title
-                    .replace(Regex("[^\\p{L}\\p{M}\\p{N}\\s._-]"), "_")
-                    .replace(Regex("\\s+"), " ")
-                    .replace(Regex("_+"), "_")
-                    .trim('_', ' ')
-                    .take(100)
-                    .ifEmpty { "video" }
-            return "${safeTitle}_$quality.$extension"
-        }
     }

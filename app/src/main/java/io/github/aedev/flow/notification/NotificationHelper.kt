@@ -7,28 +7,16 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import coil3.SingletonImageLoader
-import coil3.request.ImageRequest
-import coil3.request.SuccessResult
-import coil3.request.allowHardware
-import coil3.size.Precision
-import coil3.size.Scale
-import coil3.toBitmap
 import io.github.aedev.flow.MainActivity
 import io.github.aedev.flow.R
-import io.github.aedev.flow.data.local.AppDatabase
 import io.github.aedev.flow.data.local.PlayerPreferences
-import io.github.aedev.flow.data.local.entity.NotificationEntity
 import io.github.aedev.flow.data.update.AppRelease
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 
 /**
  * Comprehensive notification helper for the app
@@ -46,33 +34,12 @@ object NotificationHelper {
     const val EXTRA_OPEN_UPDATE = "io.github.aedev.flow.extra.OPEN_UPDATE"
     const val CHANNEL_IMPORTS = "imports_channel"
 
-    const val NOTIFICATION_NEW_VIDEO = 2000 // Base ID, per-video IDs are this + (videoId hash & 0xFFFF)
-    const val NOTIFICATION_NEW_VIDEO_SUMMARY = 1999 // Group summary; kept below the per-video range
-    private const val GROUP_NEW_VIDEOS = "new_videos"
     const val NOTIFICATION_PLAYBACK = 3001
     const val NOTIFICATION_REMINDER = 5000
     const val NOTIFICATION_IMPORT_PROGRESS = 6001
     const val NOTIFICATION_IMPORT_COMPLETE = 6002
-    private const val NOTIFICATION_BITMAP_MAX_PX = 512
 
     private var channelsCreated = false
-
-    /**
-     * Store notification in database
-     */
-    private suspend fun storeNotification(
-        context: Context,
-        entity: NotificationEntity,
-    ) {
-        withContext(Dispatchers.IO) {
-            try {
-                val db = AppDatabase.getDatabase(context)
-                db.notificationDao().insertNotification(entity)
-            } catch (e: Exception) {
-                android.util.Log.e("NotificationHelper", "Failed to store notification", e)
-            }
-        }
-    }
 
     /**
      * Initialize all notification channels
@@ -274,138 +241,6 @@ object NotificationHelper {
         NotificationManagerCompat.from(context).cancel(NOTIFICATION_IMPORT_PROGRESS)
     }
 
-    // ========== SUBSCRIPTION NOTIFICATIONS ==========
-
-    /**
-     * Represents a single new video found during a subscription check cycle.
-     */
-    data class NewVideoEntry(
-        val channelName: String,
-        val videoTitle: String,
-        val videoId: String,
-        val thumbnailUrl: String?,
-    )
-
-    /**
-     * Dispatcher for subscription update notifications.
-     */
-    suspend fun showSubscriptionUpdates(
-        context: Context,
-        videos: List<NewVideoEntry>,
-    ) {
-        if (!hasNotificationPermission(context)) return
-        if (!PlayerPreferences(context).notifNewVideosEnabled.first()) return
-        if (videos.isEmpty()) return
-
-        videos.forEach { v ->
-            storeNotification(
-                context,
-                NotificationEntity(
-                    videoId = v.videoId,
-                    title = v.videoTitle,
-                    channelName = v.channelName,
-                    thumbnailUrl = v.thumbnailUrl,
-                    type = "NEW_VIDEO",
-                ),
-            )
-        }
-
-        val manager = NotificationManagerCompat.from(context)
-        val multiple = videos.size > 1
-
-        videos.forEach { v ->
-            val notifId = NOTIFICATION_NEW_VIDEO + v.videoId.hashCode().and(0xFFFF)
-            val watchIntent =
-                Intent(context, MainActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    putExtra("notification_video_id", v.videoId)
-                    putExtra("video_id", v.videoId)
-                    putExtra("video_title", v.videoTitle)
-                }
-            val watchPendingIntent =
-                PendingIntent.getActivity(
-                    context,
-                    notifId,
-                    watchIntent,
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-                )
-            val builder =
-                NotificationCompat
-                    .Builder(context, CHANNEL_SUBSCRIPTIONS)
-                    .setSmallIcon(R.drawable.ic_notification_logo)
-                    .setContentTitle(v.channelName)
-                    .setContentText(v.videoTitle)
-                    .setContentIntent(watchPendingIntent)
-                    .setAutoCancel(true)
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                    .setCategory(NotificationCompat.CATEGORY_SOCIAL)
-                    .setGroup(GROUP_NEW_VIDEOS)
-            v.thumbnailUrl?.let { url ->
-                getBitmapFromUrl(context, url)?.let { bm ->
-                    builder.setLargeIcon(bm)
-                    builder.setStyle(
-                        NotificationCompat.BigPictureStyle().bigPicture(bm).bigLargeIcon(null as Bitmap?),
-                    )
-                }
-            }
-            manager.notify(notifId, builder.build())
-        }
-
-        if (!multiple) return
-
-        val summaryIntent =
-            Intent(context, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            }
-        val summaryPendingIntent =
-            PendingIntent.getActivity(
-                context,
-                NOTIFICATION_NEW_VIDEO_SUMMARY,
-                summaryIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-            )
-        val inboxStyle =
-            NotificationCompat
-                .InboxStyle()
-                .setBigContentTitle(
-                    context.resources.getQuantityString(
-                        R.plurals.notification_new_videos_from_subscriptions,
-                        videos.size,
-                        videos.size,
-                    ),
-                )
-        videos.take(6).forEach { v ->
-            inboxStyle.addLine("${v.channelName}: ${v.videoTitle}")
-        }
-        if (videos.size > 6) {
-            inboxStyle.setSummaryText(context.getString(R.string.notification_more, videos.size - 6))
-        }
-
-        val summaryNotification =
-            NotificationCompat
-                .Builder(context, CHANNEL_SUBSCRIPTIONS)
-                .setSmallIcon(R.drawable.ic_notification_logo)
-                .setContentTitle(context.getString(R.string.notification_new_videos))
-                .setContentText(
-                    context.resources.getQuantityString(
-                        R.plurals.notification_new_videos_from_subscriptions,
-                        videos.size,
-                        videos.size,
-                    ),
-                ).setContentIntent(summaryPendingIntent)
-                .setAutoCancel(true)
-                .setOnlyAlertOnce(true)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setCategory(NotificationCompat.CATEGORY_SOCIAL)
-                .setStyle(inboxStyle)
-                .setGroup(GROUP_NEW_VIDEOS)
-                .setGroupSummary(true)
-                .setNumber(videos.size)
-                .build()
-
-        manager.notify(NOTIFICATION_NEW_VIDEO_SUMMARY, summaryNotification)
-    }
-
     // ========== UPDATE NOTIFICATIONS ==========
 
     /**
@@ -502,38 +337,4 @@ object NotificationHelper {
             e.printStackTrace()
         }
     }
-
-    /**
-     * Load bitmap from URL for notification large icon/picture.
-     *
-     * Uses the app's shared Coil ImageLoader so notification artwork reuses the memory/disk
-     * cache the feed already populated instead of refetching through a second image stack.
-     * Hardware bitmaps are disabled because notification bitmaps must be parcelable to
-     * SystemUI, and INEXACT precision keeps the "never upscale" behaviour of the previous
-     * centerInside/onlyScaleDown request.
-     */
-    suspend fun getBitmapFromUrl(
-        context: Context,
-        url: String,
-    ): Bitmap? =
-        withContext(Dispatchers.IO) {
-            try {
-                if (url.isEmpty()) return@withContext null
-                val request =
-                    ImageRequest
-                        .Builder(context)
-                        .data(url)
-                        .size(NOTIFICATION_BITMAP_MAX_PX)
-                        .scale(Scale.FIT)
-                        .precision(Precision.INEXACT)
-                        .allowHardware(false)
-                        .build()
-                (SingletonImageLoader.get(context).execute(request) as? SuccessResult)
-                    ?.image
-                    ?.toBitmap()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null
-            }
-        }
 }

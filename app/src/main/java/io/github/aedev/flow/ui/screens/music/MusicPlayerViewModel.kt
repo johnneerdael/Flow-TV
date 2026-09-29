@@ -462,8 +462,6 @@ class MusicPlayerViewModel
 
         fun addToQueue(tracks: List<MusicTrack>) = trackActions.addToQueue(tracks)
 
-        fun downloadTrack(track: MusicTrack? = null) = trackActions.downloadTrack(track)
-
         fun fetchLyrics(
             videoId: String,
             artist: String,

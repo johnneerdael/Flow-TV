@@ -9,7 +9,6 @@ import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.HttpDataSource
 import androidx.media3.datasource.okhttp.OkHttpDataSource
-import io.github.aedev.flow.innertube.models.YouTubeClient
 import io.github.aedev.flow.network.AppProxyManager
 import io.github.aedev.flow.player.error.PlayerDiagnostics
 import io.github.aedev.flow.player.error.StreamDenialClassifier
@@ -17,13 +16,9 @@ import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 
 /**
- * YouTube-specific HttpDataSource optimized for streaming performance.
- *
- * Key optimizations:
- * - Longer timeouts (30s read) to handle YouTube's variable latency
- * - Proper YouTube headers to avoid bot detection
- * - Range parameter handling for DASH manifests
- * - Cross-protocol redirect support
+ * The video player's HttpDataSource: the proxied shared client with longer timeouts, the user agent
+ * the stream's plugin asked for, and the request shape googlevideo expects from the client that
+ * minted a URL (identity encoding, and a browser's CORS preamble for URLs a web client minted).
  */
 @UnstableApi
 class YouTubeHttpDataSource private constructor(
@@ -113,12 +108,7 @@ class YouTubeHttpDataSource private constructor(
                     .setHttpRequestHeaders(dataSpec.httpRequestHeaders.filterKeys { !it.equals(USER_AGENT, ignoreCase = true) })
                     .build()
             }
-        val requestUserAgent =
-            when {
-                askedUserAgent != null -> askedUserAgent
-                isYouTubeUri(dataSpec.uri) -> resolveYouTubeUserAgent(dataSpec.uri)
-                else -> userAgent
-            }
+        val requestUserAgent = askedUserAgent ?: userAgent
         val factory =
             OkHttpDataSource
                 .Factory(sharedClient())
@@ -193,27 +183,11 @@ class YouTubeHttpDataSource private constructor(
             host.contains("ytimg.com")
     }
 
-    // The fetching UA must match the client that minted the URL (`c=` param) — a mismatch is a
-    // known cause of mid-stream 403s on googlevideo CDNs.
-    private fun resolveYouTubeUserAgent(uri: Uri): String =
-        when (uri.getQueryParameter("c")?.uppercase()) {
-            "IOS" -> YouTubeClient.IPADOS.userAgent
-            "ANDROID", "ANDROID_CREATOR" -> YouTubeClient.ANDROID.userAgent
-            "ANDROID_VR" -> YouTubeClient.ANDROID_VR_1_61_48.userAgent
-            "VISIONOS" -> YouTubeClient.VISIONOS.userAgent
-            "TVHTML5", "TVHTML5_SIMPLY_EMBEDDED_PLAYER" -> YouTubeClient.TVHTML5_SIMPLY_EMBEDDED_PLAYER.userAgent
-            "MWEB" -> YouTubeClient.USER_AGENT_MWEB
-            "WEB", "WEB_REMIX" -> YouTubeClient.USER_AGENT_WEB
-            else -> userAgent
-        }
-
     /**
      * Headers YouTube expects for video streaming, matched to the client that minted the URL.
      *
      * `Origin`, `Referer` and the `Sec-Fetch-*` triple are browser-only: a real visionOS or
-     * Android VR client sends none of them. Stamping them on every googlevideo request paired the
-     * native user agent [resolveYouTubeUserAgent] picks with a browser's CORS preamble, which is
-     * the same client/request mismatch that function exists to avoid.
+     * Android VR client sends none of them, so only URLs a web-family client minted carry them.
      *
      * Kept as a hypothesis about the 403s rather than a proven cause — but sending a native
      * client's request the way that client actually sends it is the defensible default either way.

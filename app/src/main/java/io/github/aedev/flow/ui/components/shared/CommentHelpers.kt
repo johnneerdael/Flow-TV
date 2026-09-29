@@ -2,7 +2,7 @@ package io.github.aedev.flow.ui.components.shared
 
 import androidx.annotation.StringRes
 import io.github.aedev.flow.R
-import io.github.aedev.flow.innertube.pages.VideoCommentSort
+import io.github.aedev.flow.data.comments.VideoCommentSort
 
 enum class CommentSortFilter(
     @param:StringRes val labelRes: Int,

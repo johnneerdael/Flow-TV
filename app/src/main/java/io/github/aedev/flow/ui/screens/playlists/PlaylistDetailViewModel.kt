@@ -11,23 +11,15 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.aedev.flow.R
 import io.github.aedev.flow.data.engagement.LikedMediaUseCase
-import io.github.aedev.flow.data.local.LikedVideoInfo
 import io.github.aedev.flow.data.local.LikedVideosRepository
 import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.data.local.PlaylistRepository
 import io.github.aedev.flow.data.local.WatchLaterCleanup
-import io.github.aedev.flow.data.migration.WatchLaterMetadataMigrator
 import io.github.aedev.flow.data.model.PlaylistInfo
 import io.github.aedev.flow.data.model.Video
-import io.github.aedev.flow.data.music.YouTubeMusicService
 import io.github.aedev.flow.data.playlist.PlaylistTransfer
-import io.github.aedev.flow.data.repository.RemotePlaylistPage
-import io.github.aedev.flow.data.repository.YouTubePlaylistRepository
-import io.github.aedev.flow.data.repository.YouTubeRepository
-import io.github.aedev.flow.data.video.BackgroundDownloadQueuer
 import io.github.aedev.flow.ui.components.library.PlaylistSortOrder
 import io.github.aedev.flow.ui.components.shared.quickactions.QuickActionUndo
-import io.github.aedev.flow.utils.PerformanceDispatcher
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,19 +28,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Semaphore
 import javax.inject.Inject
 
-private const val ENRICHMENT_STUB_LIMIT = 50
-private const val ENRICHMENT_CHUNK_SIZE = 5
-private const val ENRICHMENT_CHUNK_DELAY_MS = 300L
 private const val SHARING_TIMEOUT_MS = 5_000L
 
 data class PlaylistUiMessage(
@@ -61,7 +47,6 @@ data class PlaylistUiMessage(
 
 data class PlaylistDetailUiState(
     val playlistName: String = "",
-    val ownerName: String? = null,
     val description: String = "",
     val isPrivate: Boolean = false,
     val videos: List<Video> = emptyList(),
@@ -72,8 +57,6 @@ data class PlaylistDetailUiState(
     /** Liked videos: read from the likes, where removing a video unlikes it. */
     val isLikes: Boolean = false,
     val isLoading: Boolean = true,
-    /** Later pages of a YouTube playlist are still arriving. */
-    val isLoadingMore: Boolean = false,
     val errorMessage: String? = null,
 )
 
@@ -83,11 +66,7 @@ class PlaylistDetailViewModel
     constructor(
         @ApplicationContext private val context: Context,
         private val repository: PlaylistRepository,
-        private val youTubeRepository: YouTubeRepository,
-        private val playlistRepository: YouTubePlaylistRepository,
         private val playerPreferences: PlayerPreferences,
-        private val downloadQueuer: BackgroundDownloadQueuer,
-        private val watchLaterMetadataMigrator: WatchLaterMetadataMigrator,
         private val watchLaterCleanup: WatchLaterCleanup,
         private val transfer: PlaylistTransfer,
         private val likedVideos: LikedVideosRepository,
@@ -96,8 +75,6 @@ class PlaylistDetailViewModel
     ) : ViewModel() {
         val playlistId: String = checkNotNull(savedStateHandle["playlistId"])
         private val sharing = SharingStarted.WhileSubscribed(stopTimeoutMillis = SHARING_TIMEOUT_MS)
-        private val attemptedEnrichment = HashSet<String>()
-        private val enrichSemaphore = Semaphore(1)
 
         private val _uiState = MutableStateFlow(PlaylistDetailUiState())
         val uiState: StateFlow<PlaylistDetailUiState> = _uiState.asStateFlow()
@@ -117,22 +94,6 @@ class PlaylistDetailViewModel
 
         init {
             loadPlaylist()
-            viewModelScope.launch {
-                downloadQueuer.batches
-                    .map { it[playlistId] }
-                    .filterNotNull()
-                    .filter { it.isFinished }
-                    .collect { batch ->
-                        _messages.send(
-                            if (batch.queued > 0) {
-                                PlaylistUiMessage(stringRes = R.string.playlist_downloads_queued, args = listOf(batch.queued, batch.total))
-                            } else {
-                                PlaylistUiMessage(stringRes = R.string.playlist_download_queue_empty)
-                            },
-                        )
-                        downloadQueuer.clearBatch(playlistId)
-                    }
-            }
         }
 
         fun retry() {
@@ -179,7 +140,7 @@ class PlaylistDetailViewModel
                 if (localInfo != null) {
                     loadLocalPlaylist(localInfo)
                 } else {
-                    loadRemotePlaylist()
+                    _uiState.update { it.copy(isLoading = false, errorMessage = context.getString(R.string.playlist_load_failed)) }
                 }
             }
         }
@@ -197,7 +158,7 @@ class PlaylistDetailViewModel
                     errorMessage = null,
                 )
             }
-            var migrationStarted = false
+            var sweepStarted = false
             repository.getVideoOnlyWatchLaterFlow().collect { videos ->
                 _uiState.update {
                     it.copy(
@@ -205,12 +166,10 @@ class PlaylistDetailViewModel
                         thumbnailUrl = videos.firstOrNull()?.thumbnailUrl.orEmpty(),
                     )
                 }
-                if (!migrationStarted && videos.isNotEmpty()) {
-                    migrationStarted = true
-                    viewModelScope.launch { watchLaterMetadataMigrator.migrate(videos) }
+                if (!sweepStarted && videos.isNotEmpty()) {
+                    sweepStarted = true
                     viewModelScope.launch { sweepWatched(videos) }
                 }
-                enrichStubs(videos)
             }
         }
 
@@ -230,30 +189,6 @@ class PlaylistDetailViewModel
             likedVideos.getLikedVideosFlow().collect { likes ->
                 val videos = likes.map { it.toPlaylistVideo() }
                 _uiState.update { it.copy(videos = videos, thumbnailUrl = videos.firstOrNull()?.thumbnailUrl.orEmpty()) }
-                completeLikeDetails(likes)
-            }
-        }
-
-        /**
-         * Likes saved before they carried a channel and length get them once, so rows show a
-         * duration and the channel opens; a like already filled in is never fetched again.
-         */
-        private fun completeLikeDetails(likes: List<LikedVideoInfo>) {
-            val sparse = likes.filter { it.channelId.isNullOrBlank() && it.videoId !in attemptedEnrichment }.take(ENRICHMENT_STUB_LIMIT)
-            if (sparse.isEmpty() || !enrichSemaphore.tryAcquire()) return
-            attemptedEnrichment.addAll(sparse.map { it.videoId })
-            viewModelScope.launch(PerformanceDispatcher.networkIO) {
-                try {
-                    sparse.chunked(ENRICHMENT_CHUNK_SIZE).forEach { chunk ->
-                        chunk.forEach { like ->
-                            val video = runCatching { youTubeRepository.getVideo(like.videoId) }.getOrNull() ?: return@forEach
-                            likedVideos.updateDetails(like.withDetailsOf(video))
-                        }
-                        kotlinx.coroutines.delay(ENRICHMENT_CHUNK_DELAY_MS)
-                    }
-                } finally {
-                    enrichSemaphore.release()
-                }
             }
         }
 
@@ -285,125 +220,8 @@ class PlaylistDetailViewModel
                     errorMessage = null,
                 )
             }
-            if (isSaved) {
-                refreshSavedPlaylist()
-            }
             repository.getPlaylistVideosWithAddedAtFlow(playlistId).collect { videos ->
                 _uiState.update { it.copy(videos = videos) }
-                enrichStubs(videos)
-            }
-        }
-
-        private suspend fun loadRemotePlaylist() {
-            val page = playlistRepository.cachedComplete(playlistId) ?: playlistRepository.firstPage(playlistId)
-            if (page != null) {
-                _uiState.update {
-                    it.copy(
-                        playlistName = page.title,
-                        ownerName = page.ownerName,
-                        description = page.description,
-                        isPrivate = false,
-                        videos = page.videos,
-                        thumbnailUrl = page.thumbnailUrl,
-                        isLocalPlaylist = false,
-                        isSaved = false,
-                        isWatchLater = false,
-                        isLoading = false,
-                        isLoadingMore = page.continuation != null,
-                        errorMessage = null,
-                    )
-                }
-                page.continuation?.let { loadRemainingPages(page, it) }
-                return
-            }
-
-            val musicDetails = runCatching { YouTubeMusicService.fetchPlaylistDetails(playlistId) }.getOrNull()
-            if (musicDetails != null) {
-                _uiState.update {
-                    it.copy(
-                        playlistName = musicDetails.title,
-                        ownerName = musicDetails.author.takeIf(String::isNotBlank),
-                        description = musicDetails.description.orEmpty(),
-                        isPrivate = false,
-                        videos = musicDetails.tracks.map { track -> track.toPlaylistVideo() },
-                        thumbnailUrl = musicDetails.thumbnailUrl,
-                        isLocalPlaylist = false,
-                        isSaved = false,
-                        isWatchLater = false,
-                        isLoading = false,
-                        errorMessage = null,
-                    )
-                }
-                return
-            }
-
-            _uiState.update {
-                it.copy(
-                    isLoading = false,
-                    errorMessage = context.getString(R.string.playlist_load_failed),
-                )
-            }
-        }
-
-        /** Appends the pages after the first as they arrive, so the list is usable while it grows. */
-        private suspend fun loadRemainingPages(
-            first: RemotePlaylistPage,
-            firstToken: String,
-        ) {
-            var videos = first.videos
-            var token: String? = firstToken
-            var pages = 1
-            while (token != null && pages < YouTubePlaylistRepository.PAGE_LIMIT) {
-                val (more, next) = playlistRepository.nextPage(playlistId, token) ?: break
-                videos = (videos + more).distinctBy { it.id }
-                token = next.takeIf { more.isNotEmpty() }
-                pages++
-                _uiState.update { it.copy(videos = videos) }
-            }
-            _uiState.update { it.copy(isLoadingMore = false) }
-            if (token == null) playlistRepository.rememberComplete(playlistId, first.copy(videos = videos))
-        }
-
-        private fun refreshSavedPlaylist() {
-            viewModelScope.launch {
-                val details = playlistRepository.complete(playlistId) ?: return@launch
-                repository.syncSavedPlaylistVideos(playlistId, details.videos)
-                _uiState.update { state ->
-                    state.copy(
-                        playlistName = details.title.ifBlank { state.playlistName },
-                        ownerName = details.ownerName ?: state.ownerName,
-                        description = details.description.ifBlank { state.description },
-                        thumbnailUrl = details.thumbnailUrl.ifBlank { state.thumbnailUrl },
-                    )
-                }
-            }
-        }
-
-        private fun enrichStubs(videos: List<Video>) {
-            val stubs =
-                videos
-                    .asSequence()
-                    .filter { it.title.isEmpty() && it.id !in attemptedEnrichment }
-                    .take(ENRICHMENT_STUB_LIMIT)
-                    .toList()
-            if (stubs.isEmpty()) return
-            if (!enrichSemaphore.tryAcquire()) return
-            attemptedEnrichment.addAll(stubs.map { it.id })
-            viewModelScope.launch(PerformanceDispatcher.networkIO) {
-                try {
-                    stubs.chunked(ENRICHMENT_CHUNK_SIZE).forEach { chunk ->
-                        chunk.forEach { video ->
-                            try {
-                                val refreshed = youTubeRepository.getVideo(video.id) ?: return@forEach
-                                repository.updateVideoMetadata(refreshed)
-                            } catch (_: Exception) {
-                            }
-                        }
-                        kotlinx.coroutines.delay(ENRICHMENT_CHUNK_DELAY_MS)
-                    }
-                } finally {
-                    enrichSemaphore.release()
-                }
             }
         }
     }

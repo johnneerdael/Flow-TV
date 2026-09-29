@@ -6,9 +6,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import io.github.aedev.flow.data.account.AccountSessionStore
-import io.github.aedev.flow.data.account.KeystoreSecretSealer
-import io.github.aedev.flow.data.account.accountSessionDataStore
 import io.github.aedev.flow.data.account.signin.PhoneChannel
 import io.github.aedev.flow.data.account.signin.PhoneInput
 import io.github.aedev.flow.data.account.signin.PhoneInputServer
@@ -19,17 +16,10 @@ import io.github.aedev.flow.ui.screens.account.PhoneServerHandle
 import io.github.aedev.flow.ui.screens.account.PhoneServerLauncher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object AccountModule {
-    @Provides
-    @Singleton
-    fun provideAccountSessionStore(
-        @ApplicationContext context: Context,
-    ): AccountSessionStore = AccountSessionStore(context.accountSessionDataStore, KeystoreSecretSealer)
-
     @Provides
     fun provideLanAddressProvider(): LanAddressProvider = LanAddressProvider { LanAddress.resolve() }
 

@@ -7,7 +7,6 @@ import io.github.aedev.flow.data.local.ViewHistory
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.recommendation.FlowNeuroEngine
 import io.github.aedev.flow.data.recommendation.InteractionType
-import io.github.aedev.flow.data.repository.YouTubeRepository
 import io.github.aedev.flow.data.stats.ViewFormat
 import io.github.aedev.flow.player.state.PlaybackCompletion
 import io.mockk.Runs
@@ -42,7 +41,7 @@ class WatchSessionTrackerTest {
     private val testDispatcher = StandardTestDispatcher()
     private val context: Context = mockk(relaxed = true)
     private val viewHistory: ViewHistory = mockk(relaxed = true)
-    private val repository: YouTubeRepository = mockk(relaxed = true)
+    private val repository: RelatedFetcher = mockk(relaxed = true)
     private val homeFeedCacheRepository: HomeFeedCacheRepository = mockk(relaxed = true)
     private val videoStats: io.github.aedev.flow.data.stats.VideoStatsRecorder = mockk(relaxed = true)
     private var clockMs = 0L

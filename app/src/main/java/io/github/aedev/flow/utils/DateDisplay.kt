@@ -2,47 +2,6 @@ package io.github.aedev.flow.utils
 
 import java.util.Locale
 
-fun parseToTimestamp(text: String?): Long? {
-    val raw = text?.trim().orEmpty()
-    if (raw.isEmpty()) return null
-    raw.toLongOrNull()?.takeIf { it > 100_000_000_000L }?.let { return it }
-
-    val cleanRaw =
-        raw
-            // "Streamed live on Jun 19, 2020" and "Premiered on Jan 1, 2020" carry the date behind
-            // words no format string matches, so without dropping them the parse fails and the
-            // caller falls back to whatever timestamp it already had.
-            .replace(Regex("(?i)^(streamed|premiered)\\s+(live\\s+)?(on\\s+)?"), "")
-            .trim()
-
-    val absFormats =
-        listOf(
-            "yyyy-MM-dd'T'HH:mm:ssXXX",
-            "yyyy-MM-dd'T'HH:mm:ssX",
-            "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
-            "yyyy-MM-dd'T'HH:mm:ss.SSSX",
-            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-            "yyyy-MM-dd'T'HH:mm:ss",
-            "yyyy-MM-dd",
-            "MMM dd, yyyy",
-            "MMM d, yyyy",
-            "d MMM yyyy",
-            "dd MMM yyyy",
-        )
-    for (f in absFormats) {
-        for (loc in listOf(Locale.US, Locale.getDefault())) {
-            try {
-                val sdf = java.text.SimpleDateFormat(f, loc)
-                sdf.isLenient = false
-                val d = sdf.parse(cleanRaw)
-                if (d != null) return d.time
-            } catch (_: Exception) {
-            }
-        }
-    }
-    return parseRelativeToTimestamp(cleanRaw)
-}
-
 internal fun parseRelativeToTimestamp(
     text: String,
     now: Long = System.currentTimeMillis(),

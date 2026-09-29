@@ -2,26 +2,15 @@ package io.github.aedev.flow.ui.screens.player
 
 import com.google.common.truth.Truth.assertThat
 import io.github.aedev.flow.R
-import io.github.aedev.flow.data.local.VideoQuality
 import io.github.aedev.flow.data.model.SponsorBlockSegment
 import io.github.aedev.flow.data.model.Video
-import io.github.aedev.flow.innertube.models.ResponseContext
-import io.github.aedev.flow.innertube.models.Thumbnail
-import io.github.aedev.flow.innertube.models.Thumbnails
-import io.github.aedev.flow.innertube.models.YouTubeClient
-import io.github.aedev.flow.innertube.models.response.PlayerResponse
-import io.github.aedev.flow.player.GlobalPlayerState
-import io.github.aedev.flow.player.stream.CaptionTrackResolver
-import io.github.aedev.flow.player.stream.InnerTubeVideoStreamExtractor
 import io.github.aedev.flow.player.stream.PlaybackFailure
 import io.github.aedev.flow.player.stream.ResolvedPlayback
 import io.github.aedev.flow.ui.screens.player.VideoPlayerViewModelHarness.Companion.video
 import io.github.aedev.flow.ui.screens.player.state.VideoPlayerUiState
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.coVerifyOrder
 import io.mockk.mockk
-import io.mockk.verify
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,8 +24,8 @@ import org.junit.Before
 import org.junit.Test
 
 /**
- * Pins what one resolved step lands on: the state the screen holds afterwards, and the order the
- * player manager, the stream hand-off and the secondary loaders are entered in.
+ * Pins what one resolved step lands on: the state the screen holds afterwards, and what reaches the
+ * player manager, the stream hand-off and the secondary loaders.
  *
  * The collaborators are mocks so the sequence itself is what is asserted; the state assertions are
  * the reducers' output seen through the flow the ViewModel shares with the applier. What each
@@ -50,11 +39,8 @@ class PlaybackSessionApplierTest {
     private val uiState = MutableStateFlow(VideoPlayerUiState())
     private val playbackPreparer: PlaybackPreparer = mockk(relaxed = true)
     private val secondaryMetadata: PlayerSecondaryMetadataLoader = mockk(relaxed = true)
-    private val liveChat: LiveChatController = mockk(relaxed = true)
 
     private val enteredUpcoming = mutableListOf<Triple<String, Long?, List<Video>>>()
-    private var tryEnterUpcomingResult = false
-    private var tryEnterUpcomingCalls = 0
 
     @Before
     fun setUp() {
@@ -74,11 +60,8 @@ class PlaybackSessionApplierTest {
             uiState = uiState,
             isLoadCurrent = { token -> token == CURRENT_TOKEN },
             playbackPreparer = playbackPreparer,
-            streamPreparer = PlaybackStreamPreparer(),
             pluginPlayback = mockk(relaxed = true),
             secondaryMetadata = secondaryMetadata,
-            liveChat = liveChat,
-            repository = harness.repository,
             viewHistory = harness.viewHistory,
             playerPreferences = harness.playerPreferences,
             sponsorBlockRepository = harness.sponsorBlockRepository,
@@ -91,10 +74,6 @@ class PlaybackSessionApplierTest {
             enterUpcoming = { videoId, releaseMs, relatedVideos, _, _ ->
                 enteredUpcoming += Triple(videoId, releaseMs, relatedVideos)
                 true
-            },
-            tryEnterUpcoming = { _, _, _ ->
-                tryEnterUpcomingCalls += 1
-                tryEnterUpcomingResult
             },
         )
 
@@ -134,99 +113,12 @@ class PlaybackSessionApplierTest {
         }
 
     @Test
-    fun `a VOD from InnerTube arms the session, publishes autoplay and prepares the streams in order`() =
-        runTest(testDispatcher) {
-            coEvery { playbackPreparer.applyAutoplayCandidates(any(), any()) } returns true
-            val related = listOf(video("rel_1"))
-
-            applier().apply(vodStep(relatedVideos = related), load())
-            advanceUntilIdle()
-
-            val state = uiState.value
-            assertThat(state.isLoading).isFalse()
-            assertThat(state.videoStream).isNotNull()
-            assertThat(state.availableQualities).contains(VideoQuality.Q_1080P)
-            assertThat(state.relatedVideos.map { it.id }).containsExactly("rel_1")
-
-            coVerifyOrder {
-                playbackPreparer.beginSession(VIDEO_ID, "InnerTube title", "InnerTube channel", any())
-                playbackPreparer.applyAutoplayCandidates(VIDEO_ID, related)
-                secondaryMetadata.loadRelatedVideos(VIDEO_ID, related, CURRENT_TOKEN)
-                secondaryMetadata.loadChannelMetadata(VIDEO_ID, null, "UC_innertube", any(), CURRENT_TOKEN)
-                playbackPreparer.prepareVodStreams(VIDEO_ID, any(), any(), 0L, any())
-            }
-            verify { GlobalPlayerState.setCurrentVideo(match { it.id == VIDEO_ID && it.title == "InnerTube title" }) }
-        }
-
-    @Test
-    fun `a VOD whose preparation throws asks the premiere check first and then writes the error`() =
-        runTest(testDispatcher) {
-            coEvery { playbackPreparer.prepareVodStreams(any(), any(), any(), any(), any()) } throws
-                RuntimeException("prepare failed")
-
-            applier().apply(vodStep(), load())
-            advanceUntilIdle()
-
-            assertThat(tryEnterUpcomingCalls).isEqualTo(1)
-            assertThat(uiState.value.isLoading).isFalse()
-            assertThat(uiState.value.error).isEqualTo("res:${R.string.error_generic}")
-        }
-
-    @Test
-    fun `a VOD failure the premiere check claims leaves the error alone`() =
-        runTest(testDispatcher) {
-            tryEnterUpcomingResult = true
-            coEvery { playbackPreparer.prepareVodStreams(any(), any(), any(), any(), any()) } throws
-                RuntimeException("prepare failed")
-
-            applier().apply(vodStep(), load())
-            advanceUntilIdle()
-
-            assertThat(tryEnterUpcomingCalls).isEqualTo(1)
-            assertThat(uiState.value.error).isNull()
-        }
-
-    @Test
-    fun `a live stream that starts loads the channel metadata and arms the chat`() =
-        runTest(testDispatcher) {
-            coEvery { playbackPreparer.prepareLiveStreams(any(), any(), any(), any(), any()) } returns true
-
-            applier().apply(liveStep(), load())
-            advanceUntilIdle()
-
-            assertThat(uiState.value.hlsUrl).isEqualTo(LIVE_HLS_URL)
-            assertThat(uiState.value.isLive).isTrue()
-            coVerifyOrder {
-                playbackPreparer.beginSession(VIDEO_ID, any(), any(), any())
-                playbackPreparer.applyAutoplayCandidates(VIDEO_ID, any())
-                playbackPreparer.prepareLiveStreams(VIDEO_ID, LIVE_HLS_URL, any(), any(), any())
-                secondaryMetadata.loadChannelMetadata(VIDEO_ID, null, "UC_innertube", any(), CURRENT_TOKEN)
-                liveChat.start(VIDEO_ID)
-                secondaryMetadata.refreshLiveWatchMetadata(VIDEO_ID, any(), CURRENT_TOKEN)
-            }
-        }
-
-    @Test
-    fun `a live stream the player refuses stops before the channel metadata`() =
-        runTest(testDispatcher) {
-            coEvery { playbackPreparer.prepareLiveStreams(any(), any(), any(), any(), any()) } returns false
-
-            applier().apply(liveStep(), load())
-            advanceUntilIdle()
-
-            assertThat(uiState.value.hlsUrl).isEqualTo(LIVE_HLS_URL)
-            coVerify(exactly = 0) { secondaryMetadata.loadChannelMetadata(any(), any(), any(), any(), any()) }
-            verify(exactly = 0) { liveChat.start(any()) }
-            coVerify(exactly = 0) { secondaryMetadata.refreshLiveWatchMetadata(any(), any(), any()) }
-        }
-
-    @Test
     fun `a failure writes the error and leaves a retryable video unmarked`() =
         runTest(testDispatcher) {
             val related = listOf(video("rel_1"))
 
             applier().apply(
-                ResolvedPlayback.Failed(PlaybackFailure.EXTRACTION, RuntimeException("newpipe unavailable"), related),
+                ResolvedPlayback.Failed(PlaybackFailure.EXTRACTION, RuntimeException("plugin unavailable"), related),
                 load(),
             )
             advanceUntilIdle()
@@ -234,7 +126,7 @@ class PlaybackSessionApplierTest {
             val state = uiState.value
             assertThat(state.isLoading).isFalse()
             assertThat(state.error).isEqualTo("res:${R.string.error_generic}")
-            assertThat(state.errorHint).isEqualTo("RuntimeException: newpipe unavailable")
+            assertThat(state.errorHint).isEqualTo("RuntimeException: plugin unavailable")
             assertThat(state.relatedVideos.map { it.id }).containsExactly("rel_1")
             coVerify(exactly = 0) { harness.playerPreferences.markVideoUnplayable(any()) }
         }
@@ -295,59 +187,8 @@ class PlaybackSessionApplierTest {
     private fun segment(): SponsorBlockSegment =
         SponsorBlockSegment(category = "sponsor", segment = listOf(0f, 1f), uuid = "uuid_1", actionType = "skip")
 
-    private fun vodStep(relatedVideos: List<Video> = emptyList()): ResolvedPlayback.VodFromInnerTube =
-        ResolvedPlayback.VodFromInnerTube(
-            result = extraction(),
-            relatedVideos = relatedVideos,
-            preferredQuality = VideoQuality.Q_1080P,
-            preferredAudioLanguage = "original",
-            preferredCodecKey = "auto",
-            preferredSubtitleLanguage = CaptionTrackResolver.NO_PREFERRED_LANGUAGE,
-            resumePositionOverrideMs = null,
-        )
-
-    private fun liveStep(): ResolvedPlayback.Live =
-        ResolvedPlayback.Live(
-            result = extraction(isLive = true, liveHlsUrl = LIVE_HLS_URL),
-            relatedVideos = emptyList(),
-        )
-
-    private fun extraction(
-        isLive: Boolean = false,
-        liveHlsUrl: String? = null,
-    ): InnerTubeVideoStreamExtractor.VideoExtractionResult =
-        InnerTubeVideoStreamExtractor.VideoExtractionResult(
-            videoFormats = fakeVideoFormats(),
-            audioFormats = fakeAudioFormats(),
-            playerResponse = playerResponse(),
-            usedClient = YouTubeClient.WEB,
-            sabrInfo = null,
-            isLive = isLive,
-            liveHlsUrl = liveHlsUrl,
-            liveDashUrl = null,
-        )
-
-    private fun playerResponse(): PlayerResponse =
-        PlayerResponse(
-            responseContext = ResponseContext(visitorData = null, serviceTrackingParams = null),
-            playabilityStatus = PlayerResponse.PlayabilityStatus(status = "OK", reason = null),
-            playerConfig = null,
-            streamingData = null,
-            videoDetails =
-                PlayerResponse.VideoDetails(
-                    videoId = VIDEO_ID,
-                    title = "InnerTube title",
-                    author = "InnerTube channel",
-                    channelId = "UC_innertube",
-                    lengthSeconds = "300",
-                    thumbnail = Thumbnails(listOf(Thumbnail(url = "https://example.invalid/it.jpg", width = 1280, height = 720))),
-                ),
-            playbackTracking = null,
-        )
-
     private companion object {
         const val VIDEO_ID = "vid_applier"
         const val CURRENT_TOKEN = 7L
-        const val LIVE_HLS_URL = "https://example.invalid/live.m3u8"
     }
 }

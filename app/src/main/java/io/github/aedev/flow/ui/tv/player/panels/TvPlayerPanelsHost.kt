@@ -522,7 +522,7 @@ private fun TvCommentsPanelContent(
                                     )
                                 }
                             }
-                            if (comment.repliesPage != null || comment.continuationToken != null) {
+                            if (comment.continuationToken != null) {
                                 TvCard(onClick = { viewModel.loadMoreCommentReplies(comment) }) {
                                     Text(
                                         text = stringResource(R.string.tv_more_replies),

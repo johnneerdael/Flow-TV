@@ -14,13 +14,10 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.aedev.flow.data.download.DownloadUtil
 import io.github.aedev.flow.data.local.entity.DownloadItemStatus
 import io.github.aedev.flow.data.local.safePreferencesDataStore
-import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.data.music.model.withTypedArtists
 import io.github.aedev.flow.data.video.VideoDownloadManager
-import io.github.aedev.flow.data.video.downloader.FlowDownloadService
 import io.github.aedev.flow.service.ExoDownloadService
-import io.github.aedev.flow.utils.MusicPlayerUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -29,7 +26,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -123,77 +119,6 @@ class DownloadManager
             )
         }
 
-        suspend fun downloadTrack(track: MusicTrack): Result<String> =
-            withContext(Dispatchers.IO) {
-                try {
-                    if (isDownloaded(track.videoId) || hasActiveFileDownload(track.videoId)) {
-                        return@withContext Result.success(track.videoId)
-                    }
-
-                    val downloadedTrack =
-                        DownloadedTrack(
-                            track = track,
-                            filePath = "",
-                            fileSize = 0,
-                            downloadId = 0,
-                        )
-                    saveDownloadedTrack(downloadedTrack)
-
-                    val playbackData = MusicPlayerUtils.playerResponseForPlayback(track.videoId).getOrThrow()
-                    val streamUrl = playbackData.streamUrl
-                    val contentLength = playbackData.format.contentLength
-                    val downloadUrl =
-                        if (contentLength != null) {
-                            val sep = if ("?" in streamUrl) "&" else "?"
-                            "${streamUrl}${sep}range=0-$contentLength"
-                        } else {
-                            streamUrl
-                        }
-
-                    val extension = "mp3"
-                    val mimeType = "audio/mpeg"
-                    val quality =
-                        playbackData.format.averageBitrate
-                            ?.takeIf { it > 0 }
-                            ?.let { "${it / 1000}kbps" }
-                            ?: playbackData.format.bitrate
-                                .takeIf { it > 0 }
-                                ?.let { "${it / 1000}kbps" }
-                            ?: "Music"
-
-                    val video =
-                        Video(
-                            id = track.videoId,
-                            title = track.title,
-                            channelName = track.artist,
-                            channelId = track.channelId,
-                            thumbnailUrl = track.thumbnailUrl,
-                            duration = track.duration,
-                            viewCount = track.views,
-                            uploadDate = System.currentTimeMillis().toString(),
-                            description = track.album,
-                            isMusic = true,
-                        )
-
-                    FlowDownloadService.startDownload(
-                        context = context,
-                        video = video,
-                        url = downloadUrl,
-                        quality = quality,
-                        audioOnly = true,
-                        userAgent = playbackData.usedClient.userAgent,
-                        audioExtension = extension,
-                        audioMimeType = mimeType.ifBlank { "audio/mp4" },
-                        isMusic = true,
-                    )
-
-                    Result.success(track.videoId)
-                } catch (e: Exception) {
-                    Log.e("DownloadManager", "Download failed", e)
-                    Result.failure(e)
-                }
-            }
-
         suspend fun updateDownloadedTrack(
             videoId: String,
             size: Long = 0,
@@ -239,16 +164,6 @@ class DownloadManager
             }
         }
 
-        private suspend fun saveDownloadedTrack(track: DownloadedTrack) {
-            context.downloadDataStore.edit { prefs ->
-                val json = prefs[DOWNLOADED_TRACKS_KEY] ?: "[]"
-                val currentTracks = parseDownloadedTracks(json).toMutableList()
-                currentTracks.removeAll { it.track.videoId == track.track.videoId }
-                currentTracks.add(track)
-                prefs[DOWNLOADED_TRACKS_KEY] = gson.toJson(currentTracks)
-            }
-        }
-
         private fun parseDownloadedTracks(json: String?): List<DownloadedTrack> =
             runCatching {
                 val type = object : TypeToken<List<DownloadedTrack>>() {}.type
@@ -268,16 +183,6 @@ class DownloadManager
                 .firstOrNull {
                     it.status == DownloadItemStatus.COMPLETED && isReadablePath(it.filePath)
                 }?.filePath
-        }
-
-        private suspend fun hasActiveFileDownload(videoId: String): Boolean {
-            val download = videoDownloadManager.getDownloadWithItems(videoId) ?: return false
-            return download.isAudioOnly && download.overallStatus in
-                setOf(
-                    DownloadItemStatus.PENDING,
-                    DownloadItemStatus.DOWNLOADING,
-                    DownloadItemStatus.PAUSED,
-                )
         }
 
         private fun isReadablePath(path: String): Boolean = path.startsWith("content://") || File(path).exists()

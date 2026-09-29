@@ -103,15 +103,6 @@ class LikedVideosRepository private constructor(
         }
     }
 
-    /** Replaces the stored details of a video that is still liked; its place and like date stay. */
-    suspend fun updateDetails(videoInfo: LikedVideoInfo) {
-        dataStore.edit { preferences ->
-            val key = videoKey(videoInfo.videoId)
-            val stored = preferences[key]?.let(::deserializeVideo) ?: return@edit
-            preferences[key] = serializeVideo(videoInfo.copy(likedAt = stored.likedAt, isMusic = stored.isMusic))
-        }
-    }
-
     /** Unlikes [videoIds] as one change and returns what [restoreLikes] needs to put them back. */
     suspend fun takeLikes(videoIds: Collection<String>): List<LikedVideoInfo> {
         val ids = videoIds.toSet()

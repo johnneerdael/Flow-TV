@@ -169,7 +169,6 @@ internal class PlayerSessionController(
         _canGoPrevious.value = false
 
         collaborators.comments.clear()
-        collaborators.descriptions.clear()
         collaborators.transcripts.clear()
     }
 
@@ -298,7 +297,6 @@ internal class PlayerSessionController(
             PlaybackResolutionRequest(
                 videoId = videoId,
                 isWifi = isWifi,
-                escalateToSabr = false,
                 resumePositionOverrideMs = resumePositionOverrideMs,
                 allowShorts = shortsEnabled(),
                 blockedChannelIds = blockedChannelIds(),

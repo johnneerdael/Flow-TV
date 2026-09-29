@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.aedev.flow.data.account.AccountPlayHistory
+import io.github.aedev.flow.data.comments.VideoCommentSort
 import io.github.aedev.flow.data.engagement.FeedInvalidationBus
 import io.github.aedev.flow.data.engagement.VideoEngagementUseCase
 import io.github.aedev.flow.data.local.*
@@ -14,17 +15,14 @@ import io.github.aedev.flow.data.model.Comment
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.recommendation.FlowNeuroEngine
 import io.github.aedev.flow.data.repository.SponsorBlockRepository
-import io.github.aedev.flow.data.repository.YouTubeRepository
 import io.github.aedev.flow.data.transcript.TranscriptRepository
 import io.github.aedev.flow.data.video.VideoDownloadManager
 import io.github.aedev.flow.data.video.VideoQueueStore
 import io.github.aedev.flow.di.IoDispatcher
 import io.github.aedev.flow.di.NetworkIoDispatcher
-import io.github.aedev.flow.innertube.pages.VideoCommentSort
 import io.github.aedev.flow.player.EnhancedPlayerManager
 import io.github.aedev.flow.player.state.EnhancedPlayerState
 import io.github.aedev.flow.player.stream.PluginPlaybackResolver
-import io.github.aedev.flow.player.stream.UpcomingPremiereProbe
 import io.github.aedev.flow.plugin.playback.PluginVideo
 import io.github.aedev.flow.ui.screens.player.state.*
 import io.github.aedev.flow.utils.NetworkState
@@ -54,7 +52,6 @@ class VideoPlayerViewModel
     @Inject
     constructor(
         @ApplicationContext private val context: Context,
-        private val repository: YouTubeRepository,
         private val transcriptRepository: TranscriptRepository,
         private val viewHistory: ViewHistory,
         private val engagement: VideoEngagementUseCase,
@@ -67,7 +64,6 @@ class VideoPlayerViewModel
         private val sponsorBlockRepository: SponsorBlockRepository,
         private val homeFeedCacheRepository: HomeFeedCacheRepository,
         private val playerManager: EnhancedPlayerManager,
-        private val upcomingPremiereProbe: UpcomingPremiereProbe,
         private val playbackResolver: PluginPlaybackResolver,
         private val pluginVideo: PluginVideo,
         accountPlayHistory: AccountPlayHistory,
@@ -88,7 +84,6 @@ class VideoPlayerViewModel
         private val collaborators: PlayerCollaborators =
             PlayerCollaborators(
                 context = context,
-                repository = repository,
                 transcriptRepository = transcriptRepository,
                 viewHistory = viewHistory,
                 engagement = engagement,
@@ -100,7 +95,6 @@ class VideoPlayerViewModel
                 accountPlayHistory = accountPlayHistory,
                 homeFeedCacheRepository = homeFeedCacheRepository,
                 playerManager = playerManager,
-                upcomingPremiereProbe = upcomingPremiereProbe,
                 videoStats = videoStats,
                 uiState = _uiState,
                 scope = viewModelScope,

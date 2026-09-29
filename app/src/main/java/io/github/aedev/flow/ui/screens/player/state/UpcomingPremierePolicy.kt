@@ -2,7 +2,6 @@ package io.github.aedev.flow.ui.screens.player.state
 
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.player.stream.UpcomingDetails
-import io.github.aedev.flow.player.stream.UpcomingPremiere
 import io.github.aedev.flow.utils.parsePremiereTimestamp
 
 /**
@@ -29,26 +28,6 @@ internal object UpcomingPremierePolicy {
             video.timestamp > nowMs + TRUSTED_TIMESTAMP_LEAD_MS -> video.timestamp
             else -> parsePremiereTimestamp(video.uploadDate)
         }?.takeIf { it > nowMs }
-    }
-
-    /** A video already known to be upcoming with a known release time needs no network probe. */
-    fun needsProbe(
-        flagged: Boolean,
-        listReleaseMs: Long?,
-    ): Boolean = !(flagged && listReleaseMs != null)
-
-    /** Combines what the list metadata knew with what the probe found. */
-    fun resolve(
-        flagged: Boolean,
-        listReleaseMs: Long?,
-        probe: UpcomingPremiere,
-    ): UpcomingPremiere {
-        if (!flagged && !probe.isUpcoming) return UpcomingPremiere.NOT_UPCOMING
-        return UpcomingPremiere(
-            isUpcoming = true,
-            scheduledStartMs = listReleaseMs ?: probe.scheduledStartMs,
-            details = probe.details,
-        )
     }
 
     /** The countdown state for a video the caller already knows is upcoming, before any load starts. */

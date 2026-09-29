@@ -275,20 +275,6 @@ class PlaylistRepository
                 rows.map { it.video.toDomain().copy(addedAtInPlaylist = it.addedAt.takeIf { ts -> ts > 0L }) }
             }
 
-        /**
-         * Reconciles a saved (not-owned) playlist's local copy with a fresh remote fetch: upserts each
-         * remote video's metadata, restores creator order, adds newly-published videos and drops ones
-         * the creator removed. Keeps the playlist available offline while showing real, current data.
-         */
-        suspend fun syncSavedPlaylistVideos(
-            playlistId: String,
-            remoteVideos: List<Video>,
-        ) {
-            if (remoteVideos.isEmpty()) return
-            videoDao.mergeMetadata(remoteVideos.map(::normalizedEntity))
-            playlistDao.replacePlaylistVideos(playlistId, remoteVideos.map { it.id }.distinct())
-        }
-
         suspend fun getPlaylistInfo(playlistId: String): PlaylistInfo? {
             val entity = playlistDao.getPlaylist(playlistId) ?: return null
             return PlaylistInfo(

@@ -12,7 +12,6 @@ object VideoCodecUtils {
      * stay bare. Flow's quality selector follows the same convention.
      */
     private const val HIGH_FRAME_RATE_FPS = 50
-    private val CODECS_PARAMETER_REGEX = Regex("""codecs\s*=\s*["']([^"']+)["']""", RegexOption.IGNORE_CASE)
 
     private val AV1_ITAGS = setOf(394, 395, 396, 397, 398, 399, 400, 401, 402, 571, 694, 695, 696, 697, 698, 699, 700, 701)
     private val VP9_ITAGS =
@@ -70,31 +69,6 @@ object VideoCodecUtils {
         )
     private val VP8_ITAGS = setOf(43)
 
-    fun codecKeyFromMimeType(mimeType: String): String {
-        val m = mimeType.lowercase()
-        val codecs = codecStringFromMimeType(m)
-        return when {
-            "av01" in codecs -> "av1"
-            "vp09" in codecs || "vp9" in codecs -> "vp9"
-            "vp08" in codecs || "vp8" in codecs -> "vp8"
-            "hev1" in codecs || "hvc1" in codecs -> "hevc"
-            "avc1" in codecs -> "h264"
-            "webm" in m -> "vp9"
-            else -> "h264"
-        }
-    }
-
-    fun codecStringFromMimeType(mimeType: String): String {
-        val m = mimeType.lowercase()
-        return CODECS_PARAMETER_REGEX
-            .find(m)
-            ?.groupValues
-            ?.getOrNull(1)
-            ?.substringBefore(",")
-            ?.trim()
-            .orEmpty()
-    }
-
     fun codecKeyFromStream(stream: VideoStream): String {
         val url =
             try {
@@ -142,27 +116,6 @@ object VideoCodecUtils {
             "h264" -> "H264"
             else -> key.uppercase()
         }
-
-    /**
-     * Composite key for every "(resolution, codec) -> value" lookup table in the app: the download
-     * dialog's size map and the player's format grouping alike.
-     *
-     * Format: `"${height}_${codecKey}"`, e.g. `"2160_av1"`, `"1080_vp9"`.
-     */
-    fun streamSizeKey(
-        height: Int,
-        codecKey: String,
-    ): String = "${height}_$codecKey"
-
-    /**
-     * Resolution class of an InnerTube format. `qualityLabel` wins over the raw pixel height:
-     * portrait media (Shorts) reports the *long* side as the height, so keying off it alone files a
-     * 1080p Short under 1920 and nothing ever matches it again.
-     */
-    fun qualityHeightFromFormat(
-        qualityLabel: String?,
-        fallbackHeight: Int,
-    ): Int = normalizeQualityHeight(parseQualityHeight(qualityLabel) ?: fallbackHeight)
 
     fun qualityHeightFromStream(stream: VideoStream): Int {
         parseQualityHeight(stream.resolution)?.let { return it }

@@ -114,10 +114,6 @@ internal class PluginPlaybackApplier(
                     savedPositionMs = savedPositionMs,
                     isAdaptiveMode = isAdaptiveMode,
                     autoplayEnabled = autoplay,
-                    innerTubeVideoFormats = emptyList(),
-                    innerTubeAudioFormats = emptyList(),
-                    streamSizes = emptyMap(),
-                    storyboard = emptyList(),
                 ).copy(chapters = playable.chapters)
         }
         // Armed before the prepared-player return below, so a video the queue already started still gets its lane.
@@ -133,9 +129,6 @@ internal class PluginPlaybackApplier(
             savedPositionMs = savedPositionMs,
             resumeOverrideRequested = step.resumePositionOverrideMs != null,
             isAdaptiveMode = isAdaptiveMode,
-            sabrInfo = null,
-            itVideoFormats = emptyList(),
-            itAudioFormats = emptyList(),
             preferredVideoCodec = codec,
             preferredLiveQualityHeight = quality.height,
             isCurrent = { isLoadCurrent(load.token) },

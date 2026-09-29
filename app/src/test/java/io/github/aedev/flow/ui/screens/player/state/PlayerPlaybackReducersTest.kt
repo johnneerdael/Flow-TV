@@ -6,8 +6,6 @@ import io.github.aedev.flow.data.model.SponsorBlockSegment
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.player.error.VideoErrorMapper
 import io.github.aedev.flow.player.stream.ResolvedPlayback
-import io.github.aedev.flow.ui.screens.player.SecondaryMetadata
-import io.mockk.mockk
 import io.mockk.unmockkAll
 import org.junit.After
 import org.junit.Test
@@ -48,34 +46,7 @@ class PlayerPlaybackReducersTest {
     }
 
     @Test
-    fun `a local copy after a failure only clears the load and the error`() {
-        val video = video("vid_a")
-        val state = VideoPlayerUiState(cachedVideo = video, isLoading = true, error = "boom", errorHint = "hint")
-
-        val next = state.applyLocalCopyAfterFailure()
-
-        assertThat(next).isEqualTo(state.copy(isLoading = false, error = null, errorHint = null))
-    }
-
-    @Test
-    fun `an offline fallback fills in the lane around a copy that is already playing`() {
-        val related = listOf(video("rel_1"))
-        val state = VideoPlayerUiState(isLoading = true, isUpcoming = true, upcomingReleaseTimeMs = 42L)
-
-        val next =
-            state.applyOfflineFallback(
-                ResolvedPlayback.OfflineFallback(localFilePath = "/tmp/a.mp4", offlineSegments = null, relatedVideos = related),
-            )
-
-        assertThat(next.relatedVideos.map { it.id }).containsExactly("rel_1")
-        assertThat(next.localFilePath).isEqualTo("/tmp/a.mp4")
-        assertThat(next.isLoading).isFalse()
-        assertThat(next.isUpcoming).isFalse()
-        assertThat(next.upcomingReleaseTimeMs).isNull()
-    }
-
-    @Test
-    fun `the InnerTube VOD path writes its own field set and leaves the merged-only fields alone`() {
+    fun `a VOD writes its own field set and leaves the load's other fields alone`() {
         val videoStream = videoStream("720p")
         val chapters = emptyList<org.schabi.newpipe.extractor.stream.StreamSegment>()
         val before =
@@ -99,10 +70,6 @@ class PlayerPlaybackReducersTest {
                 savedPositionMs = 9_000L,
                 isAdaptiveMode = true,
                 autoplayEnabled = false,
-                innerTubeVideoFormats = emptyList(),
-                innerTubeAudioFormats = emptyList(),
-                streamSizes = mapOf("136" to 7L),
-                storyboard = emptyList(),
             )
 
         assertThat(next.videoStream).isSameInstanceAs(videoStream)
@@ -110,7 +77,6 @@ class PlayerPlaybackReducersTest {
         assertThat(next.savedPosition).isEqualTo(9_000L)
         assertThat(next.isAdaptiveMode).isTrue()
         assertThat(next.autoplayEnabled).isFalse()
-        assertThat(next.streamSizes).containsExactly("136", 7L)
         assertThat(next.isLoading).isFalse()
         assertThat(next.error).isNull()
         assertThat(next.isLive).isFalse()
@@ -123,13 +89,12 @@ class PlayerPlaybackReducersTest {
     }
 
     @Test
-    fun `the InnerTube live path publishes the manifest and empties the InnerTube format lists`() {
+    fun `a live stream publishes its manifest and clears the load`() {
         val before =
             VideoPlayerUiState(
                 isLoading = true,
                 error = "boom",
                 errorHint = "hint",
-                innerTubeVideoFormats = listOf(mockk(relaxed = true)),
                 isUpcoming = true,
                 upcomingReleaseTimeMs = 12L,
             )
@@ -141,24 +106,8 @@ class PlayerPlaybackReducersTest {
         assertThat(next.isLoading).isFalse()
         assertThat(next.error).isNull()
         assertThat(next.errorHint).isNull()
-        assertThat(next.innerTubeVideoFormats).isEmpty()
-        assertThat(next.innerTubeAudioFormats).isEmpty()
         assertThat(next.isUpcoming).isFalse()
         assertThat(next.upcomingReleaseTimeMs).isNull()
-    }
-
-    @Test
-    fun `a VOD failure keeps the lane the load had already gathered`() {
-        val next =
-            VideoPlayerUiState(isLoading = true).applyVodFailure(
-                relatedVideos = listOf(video("rel_1")),
-                videoError = VideoErrorMapper.VideoError(message = "no", hint = "try later"),
-            )
-
-        assertThat(next.isLoading).isFalse()
-        assertThat(next.relatedVideos.map { it.id }).containsExactly("rel_1")
-        assertThat(next.error).isEqualTo("no")
-        assertThat(next.errorHint).isEqualTo("try later")
     }
 
     @Test
@@ -176,90 +125,12 @@ class PlayerPlaybackReducersTest {
     }
 
     @Test
-    fun `channel metadata prefers the fetched avatar and folds it into the cached video`() {
-        val state = VideoPlayerUiState(cachedVideo = video("vid_a").copy(channelThumbnailUrl = "embedded.jpg"))
-
-        val next =
-            state.applyChannelMetadata(
-                SecondaryMetadata.Channel(
-                    videoId = "vid_a",
-                    loadToken = 1L,
-                    fetchedAvatarUrl = "fetched.jpg",
-                    embeddedAvatarUrl = "step-embedded.jpg",
-                    subscriberCount = 42L,
-                ),
-            )
-
-        assertThat(next.channelAvatarUrl).isEqualTo("fetched.jpg")
-        assertThat(next.channelSubscriberCount).isEqualTo(42L)
-        assertThat(next.cachedVideo?.channelThumbnailUrl).isEqualTo("fetched.jpg")
-        assertThat(next.cachedVideo?.channelThumbnailUrls).containsExactly("fetched.jpg").inOrder()
-    }
-
-    @Test
-    fun `channel metadata falls through the second stage to the avatar the cached video carries`() {
-        val state =
-            VideoPlayerUiState(
-                cachedVideo = video("vid_a").copy(channelThumbnailUrl = "cached.jpg", channelThumbnailUrls = listOf("cached.jpg")),
-            )
-
-        val next =
-            state.applyChannelMetadata(
-                SecondaryMetadata.Channel(
-                    videoId = "vid_a",
-                    loadToken = 1L,
-                    fetchedAvatarUrl = null,
-                    embeddedAvatarUrl = null,
-                    subscriberCount = null,
-                ),
-            )
-
-        assertThat(next.channelAvatarUrl).isEqualTo("cached.jpg")
-        assertThat(next.cachedVideo?.channelThumbnailUrls).containsExactly("cached.jpg")
-        assertThat(next.channelSubscriberCount).isNull()
-    }
-
-    @Test
-    fun `channel metadata for a video the screen has moved past changes nothing`() {
-        val state = VideoPlayerUiState(cachedVideo = video("vid_b"))
-
-        val next =
-            state.applyChannelMetadata(
-                SecondaryMetadata.Channel("vid_a", 1L, "fetched.jpg", null, 42L),
-            )
-
-        assertThat(next).isSameInstanceAs(state)
-    }
-
-    @Test
     fun `the related lane is published only for the video the screen is showing`() {
         val videos = listOf(video("rel_1"))
         val cached = VideoPlayerUiState(cachedVideo = video("vid_a"))
 
         assertThat(cached.applyRelatedVideos("vid_a", videos).relatedVideos).isEqualTo(videos)
         assertThat(cached.applyRelatedVideos("vid_b", videos)).isSameInstanceAs(cached)
-    }
-
-    @Test
-    fun `the live watch refresh keeps the avatar and count it could not resolve`() {
-        val before = VideoPlayerUiState(channelAvatarUrl = "old.jpg", channelSubscriberCount = 7L)
-        val refreshed = video("vid_a").copy(title = "Live now")
-
-        val next =
-            before.applyLiveWatchMetadata(
-                SecondaryMetadata.LiveWatch(
-                    videoId = "vid_a",
-                    loadToken = 1L,
-                    video = refreshed,
-                    relatedVideos = emptyList(),
-                    channelAvatarUrl = null,
-                    subscriberCount = null,
-                ),
-            )
-
-        assertThat(next.cachedVideo).isEqualTo(refreshed)
-        assertThat(next.channelAvatarUrl).isEqualTo("old.jpg")
-        assertThat(next.channelSubscriberCount).isEqualTo(7L)
     }
 
     @Test

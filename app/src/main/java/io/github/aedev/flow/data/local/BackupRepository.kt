@@ -30,9 +30,6 @@ import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
-import org.schabi.newpipe.extractor.NewPipe
-import org.schabi.newpipe.extractor.ServiceList
-import org.schabi.newpipe.extractor.channel.ChannelInfo
 import java.io.BufferedReader
 import java.io.ByteArrayOutputStream
 import java.io.InputStreamReader
@@ -456,13 +453,7 @@ class BackupRepository(
                                 .map { sub ->
                                     async(Dispatchers.IO) {
                                         semaphore.withPermit {
-                                            val result =
-                                                try {
-                                                    val avatarUrl = fetchChannelAvatar(sub.channelId)
-                                                    sub.copy(channelThumbnail = avatarUrl)
-                                                } catch (e: Exception) {
-                                                    sub
-                                                }
+                                            val result = sub
                                             onProgress?.invoke(completedCount.incrementAndGet(), totalForProgress)
                                             result
                                         }
@@ -541,13 +532,7 @@ class BackupRepository(
                                 .map { sub ->
                                     async(Dispatchers.IO) {
                                         semaphore.withPermit {
-                                            val result =
-                                                try {
-                                                    val avatarUrl = fetchChannelAvatar(sub.channelId)
-                                                    sub.copy(channelThumbnail = avatarUrl)
-                                                } catch (e: Exception) {
-                                                    sub
-                                                }
+                                            val result = sub
                                             onProgress?.invoke(ytCompletedCount.incrementAndGet(), ytTotalForProgress)
                                             result
                                         }
@@ -1169,16 +1154,7 @@ class BackupRepository(
                                 .map { sub ->
                                     async(Dispatchers.IO) {
                                         semaphore.withPermit {
-                                            val result =
-                                                if (sub.channelThumbnail.isEmpty()) {
-                                                    try {
-                                                        sub.copy(channelThumbnail = fetchChannelAvatar(sub.channelId))
-                                                    } catch (e: Exception) {
-                                                        sub
-                                                    }
-                                                } else {
-                                                    sub
-                                                }
+                                            val result = sub
                                             onProgress?.invoke(completed.incrementAndGet(), total)
                                             result
                                         }
@@ -1516,12 +1492,7 @@ class BackupRepository(
                                     .map { sub ->
                                         async(Dispatchers.IO) {
                                             semaphore.withPermit {
-                                                val avatar =
-                                                    try {
-                                                        fetchChannelAvatar(sub.channelId)
-                                                    } catch (e: Exception) {
-                                                        ""
-                                                    }
+                                                val avatar = ""
                                                 onProgress?.invoke("Subscriptions", completed.incrementAndGet(), subRows.size)
                                                 ChannelSubscription(
                                                     channelId = sub.channelId,
@@ -2261,20 +2232,5 @@ class BackupRepository(
             } catch (e: Exception) {
                 Result.failure(e)
             }
-        }
-
-    // Helper to fetch channel avatar using NewPipe
-    private fun fetchChannelAvatar(channelId: String): String =
-        try {
-            val url =
-                if (channelId.startsWith("UC") && channelId.length > 20) {
-                    "https://www.youtube.com/channel/$channelId"
-                } else {
-                    "https://www.youtube.com/@$channelId"
-                }
-            val info = ChannelInfo.getInfo(ServiceList.YouTube, url)
-            info.avatars.maxByOrNull { it.height }?.url ?: ""
-        } catch (e: Exception) {
-            ""
         }
 }

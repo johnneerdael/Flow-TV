@@ -4,7 +4,6 @@ import android.util.Log
 import io.github.aedev.flow.data.model.Comment
 import io.github.aedev.flow.data.model.distinctByNonBlankKey
 import io.github.aedev.flow.data.model.mergeDistinctByNonBlankKey
-import io.github.aedev.flow.innertube.pages.VideoCommentSort
 import io.github.aedev.flow.player.PlaybackStartupPolicy
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -232,13 +231,11 @@ internal class CommentsPager(
         comment: Comment,
         append: Boolean,
     ) {
-        val continuation = comment.continuationToken
-        val repliesPage = comment.repliesPage
-        if (continuation == null && repliesPage == null) return
+        if (comment.continuationToken == null) return
         if (!repliesInFlight.add(comment.id)) return
         scope.launch {
             try {
-                val (replies, nextContinuation, nextLegacyPage) = source.replies(videoId, comment)
+                val (replies, nextContinuation) = source.replies(videoId, comment)
                 _comments.value =
                     _comments.value.map { current ->
                         if (current.id != comment.id) {
@@ -252,7 +249,6 @@ internal class CommentsPager(
                                         replies.distinctByNonBlankKey(Comment::id)
                                     },
                                 continuationToken = nextContinuation,
-                                repliesPage = nextLegacyPage,
                             )
                         }
                     }

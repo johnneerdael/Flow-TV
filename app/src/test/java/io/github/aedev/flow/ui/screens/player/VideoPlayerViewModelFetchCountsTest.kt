@@ -4,12 +4,9 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import io.github.aedev.flow.R
 import io.github.aedev.flow.data.model.Comment
-import io.github.aedev.flow.innertube.YouTube
 import io.github.aedev.flow.player.GlobalPlayerState
 import io.github.aedev.flow.player.state.EnhancedPlayerState
-import io.github.aedev.flow.player.stream.InnerTubeVideoStreamExtractor
 import io.github.aedev.flow.ui.screens.player.VideoPlayerViewModelHarness.Companion.video
-import io.mockk.Called
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -71,12 +68,6 @@ class VideoPlayerViewModelFetchCountsTest {
         clearAllMocks(answers = false, childMocks = false)
     }
 
-    private fun verifyNoYouTubeStack() {
-        coVerify(exactly = 0) { InnerTubeVideoStreamExtractor.extract(any(), any()) }
-        verify(exactly = 0) { harness.playerPreferences.rytdEnabled }
-        coVerify(exactly = 0) { YouTube.player(any(), any(), any(), any(), any(), any(), any()) }
-    }
-
     @Test
     fun `playVideo resets state then makes 1 plugin resolve and no YouTube call`() =
         runTest {
@@ -111,7 +102,6 @@ class VideoPlayerViewModelFetchCountsTest {
             }
 
             coVerify(exactly = 1) { harness.pluginVideo.resolve("vid_a") }
-            verifyNoYouTubeStack()
             verifyOrder {
                 harness.playerManager.pause()
                 harness.playerManager.clearAll()
@@ -144,7 +134,6 @@ class VideoPlayerViewModelFetchCountsTest {
             assertThat(terminal.isLoading).isFalse()
             assertThat(terminal.error).isEqualTo("res:${R.string.error_generic}")
             coVerify(exactly = 1) { harness.pluginVideo.resolve("vid_a") }
-            verifyNoYouTubeStack()
             verify(exactly = 0) { harness.playerManager.pause() }
             verify(exactly = 0) { harness.playerManager.clearAll() }
         }
@@ -171,7 +160,6 @@ class VideoPlayerViewModelFetchCountsTest {
                 harness.pluginVideo.resolve("vid_a")
             }
             coVerify(exactly = 1) { harness.pluginVideo.resolve("vid_a") }
-            verifyNoYouTubeStack()
             coVerify(exactly = 0) { harness.playerManager.clearCacheForCurrentVideo() }
             coVerify(exactly = 0) { harness.playerPreferences.markVideoUnplayable(any()) }
         }
@@ -256,7 +244,6 @@ class VideoPlayerViewModelFetchCountsTest {
             assertThat(terminal.isLoading).isFalse()
             assertThat(terminal.error).isEqualTo("res:${R.string.error_generic}")
             coVerify(exactly = 1) { harness.pluginVideo.resolve("ext_1") }
-            verifyNoYouTubeStack()
             verify(exactly = 0) { harness.playerManager.startBackgroundService(any(), any(), any(), any()) }
         }
 
@@ -354,18 +341,5 @@ class VideoPlayerViewModelFetchCountsTest {
 
             coVerify(exactly = 0) { harness.pluginVideo.comments(any()) }
             assertThat(viewModel.isLoadingComments.value).isFalse()
-        }
-
-    @Test
-    fun `loadComments for a local media id short-circuits without a coroutine`() =
-        runTest {
-            val viewModel = newViewModel()
-
-            viewModel.loadComments("local_1")
-
-            verify { harness.repository wasNot Called }
-            coVerify(exactly = 0) { harness.pluginVideo.comments(any()) }
-            assertThat(viewModel.isLoadingComments.value).isFalse()
-            assertThat(viewModel.hasMoreComments.value).isFalse()
         }
 }

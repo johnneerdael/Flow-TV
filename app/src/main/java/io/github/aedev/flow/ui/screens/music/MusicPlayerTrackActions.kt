@@ -16,7 +16,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /** What the player can do to a track besides playing it: like, hide its artist, queue and download. */
 internal class MusicPlayerTrackActions(
@@ -113,32 +112,5 @@ internal class MusicPlayerTrackActions(
             EnhancedMusicPlayerManager.removeAutomixItem(track.videoId)
         }
         Toast.makeText(context, context.getString(R.string.added_to_queue_toast), Toast.LENGTH_SHORT).show()
-    }
-
-    fun downloadTrack(track: MusicTrack? = null) {
-        val trackToDownload = track ?: uiState.value.currentTrack ?: return
-
-        if (uiState.value.downloadedTrackIds.contains(trackToDownload.videoId)) {
-            scope.launch(kotlinx.coroutines.Dispatchers.Main) {
-                Toast.makeText(context, context.getString(R.string.already_downloaded_toast), Toast.LENGTH_SHORT).show()
-            }
-            return
-        }
-
-        scope.launch {
-            withContext(kotlinx.coroutines.Dispatchers.Main) {
-                Toast.makeText(context, context.getString(R.string.download_started_toast), Toast.LENGTH_SHORT).show()
-            }
-
-            try {
-                downloadManager.downloadTrack(trackToDownload)
-            } catch (e: Exception) {
-                android.util.Log.e("MusicDownload", "Download start exception", e)
-                withContext(kotlinx.coroutines.Dispatchers.Main) {
-                    val msg = context.getString(R.string.download_error_toast, e.message ?: "")
-                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
     }
 }

@@ -75,16 +75,6 @@ fun MusicTrack.withTypedArtists(): MusicTrack {
     return if (raw.all { it is MusicArtist }) this else copy(artists = raw.filterIsInstance<MusicArtist>())
 }
 
-data class DailyDiscoverItem(
-    val seed: MusicTrack,
-    val recommendation: MusicTrack,
-)
-
-data class CommunityMusicPlaylist(
-    val playlist: MusicPlaylist,
-    val tracks: List<MusicTrack>,
-)
-
 data class MusicPlaylist(
     val id: String,
     val title: String,
@@ -138,22 +128,4 @@ data class ArtistDetails(
     val singlesParams: String? = null,
     val topTracksBrowseId: String? = null,
     val topTracksParams: String? = null,
-)
-
-data class MusicCharts(
-    val countryCode: String?,
-    val songs: List<MusicTrack> = emptyList(),
-    val playlists: List<MusicPlaylist> = emptyList(),
-    val artists: List<ArtistDetails> = emptyList(),
-)
-
-data class RelatedMusic(
-    val seed: MusicTrack?,
-    val seedArtistId: String?,
-    val tracks: List<MusicTrack>,
-    val radioTracks: List<MusicTrack>,
-    val otherPerformances: List<MusicTrack>,
-    val similarArtists: List<ArtistDetails>,
-    val playlists: List<MusicPlaylist>,
-    val artistAlbums: List<MusicPlaylist>,
 )

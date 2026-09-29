@@ -5,7 +5,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.recommendation.FlowNeuroEngine
 import io.github.aedev.flow.data.recommendation.InteractionType
-import io.github.aedev.flow.data.repository.YouTubeRepository
 import javax.inject.Inject
 
 /**
@@ -19,7 +18,6 @@ class VideoEngagementSignals
     @Inject
     constructor(
         @ApplicationContext private val context: Context,
-        private val repository: YouTubeRepository,
     ) {
         suspend fun channelSubscriptionChanged(
             channelId: String,
@@ -31,7 +29,4 @@ class VideoEngagementSignals
             video: Video,
             interactionType: InteractionType,
         ) = FlowNeuroEngine.onVideoInteraction(context, video, interactionType)
-
-        /** Learns a newly subscribed channel's declared keyword tags. */
-        suspend fun channelTagsLearned(channelId: String) = repository.learnChannelTags(context, channelId)
     }

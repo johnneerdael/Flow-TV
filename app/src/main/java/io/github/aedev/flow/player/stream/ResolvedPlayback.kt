@@ -1,15 +1,13 @@
 package io.github.aedev.flow.player.stream
 
-import io.github.aedev.flow.data.local.VideoQuality
 import io.github.aedev.flow.data.model.SponsorBlockSegment
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.plugin.playback.PlayableVideo
 
-/** Everything [PlaybackLoadResolver] needs that the player screen owns. */
+/** Everything [PluginPlaybackResolver] needs that the player screen owns. */
 data class PlaybackResolutionRequest(
     val videoId: String,
     val isWifi: Boolean,
-    val escalateToSabr: Boolean,
     val resumePositionOverrideMs: Long?,
     val allowShorts: Boolean,
     /** Creators the viewer has blocked; their videos never enter the related list. */
@@ -18,7 +16,7 @@ data class PlaybackResolutionRequest(
 
 /** Why a resolution produced nothing to play, and therefore which error string the screen shows. */
 enum class PlaybackFailure {
-    /** Both extraction stacks came back empty. */
+    /** The source answered with nothing the player can play. */
     EXTRACTION,
 
     /** The whole resolution ran past its budget. */
@@ -31,9 +29,8 @@ enum class PlaybackFailure {
 /**
  * One thing the player screen can act on, handed over in the order the pipeline produces it.
  *
- * A single resolution emits one step in the common case and two when a downloaded copy starts
- * playing before the network leg finishes. The screen owns every `_uiState` write and every
- * hand-off to the player manager; this type carries only the values those need.
+ * A resolution emits exactly one step. The screen owns every `_uiState` write and every hand-off
+ * to the player manager; this type carries only the values those need.
  */
 sealed interface ResolvedPlayback {
     /** A downloaded copy of the video exists and should start playing now. */
@@ -42,42 +39,6 @@ sealed interface ResolvedPlayback {
         val offlineSegments: List<SponsorBlockSegment>?,
         /** The download was saved before SponsorBlock data was, so it is worth fetching once. */
         val needsSponsorBlockBackfill: Boolean = false,
-    ) : ResolvedPlayback
-
-    /**
-     * Resolution failed but a downloaded copy exists. A null [localFilePath] means the copy went
-     * missing between the two checks: the load stops reporting an error but nothing is prepared.
-     */
-    data class LocalCopyAfterFailure(
-        val localFilePath: String?,
-        val offlineSegments: List<SponsorBlockSegment>?,
-    ) : ResolvedPlayback
-
-    /**
-     * Streams could not be resolved while a downloaded copy is already playing from an earlier
-     * [LocalCopyReady]: only the surrounding metadata is filled in.
-     */
-    data class OfflineFallback(
-        val localFilePath: String?,
-        val offlineSegments: List<SponsorBlockSegment>?,
-        val relatedVideos: List<Video>,
-    ) : ResolvedPlayback
-
-    /** A live stream, from the manifest InnerTube produced. */
-    data class Live(
-        val result: InnerTubeVideoStreamExtractor.VideoExtractionResult,
-        val relatedVideos: List<Video>,
-    ) : ResolvedPlayback
-
-    /** A VOD, from the streams InnerTube produced. */
-    data class VodFromInnerTube(
-        val result: InnerTubeVideoStreamExtractor.VideoExtractionResult,
-        val relatedVideos: List<Video>,
-        val preferredQuality: VideoQuality,
-        val preferredAudioLanguage: String,
-        val preferredCodecKey: String,
-        val preferredSubtitleLanguage: String,
-        val resumePositionOverrideMs: Long?,
     ) : ResolvedPlayback
 
     /** A VOD or live stream the video plugin resolved. */

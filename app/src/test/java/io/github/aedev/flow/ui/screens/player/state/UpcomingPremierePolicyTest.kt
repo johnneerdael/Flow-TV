@@ -3,7 +3,6 @@ package io.github.aedev.flow.ui.screens.player.state
 import com.google.common.truth.Truth.assertThat
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.player.stream.UpcomingDetails
-import io.github.aedev.flow.player.stream.UpcomingPremiere
 import org.junit.Test
 
 class UpcomingPremierePolicyTest {
@@ -77,38 +76,6 @@ class UpcomingPremierePolicyTest {
         // Inside the lead window the field is indistinguishable from an upload stamp, so the label
         // is parsed instead - and there is no label here.
         assertThat(UpcomingPremierePolicy.releaseTimeFor(video(timestamp = now + 30_000L), now)).isNull()
-    }
-
-    @Test
-    fun `a probe is only needed when the metadata does not already answer both questions`() {
-        assertThat(UpcomingPremierePolicy.needsProbe(flagged = true, listReleaseMs = now)).isFalse()
-        assertThat(UpcomingPremierePolicy.needsProbe(flagged = true, listReleaseMs = null)).isTrue()
-        assertThat(UpcomingPremierePolicy.needsProbe(flagged = false, listReleaseMs = now)).isTrue()
-        assertThat(UpcomingPremierePolicy.needsProbe(flagged = false, listReleaseMs = null)).isTrue()
-    }
-
-    @Test
-    fun `an unflagged video the probe does not recognise is not upcoming`() {
-        assertThat(
-            UpcomingPremierePolicy.resolve(flagged = false, listReleaseMs = null, probe = UpcomingPremiere.NOT_UPCOMING),
-        ).isEqualTo(UpcomingPremiere.NOT_UPCOMING)
-    }
-
-    @Test
-    fun `a flagged video stays upcoming even when the probe finds nothing`() {
-        assertThat(
-            UpcomingPremierePolicy.resolve(flagged = true, listReleaseMs = null, probe = UpcomingPremiere.NOT_UPCOMING),
-        ).isEqualTo(UpcomingPremiere(isUpcoming = true, scheduledStartMs = null))
-    }
-
-    @Test
-    fun `the list release time wins over the probed one`() {
-        val probe = UpcomingPremiere(isUpcoming = true, scheduledStartMs = now + 7_200_000L)
-
-        assertThat(UpcomingPremierePolicy.resolve(flagged = true, listReleaseMs = now + 60_000L, probe = probe))
-            .isEqualTo(UpcomingPremiere(isUpcoming = true, scheduledStartMs = now + 60_000L))
-        assertThat(UpcomingPremierePolicy.resolve(flagged = false, listReleaseMs = null, probe = probe))
-            .isEqualTo(probe)
     }
 
     @Test

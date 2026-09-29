@@ -2,16 +2,10 @@ package io.github.aedev.flow.ui.screens.player.state
 
 import io.github.aedev.flow.data.local.VideoQuality
 import io.github.aedev.flow.data.model.Video
-import io.github.aedev.flow.innertube.models.response.PlayerResponse
-import io.github.aedev.flow.innertube.models.response.VideoChapter
-import io.github.aedev.flow.player.PlayerChannelMetadataPolicy
 import io.github.aedev.flow.player.error.VideoErrorMapper
 import io.github.aedev.flow.player.stream.ResolvedPlayback
-import io.github.aedev.flow.player.stream.StoryboardLevel
 import io.github.aedev.flow.player.stream.VideoQualityOptions
-import io.github.aedev.flow.ui.screens.player.SecondaryMetadata
 import org.schabi.newpipe.extractor.stream.AudioStream
-import org.schabi.newpipe.extractor.stream.StreamSegment
 import org.schabi.newpipe.extractor.stream.VideoStream
 
 /*
@@ -40,28 +34,12 @@ internal fun VideoPlayerUiState.applyLocalCopyReady(
         upcomingReleaseTimeMs = null,
     )
 
-/** Resolution failed but a downloaded copy exists: the failure never reaches the screen. */
-internal fun VideoPlayerUiState.applyLocalCopyAfterFailure(): VideoPlayerUiState = copy(isLoading = false, error = null, errorHint = null)
-
-/** A local copy is already playing and only the surrounding metadata was still missing. */
-internal fun VideoPlayerUiState.applyOfflineFallback(step: ResolvedPlayback.OfflineFallback): VideoPlayerUiState =
-    copy(
-        isLoading = false,
-        error = null,
-        errorHint = null,
-        relatedVideos = step.relatedVideos,
-        localFilePath = step.localFilePath,
-        offlineSponsorBlockSegments = step.offlineSegments,
-        isUpcoming = false,
-        upcomingReleaseTimeMs = null,
-    )
-
 /**
  * The streams a load resolved: what plays, at what qualities, and the formats behind them.
  *
  * `chapters`, `offlineSponsorBlockSegments`, `localFilePath` and `localFileVideoId` are deliberately
- * left as the load left them — chapters arrive separately off the watch response, and the local-copy
- * fields belong to the download step.
+ * left as the load left them — the caller sets chapters, and the local-copy fields belong to the
+ * download step.
  */
 internal fun VideoPlayerUiState.applyVodStreams(
     cachedVideo: Video,
@@ -73,10 +51,6 @@ internal fun VideoPlayerUiState.applyVodStreams(
     savedPositionMs: Long,
     isAdaptiveMode: Boolean,
     autoplayEnabled: Boolean,
-    innerTubeVideoFormats: List<PlayerResponse.StreamingData.Format>,
-    innerTubeAudioFormats: List<PlayerResponse.StreamingData.Format>,
-    streamSizes: Map<String, Long>,
-    storyboard: List<StoryboardLevel>,
 ): VideoPlayerUiState =
     copy(
         cachedVideo = cachedVideo,
@@ -95,29 +69,9 @@ internal fun VideoPlayerUiState.applyVodStreams(
         isLive = false,
         isUpcoming = false,
         upcomingReleaseTimeMs = null,
-        innerTubeVideoFormats = innerTubeVideoFormats,
-        innerTubeAudioFormats = innerTubeAudioFormats,
-        streamSizes = streamSizes,
-        storyboard = storyboard,
     )
 
-/**
- * Chapters read from the watch response, in the shape the seek bar and the chapter sheet take.
- *
- * Mapped to the extractor's segment type because that is what every chapter surface already reads;
- * the mapping is the one place that has to change when they stop being extractor types.
- */
-internal fun VideoPlayerUiState.applyChapters(chapters: List<VideoChapter>): VideoPlayerUiState =
-    copy(
-        chapters =
-            chapters.map { chapter ->
-                StreamSegment(chapter.title, chapter.startTimeSeconds).apply {
-                    previewUrl = chapter.thumbnailUrl
-                }
-            },
-    )
-
-/** A live stream whose manifest only InnerTube produced. */
+/** A live stream, played from its manifest. */
 internal fun VideoPlayerUiState.applyLiveStreams(
     relatedVideos: List<Video>,
     hlsUrl: String?,
@@ -131,20 +85,6 @@ internal fun VideoPlayerUiState.applyLiveStreams(
         isLive = true,
         isUpcoming = false,
         upcomingReleaseTimeMs = null,
-        innerTubeVideoFormats = emptyList(),
-        innerTubeAudioFormats = emptyList(),
-    )
-
-/** The InnerTube VOD path threw: the related lane it had already gathered survives the error. */
-internal fun VideoPlayerUiState.applyVodFailure(
-    relatedVideos: List<Video>,
-    videoError: VideoErrorMapper.VideoError,
-): VideoPlayerUiState =
-    copy(
-        isLoading = false,
-        relatedVideos = relatedVideos,
-        error = videoError.message,
-        errorHint = videoError.hint,
     )
 
 /** Nothing resolved. A null [relatedVideos] leaves the lane the screen is already showing alone. */
@@ -158,50 +98,6 @@ internal fun VideoPlayerUiState.applyPlaybackFailure(
         error = videoError.message,
         errorHint = videoError.hint,
     )
-
-/**
- * The channel avatar and subscriber count.
- *
- * The avatar is chosen twice: once between what the fetch returned and what the load embedded, and
- * again between that winner and the avatar the cached video itself carries, so a cached avatar is
- * never replaced by a worse one. A result for a video the screen has moved on from changes nothing.
- */
-internal fun VideoPlayerUiState.applyChannelMetadata(result: SecondaryMetadata.Channel): VideoPlayerUiState {
-    val fetchedOrEmbedded =
-        PlayerChannelMetadataPolicy.selectAvatarUrl(
-            fetchedAvatarUrl = result.fetchedAvatarUrl,
-            embeddedAvatarUrl = result.embeddedAvatarUrl,
-            currentAvatarUrl = channelAvatarUrl,
-        )
-    val cached = cachedVideo
-    if (cached?.id != result.videoId) return this
-
-    val selectedAvatar =
-        PlayerChannelMetadataPolicy.selectAvatarUrl(
-            fetchedAvatarUrl = fetchedOrEmbedded,
-            embeddedAvatarUrl = cached.channelThumbnailUrl,
-            currentAvatarUrl = channelAvatarUrl,
-        )
-    val updatedCached =
-        if (selectedAvatar != null) {
-            cached.copy(
-                channelThumbnailUrl = selectedAvatar,
-                channelThumbnailUrls =
-                    (listOf(selectedAvatar) + cached.channelThumbnailUrls)
-                        .filter { it.isNotBlank() }
-                        .distinct()
-                        .take(2),
-            )
-        } else {
-            cached
-        }
-
-    return copy(
-        cachedVideo = updatedCached,
-        channelAvatarUrl = selectedAvatar,
-        channelSubscriberCount = result.subscriberCount ?: channelSubscriberCount,
-    )
-}
 
 /** The related lane, dropped when the screen has already moved to another video. */
 internal fun VideoPlayerUiState.applyRelatedVideos(
@@ -221,17 +117,6 @@ internal fun VideoPlayerUiState.applyRelatedVideos(
  * like or a watch recorded here carries the tags, description and duration the load resolved.
  */
 internal fun VideoPlayerUiState.richVideoFor(videoId: String): Video? = cachedVideo?.takeIf { it.id == videoId }
-
-/** The live watch refresh: title, channel, counts and the avatar it resolved. */
-internal fun VideoPlayerUiState.applyLiveWatchMetadata(result: SecondaryMetadata.LiveWatch): VideoPlayerUiState =
-    copy(
-        cachedVideo = result.video,
-        channelAvatarUrl = result.channelAvatarUrl ?: channelAvatarUrl,
-        channelSubscriberCount = result.subscriberCount ?: channelSubscriberCount,
-    )
-
-/** Counts, date and description from the watch page, folded over what the load resolved. */
-internal fun VideoPlayerUiState.applyWatchInfo(video: Video): VideoPlayerUiState = copy(cachedVideo = video)
 
 /** The identity a load enriches when the screen holds nothing for the video yet. */
 internal fun blankVideo(

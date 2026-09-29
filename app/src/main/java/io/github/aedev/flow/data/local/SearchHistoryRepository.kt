@@ -43,18 +43,6 @@ enum class SearchType {
     SUGGESTION,
 }
 
-data class SearchSuggestion(
-    val text: String,
-    val type: SuggestionType = SuggestionType.VIDEO,
-)
-
-enum class SuggestionType {
-    VIDEO,
-    CHANNEL,
-    PLAYLIST,
-    TRENDING,
-}
-
 @Singleton
 class SearchHistoryRepository
     @Inject
@@ -207,15 +195,5 @@ class SearchHistoryRepository
             val cutoffTime = System.currentTimeMillis() - (retentionDays * 24 * 60 * 60 * 1000L)
 
             return history.filter { it.timestamp >= cutoffTime }
-        }
-
-        // Get search suggestions from YouTube API (now handled by YouTubeRepository)
-        // This method is kept for backward compatibility but deprecated
-        @Deprecated("Use YouTubeRepository.getSearchSuggestions() instead")
-        fun getSearchSuggestions(query: String): List<SearchSuggestion> {
-            if (query.isBlank()) return emptyList()
-
-            // Return empty list - actual suggestions should come from YouTubeRepository
-            return emptyList()
         }
     }
