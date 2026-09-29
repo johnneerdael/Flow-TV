@@ -1,6 +1,7 @@
 package io.github.aedev.flow.plugin.install
 
 import android.net.Uri
+import io.github.aedev.flow.BuildConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,7 +23,10 @@ class PluginLinks
         /** Takes the plugin URL out of [uri] if it is an add-plugin link; true when it was one. */
         fun offer(uri: Uri?): Boolean {
             if (uri?.scheme != "milkbeat" || uri.host != "add-plugin") return false
-            val url = uri.getQueryParameter("url")?.takeIf { it.startsWith("https://") } ?: return false
+            // Debug builds also take plain http, so a plugin can be served from a dev machine on the LAN.
+            val url =
+                uri.getQueryParameter("url")?.takeIf { it.startsWith("https://") || (BuildConfig.DEBUG && it.startsWith("http://")) }
+                    ?: return false
             _pending.value = url
             return true
         }
