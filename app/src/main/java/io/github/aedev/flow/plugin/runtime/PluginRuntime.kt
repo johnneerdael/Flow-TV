@@ -27,6 +27,7 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.JsonObject
 import nl.neerdael.milkbeat.plugin.CodeLoadRequest
+import nl.neerdael.milkbeat.plugin.CodeLoadResult
 import nl.neerdael.milkbeat.plugin.HostOperations
 import nl.neerdael.milkbeat.plugin.PluginError
 import nl.neerdael.milkbeat.plugin.PluginErrorCode
@@ -211,7 +212,8 @@ internal class PluginRuntime(
                     AsyncFunctionBinding { args -> host(js, args[0] as String, args[1] as String) },
                 )
                 val entry = plugin.manifest.entry
-                js.evaluate<Any?>(bytecode(js, "entry:${plugin.manifest.versionCode}", File(directory, entry).readText(), entry))
+                val entryKey = "entry:${plugin.manifest.versionCode}"
+                js.evaluate<Any?>(codeCache.get(entryKey) ?: compile(js, entryKey, File(directory, entry).readText(), entry))
                 PluginContext(js, thread)
             }
         } catch (e: CancellationException) {
@@ -232,8 +234,9 @@ internal class PluginRuntime(
             HostOperations.codeLoad.path -> {
                 hostApi.envelope {
                     val request = PluginJson.decodeFromString(CodeLoadRequest.serializer(), requestJson)
-                    js.evaluate<Any?>(bytecode(js, request.key, request.source, "code-${request.key}.js"))
-                    PluginHostApi.success(Unit.serializer(), Unit)
+                    val code = codeCache.get(request.key) ?: request.source?.let { compile(js, request.key, it, "code-${request.key}.js") }
+                    code?.let { js.evaluate<Any?>(it) }
+                    PluginHostApi.success(HostOperations.codeLoad.response, CodeLoadResult(loaded = code != null))
                 }
             }
 
@@ -267,12 +270,12 @@ internal class PluginRuntime(
             }
         }
 
-    private fun bytecode(
+    private fun compile(
         js: QuickJs,
         key: String,
         source: String,
         name: String,
-    ): ByteArray = codeCache.get(key, source) ?: js.compile(source, name, false).also { codeCache.put(key, source, it) }
+    ): ByteArray = js.compile(source, name, false).also { codeCache.put(key, it) }
 
     private fun scheduleIdleStop() {
         idleJob?.cancel()

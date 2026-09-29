@@ -64,7 +64,7 @@ class PluginHostTest {
         assertEquals("v:none", probe("storage"))
         assertEquals("hidden", probe("secret"))
         assertEquals("a9993e364706816aba3e25717850c26c9cd0d89d", probe("hash"))
-        assertEquals("loads:2", probe("code"))
+        assertEquals("loads:2:false:true", probe("code"))
         assertEquals("42", probe("browser"))
         assertEquals("slept", probe("sleep"))
         assertEquals("api:1", probe("env"))

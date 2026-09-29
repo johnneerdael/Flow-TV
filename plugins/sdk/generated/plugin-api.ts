@@ -153,6 +153,7 @@ export interface MilkbeatPluginApi {
     };
     'code.load': {
       request: CodeLoadRequest;
+      response: CodeLoadResult;
     };
     'assets.read': {
       request: AssetRequest;
@@ -609,7 +610,10 @@ export interface HashResult {
 }
 export interface CodeLoadRequest {
   key: string;
-  source: string;
+  source?: string | null;
+}
+export interface CodeLoadResult {
+  loaded: boolean;
 }
 export interface AssetRequest {
   path: string;

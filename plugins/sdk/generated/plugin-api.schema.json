@@ -521,10 +521,14 @@
                     "properties": {
                         "request": {
                             "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.CodeLoadRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.CodeLoadResult"
                         }
                     },
                     "required": [
-                        "request"
+                        "request",
+                        "response"
                     ],
                     "additionalProperties": false
                 },
@@ -2003,18 +2007,32 @@
         "nl.neerdael.milkbeat.plugin.CodeLoadRequest": {
             "type": "object",
             "required": [
-                "key",
-                "source"
+                "key"
             ],
             "properties": {
                 "key": {
                     "type": "string"
                 },
                 "source": {
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 }
             },
             "title": "CodeLoadRequest"
+        },
+        "nl.neerdael.milkbeat.plugin.CodeLoadResult": {
+            "type": "object",
+            "required": [
+                "loaded"
+            ],
+            "properties": {
+                "loaded": {
+                    "type": "boolean"
+                }
+            },
+            "title": "CodeLoadResult"
         },
         "nl.neerdael.milkbeat.plugin.FormatType": {
             "enum": [

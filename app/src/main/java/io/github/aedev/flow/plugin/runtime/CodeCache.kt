@@ -9,28 +9,24 @@ private const val BUDGET_BYTES = 64L * 1024 * 1024
  * Compiled bytecode of the scripts a plugin evaluates, in the app's cache: its entry file, and what
  * it derives at run time through `mb.code.load` (a provider's prepared player, for example). Loading
  * bytecode skips parsing, which is most of a large script's start cost on a TV box. Entries are keyed
- * by the plugin's key and a hash of the source, so changed code is never served stale; the least
- * recently used go first once the cache passes its budget.
+ * by name alone, so a key must name its content; the cache lives per plugin version, and the least
+ * recently used entries go first once it passes its budget.
  */
 internal class CodeCache(
     private val directory: File,
 ) {
-    fun get(
-        key: String,
-        source: String,
-    ): ByteArray? =
-        file(key, source)
+    fun get(key: String): ByteArray? =
+        file(key)
             .takeIf { it.isFile }
             ?.also { it.setLastModified(System.currentTimeMillis()) }
             ?.readBytes()
 
     fun put(
         key: String,
-        source: String,
         bytecode: ByteArray,
     ) {
         directory.mkdirs()
-        val target = file(key, source)
+        val target = file(key)
         val temp = File(directory, "${target.name}.tmp")
         temp.writeBytes(bytecode)
         if (temp.renameTo(target)) trim() else temp.delete()
@@ -45,14 +41,6 @@ internal class CodeCache(
         }
     }
 
-    private fun file(
-        key: String,
-        source: String,
-    ): File {
-        val digest = MessageDigest.getInstance("SHA-256")
-        digest.update(key.toByteArray())
-        digest.update(0)
-        digest.update(source.toByteArray())
-        return File(directory, digest.digest().joinToString("") { "%02x".format(it) } + ".qjsbc")
-    }
+    private fun file(key: String): File =
+        File(directory, MessageDigest.getInstance("SHA-256").digest(key.toByteArray()).joinToString("") { "%02x".format(it) } + ".qjsbc")
 }

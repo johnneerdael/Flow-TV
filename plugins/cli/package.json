@@ -4,9 +4,14 @@
   "private": true,
   "type": "module",
   "description": "Builds, packs and signs Milkbeat .mbplugin files.",
-  "bin": { "mbplugin": "src/mbplugin.mjs" },
+  "bin": {
+    "mbplugin": "src/mbplugin.mjs"
+  },
   "dependencies": {
     "esbuild": "0.28.2",
     "fflate": "0.8.3"
+  },
+  "exports": {
+    "./harness": "./src/harness.mjs"
   }
 }

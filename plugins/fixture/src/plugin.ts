@@ -30,9 +30,10 @@ async function probe(name: string): Promise<string> {
       return (await mb.crypto.hash({ algorithm: 'SHA1', text: 'abc' })).hex;
     case 'code': {
       const source = 'globalThis.loads = (globalThis.loads || 0) + 1;';
+      const missing = await mb.code.load({ key: 'absent' });
       await mb.code.load({ key: 'counter', source });
-      await mb.code.load({ key: 'counter', source });
-      return `loads:${(globalThis as Record<string, unknown>).loads}`;
+      const cached = await mb.code.load({ key: 'counter' });
+      return `loads:${(globalThis as Record<string, unknown>).loads}:${missing.loaded}:${cached.loaded}`;
     }
     case 'browser': {
       const session = await mb.browser.open({ html: 'assets/page.html', baseUrl: 'https://milkbeat.invalid/' });

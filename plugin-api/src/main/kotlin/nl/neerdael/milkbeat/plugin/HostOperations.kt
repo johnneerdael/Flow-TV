@@ -64,13 +64,20 @@ data class HashResult(
 )
 
 /**
- * Evaluates [source] once in the plugin's context and keeps its compiled bytecode under [key], so the
- * next start loads it instead of parsing it again. A new plugin version or a new [key] recompiles.
+ * Evaluates the script cached under [key] in the plugin's context, compiling [source] first when
+ * nothing is cached yet. Loading cached bytecode skips parsing, so a key must name its exact content
+ * (e.g. `player:fb50cd46`). Without [source], a miss answers `loaded = false` and evaluates nothing,
+ * so a plugin can skip producing an expensive source it already has cached.
  */
 @Serializable
 data class CodeLoadRequest(
     val key: String,
-    val source: String,
+    val source: String? = null,
+)
+
+@Serializable
+data class CodeLoadResult(
+    val loaded: Boolean,
 )
 
 @Serializable
@@ -161,7 +168,7 @@ object HostOperations {
     val secretSet = HostOperation("secrets.set", StorageEntry.serializer(), Unit.serializer())
     val secretDelete = HostOperation("secrets.delete", StorageKey.serializer(), Unit.serializer())
     val hash = HostOperation("crypto.hash", HashRequest.serializer(), HashResult.serializer())
-    val codeLoad = HostOperation("code.load", CodeLoadRequest.serializer(), Unit.serializer())
+    val codeLoad = HostOperation("code.load", CodeLoadRequest.serializer(), CodeLoadResult.serializer())
     val assetRead = HostOperation("assets.read", AssetRequest.serializer(), AssetText.serializer())
     val environment = HostOperation("env.get", Unit.serializer(), HostEnvironment.serializer())
     val log = HostOperation("log.write", LogRequest.serializer(), Unit.serializer())
