@@ -1,9 +1,10 @@
 // The signed-in listener's YouTube Music library, as the app's AccountFeedClient and
 // AccountFeedsViewModel read it: liked music (playlist LM), the listening history
-// (FEmusic_history) and the saved playlists (FEmusic_liked_playlists).
+// (FEmusic_history), the saved playlists (FEmusic_liked_playlists) and YouTube's own watch history.
 import type { LibraryRequest, MetadataItem, MetadataPage, PageBlock, PageBlockCollection } from '@milkbeat/plugin-sdk';
 import { fail } from '@milkbeat/plugin-sdk';
 import { type Json, dig } from '../util';
+import { watchHistory } from '../video/history';
 import { browse, signedIn } from './api';
 import { card } from './cards';
 import { collectionPage, tracksContinuationPage } from './pages';
@@ -98,6 +99,8 @@ export async function library(request: LibraryRequest): Promise<MetadataPage> {
     case 'liked':
       if (cursor) return tracksContinuationPage(await browse({ continuation: cursor }));
       return { ...collectionPage(await browse({ browseId: `VL${LIKED_MUSIC_PLAYLIST_ID}` }), LIKED), id: pageId('liked') };
+    case 'watchHistory':
+      return watchHistory(cursor);
     case 'playlists':
       if (cursor) return playlistsPage(await browse({ continuation: cursor }), true);
       return playlistsPage(await browse({ browseId: PLAYLISTS_BROWSE_ID }), false);

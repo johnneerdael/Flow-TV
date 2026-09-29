@@ -72,7 +72,12 @@ const playlists = {
   },
 };
 
+const wwwBrowse = (match) => (call) => call.host === 'www.youtube.com' && match(call);
+const signedOutHistory = { responseContext: { serviceTrackingParams: [{ service: 'GFEEDBACK', params: [{ key: 'logged_in', value: '0' }] }] } };
+
 const routes = [
+  [wwwBrowse(browseOf('FEhistory')), 'youtube_watch_history'],
+  [wwwBrowse(continuationOf('history-more')), 'youtube_watch_history_continuation'],
   [browseOf('VLLM'), () => likedMusic()],
   [browseOf('FEmusic_history'), history],
   [browseOf('FEmusic_liked_playlists'), playlists],
@@ -142,6 +147,51 @@ describe('library', () => {
     assert.equal(page.nextCursor, 'grid-more');
     const more = await call('metadata.library', { section: 'playlists', cursor: page.nextCursor });
     assert.deepEqual(blocks(more)[0].items.map((item) => item.entity.providerId), ['PLlater']);
+  });
+
+  test('the watch history is FEhistory on the main site, read by the WEB client as the account, paging on', async () => {
+    const { call, calls } = offlinePlugin(routes, { secrets: SIGNED_IN });
+    const page = await call('metadata.library', { section: 'watchHistory' });
+    assert.deepEqual(calls.map((it) => [it.host, it.client, it.signed]), [['www.youtube.com', '1', true]]);
+    assert.equal(page.blocks.length, 1);
+    const [history] = page.blocks;
+    assert.equal(history.id, 'watch-history');
+    assert.equal(history.header.title, 'Today');
+    assert.equal(history.layout, 'HORIZONTAL_SHELF');
+    assert.deepEqual(history.items.map((item) => item.entity.providerId), [
+      'bpEVpBr5lK4',
+      'h96MGcsi7GQ',
+      'hENgrbIMiy4',
+      'Hv_oF2ol_Ks',
+      'rFZHOHl-L8A',
+      '7oHxpusmRfU',
+      'JD-kMIpDfnY',
+    ]);
+    for (const item of history.items) {
+      assert.equal(item.entity.kind, 'VIDEO');
+      assert.equal(item.view, 'LANDSCAPE_CARD');
+      assert.deepEqual(item.track.ref, item.entity);
+      assert.ok(item.subtitle, `${item.id} names its channel`);
+    }
+    assert.equal(page.nextCursor, 'history-more');
+
+    const more = await call('metadata.library', { section: 'watchHistory', cursor: page.nextCursor });
+    assert.equal(more.blocks[0].id, 'watch-history');
+    assert.deepEqual(more.blocks[0].items.map((item) => item.entity.providerId), ['5mpafLYHVd0', 'QHDRRxKlimY']);
+    assert.equal(more.nextCursor, undefined);
+    assert.equal(calls[1].body.continuation, 'history-more');
+  });
+
+  test('a watch history answered as signed out marks the account expired', async () => {
+    const { call, plugin } = offlinePlugin([[wwwBrowse(browseOf('FEhistory')), signedOutHistory]], { secrets: SIGNED_IN });
+    await assert.rejects(call('metadata.library', { section: 'watchHistory' }), { code: 'SIGN_IN_EXPIRED' });
+    assert.deepEqual(await plugin.call('signIn.account', null), { type: 'expired' });
+  });
+
+  test('the watch history needs a signed-in account', async () => {
+    const { call, calls } = offlinePlugin(routes);
+    await assert.rejects(call('metadata.library', { section: 'watchHistory' }), { code: 'SIGN_IN_REQUIRED' });
+    assert.equal(calls.length, 0);
   });
 
   test('an unknown section is not found', async () => {

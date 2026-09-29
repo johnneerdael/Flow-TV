@@ -1,0 +1,2032 @@
+{
+ "responseContext": {
+  "serviceTrackingParams": [
+   {
+    "service": "GFEEDBACK",
+    "params": [
+     {
+      "key": "logged_in",
+      "value": "1"
+     }
+    ]
+   }
+  ]
+ },
+ "contents": {
+  "twoColumnBrowseResultsRenderer": {
+   "tabs": [
+    {
+     "tabRenderer": {
+      "selected": true,
+      "content": {
+       "sectionListRenderer": {
+        "contents": [
+         {
+          "itemSectionRenderer": {
+           "header": {
+            "itemSectionHeaderRenderer": {
+             "title": {
+              "runs": [
+               {
+                "text": "Today"
+               }
+              ]
+             }
+            }
+           },
+           "contents": [
+            {
+             "lockupViewModel": {
+              "contentImage": {
+               "thumbnailViewModel": {
+                "image": {
+                 "sources": [
+                  {
+                   "url": "https://i.ytimg.com/vi/bpEVpBr5lK4/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLDy_i55xn42q0_N-T5Fzg4_p5A6eA",
+                   "width": 168,
+                   "height": 94
+                  },
+                  {
+                   "url": "https://i.ytimg.com/vi/bpEVpBr5lK4/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAEtw4l2inkXjxFuMLgZPB8Pe6CHg",
+                   "width": 336,
+                   "height": 188
+                  }
+                 ]
+                },
+                "overlays": [
+                 {
+                  "thumbnailBottomOverlayViewModel": {
+                   "badges": [
+                    {
+                     "thumbnailBadgeViewModel": {
+                      "icon": {
+                       "sources": [
+                        {
+                         "clientResource": {
+                          "imageName": "MUSIC"
+                         }
+                        }
+                       ]
+                      },
+                      "text": "1:58:05",
+                      "badgeStyle": "THUMBNAIL_OVERLAY_BADGE_STYLE_DEFAULT",
+                      "animationActivationTargetId": "bpEVpBr5lK4",
+                      "animationActivationEntityKey": "Eh8veW91dHViZS9hcHAvd2F0Y2gvcGxheWVyX3N0YXRlIMMCKAE%3D",
+                      "animatedText": "Now playing",
+                      "animationActivationEntitySelectorType": "THUMBNAIL_BADGE_ANIMATION_ENTITY_SELECTOR_TYPE_PLAYER_STATE",
+                      "inlinePlaybackBadgeData": {
+                       "replicateAsTimestamp": true
+                      },
+                      "rendererContext": {
+                       "accessibilityContext": {
+                        "label": "1 hour, 58 minutes, 5 seconds"
+                       }
+                      }
+                     }
+                    }
+                   ]
+                  }
+                 }
+                ]
+               }
+              },
+              "metadata": {
+               "lockupMetadataViewModel": {
+                "title": {
+                 "content": "VSNZ pres. STEPHAN BODZIN - VSNZ Winter Festival 2025"
+                },
+                "image": {
+                 "decoratedAvatarViewModel": {
+                  "avatar": {
+                   "avatarViewModel": {
+                    "image": {
+                     "sources": [
+                      {
+                       "url": "https://yt3.ggpht.com/On1wTgCUTfx0nItCYq3gRZtGgrUisERZEuNTqbHgXF0jSEQaHz4dIr5HzgvTKX9RM-Zk_ccuhUw=s68-c-k-c0x00ffffff-no-rj",
+                       "width": 68,
+                       "height": 68
+                      }
+                     ]
+                    },
+                    "avatarImageSize": "AVATAR_SIZE_M"
+                   }
+                  },
+                  "a11yLabel": "Go to channel VSNZ",
+                  "rendererContext": {
+                   "commandContext": {
+                    "onTap": {
+                     "innertubeCommand": {
+                      "commandMetadata": {
+                       "webCommandMetadata": {
+                        "url": "/@VSNZmusic",
+                        "webPageType": "WEB_PAGE_TYPE_CHANNEL",
+                        "rootVe": 3611,
+                        "apiUrl": "/youtubei/v1/browse"
+                       }
+                      },
+                      "browseEndpoint": {
+                       "browseId": "UCxSaqHz9IACJlMbc064iiRQ",
+                       "canonicalBaseUrl": "/@VSNZmusic"
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                },
+                "metadata": {
+                 "contentMetadataViewModel": {
+                  "metadataRows": [
+                   {
+                    "metadataParts": [
+                     {
+                      "text": {
+                       "content": "VSNZ"
+                      }
+                     }
+                    ]
+                   },
+                   {
+                    "metadataParts": [
+                     {
+                      "text": {
+                       "content": "569K"
+                      },
+                      "accessibilityLabel": "569 thousand views",
+                      "leadingIcon": {
+                       "name": "PLAY_ARROW_OUTLINED",
+                       "height": 12,
+                       "width": 12,
+                       "marginEndToken": {
+                        "spacing": 2
+                       }
+                      }
+                     },
+                     {
+                      "text": {
+                       "content": "1y ago"
+                      },
+                      "accessibilityLabel": "1 year ago"
+                     }
+                    ]
+                   }
+                  ],
+                  "delimiter": " "
+                 }
+                }
+               }
+              },
+              "contentId": "bpEVpBr5lK4",
+              "contentType": "LOCKUP_CONTENT_TYPE_VIDEO",
+              "rendererContext": {
+               "accessibilityContext": {
+                "label": "VSNZ pres. STEPHAN BODZIN - VSNZ Winter Festival 2025 1 hour, 58 minutes"
+               },
+               "commandContext": {
+                "onTap": {
+                 "innertubeCommand": {
+                  "commandMetadata": {
+                   "webCommandMetadata": {
+                    "url": "/watch?v=bpEVpBr5lK4&list=RDbpEVpBr5lK4&start_radio=1&pp=oAcB",
+                    "webPageType": "WEB_PAGE_TYPE_WATCH",
+                    "rootVe": 3832
+                   }
+                  },
+                  "watchEndpoint": {
+                   "videoId": "bpEVpBr5lK4",
+                   "playlistId": "RDbpEVpBr5lK4",
+                   "params": "wAEBuAUB",
+                   "playerParams": "oAcB",
+                   "nofollow": true
+                  }
+                 }
+                }
+               }
+              }
+             }
+            },
+            {
+             "lockupViewModel": {
+              "contentImage": {
+               "thumbnailViewModel": {
+                "image": {
+                 "sources": [
+                  {
+                   "url": "https://i.ytimg.com/vi/h96MGcsi7GQ/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLD6yp0_jNL5vg7cYUwzrQWrh7kgjQ",
+                   "width": 168,
+                   "height": 94
+                  },
+                  {
+                   "url": "https://i.ytimg.com/vi/h96MGcsi7GQ/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCgQlHPy10UclS8ES5j2Z98hVZbSQ",
+                   "width": 336,
+                   "height": 188
+                  }
+                 ]
+                },
+                "overlays": [
+                 {
+                  "thumbnailBottomOverlayViewModel": {
+                   "badges": [
+                    {
+                     "thumbnailBadgeViewModel": {
+                      "icon": {
+                       "sources": [
+                        {
+                         "clientResource": {
+                          "imageName": "MUSIC"
+                         }
+                        }
+                       ]
+                      },
+                      "text": "1:46:00",
+                      "badgeStyle": "THUMBNAIL_OVERLAY_BADGE_STYLE_DEFAULT",
+                      "animationActivationTargetId": "h96MGcsi7GQ",
+                      "animationActivationEntityKey": "Eh8veW91dHViZS9hcHAvd2F0Y2gvcGxheWVyX3N0YXRlIMMCKAE%3D",
+                      "animatedText": "Now playing",
+                      "animationActivationEntitySelectorType": "THUMBNAIL_BADGE_ANIMATION_ENTITY_SELECTOR_TYPE_PLAYER_STATE",
+                      "inlinePlaybackBadgeData": {
+                       "replicateAsTimestamp": true
+                      },
+                      "rendererContext": {
+                       "accessibilityContext": {
+                        "label": "1 hour, 46 minutes"
+                       }
+                      }
+                     }
+                    }
+                   ]
+                  }
+                 }
+                ]
+               }
+              },
+              "metadata": {
+               "lockupMetadataViewModel": {
+                "title": {
+                 "content": "Lee Burridge at Savaya Bali in Indonesia for Cercle"
+                },
+                "image": {
+                 "decoratedAvatarViewModel": {
+                  "avatar": {
+                   "avatarViewModel": {
+                    "image": {
+                     "sources": [
+                      {
+                       "url": "https://yt3.ggpht.com/CFhIIqVFsIUQWYMxSf_g2flj43qVaNLOBZ9mb005w5shMIKH3xp7IqH5ukxcI6DtXnJ4wFuAOQ=s68-c-k-c0x00ffffff-no-rj",
+                       "width": 68,
+                       "height": 68
+                      }
+                     ]
+                    },
+                    "avatarImageSize": "AVATAR_SIZE_M"
+                   }
+                  },
+                  "a11yLabel": "Go to channel Cercle",
+                  "rendererContext": {
+                   "commandContext": {
+                    "onTap": {
+                     "innertubeCommand": {
+                      "commandMetadata": {
+                       "webCommandMetadata": {
+                        "url": "/@Cercle",
+                        "webPageType": "WEB_PAGE_TYPE_CHANNEL",
+                        "rootVe": 3611,
+                        "apiUrl": "/youtubei/v1/browse"
+                       }
+                      },
+                      "browseEndpoint": {
+                       "browseId": "UCPKT_csvP72boVX0XrMtagQ",
+                       "canonicalBaseUrl": "/@Cercle"
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                },
+                "metadata": {
+                 "contentMetadataViewModel": {
+                  "metadataRows": [
+                   {
+                    "metadataParts": [
+                     {
+                      "text": {
+                       "content": "Cercle",
+                       "attachmentRuns": [
+                        {
+                         "startIndex": 6,
+                         "length": 0,
+                         "element": {
+                          "type": {
+                           "imageType": {
+                            "image": {
+                             "sources": [
+                              {
+                               "clientResource": {
+                                "imageName": "CHECK_CIRCLE_FILLED"
+                               },
+                               "width": 14,
+                               "height": 14
+                              }
+                             ]
+                            }
+                           }
+                          },
+                          "properties": {
+                           "layoutProperties": {
+                            "height": {
+                             "value": 14,
+                             "unit": "DIMENSION_UNIT_POINT"
+                            },
+                            "width": {
+                             "value": 14,
+                             "unit": "DIMENSION_UNIT_POINT"
+                            },
+                            "margin": {
+                             "left": {
+                              "value": 4,
+                              "unit": "DIMENSION_UNIT_POINT"
+                             }
+                            }
+                           }
+                          }
+                         },
+                         "alignment": "ALIGNMENT_VERTICAL_CENTER"
+                        }
+                       ]
+                      }
+                     }
+                    ]
+                   },
+                   {
+                    "metadataParts": [
+                     {
+                      "text": {
+                       "content": "14M"
+                      },
+                      "accessibilityLabel": "14 million views",
+                      "leadingIcon": {
+                       "name": "PLAY_ARROW_OUTLINED",
+                       "height": 12,
+                       "width": 12,
+                       "marginEndToken": {
+                        "spacing": 2
+                       }
+                      }
+                     },
+                     {
+                      "text": {
+                       "content": "6y ago"
+                      },
+                      "accessibilityLabel": "6 years ago"
+                     }
+                    ]
+                   }
+                  ],
+                  "delimiter": " "
+                 }
+                }
+               }
+              },
+              "contentId": "h96MGcsi7GQ",
+              "contentType": "LOCKUP_CONTENT_TYPE_VIDEO",
+              "rendererContext": {
+               "accessibilityContext": {
+                "label": "Lee Burridge at Savaya Bali in Indonesia for Cercle 1 hour, 46 minutes"
+               },
+               "commandContext": {
+                "onTap": {
+                 "innertubeCommand": {
+                  "commandMetadata": {
+                   "webCommandMetadata": {
+                    "url": "/watch?v=h96MGcsi7GQ&list=RDh96MGcsi7GQ&start_radio=1&pp=oAcB",
+                    "webPageType": "WEB_PAGE_TYPE_WATCH",
+                    "rootVe": 3832
+                   }
+                  },
+                  "watchEndpoint": {
+                   "videoId": "h96MGcsi7GQ",
+                   "playlistId": "RDh96MGcsi7GQ",
+                   "params": "wAEBuAUB",
+                   "playerParams": "oAcB",
+                   "nofollow": true
+                  }
+                 }
+                }
+               }
+              }
+             }
+            },
+            {
+             "lockupViewModel": {
+              "contentImage": {
+               "thumbnailViewModel": {
+                "image": {
+                 "sources": [
+                  {
+                   "url": "https://i.ytimg.com/vi/hENgrbIMiy4/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLDQhX24uhJ4DDxPt2EZNrTAIIhuqA",
+                   "width": 168,
+                   "height": 94
+                  },
+                  {
+                   "url": "https://i.ytimg.com/vi/hENgrbIMiy4/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLD8QNt8-U4H7tE45XKnWS2lPgU_6A",
+                   "width": 336,
+                   "height": 188
+                  }
+                 ]
+                },
+                "overlays": [
+                 {
+                  "thumbnailBottomOverlayViewModel": {
+                   "badges": [
+                    {
+                     "thumbnailBadgeViewModel": {
+                      "icon": {
+                       "sources": [
+                        {
+                         "clientResource": {
+                          "imageName": "MUSIC"
+                         }
+                        }
+                       ]
+                      },
+                      "text": "1:31:14",
+                      "badgeStyle": "THUMBNAIL_OVERLAY_BADGE_STYLE_DEFAULT",
+                      "animationActivationTargetId": "hENgrbIMiy4",
+                      "animationActivationEntityKey": "Eh8veW91dHViZS9hcHAvd2F0Y2gvcGxheWVyX3N0YXRlIMMCKAE%3D",
+                      "animatedText": "Now playing",
+                      "animationActivationEntitySelectorType": "THUMBNAIL_BADGE_ANIMATION_ENTITY_SELECTOR_TYPE_PLAYER_STATE",
+                      "inlinePlaybackBadgeData": {
+                       "replicateAsTimestamp": true
+                      },
+                      "rendererContext": {
+                       "accessibilityContext": {
+                        "label": "1 hour, 31 minutes, 14 seconds"
+                       }
+                      }
+                     }
+                    }
+                   ]
+                  }
+                 }
+                ]
+               }
+              },
+              "metadata": {
+               "lockupMetadataViewModel": {
+                "title": {
+                 "content": "ARTBAT at Bondinho Pão de Açúcar in Rio de Janeiro, Brazil for Cercle"
+                },
+                "image": {
+                 "decoratedAvatarViewModel": {
+                  "avatar": {
+                   "avatarViewModel": {
+                    "image": {
+                     "sources": [
+                      {
+                       "url": "https://yt3.ggpht.com/CFhIIqVFsIUQWYMxSf_g2flj43qVaNLOBZ9mb005w5shMIKH3xp7IqH5ukxcI6DtXnJ4wFuAOQ=s68-c-k-c0x00ffffff-no-rj",
+                       "width": 68,
+                       "height": 68
+                      }
+                     ]
+                    },
+                    "avatarImageSize": "AVATAR_SIZE_M"
+                   }
+                  },
+                  "a11yLabel": "Go to channel Cercle",
+                  "rendererContext": {
+                   "commandContext": {
+                    "onTap": {
+                     "innertubeCommand": {
+                      "commandMetadata": {
+                       "webCommandMetadata": {
+                        "url": "/@Cercle",
+                        "webPageType": "WEB_PAGE_TYPE_CHANNEL",
+                        "rootVe": 3611,
+                        "apiUrl": "/youtubei/v1/browse"
+                       }
+                      },
+                      "browseEndpoint": {
+                       "browseId": "UCPKT_csvP72boVX0XrMtagQ",
+                       "canonicalBaseUrl": "/@Cercle"
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                },
+                "metadata": {
+                 "contentMetadataViewModel": {
+                  "metadataRows": [
+                   {
+                    "metadataParts": [
+                     {
+                      "text": {
+                       "content": "Cercle",
+                       "attachmentRuns": [
+                        {
+                         "startIndex": 6,
+                         "length": 0,
+                         "element": {
+                          "type": {
+                           "imageType": {
+                            "image": {
+                             "sources": [
+                              {
+                               "clientResource": {
+                                "imageName": "CHECK_CIRCLE_FILLED"
+                               },
+                               "width": 14,
+                               "height": 14
+                              }
+                             ]
+                            }
+                           }
+                          },
+                          "properties": {
+                           "layoutProperties": {
+                            "height": {
+                             "value": 14,
+                             "unit": "DIMENSION_UNIT_POINT"
+                            },
+                            "width": {
+                             "value": 14,
+                             "unit": "DIMENSION_UNIT_POINT"
+                            },
+                            "margin": {
+                             "left": {
+                              "value": 4,
+                              "unit": "DIMENSION_UNIT_POINT"
+                             }
+                            }
+                           }
+                          }
+                         },
+                         "alignment": "ALIGNMENT_VERTICAL_CENTER"
+                        }
+                       ]
+                      }
+                     }
+                    ]
+                   },
+                   {
+                    "metadataParts": [
+                     {
+                      "text": {
+                       "content": "36M"
+                      },
+                      "accessibilityLabel": "36 million views",
+                      "leadingIcon": {
+                       "name": "PLAY_ARROW_OUTLINED",
+                       "height": 12,
+                       "width": 12,
+                       "marginEndToken": {
+                        "spacing": 2
+                       }
+                      }
+                     },
+                     {
+                      "text": {
+                       "content": "7y ago"
+                      },
+                      "accessibilityLabel": "7 years ago"
+                     }
+                    ]
+                   }
+                  ],
+                  "delimiter": " "
+                 }
+                }
+               }
+              },
+              "contentId": "hENgrbIMiy4",
+              "contentType": "LOCKUP_CONTENT_TYPE_VIDEO",
+              "rendererContext": {
+               "accessibilityContext": {
+                "label": "ARTBAT at Bondinho Pão de Açúcar in Rio de Janeiro, Brazil for Cercle 1 hour, 31 minutes"
+               },
+               "commandContext": {
+                "onTap": {
+                 "innertubeCommand": {
+                  "commandMetadata": {
+                   "webCommandMetadata": {
+                    "url": "/watch?v=hENgrbIMiy4&list=RDhENgrbIMiy4&start_radio=1&pp=oAcB0gcJCTMMAYcqIYzv",
+                    "webPageType": "WEB_PAGE_TYPE_WATCH",
+                    "rootVe": 3832
+                   }
+                  },
+                  "watchEndpoint": {
+                   "videoId": "hENgrbIMiy4",
+                   "playlistId": "RDhENgrbIMiy4",
+                   "params": "wAEBuAUB",
+                   "playerParams": "oAcB0gcJCTMMAYcqIYzv",
+                   "nofollow": true
+                  }
+                 }
+                }
+               }
+              }
+             }
+            },
+            {
+             "lockupViewModel": {
+              "contentImage": {
+               "thumbnailViewModel": {
+                "image": {
+                 "sources": [
+                  {
+                   "url": "https://i.ytimg.com/vi/Hv_oF2ol_Ks/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLAYBUyk5eUSLl_Wf1-i7iR2hRf3-w",
+                   "width": 168,
+                   "height": 94
+                  },
+                  {
+                   "url": "https://i.ytimg.com/vi/Hv_oF2ol_Ks/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLDU1ULjj7HcGtuiK7AjtKQoDshquQ",
+                   "width": 336,
+                   "height": 188
+                  }
+                 ]
+                },
+                "overlays": [
+                 {
+                  "thumbnailBottomOverlayViewModel": {
+                   "badges": [
+                    {
+                     "thumbnailBadgeViewModel": {
+                      "icon": {
+                       "sources": [
+                        {
+                         "clientResource": {
+                          "imageName": "MUSIC"
+                         }
+                        }
+                       ]
+                      },
+                      "text": "1:19:47",
+                      "badgeStyle": "THUMBNAIL_OVERLAY_BADGE_STYLE_DEFAULT",
+                      "animationActivationTargetId": "Hv_oF2ol_Ks",
+                      "animationActivationEntityKey": "Eh8veW91dHViZS9hcHAvd2F0Y2gvcGxheWVyX3N0YXRlIMMCKAE%3D",
+                      "animatedText": "Now playing",
+                      "animationActivationEntitySelectorType": "THUMBNAIL_BADGE_ANIMATION_ENTITY_SELECTOR_TYPE_PLAYER_STATE",
+                      "inlinePlaybackBadgeData": {
+                       "replicateAsTimestamp": true
+                      },
+                      "rendererContext": {
+                       "accessibilityContext": {
+                        "label": "1 hour, 19 minutes, 47 seconds"
+                       }
+                      }
+                     }
+                    }
+                   ]
+                  }
+                 }
+                ]
+               }
+              },
+              "metadata": {
+               "lockupMetadataViewModel": {
+                "title": {
+                 "content": "Stephan Bodzin Boiler Room Berlin Live Set"
+                },
+                "image": {
+                 "decoratedAvatarViewModel": {
+                  "avatar": {
+                   "avatarViewModel": {
+                    "image": {
+                     "sources": [
+                      {
+                       "url": "https://yt3.ggpht.com/_VRBq3twWhR8Phd6a1eU0qfarQKGnH8r-gAdsbMhDt9Qva0eVdpDrXLYhcg31tEVqmnzfW-O=s68-c-k-c0x00ffffff-no-rj",
+                       "width": 68,
+                       "height": 68
+                      }
+                     ]
+                    },
+                    "avatarImageSize": "AVATAR_SIZE_M"
+                   }
+                  },
+                  "a11yLabel": "Go to channel Boiler Room",
+                  "rendererContext": {
+                   "commandContext": {
+                    "onTap": {
+                     "innertubeCommand": {
+                      "commandMetadata": {
+                       "webCommandMetadata": {
+                        "url": "/@boilerroom",
+                        "webPageType": "WEB_PAGE_TYPE_CHANNEL",
+                        "rootVe": 3611,
+                        "apiUrl": "/youtubei/v1/browse"
+                       }
+                      },
+                      "browseEndpoint": {
+                       "browseId": "UCGBpxWJr9FNOcFYA5GkKrMg",
+                       "canonicalBaseUrl": "/@boilerroom"
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                },
+                "metadata": {
+                 "contentMetadataViewModel": {
+                  "metadataRows": [
+                   {
+                    "metadataParts": [
+                     {
+                      "text": {
+                       "content": "Boiler Room",
+                       "attachmentRuns": [
+                        {
+                         "startIndex": 11,
+                         "length": 0,
+                         "element": {
+                          "type": {
+                           "imageType": {
+                            "image": {
+                             "sources": [
+                              {
+                               "clientResource": {
+                                "imageName": "CHECK_CIRCLE_FILLED"
+                               },
+                               "width": 14,
+                               "height": 14
+                              }
+                             ]
+                            }
+                           }
+                          },
+                          "properties": {
+                           "layoutProperties": {
+                            "height": {
+                             "value": 14,
+                             "unit": "DIMENSION_UNIT_POINT"
+                            },
+                            "width": {
+                             "value": 14,
+                             "unit": "DIMENSION_UNIT_POINT"
+                            },
+                            "margin": {
+                             "left": {
+                              "value": 4,
+                              "unit": "DIMENSION_UNIT_POINT"
+                             }
+                            }
+                           }
+                          }
+                         },
+                         "alignment": "ALIGNMENT_VERTICAL_CENTER"
+                        }
+                       ]
+                      }
+                     }
+                    ]
+                   },
+                   {
+                    "metadataParts": [
+                     {
+                      "text": {
+                       "content": "5.9M"
+                      },
+                      "accessibilityLabel": "5.9 million views",
+                      "leadingIcon": {
+                       "name": "PLAY_ARROW_OUTLINED",
+                       "height": 12,
+                       "width": 12,
+                       "marginEndToken": {
+                        "spacing": 2
+                       }
+                      }
+                     },
+                     {
+                      "text": {
+                       "content": "10y ago"
+                      },
+                      "accessibilityLabel": "10 years ago"
+                     }
+                    ]
+                   }
+                  ],
+                  "delimiter": " "
+                 }
+                }
+               }
+              },
+              "contentId": "Hv_oF2ol_Ks",
+              "contentType": "LOCKUP_CONTENT_TYPE_VIDEO",
+              "rendererContext": {
+               "accessibilityContext": {
+                "label": "Stephan Bodzin Boiler Room Berlin Live Set 1 hour, 19 minutes"
+               },
+               "commandContext": {
+                "onTap": {
+                 "innertubeCommand": {
+                  "commandMetadata": {
+                   "webCommandMetadata": {
+                    "url": "/watch?v=Hv_oF2ol_Ks&list=RDHv_oF2ol_Ks&start_radio=1&pp=oAcB",
+                    "webPageType": "WEB_PAGE_TYPE_WATCH",
+                    "rootVe": 3832
+                   }
+                  },
+                  "watchEndpoint": {
+                   "videoId": "Hv_oF2ol_Ks",
+                   "playlistId": "RDHv_oF2ol_Ks",
+                   "params": "wAEBuAUB",
+                   "playerParams": "oAcB",
+                   "nofollow": true
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           ]
+          }
+         },
+         {
+          "itemSectionRenderer": {
+           "header": {
+            "itemSectionHeaderRenderer": {
+             "title": {
+              "runs": [
+               {
+                "text": "Yesterday"
+               }
+              ]
+             }
+            }
+           },
+           "contents": [
+            {
+             "videoRenderer": {
+              "videoId": "rFZHOHl-L8A",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/rFZHOHl-L8A/hq720.jpg?v=6aac24f4&sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLDN3Yy-Dw3B9x_HYcTaGXq7gEVppA",
+                 "width": 360,
+                 "height": 202
+                },
+                {
+                 "url": "https://i.ytimg.com/vi/rFZHOHl-L8A/hq720.jpg?v=6aac24f4&sqp=-oaymwEcCNAFEJQDSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCdekX1ygqqUJynjbliA5ayfR7tlw",
+                 "width": 720,
+                 "height": 404
+                }
+               ]
+              },
+              "title": {
+               "runs": [
+                {
+                 "text": "lofi hip hop radio 📚 beats to relax/study to"
+                }
+               ]
+              },
+              "longBylineText": {
+               "runs": [
+                {
+                 "text": "Lofi Girl",
+                 "navigationEndpoint": {
+                  "commandMetadata": {
+                   "webCommandMetadata": {
+                    "url": "/channel/UCSJ4gkVC6NrvII8umztf0Ow",
+                    "webPageType": "WEB_PAGE_TYPE_CHANNEL",
+                    "rootVe": 3611,
+                    "apiUrl": "/youtubei/v1/browse"
+                   }
+                  },
+                  "browseEndpoint": {
+                   "browseId": "UCSJ4gkVC6NrvII8umztf0Ow",
+                   "canonicalBaseUrl": "/channel/UCSJ4gkVC6NrvII8umztf0Ow"
+                  }
+                 }
+                }
+               ]
+              },
+              "viewCountText": {
+               "runs": [
+                {
+                 "text": "16,009"
+                },
+                {
+                 "text": " watching"
+                }
+               ]
+              },
+              "navigationEndpoint": {
+               "commandMetadata": {
+                "webCommandMetadata": {
+                 "url": "/watch?v=rFZHOHl-L8A&pp=ygUSbG9maSBoaXAgaG9wIHJhZGlv",
+                 "webPageType": "WEB_PAGE_TYPE_WATCH",
+                 "rootVe": 3832
+                }
+               },
+               "watchEndpoint": {
+                "videoId": "rFZHOHl-L8A",
+                "params": "qgMSbG9maSBoaXAgaG9wIHJhZGlvugMLCPWLmdnutPzA7gG6AwoI9vyN0oiG6Z8kugMKCKex0cL6ipLtFboDCgjDutfj_rSX4A66AwsIxquRytbAnpbnAboDCgig9vfttteRkwe6AwsIg5fNiNK-0vjcAboDCgiI5bPssbq2tBW6AwoIkpKj59_G87UTugMKCOnWg8PjuIGobroDCgiU7pvT0aGP_CC6AwsIvJOLpcHi4bXSAboDCgiRlamX9PbN7Ri6AwsI5vHclMn1vIjjAboDCwiq1dOr7cLdnNUBugMKCP70mOeBgeH8TboDCgjP_OHwkYrCsEO6AwsI8K2L37-dzqbbAboDCwjgq7XPkJ612_EB6gMCEAHyAwUNHwQDPQ%3D%3D",
+                "playerParams": "ygUSbG9maSBoaXAgaG9wIHJhZGlv"
+               }
+              },
+              "badges": [
+               {
+                "metadataBadgeRenderer": {
+                 "icon": {
+                  "iconType": "LIVE"
+                 },
+                 "style": "BADGE_STYLE_TYPE_LIVE_NOW",
+                 "label": "LIVE"
+                }
+               },
+               {
+                "metadataBadgeRenderer": {
+                 "icon": {
+                  "iconType": "OUTLINE_BAG"
+                 },
+                 "style": "BADGE_STYLE_TYPE_SIMPLE",
+                 "label": "16 products"
+                }
+               }
+              ],
+              "ownerBadges": [
+               {
+                "metadataBadgeRenderer": {
+                 "icon": {
+                  "iconType": "AUDIO_BADGE"
+                 },
+                 "style": "BADGE_STYLE_TYPE_VERIFIED_ARTIST",
+                 "tooltip": "Official Artist Channel"
+                }
+               }
+              ],
+              "ownerText": {
+               "runs": [
+                {
+                 "text": "Lofi Girl",
+                 "navigationEndpoint": {
+                  "commandMetadata": {
+                   "webCommandMetadata": {
+                    "url": "/channel/UCSJ4gkVC6NrvII8umztf0Ow",
+                    "webPageType": "WEB_PAGE_TYPE_CHANNEL",
+                    "rootVe": 3611,
+                    "apiUrl": "/youtubei/v1/browse"
+                   }
+                  },
+                  "browseEndpoint": {
+                   "browseId": "UCSJ4gkVC6NrvII8umztf0Ow",
+                   "canonicalBaseUrl": "/channel/UCSJ4gkVC6NrvII8umztf0Ow"
+                  }
+                 }
+                }
+               ]
+              },
+              "shortBylineText": {
+               "runs": [
+                {
+                 "text": "Lofi Girl",
+                 "navigationEndpoint": {
+                  "commandMetadata": {
+                   "webCommandMetadata": {
+                    "url": "/channel/UCSJ4gkVC6NrvII8umztf0Ow",
+                    "webPageType": "WEB_PAGE_TYPE_CHANNEL",
+                    "rootVe": 3611,
+                    "apiUrl": "/youtubei/v1/browse"
+                   }
+                  },
+                  "browseEndpoint": {
+                   "browseId": "UCSJ4gkVC6NrvII8umztf0Ow",
+                   "canonicalBaseUrl": "/channel/UCSJ4gkVC6NrvII8umztf0Ow"
+                  }
+                 }
+                }
+               ]
+              },
+              "showActionMenu": false,
+              "shortViewCountText": {
+               "runs": [
+                {
+                 "text": "16K"
+                },
+                {
+                 "text": " watching"
+                }
+               ]
+              },
+              "channelThumbnailSupportedRenderers": {
+               "channelThumbnailWithLinkRenderer": {
+                "thumbnail": {
+                 "thumbnails": [
+                  {
+                   "url": "https://yt3.ggpht.com/GyVPysrx-cVIWIQDfi2MkaYr7oRIxuOgGeZihnw-hgTv6E5LBQ67v5yXTFvqP2Bl7BB_S-0L-A=s88-c-k-c0x00ffffff-no-rj",
+                   "width": 68,
+                   "height": 68
+                  }
+                 ]
+                },
+                "navigationEndpoint": {
+                 "commandMetadata": {
+                  "webCommandMetadata": {
+                   "url": "/channel/UCSJ4gkVC6NrvII8umztf0Ow",
+                   "webPageType": "WEB_PAGE_TYPE_CHANNEL",
+                   "rootVe": 3611,
+                   "apiUrl": "/youtubei/v1/browse"
+                  }
+                 },
+                 "browseEndpoint": {
+                  "browseId": "UCSJ4gkVC6NrvII8umztf0Ow"
+                 }
+                }
+               }
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayToggleButtonRenderer": {
+                 "isToggled": false,
+                 "untoggledIcon": {
+                  "iconType": "WATCH_LATER"
+                 },
+                 "toggledIcon": {
+                  "iconType": "CHECK"
+                 },
+                 "untoggledTooltip": "Watch later",
+                 "toggledTooltip": "Added",
+                 "untoggledServiceEndpoint": {
+                  "commandMetadata": {
+                   "webCommandMetadata": {
+                    "sendPost": true,
+                    "apiUrl": "/youtubei/v1/browse/edit_playlist"
+                   }
+                  }
+                 },
+                 "toggledServiceEndpoint": {
+                  "commandMetadata": {
+                   "webCommandMetadata": {
+                    "sendPost": true,
+                    "apiUrl": "/youtubei/v1/browse/edit_playlist"
+                   }
+                  }
+                 },
+                 "untoggledAccessibility": {},
+                 "toggledAccessibility": {}
+                }
+               },
+               {
+                "thumbnailOverlayToggleButtonRenderer": {
+                 "untoggledIcon": {
+                  "iconType": "ADD_TO_QUEUE_TAIL"
+                 },
+                 "toggledIcon": {
+                  "iconType": "PLAYLIST_ADD_CHECK"
+                 },
+                 "untoggledTooltip": "Add to queue",
+                 "toggledTooltip": "Added",
+                 "untoggledServiceEndpoint": {
+                  "commandMetadata": {
+                   "webCommandMetadata": {
+                    "sendPost": true
+                   }
+                  }
+                 },
+                 "untoggledAccessibility": {},
+                 "toggledAccessibility": {}
+                }
+               },
+               {
+                "thumbnailOverlayNowPlayingRenderer": {
+                 "text": {
+                  "runs": [
+                   {
+                    "text": "Now playing"
+                   }
+                  ]
+                 }
+                }
+               },
+               {
+                "thumbnailOverlayLoadingPreviewRenderer": {
+                 "text": {
+                  "runs": [
+                   {
+                    "text": "Keep hovering to play"
+                   }
+                  ]
+                 }
+                }
+               }
+              ],
+              "detailedMetadataSnippets": [
+               {
+                "snippetText": {
+                 "runs": [
+                  {
+                   "text": "New Character Unlocked: discover "
+                  },
+                  {
+                   "text": "Lofi",
+                   "bold": true
+                  },
+                  {
+                   "text": " Teacher in the new "
+                  },
+                  {
+                   "text": "Lofi",
+                   "bold": true
+                  },
+                  {
+                   "text": " House "
+                  },
+                  {
+                   "text": "radio",
+                   "bold": true
+                  },
+                  {
+                   "text": "! https://lnk.to/house_lofi02 | Listen on Spotify, ..."
+                  }
+                 ]
+                },
+                "snippetHoverText": {
+                 "runs": [
+                  {
+                   "text": "From the video description"
+                  }
+                 ]
+                },
+                "maxOneLine": false
+               }
+              ],
+              "searchVideoResultEntityKey": "EgtyRlpIT0hsLUw4QSDnAigB",
+              "avatar": {
+               "decoratedAvatarViewModel": {
+                "avatar": {
+                 "avatarViewModel": {
+                  "image": {
+                   "sources": [
+                    {
+                     "url": "https://yt3.ggpht.com/GyVPysrx-cVIWIQDfi2MkaYr7oRIxuOgGeZihnw-hgTv6E5LBQ67v5yXTFvqP2Bl7BB_S-0L-A=s88-c-k-c0x00ffffff-no-rj",
+                     "width": 68,
+                     "height": 68
+                    }
+                   ]
+                  },
+                  "avatarImageSize": "AVATAR_SIZE_M"
+                 }
+                },
+                "a11yLabel": "Go to channel Lofi Girl",
+                "rendererContext": {
+                 "commandContext": {
+                  "onTap": {
+                   "innertubeCommand": {
+                    "commandMetadata": {
+                     "webCommandMetadata": {
+                      "url": "/channel/UCSJ4gkVC6NrvII8umztf0Ow",
+                      "webPageType": "WEB_PAGE_TYPE_CHANNEL",
+                      "rootVe": 3611,
+                      "apiUrl": "/youtubei/v1/browse"
+                     }
+                    },
+                    "browseEndpoint": {
+                     "browseId": "UCSJ4gkVC6NrvII8umztf0Ow"
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            },
+            {
+             "videoRenderer": {
+              "videoId": "7oHxpusmRfU",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/7oHxpusmRfU/hq720.jpg?v=69fb9922&sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAk7n4y90Y0PnPhRNfkhRtYaPbTQw",
+                 "width": 360,
+                 "height": 202
+                },
+                {
+                 "url": "https://i.ytimg.com/vi/7oHxpusmRfU/hq720.jpg?v=69fb9922&sqp=-oaymwEcCNAFEJQDSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLB31JdMgoxgBsMsBrpPky_fq1N0VA",
+                 "width": 720,
+                 "height": 404
+                }
+               ]
+              },
+              "title": {
+               "runs": [
+                {
+                 "text": "🔴 Cozy Lofi Room Radio 🎧 Chill Lofi Beats to Study, Work & Relax"
+                }
+               ]
+              },
+              "longBylineText": {
+               "runs": [
+                {
+                 "text": "Lofi All Day",
+                 "navigationEndpoint": {
+                  "commandMetadata": {
+                   "webCommandMetadata": {
+                    "url": "/@LofiAllDay9527",
+                    "webPageType": "WEB_PAGE_TYPE_CHANNEL",
+                    "rootVe": 3611,
+                    "apiUrl": "/youtubei/v1/browse"
+                   }
+                  },
+                  "browseEndpoint": {
+                   "browseId": "UCPWhI_Wk3QI8q_QmMaKq3Ig",
+                   "canonicalBaseUrl": "/@LofiAllDay9527"
+                  }
+                 }
+                }
+               ]
+              },
+              "viewCountText": {
+               "runs": [
+                {
+                 "text": "852"
+                },
+                {
+                 "text": " watching"
+                }
+               ]
+              },
+              "navigationEndpoint": {
+               "commandMetadata": {
+                "webCommandMetadata": {
+                 "url": "/watch?v=7oHxpusmRfU&pp=ygUSbG9maSBoaXAgaG9wIHJhZGlv0gcJCTIMAYcqIYzv",
+                 "webPageType": "WEB_PAGE_TYPE_WATCH",
+                 "rootVe": 3832
+                }
+               },
+               "watchEndpoint": {
+                "videoId": "7oHxpusmRfU",
+                "params": "qgMSbG9maSBoaXAgaG9wIHJhZGlvugMLCMDf-MuH55GrrAG6AwoI9vyN0oiG6Z8kugMKCKex0cL6ipLtFboDCgjDutfj_rSX4A66AwsIxquRytbAnpbnAboDCgig9vfttteRkwe6AwsIg5fNiNK-0vjcAboDCgiI5bPssbq2tBW6AwoIkpKj59_G87UTugMKCOnWg8PjuIGobroDCgiU7pvT0aGP_CC6AwsIvJOLpcHi4bXSAboDCgiRlamX9PbN7Ri6AwsI5vHclMn1vIjjAboDCwiq1dOr7cLdnNUBugMKCP70mOeBgeH8TboDCgjP_OHwkYrCsEO6AwsI8K2L37-dzqbbAboDCwjgq7XPkJ612_EB8gMFDR8EAz0%3D",
+                "playerParams": "ygUSbG9maSBoaXAgaG9wIHJhZGlv0gcJCTIMAYcqIYzv"
+               }
+              },
+              "badges": [
+               {
+                "metadataBadgeRenderer": {
+                 "icon": {
+                  "iconType": "LIVE"
+                 },
+                 "style": "BADGE_STYLE_TYPE_LIVE_NOW",
+                 "label": "LIVE"
+                }
+               }
+              ],
+              "ownerText": {
+               "runs": [
+                {
+                 "text": "Lofi All Day",
+                 "navigationEndpoint": {
+                  "commandMetadata": {
+                   "webCommandMetadata": {
+                    "url": "/@LofiAllDay9527",
+                    "webPageType": "WEB_PAGE_TYPE_CHANNEL",
+                    "rootVe": 3611,
+                    "apiUrl": "/youtubei/v1/browse"
+                   }
+                  },
+                  "browseEndpoint": {
+                   "browseId": "UCPWhI_Wk3QI8q_QmMaKq3Ig",
+                   "canonicalBaseUrl": "/@LofiAllDay9527"
+                  }
+                 }
+                }
+               ]
+              },
+              "shortBylineText": {
+               "runs": [
+                {
+                 "text": "Lofi All Day",
+                 "navigationEndpoint": {
+                  "commandMetadata": {
+                   "webCommandMetadata": {
+                    "url": "/@LofiAllDay9527",
+                    "webPageType": "WEB_PAGE_TYPE_CHANNEL",
+                    "rootVe": 3611,
+                    "apiUrl": "/youtubei/v1/browse"
+                   }
+                  },
+                  "browseEndpoint": {
+                   "browseId": "UCPWhI_Wk3QI8q_QmMaKq3Ig",
+                   "canonicalBaseUrl": "/@LofiAllDay9527"
+                  }
+                 }
+                }
+               ]
+              },
+              "showActionMenu": false,
+              "shortViewCountText": {
+               "runs": [
+                {
+                 "text": "852"
+                },
+                {
+                 "text": " watching"
+                }
+               ]
+              },
+              "channelThumbnailSupportedRenderers": {
+               "channelThumbnailWithLinkRenderer": {
+                "thumbnail": {
+                 "thumbnails": [
+                  {
+                   "url": "https://yt3.ggpht.com/IQ-4vTVAPjxCFzHlIs0jwRYaH00ktHF0CXcW8JVrKYBnYIxfQ4ZZfedn_9buB2GWw0RazCedpK4=s68-c-k-c0x00ffffff-no-rj",
+                   "width": 68,
+                   "height": 68
+                  }
+                 ]
+                },
+                "navigationEndpoint": {
+                 "commandMetadata": {
+                  "webCommandMetadata": {
+                   "url": "/@LofiAllDay9527",
+                   "webPageType": "WEB_PAGE_TYPE_CHANNEL",
+                   "rootVe": 3611,
+                   "apiUrl": "/youtubei/v1/browse"
+                  }
+                 },
+                 "browseEndpoint": {
+                  "browseId": "UCPWhI_Wk3QI8q_QmMaKq3Ig",
+                  "canonicalBaseUrl": "/@LofiAllDay9527"
+                 }
+                }
+               }
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayToggleButtonRenderer": {
+                 "isToggled": false,
+                 "untoggledIcon": {
+                  "iconType": "WATCH_LATER"
+                 },
+                 "toggledIcon": {
+                  "iconType": "CHECK"
+                 },
+                 "untoggledTooltip": "Watch later",
+                 "toggledTooltip": "Added",
+                 "untoggledServiceEndpoint": {
+                  "commandMetadata": {
+                   "webCommandMetadata": {
+                    "sendPost": true,
+                    "apiUrl": "/youtubei/v1/browse/edit_playlist"
+                   }
+                  }
+                 },
+                 "toggledServiceEndpoint": {
+                  "commandMetadata": {
+                   "webCommandMetadata": {
+                    "sendPost": true,
+                    "apiUrl": "/youtubei/v1/browse/edit_playlist"
+                   }
+                  }
+                 },
+                 "untoggledAccessibility": {},
+                 "toggledAccessibility": {}
+                }
+               },
+               {
+                "thumbnailOverlayToggleButtonRenderer": {
+                 "untoggledIcon": {
+                  "iconType": "ADD_TO_QUEUE_TAIL"
+                 },
+                 "toggledIcon": {
+                  "iconType": "PLAYLIST_ADD_CHECK"
+                 },
+                 "untoggledTooltip": "Add to queue",
+                 "toggledTooltip": "Added",
+                 "untoggledServiceEndpoint": {
+                  "commandMetadata": {
+                   "webCommandMetadata": {
+                    "sendPost": true
+                   }
+                  }
+                 },
+                 "untoggledAccessibility": {},
+                 "toggledAccessibility": {}
+                }
+               },
+               {
+                "thumbnailOverlayNowPlayingRenderer": {
+                 "text": {
+                  "runs": [
+                   {
+                    "text": "Now playing"
+                   }
+                  ]
+                 }
+                }
+               },
+               {
+                "thumbnailOverlayLoadingPreviewRenderer": {
+                 "text": {
+                  "runs": [
+                   {
+                    "text": "Keep hovering to play"
+                   }
+                  ]
+                 }
+                }
+               }
+              ],
+              "detailedMetadataSnippets": [
+               {
+                "snippetText": {
+                 "runs": [
+                  {
+                   "text": "Cozy Lofi Room Nostalgic Chill "
+                  },
+                  {
+                   "text": "Lofi Hip Hop",
+                   "bold": true
+                  },
+                  {
+                   "text": " Beats to Study, Work & Relax Help us reach 10k subscribers ..."
+                  }
+                 ]
+                },
+                "snippetHoverText": {
+                 "runs": [
+                  {
+                   "text": "From the video description"
+                  }
+                 ]
+                },
+                "maxOneLine": false
+               }
+              ],
+              "searchVideoResultEntityKey": "Egs3b0h4cHVzbVJmVSDnAigB",
+              "avatar": {
+               "decoratedAvatarViewModel": {
+                "avatar": {
+                 "avatarViewModel": {
+                  "image": {
+                   "sources": [
+                    {
+                     "url": "https://yt3.ggpht.com/IQ-4vTVAPjxCFzHlIs0jwRYaH00ktHF0CXcW8JVrKYBnYIxfQ4ZZfedn_9buB2GWw0RazCedpK4=s68-c-k-c0x00ffffff-no-rj",
+                     "width": 68,
+                     "height": 68
+                    }
+                   ]
+                  },
+                  "avatarImageSize": "AVATAR_SIZE_M"
+                 }
+                },
+                "a11yLabel": "Go to channel Lofi All Day",
+                "rendererContext": {
+                 "commandContext": {
+                  "onTap": {
+                   "innertubeCommand": {
+                    "commandMetadata": {
+                     "webCommandMetadata": {
+                      "url": "/@LofiAllDay9527",
+                      "webPageType": "WEB_PAGE_TYPE_CHANNEL",
+                      "rootVe": 3611,
+                      "apiUrl": "/youtubei/v1/browse"
+                     }
+                    },
+                    "browseEndpoint": {
+                     "browseId": "UCPWhI_Wk3QI8q_QmMaKq3Ig",
+                     "canonicalBaseUrl": "/@LofiAllDay9527"
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            },
+            {
+             "videoRenderer": {
+              "videoId": "JD-kMIpDfnY",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/JD-kMIpDfnY/hq720.jpg?v=6a0f227a&sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLDLRVuAe8mlXTNmFnQpI19bshxE2g",
+                 "width": 360,
+                 "height": 202
+                },
+                {
+                 "url": "https://i.ytimg.com/vi/JD-kMIpDfnY/hq720.jpg?v=6a0f227a&sqp=-oaymwEcCNAFEJQDSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAvnKB17vr74kxVQz64qz2irNlE4A",
+                 "width": 720,
+                 "height": 404
+                }
+               ]
+              },
+              "title": {
+               "runs": [
+                {
+                 "text": "lofi hip hop radio 💤 beats to sleep/chill to"
+                }
+               ]
+              },
+              "longBylineText": {
+               "runs": [
+                {
+                 "text": "Lofi Girl",
+                 "navigationEndpoint": {
+                  "commandMetadata": {
+                   "webCommandMetadata": {
+                    "url": "/channel/UCSJ4gkVC6NrvII8umztf0Ow",
+                    "webPageType": "WEB_PAGE_TYPE_CHANNEL",
+                    "rootVe": 3611,
+                    "apiUrl": "/youtubei/v1/browse"
+                   }
+                  },
+                  "browseEndpoint": {
+                   "browseId": "UCSJ4gkVC6NrvII8umztf0Ow",
+                   "canonicalBaseUrl": "/channel/UCSJ4gkVC6NrvII8umztf0Ow"
+                  }
+                 }
+                }
+               ]
+              },
+              "viewCountText": {
+               "runs": [
+                {
+                 "text": "1,814"
+                },
+                {
+                 "text": " watching"
+                }
+               ]
+              },
+              "navigationEndpoint": {
+               "commandMetadata": {
+                "webCommandMetadata": {
+                 "url": "/watch?v=JD-kMIpDfnY&pp=ygUSbG9maSBoaXAgaG9wIHJhZGlv",
+                 "webPageType": "WEB_PAGE_TYPE_WATCH",
+                 "rootVe": 3832
+                }
+               },
+               "watchEndpoint": {
+                "videoId": "JD-kMIpDfnY",
+                "params": "qgMSbG9maSBoaXAgaG9wIHJhZGlvugMLCMDf-MuH55GrrAG6AwsI9YuZ2e60_MDuAboDCginsdHC-oqS7RW6AwoIw7rX4_60l-AOugMLCMarkcrWwJ6W5wG6AwoIoPb37bbXkZMHugMLCIOXzYjSvtL43AG6AwoIiOWz7LG6trQVugMKCJKSo-ffxvO1E7oDCgjp1oPD47iBqG66AwoIlO6b09Ghj_wgugMLCLyTi6XB4uG10gG6AwoIkZWpl_T2ze0YugMLCObx3JTJ9byI4wG6AwsIqtXTq-3C3ZzVAboDCgj-9JjngYHh_E26AwoIz_zh8JGKwrBDugMLCPCti9-_nc6m2wG6AwsI4Ku1z5CetdvxAeoDAhAB8gMFDR8EAz0%3D",
+                "playerParams": "ygUSbG9maSBoaXAgaG9wIHJhZGlv"
+               }
+              },
+              "badges": [
+               {
+                "metadataBadgeRenderer": {
+                 "icon": {
+                  "iconType": "LIVE"
+                 },
+                 "style": "BADGE_STYLE_TYPE_LIVE_NOW",
+                 "label": "LIVE"
+                }
+               },
+               {
+                "metadataBadgeRenderer": {
+                 "icon": {
+                  "iconType": "OUTLINE_BAG"
+                 },
+                 "style": "BADGE_STYLE_TYPE_SIMPLE",
+                 "label": "16 products"
+                }
+               }
+              ],
+              "ownerBadges": [
+               {
+                "metadataBadgeRenderer": {
+                 "icon": {
+                  "iconType": "AUDIO_BADGE"
+                 },
+                 "style": "BADGE_STYLE_TYPE_VERIFIED_ARTIST",
+                 "tooltip": "Official Artist Channel"
+                }
+               }
+              ],
+              "ownerText": {
+               "runs": [
+                {
+                 "text": "Lofi Girl",
+                 "navigationEndpoint": {
+                  "commandMetadata": {
+                   "webCommandMetadata": {
+                    "url": "/channel/UCSJ4gkVC6NrvII8umztf0Ow",
+                    "webPageType": "WEB_PAGE_TYPE_CHANNEL",
+                    "rootVe": 3611,
+                    "apiUrl": "/youtubei/v1/browse"
+                   }
+                  },
+                  "browseEndpoint": {
+                   "browseId": "UCSJ4gkVC6NrvII8umztf0Ow",
+                   "canonicalBaseUrl": "/channel/UCSJ4gkVC6NrvII8umztf0Ow"
+                  }
+                 }
+                }
+               ]
+              },
+              "shortBylineText": {
+               "runs": [
+                {
+                 "text": "Lofi Girl",
+                 "navigationEndpoint": {
+                  "commandMetadata": {
+                   "webCommandMetadata": {
+                    "url": "/channel/UCSJ4gkVC6NrvII8umztf0Ow",
+                    "webPageType": "WEB_PAGE_TYPE_CHANNEL",
+                    "rootVe": 3611,
+                    "apiUrl": "/youtubei/v1/browse"
+                   }
+                  },
+                  "browseEndpoint": {
+                   "browseId": "UCSJ4gkVC6NrvII8umztf0Ow",
+                   "canonicalBaseUrl": "/channel/UCSJ4gkVC6NrvII8umztf0Ow"
+                  }
+                 }
+                }
+               ]
+              },
+              "showActionMenu": false,
+              "shortViewCountText": {
+               "runs": [
+                {
+                 "text": "1.8K"
+                },
+                {
+                 "text": " watching"
+                }
+               ]
+              },
+              "channelThumbnailSupportedRenderers": {
+               "channelThumbnailWithLinkRenderer": {
+                "thumbnail": {
+                 "thumbnails": [
+                  {
+                   "url": "https://yt3.ggpht.com/GyVPysrx-cVIWIQDfi2MkaYr7oRIxuOgGeZihnw-hgTv6E5LBQ67v5yXTFvqP2Bl7BB_S-0L-A=s88-c-k-c0x00ffffff-no-rj",
+                   "width": 68,
+                   "height": 68
+                  }
+                 ]
+                },
+                "navigationEndpoint": {
+                 "commandMetadata": {
+                  "webCommandMetadata": {
+                   "url": "/channel/UCSJ4gkVC6NrvII8umztf0Ow",
+                   "webPageType": "WEB_PAGE_TYPE_CHANNEL",
+                   "rootVe": 3611,
+                   "apiUrl": "/youtubei/v1/browse"
+                  }
+                 },
+                 "browseEndpoint": {
+                  "browseId": "UCSJ4gkVC6NrvII8umztf0Ow"
+                 }
+                }
+               }
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayToggleButtonRenderer": {
+                 "isToggled": false,
+                 "untoggledIcon": {
+                  "iconType": "WATCH_LATER"
+                 },
+                 "toggledIcon": {
+                  "iconType": "CHECK"
+                 },
+                 "untoggledTooltip": "Watch later",
+                 "toggledTooltip": "Added",
+                 "untoggledServiceEndpoint": {
+                  "commandMetadata": {
+                   "webCommandMetadata": {
+                    "sendPost": true,
+                    "apiUrl": "/youtubei/v1/browse/edit_playlist"
+                   }
+                  }
+                 },
+                 "toggledServiceEndpoint": {
+                  "commandMetadata": {
+                   "webCommandMetadata": {
+                    "sendPost": true,
+                    "apiUrl": "/youtubei/v1/browse/edit_playlist"
+                   }
+                  }
+                 },
+                 "untoggledAccessibility": {},
+                 "toggledAccessibility": {}
+                }
+               },
+               {
+                "thumbnailOverlayToggleButtonRenderer": {
+                 "untoggledIcon": {
+                  "iconType": "ADD_TO_QUEUE_TAIL"
+                 },
+                 "toggledIcon": {
+                  "iconType": "PLAYLIST_ADD_CHECK"
+                 },
+                 "untoggledTooltip": "Add to queue",
+                 "toggledTooltip": "Added",
+                 "untoggledServiceEndpoint": {
+                  "commandMetadata": {
+                   "webCommandMetadata": {
+                    "sendPost": true
+                   }
+                  }
+                 },
+                 "untoggledAccessibility": {},
+                 "toggledAccessibility": {}
+                }
+               },
+               {
+                "thumbnailOverlayNowPlayingRenderer": {
+                 "text": {
+                  "runs": [
+                   {
+                    "text": "Now playing"
+                   }
+                  ]
+                 }
+                }
+               },
+               {
+                "thumbnailOverlayLoadingPreviewRenderer": {
+                 "text": {
+                  "runs": [
+                   {
+                    "text": "Keep hovering to play"
+                   }
+                  ]
+                 }
+                }
+               }
+              ],
+              "detailedMetadataSnippets": [
+               {
+                "snippetText": {
+                 "runs": [
+                  {
+                   "text": "Listen on Spotify, Apple music and more → https://fanlink.tv/"
+                  },
+                  {
+                   "text": "Lofi",
+                   "bold": true
+                  },
+                  {
+                   "text": "-Sleep | "
+                  },
+                  {
+                   "text": "Lofi",
+                   "bold": true
+                  },
+                  {
+                   "text": " Girl on all social media ..."
+                  }
+                 ]
+                },
+                "snippetHoverText": {
+                 "runs": [
+                  {
+                   "text": "From the video description"
+                  }
+                 ]
+                },
+                "maxOneLine": false
+               }
+              ],
+              "searchVideoResultEntityKey": "EgtKRC1rTUlwRGZuWSDnAigB",
+              "avatar": {
+               "decoratedAvatarViewModel": {
+                "avatar": {
+                 "avatarViewModel": {
+                  "image": {
+                   "sources": [
+                    {
+                     "url": "https://yt3.ggpht.com/GyVPysrx-cVIWIQDfi2MkaYr7oRIxuOgGeZihnw-hgTv6E5LBQ67v5yXTFvqP2Bl7BB_S-0L-A=s88-c-k-c0x00ffffff-no-rj",
+                     "width": 68,
+                     "height": 68
+                    }
+                   ]
+                  },
+                  "avatarImageSize": "AVATAR_SIZE_M"
+                 }
+                },
+                "a11yLabel": "Go to channel Lofi Girl",
+                "rendererContext": {
+                 "commandContext": {
+                  "onTap": {
+                   "innertubeCommand": {
+                    "commandMetadata": {
+                     "webCommandMetadata": {
+                      "url": "/channel/UCSJ4gkVC6NrvII8umztf0Ow",
+                      "webPageType": "WEB_PAGE_TYPE_CHANNEL",
+                      "rootVe": 3611,
+                      "apiUrl": "/youtubei/v1/browse"
+                     }
+                    },
+                    "browseEndpoint": {
+                     "browseId": "UCSJ4gkVC6NrvII8umztf0Ow"
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            },
+            {
+             "reelShelfRenderer": {
+              "title": {
+               "runs": [
+                {
+                 "text": "Shorts"
+                }
+               ]
+              },
+              "items": []
+             }
+            },
+            {
+             "lockupViewModel": {
+              "contentImage": {
+               "thumbnailViewModel": {
+                "image": {
+                 "sources": [
+                  {
+                   "url": "https://i.ytimg.com/vi/bpEVpBr5lK4/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLDy_i55xn42q0_N-T5Fzg4_p5A6eA",
+                   "width": 168,
+                   "height": 94
+                  },
+                  {
+                   "url": "https://i.ytimg.com/vi/bpEVpBr5lK4/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAEtw4l2inkXjxFuMLgZPB8Pe6CHg",
+                   "width": 336,
+                   "height": 188
+                  }
+                 ]
+                },
+                "overlays": [
+                 {
+                  "thumbnailBottomOverlayViewModel": {
+                   "badges": [
+                    {
+                     "thumbnailBadgeViewModel": {
+                      "icon": {
+                       "sources": [
+                        {
+                         "clientResource": {
+                          "imageName": "MUSIC"
+                         }
+                        }
+                       ]
+                      },
+                      "text": "1:58:05",
+                      "badgeStyle": "THUMBNAIL_OVERLAY_BADGE_STYLE_DEFAULT",
+                      "animationActivationTargetId": "bpEVpBr5lK4",
+                      "animationActivationEntityKey": "Eh8veW91dHViZS9hcHAvd2F0Y2gvcGxheWVyX3N0YXRlIMMCKAE%3D",
+                      "animatedText": "Now playing",
+                      "animationActivationEntitySelectorType": "THUMBNAIL_BADGE_ANIMATION_ENTITY_SELECTOR_TYPE_PLAYER_STATE",
+                      "inlinePlaybackBadgeData": {
+                       "replicateAsTimestamp": true
+                      },
+                      "rendererContext": {
+                       "accessibilityContext": {
+                        "label": "1 hour, 58 minutes, 5 seconds"
+                       }
+                      }
+                     }
+                    }
+                   ]
+                  }
+                 }
+                ]
+               }
+              },
+              "metadata": {
+               "lockupMetadataViewModel": {
+                "title": {
+                 "content": "VSNZ pres. STEPHAN BODZIN - VSNZ Winter Festival 2025"
+                },
+                "image": {
+                 "decoratedAvatarViewModel": {
+                  "avatar": {
+                   "avatarViewModel": {
+                    "image": {
+                     "sources": [
+                      {
+                       "url": "https://yt3.ggpht.com/On1wTgCUTfx0nItCYq3gRZtGgrUisERZEuNTqbHgXF0jSEQaHz4dIr5HzgvTKX9RM-Zk_ccuhUw=s68-c-k-c0x00ffffff-no-rj",
+                       "width": 68,
+                       "height": 68
+                      }
+                     ]
+                    },
+                    "avatarImageSize": "AVATAR_SIZE_M"
+                   }
+                  },
+                  "a11yLabel": "Go to channel VSNZ",
+                  "rendererContext": {
+                   "commandContext": {
+                    "onTap": {
+                     "innertubeCommand": {
+                      "commandMetadata": {
+                       "webCommandMetadata": {
+                        "url": "/@VSNZmusic",
+                        "webPageType": "WEB_PAGE_TYPE_CHANNEL",
+                        "rootVe": 3611,
+                        "apiUrl": "/youtubei/v1/browse"
+                       }
+                      },
+                      "browseEndpoint": {
+                       "browseId": "UCxSaqHz9IACJlMbc064iiRQ",
+                       "canonicalBaseUrl": "/@VSNZmusic"
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                },
+                "metadata": {
+                 "contentMetadataViewModel": {
+                  "metadataRows": [
+                   {
+                    "metadataParts": [
+                     {
+                      "text": {
+                       "content": "VSNZ"
+                      }
+                     }
+                    ]
+                   },
+                   {
+                    "metadataParts": [
+                     {
+                      "text": {
+                       "content": "569K"
+                      },
+                      "accessibilityLabel": "569 thousand views",
+                      "leadingIcon": {
+                       "name": "PLAY_ARROW_OUTLINED",
+                       "height": 12,
+                       "width": 12,
+                       "marginEndToken": {
+                        "spacing": 2
+                       }
+                      }
+                     },
+                     {
+                      "text": {
+                       "content": "1y ago"
+                      },
+                      "accessibilityLabel": "1 year ago"
+                     }
+                    ]
+                   }
+                  ],
+                  "delimiter": " "
+                 }
+                }
+               }
+              },
+              "contentId": "bpEVpBr5lK4",
+              "contentType": "LOCKUP_CONTENT_TYPE_VIDEO",
+              "rendererContext": {
+               "accessibilityContext": {
+                "label": "VSNZ pres. STEPHAN BODZIN - VSNZ Winter Festival 2025 1 hour, 58 minutes"
+               },
+               "commandContext": {
+                "onTap": {
+                 "innertubeCommand": {
+                  "commandMetadata": {
+                   "webCommandMetadata": {
+                    "url": "/watch?v=bpEVpBr5lK4&list=RDbpEVpBr5lK4&start_radio=1&pp=oAcB",
+                    "webPageType": "WEB_PAGE_TYPE_WATCH",
+                    "rootVe": 3832
+                   }
+                  },
+                  "watchEndpoint": {
+                   "videoId": "bpEVpBr5lK4",
+                   "playlistId": "RDbpEVpBr5lK4",
+                   "params": "wAEBuAUB",
+                   "playerParams": "oAcB",
+                   "nofollow": true
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           ]
+          }
+         },
+         {
+          "continuationItemRenderer": {
+           "continuationEndpoint": {
+            "continuationCommand": {
+             "token": "history-more"
+            }
+           }
+          }
+         }
+        ]
+       }
+      }
+     }
+    }
+   ]
+  }
+ }
+}

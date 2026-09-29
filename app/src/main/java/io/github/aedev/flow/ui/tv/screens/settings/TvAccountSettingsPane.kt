@@ -18,27 +18,31 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.aedev.flow.R
-import io.github.aedev.flow.data.account.AccountSession
-import io.github.aedev.flow.ui.screens.account.sharedAccountFeedsViewModel
 import io.github.aedev.flow.ui.tv.components.TvNavRow
 import io.github.aedev.flow.ui.tv.components.TvToggleRow
 import io.github.aedev.flow.ui.tv.focus.ProvideTvColumnPivot
+import io.github.aedev.flow.ui.tv.screens.account.TvAccountStatus
+import io.github.aedev.flow.ui.tv.screens.account.TvPluginAccountViewModel
 
+/** The music plugin's account: who is signed in, reporting listens, and signing out. Signing in opens Plugins. */
 @Composable
 fun TvAccountSettingsPane(
     onSignIn: () -> Unit,
     modifier: Modifier = Modifier,
+    viewModel: TvPluginAccountViewModel = hiltViewModel(),
 ) {
-    val viewModel = sharedAccountFeedsViewModel()
-    val session by viewModel.session.collectAsStateWithLifecycle()
+    val status by viewModel.status.collectAsStateWithLifecycle()
     val playHistory by viewModel.playHistoryEnabled.collectAsStateWithLifecycle()
+    LaunchedEffect(viewModel) { viewModel.refresh() }
 
     ProvideTvColumnPivot {
         LazyColumn(
@@ -46,8 +50,8 @@ fun TvAccountSettingsPane(
             contentPadding = PaddingValues(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            item(key = "status") { TvAccountStatusCard(session) }
-            if (session == null || session?.expired == true) {
+            item(key = "status") { TvAccountStatusCard(status) }
+            if (status == TvAccountStatus.SignedOut || status == TvAccountStatus.Expired || status == TvAccountStatus.Unavailable) {
                 item(key = "sign-in") {
                     TvNavRow(
                         label = stringResource(R.string.tv_account_sign_in_with_phone),
@@ -57,7 +61,7 @@ fun TvAccountSettingsPane(
                     )
                 }
             }
-            if (session?.expired == false) {
+            if (status is TvAccountStatus.SignedIn) {
                 item(key = "play-history") {
                     TvToggleRow(
                         label = stringResource(R.string.tv_account_play_history),
@@ -67,7 +71,7 @@ fun TvAccountSettingsPane(
                     )
                 }
             }
-            if (session != null) {
+            if (status is TvAccountStatus.SignedIn || status == TvAccountStatus.Expired) {
                 item(key = "sign-out") {
                     TvNavRow(
                         label = stringResource(R.string.tv_account_sign_out),
@@ -81,7 +85,7 @@ fun TvAccountSettingsPane(
 }
 
 @Composable
-private fun TvAccountStatusCard(session: AccountSession?) {
+private fun TvAccountStatusCard(status: TvAccountStatus) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
@@ -102,20 +106,19 @@ private fun TvAccountStatusCard(session: AccountSession?) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
                     text =
-                        when {
-                            session == null -> stringResource(R.string.tv_account_not_signed_in)
-                            session.accountName != null -> session.accountName
-                            else -> stringResource(R.string.tv_account_signed_in)
+                        when (status) {
+                            is TvAccountStatus.SignedIn -> status.name ?: stringResource(R.string.tv_account_signed_in)
+                            else -> stringResource(R.string.tv_account_not_signed_in)
                         },
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
                     text =
-                        when {
-                            session == null -> stringResource(R.string.tv_account_sign_in_with_phone_summary)
-                            session.expired -> stringResource(R.string.tv_account_session_expired)
-                            else -> stringResource(R.string.tv_account_signed_in_summary)
+                        when (status) {
+                            is TvAccountStatus.SignedIn -> stringResource(R.string.tv_account_signed_in_summary)
+                            TvAccountStatus.Expired -> stringResource(R.string.tv_account_session_expired)
+                            else -> stringResource(R.string.tv_account_sign_in_with_phone_summary)
                         },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

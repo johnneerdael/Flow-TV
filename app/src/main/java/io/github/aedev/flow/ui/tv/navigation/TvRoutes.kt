@@ -4,14 +4,16 @@ import android.net.Uri
 import io.github.aedev.flow.ui.screens.account.METHOD_ARG
 import io.github.aedev.flow.ui.screens.account.PLUGIN_ARG
 import io.github.aedev.flow.ui.screens.music.CatalogPageViewModel
+import io.github.aedev.flow.ui.tv.screens.channel.TvChannelViewModel
+import io.github.aedev.flow.ui.tv.screens.playlist.TvPlaylistViewModel
 import nl.neerdael.milkbeat.catalog.EntityRef
 
 /** Detail routes layered over the top-level [TvDestination] tabs. */
 object TvRoutes {
-    const val CHANNEL_ARG = "channelRef"
+    const val CHANNEL_ARG = TvChannelViewModel.CHANNEL_ARG
     const val CHANNEL = "channel?ref={$CHANNEL_ARG}"
 
-    const val PLAYLIST_ARG = "playlistId"
+    const val PLAYLIST_ARG = TvPlaylistViewModel.PLAYLIST_ARG
     const val PLAYLIST = "playlist/{$PLAYLIST_ARG}"
 
     const val MUSIC_COLLECTION_ARG = "collectionId"
@@ -26,9 +28,10 @@ object TvRoutes {
         methodId: String,
     ) = "pluginSignIn/${Uri.encode(pluginId)}/${Uri.encode(methodId)}"
 
-    /** [channelRef] is a full channel URL (preferred) or a bare channel id. */
+    /** [channelRef] is the video plugin's id of the channel, as its entity ref carries it. */
     fun channel(channelRef: String): String = "channel?ref=${Uri.encode(channelRef)}"
 
+    /** [playlistId] is a playlist of the app's library, or the video plugin's id of one. */
     fun playlist(playlistId: String): String = "playlist/${Uri.encode(playlistId)}"
 
     fun musicCollection(collectionId: String): String = "musicCollection/${Uri.encode(collectionId)}"

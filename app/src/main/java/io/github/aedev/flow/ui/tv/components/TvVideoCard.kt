@@ -36,7 +36,8 @@ import io.github.aedev.flow.utils.formatViewCount
 /**
  * Flat ten-foot video card, YouTube-TV style: no container surface — a rounded
  * 16:9 thumbnail carrying the focus ring, with title and metadata sitting
- * directly on the screen background beneath it.
+ * directly on the screen background beneath it. [details] replaces the views and
+ * age with a plugin's own lines ("1.2M views", "3 days ago").
  */
 @Composable
 fun TvVideoCard(
@@ -44,6 +45,7 @@ fun TvVideoCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     watchProgress: Float? = null,
+    details: List<String>? = null,
 ) {
     val dimens = LocalTvDimens.current
     val focusState = rememberTvFocusState()
@@ -55,12 +57,10 @@ fun TvVideoCard(
             null
         }
     val metadata =
-        remember(video.id, video.channelName, viewsTemplate, video.uploadDate) {
-            listOfNotNull(
-                video.channelName.takeIf { it.isNotBlank() },
-                viewsTemplate,
-                formatTimeAgo(video.uploadDate).takeIf { it.isNotBlank() },
-            ).joinToString(separator = " • ")
+        remember(video.id, video.channelName, viewsTemplate, video.uploadDate, details) {
+            val lines =
+                details ?: listOfNotNull(viewsTemplate, formatTimeAgo(video.uploadDate).takeIf { it.isNotBlank() })
+            (listOfNotNull(video.channelName.takeIf { it.isNotBlank() }) + lines).joinToString(separator = " • ")
         }
 
     Surface(

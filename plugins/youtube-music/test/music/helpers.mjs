@@ -26,7 +26,7 @@ const ACCOUNT_MENU = {
 
 /**
  * The plugin with [routes]: `[match, response]` pairs, where `match(call)` sees
- * `{ endpoint, body, query, signed }` and `response` is a fixture name, a JSON value, or a function of
+ * `{ endpoint, host, client, body, query, signed }` and `response` is a fixture name, a JSON value, or a function of
  * the call. The account menu answers signed-in checks unless a route overrides it.
  */
 export function offlinePlugin(routes, options = {}) {
@@ -39,6 +39,8 @@ export function offlinePlugin(routes, options = {}) {
       const body = request.body ? JSON.parse(request.body) : {};
       const call = {
         endpoint: url.pathname.replace('/youtubei/v1/', ''),
+        host: url.host,
+        client: request.headers?.['x-youtube-client-name'],
         body,
         query: Object.fromEntries(url.searchParams),
         signed: typeof request.headers?.authorization === 'string' && request.headers.authorization.startsWith('SAPISIDHASH'),
