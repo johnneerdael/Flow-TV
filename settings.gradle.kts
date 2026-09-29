@@ -17,7 +17,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "Milkbeat"
 include(":app")
-include(":catalog-api")
+include(":plugin-api")
 include(":spike-plugin-runtime")
 include(":benchmark")
 include(":projectm-core")

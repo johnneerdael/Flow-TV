@@ -50,6 +50,7 @@ robolectric = "4.16.1"
 androidxTestCore = "1.7.0"
 androidxTestRunner = "1.7.0"
 quickjsKt = "1.0.15"
+schemaKenerator = "2.7.2"
 rhino = "1.8.1"
 
 [libraries]
@@ -128,6 +129,9 @@ androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version
 androidx-test-core = { group = "androidx.test", name = "core-ktx", version.ref = "androidxTestCore" }
 androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidxTestRunner" }
 quickjs-kt = { group = "io.github.dokar3", name = "quickjs-kt", version.ref = "quickjsKt" }
+schema-kenerator-core = { group = "io.github.smiley4", name = "schema-kenerator-core", version.ref = "schemaKenerator" }
+schema-kenerator-serialization = { group = "io.github.smiley4", name = "schema-kenerator-serialization", version.ref = "schemaKenerator" }
+schema-kenerator-jsonschema = { group = "io.github.smiley4", name = "schema-kenerator-jsonschema", version.ref = "schemaKenerator" }
 rhino = { group = "org.mozilla", name = "rhino", version.ref = "rhino" }
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

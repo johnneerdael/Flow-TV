@@ -1,0 +1,17 @@
+{
+  "name": "@milkbeat/plugin-sdk",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Types and runtime glue for Milkbeat plugins (plugin API v1).",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "generate": "node scripts/generate-types.mjs",
+    "check": "node scripts/generate-types.mjs --check && tsc --noEmit -p ."
+  },
+  "devDependencies": {
+    "json-schema-to-typescript": "16.0.0",
+    "typescript": "7.0.2"
+  }
+}

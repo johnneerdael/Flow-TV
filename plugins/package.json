@@ -1,0 +1,7 @@
+{
+  "name": "milkbeat-plugins",
+  "private": true,
+  "type": "module",
+  "workspaces": ["sdk"],
+  "engines": { "node": ">=22" }
+}

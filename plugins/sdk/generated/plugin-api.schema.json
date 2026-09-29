@@ -1,0 +1,3095 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "MilkbeatPluginApi",
+    "description": "Plugin API v1, generated from the plugin-api module. Do not edit.",
+    "type": "object",
+    "properties": {
+        "manifest": {
+            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.PluginManifest"
+        },
+        "operations": {
+            "type": "object",
+            "properties": {
+                "lifecycle.warmUp": {
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                    "additionalProperties": false
+                },
+                "metadata.home": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.HomeRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.MetadataPage"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "metadata.search": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.SearchRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.MetadataPage"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "metadata.suggest": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.SuggestRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.Suggestions"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "metadata.entity": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.PageRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.MetadataPage"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "metadata.tracks": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.TracksRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.TrackList"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "metadata.library": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.LibraryRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.MetadataPage"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "metadata.radio": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.RadioRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.TrackList"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "audio.resolve": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.ResolveAudioRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.AudioStream"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "audio.radio": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.RadioRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.TrackList"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "audio.reportPlayback": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.ReportPlaybackRequest"
+                        }
+                    },
+                    "required": [
+                        "request"
+                    ],
+                    "additionalProperties": false
+                },
+                "video.search": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.SearchRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.MetadataPage"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "video.suggest": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.SuggestRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.Suggestions"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "video.entity": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.PageRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.MetadataPage"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "video.related": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.PageRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.MetadataPage"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "video.resolve": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.ResolveVideoRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.VideoPlayback"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "video.comments": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.CommentsRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.CommentsPage"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "video.liveChat": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.LiveChatRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.LiveChatBatch"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "video.reportPlayback": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.ReportPlaybackRequest"
+                        }
+                    },
+                    "required": [
+                        "request"
+                    ],
+                    "additionalProperties": false
+                },
+                "signIn.complete": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.WebLoginResult"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.ProviderAccount"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "signIn.account": {
+                    "type": "object",
+                    "properties": {
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.ProviderAccount"
+                        }
+                    },
+                    "required": [
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "signIn.signOut": {
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                    "additionalProperties": false
+                },
+                "settings.options": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.SettingOptionsRequest"
+                        },
+                        "response": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.SettingOption"
+                            }
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                }
+            },
+            "required": [
+                "lifecycle.warmUp",
+                "metadata.home",
+                "metadata.search",
+                "metadata.suggest",
+                "metadata.entity",
+                "metadata.tracks",
+                "metadata.library",
+                "metadata.radio",
+                "audio.resolve",
+                "audio.radio",
+                "audio.reportPlayback",
+                "video.search",
+                "video.suggest",
+                "video.entity",
+                "video.related",
+                "video.resolve",
+                "video.comments",
+                "video.liveChat",
+                "video.reportPlayback",
+                "signIn.complete",
+                "signIn.account",
+                "signIn.signOut",
+                "settings.options"
+            ],
+            "additionalProperties": false
+        },
+        "host": {
+            "type": "object",
+            "properties": {
+                "http.fetch": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.HttpRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.HttpResponse"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "storage.get": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.StorageKey"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.StoredValue"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "storage.set": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.StorageEntry"
+                        }
+                    },
+                    "required": [
+                        "request"
+                    ],
+                    "additionalProperties": false
+                },
+                "storage.delete": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.StorageKey"
+                        }
+                    },
+                    "required": [
+                        "request"
+                    ],
+                    "additionalProperties": false
+                },
+                "secrets.get": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.StorageKey"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.StoredValue"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "secrets.set": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.StorageEntry"
+                        }
+                    },
+                    "required": [
+                        "request"
+                    ],
+                    "additionalProperties": false
+                },
+                "secrets.delete": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.StorageKey"
+                        }
+                    },
+                    "required": [
+                        "request"
+                    ],
+                    "additionalProperties": false
+                },
+                "crypto.hash": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.HashRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.HashResult"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "code.load": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.CodeLoadRequest"
+                        }
+                    },
+                    "required": [
+                        "request"
+                    ],
+                    "additionalProperties": false
+                },
+                "assets.read": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.AssetRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.AssetText"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "env.get": {
+                    "type": "object",
+                    "properties": {
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.HostEnvironment"
+                        }
+                    },
+                    "required": [
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "log.write": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.LogRequest"
+                        }
+                    },
+                    "required": [
+                        "request"
+                    ],
+                    "additionalProperties": false
+                },
+                "browser.open": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.BrowserOpenRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.BrowserSession"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "browser.evaluate": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.BrowserEvaluateRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.BrowserResult"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "browser.close": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.BrowserSession"
+                        }
+                    },
+                    "required": [
+                        "request"
+                    ],
+                    "additionalProperties": false
+                },
+                "settings.get": {
+                    "type": "object",
+                    "properties": {
+                        "response": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.StorageEntry"
+                            }
+                        }
+                    },
+                    "required": [
+                        "response"
+                    ],
+                    "additionalProperties": false
+                }
+            },
+            "required": [
+                "http.fetch",
+                "storage.get",
+                "storage.set",
+                "storage.delete",
+                "secrets.get",
+                "secrets.set",
+                "secrets.delete",
+                "crypto.hash",
+                "code.load",
+                "assets.read",
+                "env.get",
+                "log.write",
+                "browser.open",
+                "browser.evaluate",
+                "browser.close",
+                "settings.get"
+            ],
+            "additionalProperties": false
+        },
+        "error": {
+            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.PluginError"
+        }
+    },
+    "required": [
+        "manifest",
+        "operations",
+        "host",
+        "error"
+    ],
+    "$defs": {
+        "anonymous": {
+            "type": "object",
+            "required": [
+                "type"
+            ],
+            "properties": {
+                "type": {
+                    "const": "anonymous"
+                }
+            },
+            "title": "ProviderAccountAnonymous"
+        },
+        "collection": {
+            "type": "object",
+            "required": [
+                "type",
+                "id",
+                "layout",
+                "defaultItemView",
+                "items"
+            ],
+            "properties": {
+                "type": {
+                    "const": "collection"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "header": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.CollectionHeader"
+                        }
+                    ]
+                },
+                "layout": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.CollectionLayout"
+                },
+                "defaultItemView": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.ItemView"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.MetadataItem"
+                    }
+                },
+                "showAll": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
+                        }
+                    ]
+                }
+            },
+            "title": "PageBlockCollection"
+        },
+        "expired": {
+            "type": "object",
+            "required": [
+                "type"
+            ],
+            "properties": {
+                "type": {
+                    "const": "expired"
+                }
+            },
+            "title": "ProviderAccountExpired"
+        },
+        "header": {
+            "type": "object",
+            "required": [
+                "type",
+                "id",
+                "style",
+                "entity",
+                "title",
+                "details"
+            ],
+            "properties": {
+                "type": {
+                    "const": "header"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "style": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.HeaderStyle"
+                },
+                "entity": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
+                },
+                "artwork": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.Artwork"
+                        }
+                    ]
+                },
+                "details": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "attribution": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.Attribution"
+                        }
+                    ]
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "tracks": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
+                        }
+                    ]
+                },
+                "station": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
+                        }
+                    ]
+                }
+            },
+            "title": "PageBlockHeader"
+        },
+        "nl.neerdael.milkbeat.catalog.ArtistCredit": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "entity": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
+                        }
+                    ]
+                }
+            },
+            "title": "ArtistCredit"
+        },
+        "nl.neerdael.milkbeat.catalog.Artwork": {
+            "type": "object",
+            "required": [
+                "url"
+            ],
+            "properties": {
+                "url": {
+                    "type": "string"
+                }
+            },
+            "title": "Artwork"
+        },
+        "nl.neerdael.milkbeat.catalog.Attribution": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "avatar": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.Artwork"
+                        }
+                    ]
+                },
+                "entity": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
+                        }
+                    ]
+                }
+            },
+            "title": "Attribution"
+        },
+        "nl.neerdael.milkbeat.catalog.CollectionHeader": {
+            "type": "object",
+            "required": [
+                "title"
+            ],
+            "properties": {
+                "context": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "avatar": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.Artwork"
+                        }
+                    ]
+                },
+                "target": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
+                        }
+                    ]
+                }
+            },
+            "title": "CollectionHeader"
+        },
+        "nl.neerdael.milkbeat.catalog.CollectionLayout": {
+            "enum": [
+                "HORIZONTAL_SHELF",
+                "MULTI_COLUMN_LIST",
+                "TRACK_TABLE"
+            ],
+            "title": "CollectionLayout"
+        },
+        "nl.neerdael.milkbeat.catalog.Comment": {
+            "type": "object",
+            "required": [
+                "id",
+                "author",
+                "text",
+                "replyCount",
+                "pinned",
+                "byCreator"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "author": {
+                    "type": "string"
+                },
+                "authorAvatar": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.Artwork"
+                        }
+                    ]
+                },
+                "text": {
+                    "type": "string"
+                },
+                "publishedLabel": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "likesLabel": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "replyCount": {
+                    "type": "integer",
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                },
+                "repliesCursor": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "pinned": {
+                    "type": "boolean"
+                },
+                "byCreator": {
+                    "type": "boolean"
+                }
+            },
+            "title": "Comment"
+        },
+        "nl.neerdael.milkbeat.catalog.CommentsPage": {
+            "type": "object",
+            "required": [
+                "comments",
+                "sorts"
+            ],
+            "properties": {
+                "comments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.Comment"
+                    }
+                },
+                "next": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "sorts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.FilterOption"
+                    }
+                },
+                "totalLabel": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "CommentsPage"
+        },
+        "nl.neerdael.milkbeat.catalog.CommentsRequest": {
+            "type": "object",
+            "required": [
+                "entity"
+            ],
+            "properties": {
+                "entity": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
+                },
+                "sortId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "cursor": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "CommentsRequest"
+        },
+        "nl.neerdael.milkbeat.catalog.EntityKind": {
+            "enum": [
+                "TRACK",
+                "MUSIC_VIDEO",
+                "ALBUM",
+                "PLAYLIST",
+                "ARTIST",
+                "PROFILE",
+                "MIX",
+                "RADIO",
+                "VIDEO",
+                "CHANNEL"
+            ],
+            "title": "EntityKind"
+        },
+        "nl.neerdael.milkbeat.catalog.EntityRef": {
+            "type": "object",
+            "required": [
+                "kind",
+                "providerId"
+            ],
+            "properties": {
+                "kind": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityKind"
+                },
+                "providerId": {
+                    "type": "string"
+                }
+            },
+            "title": "EntityRef"
+        },
+        "nl.neerdael.milkbeat.catalog.FilterControl": {
+            "type": "object",
+            "required": [
+                "options"
+            ],
+            "properties": {
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.FilterOption"
+                    }
+                }
+            },
+            "title": "FilterControl"
+        },
+        "nl.neerdael.milkbeat.catalog.FilterOption": {
+            "type": "object",
+            "required": [
+                "id",
+                "label"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                }
+            },
+            "title": "FilterOption"
+        },
+        "nl.neerdael.milkbeat.catalog.HeaderStyle": {
+            "enum": [
+                "PORTRAIT",
+                "COVER"
+            ],
+            "title": "HeaderStyle"
+        },
+        "nl.neerdael.milkbeat.catalog.HomeRequest": {
+            "type": "object",
+            "required": [],
+            "properties": {
+                "filterId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "cursor": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "HomeRequest"
+        },
+        "nl.neerdael.milkbeat.catalog.ItemView": {
+            "enum": [
+                "COVER_CARD",
+                "LANDSCAPE_CARD",
+                "ARTIST_PORTRAIT",
+                "TRACK_ROW"
+            ],
+            "title": "ItemView"
+        },
+        "nl.neerdael.milkbeat.catalog.LibraryRequest": {
+            "type": "object",
+            "required": [],
+            "properties": {
+                "section": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "cursor": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "LibraryRequest"
+        },
+        "nl.neerdael.milkbeat.catalog.LiveChatBatch": {
+            "type": "object",
+            "required": [
+                "messages",
+                "pollAfterMs"
+            ],
+            "properties": {
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.LiveChatMessage"
+                    }
+                },
+                "next": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "pollAfterMs": {
+                    "type": "integer",
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
+                }
+            },
+            "title": "LiveChatBatch"
+        },
+        "nl.neerdael.milkbeat.catalog.LiveChatMessage": {
+            "type": "object",
+            "required": [
+                "id",
+                "author",
+                "text"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "author": {
+                    "type": "string"
+                },
+                "authorAvatar": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.Artwork"
+                        }
+                    ]
+                },
+                "text": {
+                    "type": "string"
+                },
+                "highlight": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "LiveChatMessage"
+        },
+        "nl.neerdael.milkbeat.catalog.LiveChatRequest": {
+            "type": "object",
+            "required": [
+                "entity"
+            ],
+            "properties": {
+                "entity": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
+                },
+                "cursor": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "LiveChatRequest"
+        },
+        "nl.neerdael.milkbeat.catalog.MetadataItem": {
+            "type": "object",
+            "required": [
+                "id",
+                "entity",
+                "title",
+                "artists",
+                "explicit",
+                "details",
+                "live"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "entity": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
+                },
+                "subtitle": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "artwork": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.Artwork"
+                        }
+                    ]
+                },
+                "view": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.ItemView"
+                        }
+                    ]
+                },
+                "artists": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.ArtistCredit"
+                    }
+                },
+                "durationSeconds": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                },
+                "explicit": {
+                    "type": "boolean"
+                },
+                "ordinal": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                },
+                "album": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "details": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "live": {
+                    "type": "boolean"
+                },
+                "track": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.TrackDescriptor"
+                        }
+                    ]
+                }
+            },
+            "title": "MetadataItem"
+        },
+        "nl.neerdael.milkbeat.catalog.MetadataPage": {
+            "type": "object",
+            "required": [
+                "id",
+                "blocks"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "blocks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.PageBlock"
+                    }
+                },
+                "filters": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.FilterControl"
+                        }
+                    ]
+                },
+                "nextCursor": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "MetadataPage"
+        },
+        "nl.neerdael.milkbeat.catalog.PageBlock": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/collection"
+                },
+                {
+                    "$ref": "#/$defs/header"
+                }
+            ],
+            "title": "PageBlock"
+        },
+        "nl.neerdael.milkbeat.catalog.PageRequest": {
+            "type": "object",
+            "required": [
+                "entity"
+            ],
+            "properties": {
+                "entity": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
+                },
+                "cursor": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "PageRequest"
+        },
+        "nl.neerdael.milkbeat.catalog.ProviderAccount": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/anonymous"
+                },
+                {
+                    "$ref": "#/$defs/expired"
+                },
+                {
+                    "$ref": "#/$defs/signedIn"
+                }
+            ],
+            "title": "ProviderAccount"
+        },
+        "nl.neerdael.milkbeat.catalog.RadioRequest": {
+            "type": "object",
+            "required": [
+                "seed"
+            ],
+            "properties": {
+                "seed": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
+                },
+                "cursor": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "RadioRequest"
+        },
+        "nl.neerdael.milkbeat.catalog.SearchRequest": {
+            "type": "object",
+            "required": [
+                "query",
+                "scope"
+            ],
+            "properties": {
+                "query": {
+                    "type": "string"
+                },
+                "scope": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.SearchScope"
+                },
+                "filterId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "cursor": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "SearchRequest"
+        },
+        "nl.neerdael.milkbeat.catalog.SearchScope": {
+            "enum": [
+                "MUSIC",
+                "VIDEO"
+            ],
+            "title": "SearchScope"
+        },
+        "nl.neerdael.milkbeat.catalog.SuggestRequest": {
+            "type": "object",
+            "required": [
+                "query",
+                "scope"
+            ],
+            "properties": {
+                "query": {
+                    "type": "string"
+                },
+                "scope": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.SearchScope"
+                }
+            },
+            "title": "SuggestRequest"
+        },
+        "nl.neerdael.milkbeat.catalog.Suggestions": {
+            "type": "object",
+            "required": [
+                "queries"
+            ],
+            "properties": {
+                "queries": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "title": "Suggestions"
+        },
+        "nl.neerdael.milkbeat.catalog.TrackDescriptor": {
+            "type": "object",
+            "required": [
+                "ref",
+                "title",
+                "artists",
+                "explicit",
+                "hasVideo",
+                "ids"
+            ],
+            "properties": {
+                "ref": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
+                },
+                "artists": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.ArtistCredit"
+                    }
+                },
+                "album": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "albumRef": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
+                        }
+                    ]
+                },
+                "durationMs": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
+                },
+                "explicit": {
+                    "type": "boolean"
+                },
+                "artwork": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.Artwork"
+                        }
+                    ]
+                },
+                "trackNumber": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                },
+                "discNumber": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                },
+                "year": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                },
+                "hasVideo": {
+                    "type": "boolean"
+                },
+                "ids": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "title": "LinkedHashMap<String,String>"
+                }
+            },
+            "title": "TrackDescriptor"
+        },
+        "nl.neerdael.milkbeat.catalog.TrackList": {
+            "type": "object",
+            "required": [
+                "tracks"
+            ],
+            "properties": {
+                "tracks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.TrackDescriptor"
+                    }
+                },
+                "next": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "source": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
+                        }
+                    ]
+                }
+            },
+            "title": "TrackList"
+        },
+        "nl.neerdael.milkbeat.catalog.TracksRequest": {
+            "type": "object",
+            "required": [
+                "entity"
+            ],
+            "properties": {
+                "entity": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
+                },
+                "cursor": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "TracksRequest"
+        },
+        "nl.neerdael.milkbeat.plugin.ApiRange": {
+            "type": "object",
+            "required": [
+                "min",
+                "target"
+            ],
+            "properties": {
+                "min": {
+                    "type": "integer",
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                },
+                "target": {
+                    "type": "integer",
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                }
+            },
+            "title": "ApiRange"
+        },
+        "nl.neerdael.milkbeat.plugin.AssetRequest": {
+            "type": "object",
+            "required": [
+                "path"
+            ],
+            "properties": {
+                "path": {
+                    "type": "string"
+                }
+            },
+            "title": "AssetRequest"
+        },
+        "nl.neerdael.milkbeat.plugin.AssetText": {
+            "type": "object",
+            "required": [
+                "text"
+            ],
+            "properties": {
+                "text": {
+                    "type": "string"
+                }
+            },
+            "title": "AssetText"
+        },
+        "nl.neerdael.milkbeat.plugin.AudioQuality": {
+            "enum": [
+                "AUTO",
+                "HIGH",
+                "MEDIUM",
+                "LOW"
+            ],
+            "title": "AudioQuality"
+        },
+        "nl.neerdael.milkbeat.plugin.AudioRole": {
+            "type": "object",
+            "required": [
+                "idSpaces",
+                "radio",
+                "musicVideo",
+                "reportPlayback"
+            ],
+            "properties": {
+                "idSpaces": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "uniqueItems": true
+                },
+                "radio": {
+                    "type": "boolean"
+                },
+                "musicVideo": {
+                    "type": "boolean"
+                },
+                "reportPlayback": {
+                    "type": "boolean"
+                }
+            },
+            "title": "AudioRole"
+        },
+        "nl.neerdael.milkbeat.plugin.AudioStream": {
+            "type": "object",
+            "required": [
+                "url",
+                "cacheKey",
+                "mimeType",
+                "headers"
+            ],
+            "properties": {
+                "url": {
+                    "type": "string"
+                },
+                "cacheKey": {
+                    "type": "string"
+                },
+                "mimeType": {
+                    "type": "string"
+                },
+                "codecs": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "bitrate": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                },
+                "contentLength": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
+                },
+                "headers": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "title": "LinkedHashMap<String,String>"
+                },
+                "expiresAtMs": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
+                },
+                "loudnessDb": {
+                    "type": [
+                        "number",
+                        "null"
+                    ],
+                    "minimum": -1.7976931348623157E308,
+                    "maximum": 1.7976931348623157E308
+                },
+                "trackingToken": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "video": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.MediaFormat"
+                        }
+                    ]
+                }
+            },
+            "title": "AudioStream"
+        },
+        "nl.neerdael.milkbeat.plugin.AudioTrackInfo": {
+            "type": "object",
+            "required": [
+                "id",
+                "original",
+                "drc"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "language": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "original": {
+                    "type": "boolean"
+                },
+                "drc": {
+                    "type": "boolean"
+                }
+            },
+            "title": "AudioTrackInfo"
+        },
+        "nl.neerdael.milkbeat.plugin.Author": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "Author"
+        },
+        "nl.neerdael.milkbeat.plugin.BrowserEvaluateRequest": {
+            "type": "object",
+            "required": [
+                "session",
+                "script"
+            ],
+            "properties": {
+                "session": {
+                    "type": "string"
+                },
+                "script": {
+                    "type": "string"
+                },
+                "timeoutMs": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
+                }
+            },
+            "title": "BrowserEvaluateRequest"
+        },
+        "nl.neerdael.milkbeat.plugin.BrowserOpenRequest": {
+            "type": "object",
+            "required": [],
+            "properties": {
+                "url": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "html": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "baseUrl": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "timeoutMs": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
+                }
+            },
+            "title": "BrowserOpenRequest"
+        },
+        "nl.neerdael.milkbeat.plugin.BrowserResult": {
+            "type": "object",
+            "required": [
+                "value"
+            ],
+            "properties": {
+                "value": {
+                    "type": "string"
+                }
+            },
+            "title": "BrowserResult"
+        },
+        "nl.neerdael.milkbeat.plugin.BrowserSession": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                }
+            },
+            "title": "BrowserSession"
+        },
+        "nl.neerdael.milkbeat.plugin.ByteRange": {
+            "type": "object",
+            "required": [
+                "start",
+                "end"
+            ],
+            "properties": {
+                "start": {
+                    "type": "integer",
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
+                },
+                "end": {
+                    "type": "integer",
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
+                }
+            },
+            "title": "ByteRange"
+        },
+        "nl.neerdael.milkbeat.plugin.CaptionTrack": {
+            "type": "object",
+            "required": [
+                "url",
+                "language",
+                "name",
+                "autoGenerated",
+                "mimeType"
+            ],
+            "properties": {
+                "url": {
+                    "type": "string"
+                },
+                "language": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "autoGenerated": {
+                    "type": "boolean"
+                },
+                "mimeType": {
+                    "type": "string"
+                }
+            },
+            "title": "CaptionTrack"
+        },
+        "nl.neerdael.milkbeat.plugin.Chapter": {
+            "type": "object",
+            "required": [
+                "title",
+                "startMs"
+            ],
+            "properties": {
+                "startMs": {
+                    "type": "integer",
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
+                }
+            },
+            "title": "Chapter"
+        },
+        "nl.neerdael.milkbeat.plugin.CodeLoadRequest": {
+            "type": "object",
+            "required": [
+                "key",
+                "source"
+            ],
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                }
+            },
+            "title": "CodeLoadRequest"
+        },
+        "nl.neerdael.milkbeat.plugin.FormatType": {
+            "enum": [
+                "AUDIO",
+                "VIDEO"
+            ],
+            "title": "FormatType"
+        },
+        "nl.neerdael.milkbeat.plugin.HashAlgorithm": {
+            "enum": [
+                "SHA1",
+                "SHA256"
+            ],
+            "title": "HashAlgorithm"
+        },
+        "nl.neerdael.milkbeat.plugin.HashRequest": {
+            "type": "object",
+            "required": [
+                "algorithm",
+                "text"
+            ],
+            "properties": {
+                "algorithm": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.HashAlgorithm"
+                },
+                "text": {
+                    "type": "string"
+                }
+            },
+            "title": "HashRequest"
+        },
+        "nl.neerdael.milkbeat.plugin.HashResult": {
+            "type": "object",
+            "required": [
+                "hex"
+            ],
+            "properties": {
+                "hex": {
+                    "type": "string"
+                }
+            },
+            "title": "HashResult"
+        },
+        "nl.neerdael.milkbeat.plugin.HostEnvironment": {
+            "type": "object",
+            "required": [
+                "apiVersion",
+                "appVersion",
+                "locale",
+                "region",
+                "deviceClass",
+                "pluginVersion"
+            ],
+            "properties": {
+                "apiVersion": {
+                    "type": "integer",
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                },
+                "appVersion": {
+                    "type": "string"
+                },
+                "locale": {
+                    "type": "string"
+                },
+                "region": {
+                    "type": "string"
+                },
+                "deviceClass": {
+                    "type": "string"
+                },
+                "pluginVersion": {
+                    "type": "string"
+                }
+            },
+            "title": "HostEnvironment"
+        },
+        "nl.neerdael.milkbeat.plugin.HttpRequest": {
+            "type": "object",
+            "required": [
+                "url",
+                "method",
+                "headers",
+                "followRedirects"
+            ],
+            "properties": {
+                "url": {
+                    "type": "string"
+                },
+                "method": {
+                    "type": "string"
+                },
+                "headers": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "title": "LinkedHashMap<String,String>"
+                },
+                "body": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "timeoutMs": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
+                },
+                "followRedirects": {
+                    "type": "boolean"
+                }
+            },
+            "title": "HttpRequest"
+        },
+        "nl.neerdael.milkbeat.plugin.HttpResponse": {
+            "type": "object",
+            "required": [
+                "status",
+                "url",
+                "headers",
+                "body"
+            ],
+            "properties": {
+                "status": {
+                    "type": "integer",
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                },
+                "url": {
+                    "type": "string"
+                },
+                "headers": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "title": "LinkedHashMap<String,String>"
+                },
+                "body": {
+                    "type": "string"
+                }
+            },
+            "title": "HttpResponse"
+        },
+        "nl.neerdael.milkbeat.plugin.LogLevel": {
+            "enum": [
+                "DEBUG",
+                "INFO",
+                "WARN",
+                "ERROR"
+            ],
+            "title": "LogLevel"
+        },
+        "nl.neerdael.milkbeat.plugin.LogRequest": {
+            "type": "object",
+            "required": [
+                "level",
+                "message"
+            ],
+            "properties": {
+                "level": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.LogLevel"
+                },
+                "message": {
+                    "type": "string"
+                }
+            },
+            "title": "LogRequest"
+        },
+        "nl.neerdael.milkbeat.plugin.MediaFormat": {
+            "type": "object",
+            "required": [
+                "id",
+                "type",
+                "url",
+                "mimeType",
+                "hdr"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.FormatType"
+                },
+                "url": {
+                    "type": "string"
+                },
+                "mimeType": {
+                    "type": "string"
+                },
+                "codecs": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "width": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                },
+                "height": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                },
+                "fps": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                },
+                "bitrate": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                },
+                "averageBitrate": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                },
+                "contentLength": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
+                },
+                "durationMs": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
+                },
+                "initRange": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.ByteRange"
+                        }
+                    ]
+                },
+                "indexRange": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.ByteRange"
+                        }
+                    ]
+                },
+                "qualityLabel": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "hdr": {
+                    "type": "boolean"
+                },
+                "audioTrack": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.AudioTrackInfo"
+                        }
+                    ]
+                }
+            },
+            "title": "MediaFormat"
+        },
+        "nl.neerdael.milkbeat.plugin.MetadataRole": {
+            "type": "object",
+            "required": [
+                "surfaces",
+                "entities",
+                "idSpace"
+            ],
+            "properties": {
+                "surfaces": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.MetadataSurface"
+                    },
+                    "uniqueItems": true
+                },
+                "entities": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityKind"
+                    },
+                    "uniqueItems": true
+                },
+                "idSpace": {
+                    "type": "string"
+                }
+            },
+            "title": "MetadataRole"
+        },
+        "nl.neerdael.milkbeat.plugin.MetadataSurface": {
+            "enum": [
+                "HOME",
+                "SEARCH",
+                "SUGGEST",
+                "ENTITY",
+                "TRACKS",
+                "LIBRARY",
+                "RADIO"
+            ],
+            "title": "MetadataSurface"
+        },
+        "nl.neerdael.milkbeat.plugin.Permissions": {
+            "type": "object",
+            "required": [
+                "network",
+                "browser",
+                "storage"
+            ],
+            "properties": {
+                "network": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "browser": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "storage": {
+                    "type": "integer",
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
+                }
+            },
+            "title": "Permissions"
+        },
+        "nl.neerdael.milkbeat.plugin.PluginError": {
+            "type": "object",
+            "required": [
+                "code",
+                "message"
+            ],
+            "properties": {
+                "code": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.PluginErrorCode"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "retryAfterMs": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
+                }
+            },
+            "title": "PluginError"
+        },
+        "nl.neerdael.milkbeat.plugin.PluginErrorCode": {
+            "enum": [
+                "NOT_FOUND",
+                "UNAVAILABLE",
+                "SIGN_IN_REQUIRED",
+                "SIGN_IN_EXPIRED",
+                "RATE_LIMITED",
+                "NETWORK",
+                "UNSUPPORTED",
+                "INTERNAL"
+            ],
+            "title": "PluginErrorCode"
+        },
+        "nl.neerdael.milkbeat.plugin.PluginManifest": {
+            "type": "object",
+            "required": [
+                "format",
+                "api",
+                "id",
+                "name",
+                "version",
+                "versionCode",
+                "entry",
+                "roles",
+                "signIn",
+                "permissions",
+                "settings"
+            ],
+            "properties": {
+                "format": {
+                    "type": "integer",
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                },
+                "api": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.ApiRange"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                },
+                "versionCode": {
+                    "type": "integer",
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "author": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.Author"
+                        }
+                    ]
+                },
+                "updateUrl": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "entry": {
+                    "type": "string"
+                },
+                "icon": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "roles": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.Roles"
+                },
+                "signIn": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.WebLoginMethod"
+                    }
+                },
+                "permissions": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.Permissions"
+                },
+                "settings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.SettingDefinition"
+                    }
+                }
+            },
+            "title": "PluginManifest"
+        },
+        "nl.neerdael.milkbeat.plugin.ReportPlaybackRequest": {
+            "type": "object",
+            "required": [
+                "entity",
+                "playedMs"
+            ],
+            "properties": {
+                "entity": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
+                },
+                "trackingToken": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "playedMs": {
+                    "type": "integer",
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
+                },
+                "durationMs": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
+                }
+            },
+            "title": "ReportPlaybackRequest"
+        },
+        "nl.neerdael.milkbeat.plugin.ResolveAudioRequest": {
+            "type": "object",
+            "required": [
+                "track",
+                "quality",
+                "video",
+                "videoCodecs",
+                "retry"
+            ],
+            "properties": {
+                "track": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.TrackDescriptor"
+                },
+                "quality": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.AudioQuality"
+                },
+                "video": {
+                    "type": "boolean"
+                },
+                "maxVideoHeight": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                },
+                "videoCodecs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "language": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "retry": {
+                    "type": "boolean"
+                }
+            },
+            "title": "ResolveAudioRequest"
+        },
+        "nl.neerdael.milkbeat.plugin.ResolveVideoRequest": {
+            "type": "object",
+            "required": [
+                "entity",
+                "codecs",
+                "retry"
+            ],
+            "properties": {
+                "entity": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
+                },
+                "maxHeight": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                },
+                "codecs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "language": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "retry": {
+                    "type": "boolean"
+                }
+            },
+            "title": "ResolveVideoRequest"
+        },
+        "nl.neerdael.milkbeat.plugin.Roles": {
+            "type": "object",
+            "required": [],
+            "properties": {
+                "metadata": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.MetadataRole"
+                        }
+                    ]
+                },
+                "audio": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.AudioRole"
+                        }
+                    ]
+                },
+                "video": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.VideoRole"
+                        }
+                    ]
+                }
+            },
+            "title": "Roles"
+        },
+        "nl.neerdael.milkbeat.plugin.SettingDefinition": {
+            "type": "object",
+            "required": [
+                "key",
+                "type",
+                "label",
+                "options",
+                "dynamicOptions"
+            ],
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.SettingType"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "default": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.SettingOption"
+                    }
+                },
+                "dynamicOptions": {
+                    "type": "boolean"
+                }
+            },
+            "title": "SettingDefinition"
+        },
+        "nl.neerdael.milkbeat.plugin.SettingOption": {
+            "type": "object",
+            "required": [
+                "value",
+                "label"
+            ],
+            "properties": {
+                "value": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                }
+            },
+            "title": "SettingOption"
+        },
+        "nl.neerdael.milkbeat.plugin.SettingOptionsRequest": {
+            "type": "object",
+            "required": [
+                "key"
+            ],
+            "properties": {
+                "key": {
+                    "type": "string"
+                }
+            },
+            "title": "SettingOptionsRequest"
+        },
+        "nl.neerdael.milkbeat.plugin.SettingType": {
+            "enum": [
+                "TOGGLE",
+                "CHOICE",
+                "TEXT"
+            ],
+            "title": "SettingType"
+        },
+        "nl.neerdael.milkbeat.plugin.SkipSegment": {
+            "type": "object",
+            "required": [
+                "startMs",
+                "endMs",
+                "category"
+            ],
+            "properties": {
+                "startMs": {
+                    "type": "integer",
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
+                },
+                "endMs": {
+                    "type": "integer",
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
+                },
+                "category": {
+                    "type": "string"
+                }
+            },
+            "title": "SkipSegment"
+        },
+        "nl.neerdael.milkbeat.plugin.StorageEntry": {
+            "type": "object",
+            "required": [
+                "key",
+                "value"
+            ],
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            },
+            "title": "StorageEntry"
+        },
+        "nl.neerdael.milkbeat.plugin.StorageKey": {
+            "type": "object",
+            "required": [
+                "key"
+            ],
+            "properties": {
+                "key": {
+                    "type": "string"
+                }
+            },
+            "title": "StorageKey"
+        },
+        "nl.neerdael.milkbeat.plugin.StoredValue": {
+            "type": "object",
+            "required": [],
+            "properties": {
+                "value": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "StoredValue"
+        },
+        "nl.neerdael.milkbeat.plugin.VideoDetails": {
+            "type": "object",
+            "required": [
+                "entity",
+                "title",
+                "keywords"
+            ],
+            "properties": {
+                "entity": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
+                },
+                "channelName": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "channel": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
+                        }
+                    ]
+                },
+                "channelAvatar": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.Artwork"
+                        }
+                    ]
+                },
+                "durationSeconds": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "viewsLabel": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "publishedLabel": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "artwork": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.Artwork"
+                        }
+                    ]
+                },
+                "keywords": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "title": "VideoDetails"
+        },
+        "nl.neerdael.milkbeat.plugin.VideoKind": {
+            "enum": [
+                "VOD",
+                "LIVE",
+                "UPCOMING"
+            ],
+            "title": "VideoKind"
+        },
+        "nl.neerdael.milkbeat.plugin.VideoPlayback": {
+            "type": "object",
+            "required": [
+                "kind",
+                "details",
+                "formats",
+                "captions",
+                "chapters",
+                "skipSegments",
+                "headers"
+            ],
+            "properties": {
+                "kind": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.VideoKind"
+                },
+                "details": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.VideoDetails"
+                },
+                "formats": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.MediaFormat"
+                    }
+                },
+                "hlsUrl": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "dashUrl": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "captions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.CaptionTrack"
+                    }
+                },
+                "chapters": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.Chapter"
+                    }
+                },
+                "skipSegments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.SkipSegment"
+                    }
+                },
+                "headers": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "title": "LinkedHashMap<String,String>"
+                },
+                "expiresAtMs": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
+                },
+                "startsAtMs": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
+                },
+                "trackingToken": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "VideoPlayback"
+        },
+        "nl.neerdael.milkbeat.plugin.VideoRole": {
+            "type": "object",
+            "required": [
+                "idSpace",
+                "surfaces",
+                "live",
+                "reportPlayback"
+            ],
+            "properties": {
+                "idSpace": {
+                    "type": "string"
+                },
+                "surfaces": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.VideoSurface"
+                    },
+                    "uniqueItems": true
+                },
+                "live": {
+                    "type": "boolean"
+                },
+                "reportPlayback": {
+                    "type": "boolean"
+                }
+            },
+            "title": "VideoRole"
+        },
+        "nl.neerdael.milkbeat.plugin.VideoSurface": {
+            "enum": [
+                "SEARCH",
+                "SUGGEST",
+                "CHANNEL",
+                "PLAYLIST",
+                "RELATED",
+                "COMMENTS",
+                "LIVE_CHAT"
+            ],
+            "title": "VideoSurface"
+        },
+        "nl.neerdael.milkbeat.plugin.WebLoginMethod": {
+            "type": "object",
+            "required": [
+                "id",
+                "label",
+                "startUrl",
+                "successUrlPrefix",
+                "cookieUrl",
+                "requiredCookies"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "startUrl": {
+                    "type": "string"
+                },
+                "successUrlPrefix": {
+                    "type": "string"
+                },
+                "cookieUrl": {
+                    "type": "string"
+                },
+                "requiredCookies": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "extractScript": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "WebLoginMethod"
+        },
+        "nl.neerdael.milkbeat.plugin.WebLoginResult": {
+            "type": "object",
+            "required": [
+                "method",
+                "cookies",
+                "extracted"
+            ],
+            "properties": {
+                "method": {
+                    "type": "string"
+                },
+                "cookies": {
+                    "type": "string"
+                },
+                "extracted": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "title": "LinkedHashMap<String,String>"
+                }
+            },
+            "title": "WebLoginResult"
+        },
+        "signedIn": {
+            "type": "object",
+            "required": [
+                "type",
+                "key"
+            ],
+            "properties": {
+                "type": {
+                    "const": "signedIn"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "avatar": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.Artwork"
+                        }
+                    ]
+                }
+            },
+            "title": "ProviderAccountSignedIn"
+        }
+    }
+}

@@ -1,9 +1,13 @@
 package nl.neerdael.milkbeat.catalog
 
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
 /**
  * One page of a provider's catalog, as an ordered list of typed blocks. The provider chooses the
  * blocks, their order, layouts and item views; Milkbeat chooses how they look on screen.
  */
+@Serializable
 data class MetadataPage(
     val id: String,
     val blocks: List<PageBlock>,
@@ -11,6 +15,7 @@ data class MetadataPage(
     val nextCursor: String? = null,
 )
 
+@Serializable
 sealed interface PageBlock {
     val id: String
 }
@@ -19,6 +24,8 @@ sealed interface PageBlock {
  * A titled or untitled run of items in one [layout]. Items use [defaultItemView] unless they name
  * their own, so one shelf can mix round artists, square covers and wide videos.
  */
+@Serializable
+@SerialName("collection")
 data class CollectionBlock(
     override val id: String,
     val header: CollectionHeader?,
@@ -32,6 +39,8 @@ data class CollectionBlock(
  * What a page is about: an artist's portrait, or a collection's cover, with its details. [tracks] is
  * the collection that holds the page's tracks in order, and [station] a radio built from the entity.
  */
+@Serializable
+@SerialName("header")
 data class EntityHeader(
     override val id: String,
     val style: HeaderStyle,
@@ -45,12 +54,14 @@ data class EntityHeader(
     val station: EntityRef? = null,
 ) : PageBlock
 
+@Serializable
 enum class HeaderStyle {
     PORTRAIT,
     COVER,
 }
 
 /** Who made the entity, as in the artist above an album's title. */
+@Serializable
 data class Attribution(
     val name: String,
     val avatar: Artwork? = null,
@@ -61,6 +72,7 @@ data class Attribution(
  * A collection's title, with an optional context line and avatar, as in "SIMILAR TO / Massano".
  * [target] is what the title names, such as that artist.
  */
+@Serializable
 data class CollectionHeader(
     val title: String,
     val context: String? = null,
@@ -68,6 +80,7 @@ data class CollectionHeader(
     val target: EntityRef? = null,
 )
 
+@Serializable
 enum class CollectionLayout {
     HORIZONTAL_SHELF,
 
@@ -78,6 +91,7 @@ enum class CollectionLayout {
     TRACK_TABLE,
 }
 
+@Serializable
 enum class ItemView {
     COVER_CARD,
     LANDSCAPE_CARD,
@@ -86,10 +100,12 @@ enum class ItemView {
 }
 
 /** Page-level filter chips, such as a home feed's moods. Option ids are opaque to the host. */
+@Serializable
 data class FilterControl(
     val options: List<FilterOption>,
 )
 
+@Serializable
 data class FilterOption(
     val id: String,
     val label: String,

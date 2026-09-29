@@ -52,3 +52,6 @@ Flow-desktop/
 
 # Local network captures and screenshots (may contain live tokens)
 debug/
+
+# Plugin tooling
+node_modules/

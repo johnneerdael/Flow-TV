@@ -34,7 +34,7 @@ spotless {
         target(
             "app/src/**/*.kt",
             "benchmark/src/**/*.kt",
-            "catalog-api/src/**/*.kt",
+            "plugin-api/src/**/*.kt",
             "spike-plugin-runtime/src/**/*.kt",
         )
         targetExclude(
@@ -49,7 +49,7 @@ spotless {
             "*.gradle.kts",
             "app/*.gradle.kts",
             "benchmark/*.gradle.kts",
-            "catalog-api/*.gradle.kts",
+            "plugin-api/*.gradle.kts",
             "spike-plugin-runtime/*.gradle.kts",
         )
         targetExclude(
