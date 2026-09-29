@@ -439,10 +439,9 @@ object EnhancedMusicPlayerManager {
     }
 
     /**
-     * A device file plays from its MediaStore URI; a music video as picture and sound, whether or not
-     * its picture is shown; everything else resolves through `music://`.
+     * Where [track] plays from: a device file from its MediaStore URI; anything else from its
+     * descriptor, which the audio plugins resolve, with the picture too for a music video that shows one.
      */
-    /** Where [track] plays from: its local file, or its descriptor for the audio plugins. */
     fun streamUri(track: MusicTrack): Uri =
         LocalMediaIds.audioUri(track.videoId)
             ?: MusicVideoItems.uri(track, withPicture = carriesPicture(track))
