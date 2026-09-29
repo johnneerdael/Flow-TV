@@ -2724,6 +2724,10 @@
     <string name="tv_error_loading">Couldn\'t load content</string>
     <string name="tv_search_empty">Search for songs, artists, albums or videos</string>
     <string name="tv_search_no_results">No videos found</string>
+    <string name="tv_search_no_music_results">No music found</string>
+    <string name="tv_search_no_music_plugin">No music plugin is chosen</string>
+    <string name="tv_search_no_video_plugin">No video plugin is chosen</string>
+    <string name="tv_search_no_plugin_message">Choose one in Settings, Plugins to search here.</string>
     <string name="tv_library_history">History</string>
     <string name="tv_library_playlists">Playlists</string>
     <string name="tv_library_empty">Your library is empty</string>

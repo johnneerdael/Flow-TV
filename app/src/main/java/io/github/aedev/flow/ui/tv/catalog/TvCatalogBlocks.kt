@@ -32,7 +32,8 @@ import nl.neerdael.milkbeat.catalog.PageBlock
 
 /**
  * What a catalog page's items and buttons do. The screen owns playback and navigation; [trackFor]
- * says which items the player can take. [follow] is offered on artist headers when set.
+ * says which items the player can take. [follow] is offered on artist headers when set, and
+ * [onShowAllFilter] re-runs the page with a collection's `showAllFilterId`, as a search does.
  */
 internal class TvCatalogActions(
     val trackFor: (MetadataItem) -> MusicTrack?,
@@ -40,7 +41,14 @@ internal class TvCatalogActions(
     val onPlayList: (track: MusicTrack, queue: List<MusicTrack>, source: String, radioPlaylistId: String?) -> Unit,
     val onOpen: (EntityRef) -> Unit,
     val follow: TvCatalogFollow? = null,
-)
+    val onShowAllFilter: ((String) -> Unit)? = null,
+) {
+    /** A song picked on its own plays with its mix; anything else opens. */
+    fun pick(item: MetadataItem) {
+        val track = trackFor(item)
+        if (track != null) onPlayMix(track) else onOpen(item.entity)
+    }
+}
 
 internal class TvCatalogFollow(
     val isFollowing: () -> Boolean,
@@ -57,7 +65,7 @@ internal class TvCatalogTableLayout(
 /**
  * Every block of a catalog page, in order, as lazy list items. A song picked from a shelf plays with
  * its own mix; a track picked from a table plays the table from there, continuing with the mix of
- * the collection the page is about.
+ * the collection the page is about. The collection named [gridBlockId] is laid out as a grid.
  */
 internal fun LazyListScope.catalogBlocks(
     blocks: List<PageBlock>,
@@ -65,6 +73,7 @@ internal fun LazyListScope.catalogBlocks(
     horizontalPadding: Dp,
     firstBlockModifier: Modifier = Modifier,
     tables: TvCatalogTableLayout? = null,
+    gridBlockId: String? = null,
 ) {
     val pageHeader = blocks.firstNotNullOfOrNull { it as? EntityHeader }
     val firstTable = blocks.firstOrNull { it.isTrackTable }
@@ -77,7 +86,9 @@ internal fun LazyListScope.catalogBlocks(
             }
 
             is CollectionBlock -> {
-                if (block.layout == CollectionLayout.TRACK_TABLE) {
+                if (block.id == gridBlockId) {
+                    catalogGrid(block, actions, horizontalPadding)
+                } else if (block.layout == CollectionLayout.TRACK_TABLE) {
                     val queueId = (pageHeader?.tracks ?: block.showAll)?.providerId
                     val source = block.header?.title ?: pageHeader?.title.orEmpty()
                     catalogTrackTable(
@@ -87,6 +98,7 @@ internal fun LazyListScope.catalogBlocks(
                         startPadding = horizontalPadding + (tables?.startInset ?: 0.dp),
                         endPadding = horizontalPadding,
                         firstRowFocus = tables?.firstTrack.takeIf { block === firstTable },
+                        onShowAllFilter = actions.onShowAllFilter,
                     )
                 } else {
                     val shelfModifier =
@@ -211,5 +223,6 @@ private fun TvCatalogShelfBlock(
                 .takeIf { queue.isNotEmpty() && queue.size == collection.items.size },
         onOpen = actions.onOpen,
         modifier = modifier,
+        onShowAllFilter = actions.onShowAllFilter,
     )
 }

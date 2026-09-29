@@ -33,7 +33,6 @@ import io.github.aedev.flow.player.EnhancedMusicPlayerManager
 import io.github.aedev.flow.player.GlobalPlayerState
 import io.github.aedev.flow.ui.screens.music.MusicPlayerViewModel
 import io.github.aedev.flow.ui.screens.player.VideoPlayerViewModel
-import io.github.aedev.flow.ui.screens.search.SearchViewModel
 import io.github.aedev.flow.ui.tv.music.TvMusicNowPlayingScreen
 import io.github.aedev.flow.ui.tv.music.TvVisualizerViewModel
 import io.github.aedev.flow.ui.tv.music.rememberTvNowPlayingVisual
@@ -56,7 +55,6 @@ fun FlowTvApp(
     val context = LocalContext.current
     val activity = context as ComponentActivity
     val playerViewModel: VideoPlayerViewModel = hiltViewModel(activity)
-    val searchViewModel: SearchViewModel = hiltViewModel(activity)
     val musicPlayerViewModel: MusicPlayerViewModel = hiltViewModel(activity)
     val visualizerViewModel: TvVisualizerViewModel = hiltViewModel(activity)
     val visualizerActive by visualizerViewModel.active.collectAsStateWithLifecycle()
@@ -199,7 +197,6 @@ fun FlowTvApp(
                         onPlayTrack = ::playTrack,
                         onPlayMix = ::playMix,
                         onPlayCollection = ::playCollection,
-                        searchViewModel = searchViewModel,
                         onPlayVideo = ::play,
                         onPlayPlaylist = ::playPlaylist,
                         activeMusicTrack = visibleMusicTrack,
