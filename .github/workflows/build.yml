@@ -109,6 +109,38 @@ jobs:
           npm ci --no-audit --no-fund
           npm run --workspaces --if-present check
 
+      # First-party plugins ship beside the APK, signed with the plugin author key. Main builds are
+      # published, and a plugin the app cannot verify is useless, so they refuse to go without it.
+      - name: Build and sign first-party plugins
+        env:
+          PLUGIN_SIGNING_KEY: ${{ secrets.PLUGIN_SIGNING_KEY }}
+        run: |
+          set -euo pipefail
+          cd plugins/youtube-music
+          npm test
+          if [ -n "$PLUGIN_SIGNING_KEY" ]; then
+            key="$RUNNER_TEMP/plugins-signing.pem"
+            printf '%s\n' "$PLUGIN_SIGNING_KEY" > "$key"
+            chmod 600 "$key"
+            MBPLUGIN_KEY="$key" npm run pack
+            rm -f "$key"
+          elif [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
+            echo "::error::PLUGIN_SIGNING_KEY is unavailable. Refusing to publish unsigned plugins."
+            exit 1
+          else
+            echo "Plugin signing key is not available; plugins are built and tested but not packed."
+          fi
+
+      - name: Upload first-party plugins
+        if: ${{ hashFiles('plugins/youtube-music/build/*.mbplugin') != '' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: milkbeat-plugins
+          path: plugins/youtube-music/build/*.mbplugin
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+
       # Instrumentation tests are not executed in CI, but they must still
       # compile: breakage here otherwise lands on main unnoticed.
       - name: Compile instrumentation tests
@@ -245,6 +277,12 @@ jobs:
           path: dist/
           merge-multiple: true
 
+      - name: Download first-party plugins
+        uses: actions/download-artifact@v8
+        with:
+          name: milkbeat-plugins
+          path: dist/
+
       - name: Rename APKs for release
         run: |
           set -euo pipefail
@@ -253,7 +291,7 @@ jobs:
           mv dist/app-github-armeabi-v7a-release.apk   dist/milkbeat-armeabi-v7a.apk
           # Downloader code 4718521 and older links point at the MusicViz-era name; keep serving it.
           cp dist/milkbeat-universal.apk dist/musicviz-universal.apk
-          cd dist && sha256sum milkbeat*.apk > checksums.txt && cat checksums.txt
+          cd dist && sha256sum milkbeat*.apk *.mbplugin > checksums.txt && cat checksums.txt
 
       - name: Write release notes
         env:
@@ -276,6 +314,12 @@ jobs:
             echo "- **Direct link (always the latest):** $latest/milkbeat-universal.apk"
             echo
             echo "Per-ABI APKs (\`milkbeat-arm64-v8a.apk\`, \`milkbeat-armeabi-v7a.apk\`) and \`checksums.txt\` are attached below."
+            echo
+            echo "## Plugins"
+            echo
+            echo "Milkbeat plays nothing until a plugin is added (Settings > Plugins > Add a plugin):"
+            echo
+            echo "- **YouTube Music and YouTube:** $latest/youtube-music.mbplugin"
             if [ -n "$prev" ]; then
               echo
               echo "**Full changelog:** https://github.com/$REPO/compare/$prev...$TAG"
@@ -296,6 +340,7 @@ jobs:
             dist/milkbeat-arm64-v8a.apk
             dist/milkbeat-armeabi-v7a.apk
             dist/musicviz-universal.apk
+            dist/youtube-music.mbplugin
             dist/checksums.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
