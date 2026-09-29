@@ -22,14 +22,6 @@ class AccountFeedClientTest {
     @After fun tearDown() = scope.cancel()
 
     @Test
-    fun `signed out yields no tube and a signed-out failure`() =
-        runBlocking {
-            val client = AccountFeedClient(testAccountSessionStore(tmp.root, scope))
-            assertThat(client.tube()).isNull()
-            assertThat(client.musicHome().exceptionOrNull()).isInstanceOf(AccountSignedOutException::class.java)
-        }
-
-    @Test
     fun `the tube carries the session and the anonymous YouTube does not`() =
         runBlocking {
             val store = testAccountSessionStore(tmp.root, scope).also { it.save(session) }
@@ -80,11 +72,4 @@ class AccountFeedClientTest {
             val store = testAccountSessionStore(tmp.root, scope).also { it.save(session) }
             assertThat(AccountFeedClient(store).tube()!!.cacheDirectory?.name).isEqualTo("account_http_cache")
         }
-
-    @Test
-    fun `a missing active account means the session is signed out, a network error does not`() {
-        assertThat(isSignedOutFailure(NullPointerException())).isTrue()
-        assertThat(isSignedOutFailure(AccountSessionExpiredException())).isTrue()
-        assertThat(isSignedOutFailure(java.io.IOException("offline"))).isFalse()
-    }
 }

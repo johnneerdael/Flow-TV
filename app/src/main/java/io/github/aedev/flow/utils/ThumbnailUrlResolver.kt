@@ -13,11 +13,6 @@ object ThumbnailUrlResolver {
         return if (id.isEmpty() || LocalMediaIds.isLocal(id)) "" else "https://i.ytimg.com/vi/$id/hq720.jpg"
     }
 
-    fun buildFallbackYoutubeThumbnail(videoId: String): String {
-        val id = videoId.trim()
-        return if (id.isEmpty() || LocalMediaIds.isLocal(id)) "" else "https://i.ytimg.com/vi/$id/hqdefault.jpg"
-    }
-
     fun buildMaxResYoutubeThumbnail(videoId: String): String {
         val id = videoId.trim()
         return if (id.isEmpty()) "" else "https://i.ytimg.com/vi/$id/maxresdefault.jpg"
@@ -113,32 +108,6 @@ object ThumbnailUrlResolver {
         }
     }
 
-    fun resolveChannelBanner(
-        rawUrl: String?,
-        targetWidth: Int = 1060,
-    ): String {
-        val raw = rawUrl?.trim().orEmpty()
-        if (raw.isEmpty()) return ""
-
-        val isGoogleCdn = raw.contains("googleusercontent.com") || raw.contains("ggpht.com")
-        if (!isGoogleCdn) return raw
-
-        val sizeParamRegex = Regex("""=([wsh])\d+""")
-        val match = sizeParamRegex.find(raw)
-        if (match != null) {
-            val paramType = match.groupValues[1]
-            return raw.replaceFirst(match.value, "=$paramType$targetWidth")
-        }
-
-        val paramStart = googleCdnParamStartPattern.find(raw)?.range?.first
-        return if (paramStart != null) {
-            val baseUrl = raw.substring(0, paramStart)
-            "$baseUrl=w$targetWidth"
-        } else {
-            "$raw=w$targetWidth"
-        }
-    }
-
     /**
      * Edge length for channel avatars on list/card surfaces, where they render at roughly
      * 24-48 dp. 176 px stays sharp past 4x density while requesting ~8x fewer pixels than the
@@ -169,45 +138,6 @@ object ThumbnailUrlResolver {
         val paramStart = googleCdnParamStartPattern.find(raw)?.range?.first
         val baseUrl = if (paramStart != null) raw.substring(0, paramStart) else raw
         return "$baseUrl=s$size"
-    }
-
-    fun resolveCommunityPostImage(
-        rawUrl: String?,
-        targetWidth: Int = 2048,
-    ): String {
-        val raw =
-            rawUrl?.trim().orEmpty().let { url ->
-                if (url.startsWith("//")) "https:$url" else url
-            }
-        if (raw.isEmpty()) return ""
-
-        val isGoogleCdn = raw.contains("googleusercontent.com") || raw.contains("ggpht.com")
-        if (!isGoogleCdn) return raw
-
-        val sizeParamRegex = Regex("""=([wsh])\d+""")
-        sizeParamRegex.find(raw)?.let { match ->
-            return raw.replaceFirst(match.value, "=w$targetWidth")
-        }
-        val paramStart = googleCdnParamStartPattern.find(raw)?.range?.first
-        val baseUrl = if (paramStart != null) raw.substring(0, paramStart) else raw
-        return "$baseUrl=w$targetWidth"
-    }
-
-    fun fallbackVideoThumbnail(
-        videoId: String,
-        rawUrl: String?,
-    ): String? {
-        val raw = rawUrl?.trim().orEmpty()
-        val resolvedVideoId =
-            youtubeVideoThumbnailPattern
-                .find(raw)
-                ?.groupValues
-                ?.getOrNull(1)
-                ?.takeIf { it.isNotBlank() }
-                ?: videoId.trim()
-
-        val fallback = buildFallbackYoutubeThumbnail(resolvedVideoId)
-        return fallback.takeIf { it.isNotEmpty() && it != raw }
     }
 
     fun isYoutubeVideoThumbnail(rawUrl: String?): Boolean {

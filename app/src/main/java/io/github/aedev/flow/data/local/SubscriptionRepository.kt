@@ -152,54 +152,6 @@ class SubscriptionRepository private constructor(
             }
         }
 
-    /**
-     * Get all subscription IDs as a Set
-     */
-    suspend fun getAllSubscriptionIds(): Set<String> {
-        val orderString =
-            context.subscriptionsDataStore.data
-                .map { preferences ->
-                    preferences[stringPreferencesKey(SUBSCRIPTIONS_ORDER_KEY)] ?: ""
-                }.first()
-
-        return if (orderString.isEmpty()) {
-            emptySet()
-        } else {
-            orderString.split(",").toSet()
-        }
-    }
-
-    /**
-     * Channels this device has explicitly unsubscribed from, mapped to when it happened.
-     *
-     * Device sync ships these as tombstones. Without them an unsubscribe is indistinguishable from
-     * "never subscribed", and the peer that still holds the channel puts it straight back.
-     */
-    suspend fun unsubscribedTombstones(): Map<String, Long> =
-        context.subscriptionsDataStore.data
-            .map { preferences ->
-                preferences
-                    .asMap()
-                    .mapNotNull { (key, value) ->
-                        if (!key.name.startsWith(UNSUBSCRIBED_PREFIX)) return@mapNotNull null
-                        val at = (value as? String)?.toLongOrNull() ?: return@mapNotNull null
-                        key.name.removePrefix(UNSUBSCRIBED_PREFIX) to at
-                    }.toMap()
-            }.first()
-
-    /** Record a peer's unsubscribe so it keeps propagating to any third device. */
-    suspend fun recordUnsubscribedAt(tombstones: Map<String, Long>) {
-        if (tombstones.isEmpty()) return
-        val now = System.currentTimeMillis()
-        context.subscriptionsDataStore.edit { preferences ->
-            tombstones.forEach { (channelId, at) ->
-                val existing = preferences[unsubscribedKey(channelId)]?.toLongOrNull() ?: 0L
-                if (at > existing) preferences[unsubscribedKey(channelId)] = at.toString()
-            }
-            prune(preferences, now)
-        }
-    }
-
     /** Drop tombstones past the retention window so the store cannot grow without limit. */
     private fun prune(
         preferences: MutablePreferences,

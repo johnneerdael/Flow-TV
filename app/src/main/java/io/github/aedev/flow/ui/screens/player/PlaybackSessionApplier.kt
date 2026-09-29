@@ -32,7 +32,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeoutOrNull
 import org.schabi.newpipe.extractor.stream.SubtitlesStream
 
 /** The load a step belongs to: the video it resolved for, and the token saying it is still current. */
@@ -140,30 +139,6 @@ internal class PlaybackSessionApplier(
             is SecondaryMetadata.Heatmap -> applyHeatmap(result)
             is SecondaryMetadata.Chapters -> applyChapters(result)
             is SecondaryMetadata.WatchInfo -> applyWatchInfo(result)
-        }
-    }
-
-    /**
-     * The same request answers both counts.
-     *
-     * Its like count is only adopted when the watch page withheld one, which is what a creator who
-     * hides likes leaves behind: the response carries an `unset_like_count_entity_key` and nothing
-     * else, and the screen was showing that as a flat zero.
-     */
-    fun startDislikeLoad(load: LoadContext) {
-        scope.launch(networkDispatcher) {
-            if (playerPreferences.rytdEnabled.first()) {
-                val counts = withTimeoutOrNull(5000L) { repository.returnYouTubeDislikeCounts(load.videoId) }
-                if (counts == null || !isLoadCurrent(load.token)) return@launch
-                uiState.update { state ->
-                    val cached = state.cachedVideo?.takeIf { it.id == load.videoId } ?: return@update state
-                    val likes = counts.likes?.takeIf { it > 0L && cached.likeCount <= 0L }
-                    state.copy(
-                        dislikeCount = counts.dislikes ?: state.dislikeCount,
-                        cachedVideo = likes?.let { cached.copy(likeCount = it) } ?: cached,
-                    )
-                }
-            }
         }
     }
 
@@ -519,11 +494,6 @@ internal class PlaybackSessionApplier(
         }
         return stored
     }
-
-    private fun cachedDurationSeconds(): Long =
-        uiState.value.cachedVideo
-            ?.duration
-            ?.toLong() ?: 0L
 
     private companion object {
         const val TAG = "PlaybackSessionApplier"

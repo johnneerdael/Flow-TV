@@ -1,6 +1,5 @@
 package io.github.aedev.flow.ui.screens.player
 
-import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.player.EnhancedMusicPlayerManager
@@ -243,62 +242,6 @@ class VideoPlayerViewModelEntryPointsTest {
             verify(exactly = 0) { harness.playerManager.continueVideoPlaybackInBackground() }
             verify(exactly = 0) { harness.playerManager.startBackgroundService(any(), any(), any(), any()) }
             assertThat(GlobalPlayerState.isExplicitBackgroundPlaybackActive.value).isFalse()
-        }
-
-    @Test
-    fun `playVideo of the video already playing in background reopens the sheet instead of reloading`() =
-        runTest {
-            val viewModel = newViewModel()
-            val video = video("vid_a")
-            viewModel.playLocalVideo(video, "content://media/1")
-            advanceUntilIdle()
-            viewModel.startBackgroundPlayback()
-            harness.playerState.value = EnhancedPlayerState(currentVideoId = "vid_a", isPrepared = true, isPlaying = true)
-            advanceUntilIdle()
-
-            viewModel.expandPlayerRequest.test {
-                viewModel.playVideo(video)
-                awaitItem()
-                cancelAndIgnoreRemainingEvents()
-            }
-
-            val shown = viewModel.uiState.value
-            assertThat(shown.isBackgroundPlaybackMode).isFalse()
-            assertThat(shown.shouldDismissPlayer).isFalse()
-            assertThat(shown.isLoading).isFalse()
-            verify(exactly = 1) { harness.playerManager.restoreVideoOutput() }
-            verify(exactly = 1) { harness.playerManager.pause() }
-            verify { harness.repository wasNot Called }
-        }
-
-    @Test
-    fun `clearVideo stops everything and keeps only the autoplay and adaptive flags`() =
-        runTest {
-            val viewModel = newViewModel()
-            val video = video("vid_a")
-            viewModel.playLocalVideo(video, "content://media/1")
-            advanceUntilIdle()
-            viewModel.toggleSubtitles(true)
-            viewModel.startBackgroundPlayback()
-
-            viewModel.clearVideo()
-
-            assertThat(viewModel.uiState.value).isEqualTo(VideoPlayerUiState(autoplayEnabled = true, isAdaptiveMode = false))
-            verifyOrder {
-                harness.playerManager.stop()
-                harness.playerManager.stopBackgroundService()
-                harness.playerManager.clearAll()
-                GlobalPlayerState.setCurrentVideo(null)
-                GlobalPlayerState.setExplicitBackgroundPlaybackActive(false)
-                GlobalPlayerState.hideMiniPlayer()
-            }
-            assertThat(GlobalPlayerState.currentVideo.value).isNull()
-            assertThat(GlobalPlayerState.isMiniPlayerVisible.value).isFalse()
-            assertThat(GlobalPlayerState.isExplicitBackgroundPlaybackActive.value).isFalse()
-            assertThat(viewModel.commentsState.value).isEmpty()
-            assertThat(viewModel.isLoadingComments.value).isFalse()
-            assertThat(viewModel.hasMoreComments.value).isFalse()
-            assertThat(viewModel.canGoPrevious.value).isFalse()
         }
 
     @Test

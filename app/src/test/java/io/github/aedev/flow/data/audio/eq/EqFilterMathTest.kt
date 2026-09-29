@@ -69,11 +69,4 @@ class EqFilterMathTest {
         assertThat(EqFilterMath.autoPreampDb(listOf(EqBand(1_000.0, -6.0)))).isEqualTo(0.0)
         assertThat(EqFilterMath.autoPreampDb(emptyList())).isEqualTo(0.0)
     }
-
-    @Test
-    fun `the log axis round trips`() {
-        listOf(20.0, 63.0, 1_000.0, 12_345.0, 20_000.0).forEach { frequency ->
-            assertThat(EqFilterMath.frequencyAt(EqFilterMath.fractionOf(frequency))).isWithin(0.01).of(frequency)
-        }
-    }
 }

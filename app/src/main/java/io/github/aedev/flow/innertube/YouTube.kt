@@ -5,7 +5,6 @@ import io.github.aedev.flow.data.model.VideoCollaborator
 import io.github.aedev.flow.innertube.models.AccountInfo
 import io.github.aedev.flow.innertube.models.AlbumItem
 import io.github.aedev.flow.innertube.models.Artist
-import io.github.aedev.flow.innertube.models.ArtistItem
 import io.github.aedev.flow.innertube.models.BrowseEndpoint
 import io.github.aedev.flow.innertube.models.GridRenderer
 import io.github.aedev.flow.innertube.models.MediaInfo
@@ -13,12 +12,9 @@ import io.github.aedev.flow.innertube.models.MusicCarouselShelfRenderer
 import io.github.aedev.flow.innertube.models.MusicShelfRenderer
 import io.github.aedev.flow.innertube.models.PlaylistItem
 import io.github.aedev.flow.innertube.models.ReturnYouTubeDislikeResponse
-import io.github.aedev.flow.innertube.models.Run
-import io.github.aedev.flow.innertube.models.Runs
 import io.github.aedev.flow.innertube.models.SearchSuggestions
 import io.github.aedev.flow.innertube.models.SongItem
 import io.github.aedev.flow.innertube.models.WatchEndpoint
-import io.github.aedev.flow.innertube.models.WatchEndpoint.WatchEndpointMusicSupportedConfigs.WatchEndpointMusicConfig.Companion.MUSIC_VIDEO_TYPE_ATV
 import io.github.aedev.flow.innertube.models.YouTubeClient
 import io.github.aedev.flow.innertube.models.YouTubeClient.Companion.WEB
 import io.github.aedev.flow.innertube.models.YouTubeClient.Companion.WEB_REMIX
@@ -35,14 +31,11 @@ import io.github.aedev.flow.innertube.models.response.EditPlaylistResponse
 import io.github.aedev.flow.innertube.models.response.GetQueueResponse
 import io.github.aedev.flow.innertube.models.response.GetSearchSuggestionsResponse
 import io.github.aedev.flow.innertube.models.response.GetTranscriptResponse
-import io.github.aedev.flow.innertube.models.response.ImageUploadResponse
 import io.github.aedev.flow.innertube.models.response.NextResponse
 import io.github.aedev.flow.innertube.models.response.PlayerResponse
 import io.github.aedev.flow.innertube.models.response.SearchResponse
 import io.github.aedev.flow.innertube.models.response.channelVideoCountText
 import io.github.aedev.flow.innertube.pages.AlbumPage
-import io.github.aedev.flow.innertube.pages.ArtistItemsContinuationPage
-import io.github.aedev.flow.innertube.pages.ArtistItemsPage
 import io.github.aedev.flow.innertube.pages.ArtistPage
 import io.github.aedev.flow.innertube.pages.BrowseResult
 import io.github.aedev.flow.innertube.pages.ChartsPage
@@ -61,8 +54,6 @@ import io.github.aedev.flow.innertube.pages.RelatedPage
 import io.github.aedev.flow.innertube.pages.SearchPage
 import io.github.aedev.flow.innertube.pages.SearchResult
 import io.github.aedev.flow.innertube.pages.SearchSuggestionPage
-import io.github.aedev.flow.innertube.pages.SearchSummary
-import io.github.aedev.flow.innertube.pages.SearchSummaryPage
 import io.github.aedev.flow.innertube.pages.VideoCommentsPage
 import io.github.aedev.flow.innertube.pages.VideoDescriptionPage
 import io.github.aedev.flow.innertube.pages.VideoPlaylistPage
@@ -71,54 +62,28 @@ import io.github.aedev.flow.innertube.pages.channel.ChannelHeader
 import io.github.aedev.flow.innertube.pages.channel.ChannelPage
 import io.github.aedev.flow.innertube.pages.channel.ChannelShortsPage
 import io.github.aedev.flow.innertube.pages.channel.ChannelSortOption
-import io.github.aedev.flow.innertube.pages.channel.ChannelTabContent
-import io.github.aedev.flow.innertube.pages.channel.ChannelTabKind
 import io.github.aedev.flow.innertube.pages.channel.channelAboutContinuation
-import io.github.aedev.flow.innertube.pages.channel.channelSortOptions
 import io.github.aedev.flow.innertube.pages.channel.toChannelAbout
 import io.github.aedev.flow.innertube.pages.channel.toChannelHeader
 import io.github.aedev.flow.innertube.pages.channel.toChannelShortsPage
 import io.github.aedev.flow.innertube.pages.channel.toChannelTabContent
 import io.github.aedev.flow.innertube.pages.channel.toChannelTabs
-import io.github.aedev.flow.innertube.pages.explore.CHARTS_BROWSE_ID
-import io.github.aedev.flow.innertube.pages.explore.ExploreDestinationPage
-import io.github.aedev.flow.innertube.pages.explore.VideoChartsPage
-import io.github.aedev.flow.innertube.pages.explore.exploreShelves
-import io.github.aedev.flow.innertube.pages.explore.toExploreDestinationShell
-import io.github.aedev.flow.innertube.pages.explore.toVideoChartsPage
-import io.github.aedev.flow.innertube.pages.reel.ReelLockup
-import io.github.aedev.flow.innertube.pages.reel.ReelOverlay
 import io.github.aedev.flow.innertube.pages.reel.ReelParams
 import io.github.aedev.flow.innertube.pages.reel.ReelSequencePage
-import io.github.aedev.flow.innertube.pages.reel.toReelLockups
-import io.github.aedev.flow.innertube.pages.reel.toReelOverlay
 import io.github.aedev.flow.innertube.pages.reel.toReelSequencePage
-import io.github.aedev.flow.innertube.pages.renderer.CommunityCommentsPage
-import io.github.aedev.flow.innertube.pages.renderer.CommunityPostsPage
 import io.github.aedev.flow.innertube.pages.renderer.FeedItemOwner
-import io.github.aedev.flow.innertube.pages.renderer.FeedShelf
-import io.github.aedev.flow.innertube.pages.renderer.toCommunityCommentsPage
-import io.github.aedev.flow.innertube.pages.renderer.toCommunityPostsPage
 import io.github.aedev.flow.innertube.pages.search.SearchResultsPage
-import io.github.aedev.flow.innertube.pages.search.SearchSuggestion
-import io.github.aedev.flow.innertube.pages.search.parseSearchSuggestions
 import io.github.aedev.flow.innertube.pages.search.toSearchResultsPage
-import io.github.aedev.flow.innertube.pages.toCommentRepliesPage
 import io.github.aedev.flow.innertube.pages.toVideoCommentsPage
 import io.github.aedev.flow.innertube.pages.toVideoDescriptionPage
 import io.github.aedev.flow.innertube.pages.toVideoPlaylistPage
-import io.github.aedev.flow.innertube.pages.videoCommentsContinuation
-import io.github.aedev.flow.utils.PerformanceDispatcher
 import io.github.aedev.flow.utils.avatarImageIdentityKey
 import io.ktor.client.call.body
 import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -141,9 +106,6 @@ import kotlin.random.Random
  */
 object YouTube {
     private val innerTube = InnerTube()
-    private const val CHANNEL_VIDEOS_PARAMS = "EgZ2aWRlb3PyBgQKAjoA"
-    private const val CHANNEL_LIVE_PARAMS = "EgdzdHJlYW1z8gYECgJ6AA%3D%3D"
-    private const val CHANNEL_POSTS_PARAMS = "EgVwb3N0c_IGBAoCSgA="
     private const val CHANNEL_SHORTS_PARAMS = "EgZzaG9ydHPyBgUKA5oBAA=="
 
     var locale: YouTubeLocale
@@ -216,74 +178,6 @@ object YouTube {
             )
         }
 
-    suspend fun searchSummary(query: String): Result<SearchSummaryPage> =
-        runCatching {
-            val response = innerTube.search(WEB_REMIX, query).body<SearchResponse>()
-            SearchSummaryPage(
-                summaries =
-                    response.contents
-                        ?.tabbedSearchResultsRenderer
-                        ?.tabs
-                        ?.firstOrNull()
-                        ?.tabRenderer
-                        ?.content
-                        ?.sectionListRenderer
-                        ?.contents
-                        ?.mapNotNull { it ->
-                            if (it.musicCardShelfRenderer != null) {
-                                SearchSummary(
-                                    title =
-                                        it.musicCardShelfRenderer.header
-                                            ?.musicCardShelfHeaderBasicRenderer
-                                            ?.title
-                                            ?.runs
-                                            ?.firstOrNull()
-                                            ?.text ?: YouTubeConstants.DEFAULT_TOP_RESULT,
-                                    items =
-                                        listOfNotNull(SearchSummaryPage.fromMusicCardShelfRenderer(it.musicCardShelfRenderer))
-                                            .plus(
-                                                it.musicCardShelfRenderer.contents
-                                                    ?.mapNotNull { it.musicResponsiveListItemRenderer }
-                                                    ?.mapNotNull(SearchSummaryPage.Companion::fromMusicResponsiveListItemRenderer)
-                                                    .orEmpty(),
-                                            ).distinctBy { it.id }
-                                            .ifEmpty { null } ?: return@mapNotNull null,
-                                )
-                            } else {
-                                SearchSummary(
-                                    title =
-                                        it.musicShelfRenderer
-                                            ?.title
-                                            ?.runs
-                                            ?.firstOrNull()
-                                            ?.text ?: YouTubeConstants.DEFAULT_OTHER_RESULTS,
-                                    items =
-                                        it.musicShelfRenderer
-                                            ?.contents
-                                            ?.getItems()
-                                            ?.mapNotNull {
-                                                SearchSummaryPage.fromMusicResponsiveListItemRenderer(it)
-                                            }?.distinctBy { it.id }
-                                            ?.ifEmpty { null } ?: return@mapNotNull null,
-                                )
-                            }
-                        }!!,
-                continuation =
-                    response.contents
-                        ?.tabbedSearchResultsRenderer
-                        ?.tabs
-                        ?.firstOrNull()
-                        ?.tabRenderer
-                        ?.content
-                        ?.sectionListRenderer
-                        ?.contents
-                        ?.lastOrNull()
-                        ?.musicShelfRenderer
-                        ?.continuations
-                        ?.getContinuation(),
-            )
-        }
-
     suspend fun search(
         query: String,
         filter: SearchFilter,
@@ -323,27 +217,6 @@ object YouTube {
             )
         }
 
-    /** Reels matching [query], through the Shorts filter the search dialog itself sends. */
-    suspend fun searchShorts(query: String): Result<List<ReelLockup>> =
-        runCatching {
-            ensureVisitorData()
-            innerTube
-                .webSearch(
-                    client = currentWebClient(),
-                    query = query,
-                    params = ReelParams.SEARCH_SHORTS_FILTER,
-                    anonymous = true,
-                    includeVisitorData = true,
-                ).body<JsonObject>()
-                .toReelLockups()
-        }.onFailure { Log.w("SearchShorts", "query='$query' failed: ${it.message}") }
-
-    /** Typeahead suggestions for the video search bar, in the app's content language. */
-    suspend fun videoSearchSuggestions(query: String): Result<List<SearchSuggestion>> =
-        runCatching {
-            parseSearchSuggestions(innerTube.searchSuggestions(query).bodyAsText())
-        }
-
     /** One page of video search. Filters and sorting ride in [params]; paging rides in [continuation]. */
     suspend fun videoSearch(
         query: String,
@@ -378,25 +251,6 @@ object YouTube {
                 clientVersion =
                     runCatching { YoutubeParsingHelper.getClientVersion() }
                         .getOrDefault(WEB.clientVersion),
-            )
-        }
-
-    suspend fun searchContinuation(continuation: String): Result<SearchResult> =
-        runCatching {
-            val response = innerTube.search(WEB_REMIX, continuation = continuation).body<SearchResponse>()
-            SearchResult(
-                items =
-                    response.continuationContents
-                        ?.musicShelfContinuation
-                        ?.contents
-                        ?.mapNotNull {
-                            SearchPage.toYTItem(it.musicResponsiveListItemRenderer)
-                        }!!,
-                continuation =
-                    response.continuationContents
-                        ?.musicShelfContinuation
-                        ?.continuations
-                        ?.getContinuation(),
             )
         }
 
@@ -736,26 +590,6 @@ object YouTube {
             )
         }
 
-    suspend fun channelTab(
-        browseId: String,
-        params: String,
-        owner: FeedItemOwner = FeedItemOwner(id = browseId),
-        kind: ChannelTabKind = ChannelTabKind.Unknown,
-    ): Result<ChannelTabContent> =
-        runCatching {
-            channelBrowseJson(browseId = browseId, params = params).toChannelTabContent(kind, owner)
-        }
-
-    /** Serves paging and sort switching alike — a sort chip's token is just another continuation. */
-    suspend fun channelTabContinuation(
-        continuation: String,
-        owner: FeedItemOwner,
-        kind: ChannelTabKind = ChannelTabKind.Unknown,
-    ): Result<ChannelTabContent> =
-        runCatching {
-            channelBrowseJson(continuation = continuation).toChannelTabContent(kind, owner)
-        }
-
     private suspend fun channelBrowseJson(
         browseId: String? = null,
         params: String? = null,
@@ -835,138 +669,12 @@ object YouTube {
             parseChannelSearchResponse(response, channelId, channelName, channelThumbnailUrl)
         }
 
-    suspend fun channelSearchContinuation(
-        channelId: String,
-        channelName: String,
-        channelThumbnailUrl: String,
-        continuation: String,
-    ): Result<ChannelVideoSearchResult> =
-        runCatching {
-            val httpResponse =
-                innerTube.channelSearch(
-                    currentWebClient(),
-                    channelId,
-                    query = "",
-                    continuation = continuation,
-                )
-            val rawBody = httpResponse.bodyAsText()
-            val lenientJson =
-                Json {
-                    ignoreUnknownKeys = true
-                    explicitNulls = false
-                }
-            val response = lenientJson.decodeFromString<io.github.aedev.flow.innertube.models.response.ChannelSearchResponse>(rawBody)
-
-            val videos = mutableListOf<io.github.aedev.flow.data.model.Video>()
-            var nextContinuation: String? = null
-
-            val appendedItems =
-                response.onResponseReceivedActions
-                    ?.firstOrNull { it.appendContinuationItemsAction != null }
-                    ?.appendContinuationItemsAction
-                    ?.continuationItems
-                    .orEmpty()
-            if (appendedItems.isNotEmpty()) {
-                appendedItems.forEach { richItem ->
-                    richItem.richItemRenderer
-                        ?.content
-                        ?.videoRenderer
-                        ?.let { parseVideoRenderer(it, channelId, channelName, channelThumbnailUrl) }
-                        ?.let { videos.add(it) }
-                    richItem.itemSectionRenderer?.contents?.forEach { sectionItem ->
-                        sectionItem.videoRenderer
-                            ?.let { parseVideoRenderer(it, channelId, channelName, channelThumbnailUrl) }
-                            ?.let { videos.add(it) }
-                    }
-                    richItem.continuationItemRenderer
-                        ?.continuationEndpoint
-                        ?.continuationCommand
-                        ?.token
-                        ?.let { nextContinuation = it }
-                }
-            }
-
-            if (videos.isEmpty()) {
-                val sectionContents =
-                    response.continuationContents
-                        ?.sectionListContinuation
-                        ?.contents
-                        .orEmpty()
-                sectionContents
-                    .mapNotNull { it.itemSectionRenderer?.contents }
-                    .flatten()
-                    .mapNotNull { it.videoRenderer }
-                    .mapNotNull { parseVideoRenderer(it, channelId, channelName, channelThumbnailUrl) }
-                    .forEach { videos.add(it) }
-                if (nextContinuation == null) {
-                    nextContinuation = response.continuationContents
-                        ?.sectionListContinuation
-                        ?.continuations
-                        ?.firstOrNull()
-                        ?.nextContinuationData
-                        ?.continuation
-                        ?: sectionContents
-                            .mapNotNull { it.continuationItemRenderer }
-                            .firstOrNull()
-                            ?.continuationEndpoint
-                            ?.continuationCommand
-                            ?.token
-                }
-            }
-
-            if (videos.isEmpty()) {
-                response.continuationContents?.richGridContinuation?.contents?.forEach { richItem ->
-                    richItem.richItemRenderer
-                        ?.content
-                        ?.videoRenderer
-                        ?.let { parseVideoRenderer(it, channelId, channelName, channelThumbnailUrl) }
-                        ?.let { videos.add(it) }
-                    richItem.continuationItemRenderer
-                        ?.continuationEndpoint
-                        ?.continuationCommand
-                        ?.token
-                        ?.let { nextContinuation = it }
-                }
-            }
-
-            ChannelVideoSearchResult(videos = videos, continuation = nextContinuation)
-        }
-
-    suspend fun channelVideos(
-        channelId: String,
-        channelName: String,
-        channelThumbnailUrl: String,
-    ): Result<ChannelVideoSearchResult> = channelVideosPage(channelId, channelName, channelThumbnailUrl, CHANNEL_VIDEOS_PARAMS, false)
-
-    suspend fun channelVideosContinuation(
-        continuation: String,
-        channelId: String,
-        channelName: String,
-        channelThumbnailUrl: String,
-    ): Result<ChannelVideoSearchResult> = channelVideosPage(channelId, channelName, channelThumbnailUrl, null, false, continuation)
-
-    suspend fun channelLiveStreams(
-        channelId: String,
-        channelName: String,
-        channelThumbnailUrl: String,
-    ): Result<ChannelVideoSearchResult> = channelVideosPage(channelId, channelName, channelThumbnailUrl, CHANNEL_LIVE_PARAMS, true)
-
-    suspend fun channelLiveStreamsContinuation(
-        continuation: String,
-        channelId: String,
-        channelName: String,
-        channelThumbnailUrl: String,
-    ): Result<ChannelVideoSearchResult> = channelVideosPage(channelId, channelName, channelThumbnailUrl, null, true, continuation)
-
     /**
      * A channel's Shorts tab, including its sort bar. Unlike the Videos and Live tabs this goes
      * through the native client rather than NewPipe, because NewPipe's `ChannelTabInfo` has no
      * notion of the Latest/Popular/Oldest chips and the tab is useless without them (#547).
      */
     suspend fun channelShorts(channelId: String): Result<ChannelShortsPage> = channelShortsPage(channelId = channelId)
-
-    /** Serves both paging and sort switching — a sort chip's token is just another continuation. */
-    suspend fun channelShortsContinuation(continuation: String): Result<ChannelShortsPage> = channelShortsPage(continuation = continuation)
 
     private suspend fun channelShortsPage(
         channelId: String? = null,
@@ -987,90 +695,6 @@ object YouTube {
                 .toChannelShortsPage()
         }
 
-    /**
-     * An explore destination's landing page, emitted as it is mapped: the tabs first, then one more
-     * shelf each time. `FEtrending` and `FEexplore` are dead — see
-     * [io.github.aedev.flow.innertube.pages.explore.ExploreDestination].
-     *
-     * The whole page arrives in a single browse response, so this cannot paint before the body
-     * lands; what it takes off first paint is the mapping of every shelf after the first, which on
-     * a destination runs to hundreds of items. That mapping and the parse it walks both stay off
-     * the collector's thread.
-     */
-    fun exploreDestination(
-        browseId: String,
-        params: String? = null,
-    ): Flow<ExploreDestinationPage> =
-        flow {
-            val response = channelBrowseJson(browseId = browseId, params = params)
-            val shell = response.toExploreDestinationShell()
-            emit(shell)
-            val shelves = mutableListOf<FeedShelf>()
-            response.exploreShelves(shell.owner).forEach { shelf ->
-                shelves += shelf
-                emit(shell.copy(shelves = shelves.toList()))
-            }
-        }.flowOn(PerformanceDispatcher.parsing)
-
-    suspend fun videoCharts(
-        chartType: String,
-        country: String,
-    ): Result<VideoChartsPage> =
-        runCatching {
-            val response =
-                innerTube.analyticsChartsBrowse(
-                    browseId = CHARTS_BROWSE_ID,
-                    query =
-                        "perspective=CHART_DETAILS" +
-                            "&chart_params_country_code=$country" +
-                            "&chart_params_chart_type=$chartType",
-                )
-            withContext(PerformanceDispatcher.parsing) {
-                Json
-                    .parseToJsonElement(response.bodyAsText())
-                    .toVideoChartsPage(chartType, country)
-            }
-        }
-
-    suspend fun communityPosts(
-        channelId: String,
-        channelName: String,
-        channelThumbnailUrl: String,
-    ): Result<CommunityPostsPage> = communityPostsPage(channelId, channelName, channelThumbnailUrl)
-
-    suspend fun communityPostsContinuation(
-        continuation: String,
-        channelName: String,
-        channelThumbnailUrl: String,
-    ): Result<CommunityPostsPage> =
-        communityPostsPage(
-            channelId = "",
-            channelName = channelName,
-            channelThumbnailUrl = channelThumbnailUrl,
-            continuation = continuation,
-        )
-
-    suspend fun communityPostComments(
-        postId: String,
-        params: String?,
-    ): Result<CommunityCommentsPage> =
-        runCatching {
-            val initial = communityPostCommentsPage(postId = postId, params = params)
-            if (initial.comments.isNotEmpty() || initial.continuation == null) {
-                initial
-            } else {
-                val commentsPage = communityPostCommentsPage(continuation = initial.continuation)
-                commentsPage.copy(
-                    commentCountText = commentsPage.commentCountText ?: initial.commentCountText,
-                )
-            }
-        }
-
-    suspend fun communityPostCommentsContinuation(continuation: String): Result<CommunityCommentsPage> =
-        runCatching {
-            communityPostCommentsPage(continuation = continuation)
-        }
-
     /** A YouTube playlist's first page when [continuation] is null, otherwise the page it points to. */
     suspend fun videoPlaylistPage(
         playlistId: String,
@@ -1086,242 +710,6 @@ object YouTube {
                 )
             Json.parseToJsonElement(response.bodyAsText()).toVideoPlaylistPage()
         }
-
-    private suspend fun communityPostsPage(
-        channelId: String,
-        channelName: String,
-        channelThumbnailUrl: String,
-        continuation: String? = null,
-    ): Result<CommunityPostsPage> =
-        runCatching {
-            val client = currentWebClient()
-            val response =
-                innerTube.channelBrowse(
-                    client = client,
-                    channelId = channelId.takeIf { continuation == null },
-                    params = CHANNEL_POSTS_PARAMS.takeIf { continuation == null },
-                    continuation = continuation,
-                )
-            Json.parseToJsonElement(response.bodyAsText()).toCommunityPostsPage(
-                fallbackAuthorName = channelName,
-                fallbackAuthorAvatarUrl = channelThumbnailUrl,
-            )
-        }
-
-    private suspend fun communityPostCommentsPage(
-        postId: String? = null,
-        params: String? = null,
-        continuation: String? = null,
-    ): CommunityCommentsPage {
-        val client = currentWebClient()
-        val response =
-            innerTube.postCommentsBrowse(
-                client = client,
-                postId = postId,
-                params = params,
-                continuation = continuation,
-            )
-        return Json.parseToJsonElement(response.bodyAsText()).toCommunityCommentsPage()
-    }
-
-    private suspend fun channelVideosPage(
-        channelId: String,
-        channelName: String,
-        channelThumbnailUrl: String,
-        params: String?,
-        isLive: Boolean,
-        continuation: String? = null,
-    ): Result<ChannelVideoSearchResult> =
-        runCatching {
-            val client = currentWebClient()
-            val httpResponse =
-                innerTube.channelBrowse(
-                    client = client,
-                    channelId = if (continuation == null) channelId else null,
-                    params = params,
-                    continuation = continuation,
-                )
-            val rawBody = httpResponse.bodyAsText()
-            val lenientJson =
-                Json {
-                    ignoreUnknownKeys = true
-                    explicitNulls = false
-                }
-            val response = lenientJson.decodeFromString<ChannelVideosResponse>(rawBody)
-            val sorts = Json.parseToJsonElement(rawBody).channelSortOptions()
-            parseChannelVideosResponse(response, channelId, channelName, channelThumbnailUrl, isLive)
-                .copy(sorts = sorts)
-        }
-
-    private fun parseChannelVideosResponse(
-        response: ChannelVideosResponse,
-        channelId: String,
-        channelName: String,
-        channelThumbnailUrl: String,
-        isLive: Boolean,
-    ): ChannelVideoSearchResult {
-        val metadata = response.metadata?.channelMetadataRenderer
-        val resolvedChannelId =
-            metadata?.externalChannelId
-                ?: metadata?.externalId
-                ?: channelId
-        val resolvedChannelName = metadata?.title?.takeIf { it.isNotBlank() } ?: channelName
-        val resolvedThumbnail =
-            metadata
-                ?.avatar
-                ?.thumbnails
-                ?.maxByOrNull { it.width ?: 0 }
-                ?.url
-                ?: channelThumbnailUrl
-
-        val richItems = mutableListOf<ChannelVideosResponse.RichItem>()
-        response.onResponseReceivedActions
-            ?.flatMap {
-                it.appendContinuationItemsAction?.continuationItems.orEmpty() +
-                    it.reloadContinuationItemsCommand?.continuationItems.orEmpty()
-            }?.let { richItems += it }
-
-        response.continuationContents
-            ?.richGridContinuation
-            ?.contents
-            ?.let { richItems += it }
-
-        val tabs =
-            response.contents
-                ?.twoColumnBrowseResultsRenderer
-                ?.tabs
-                .orEmpty()
-        val selectedTab =
-            tabs.firstOrNull { it.tabRenderer?.selected == true }?.tabRenderer
-                ?: tabs.firstOrNull { it.tabRenderer?.content?.richGridRenderer != null }?.tabRenderer
-                ?: tabs.firstOrNull { it.expandableTabRenderer?.content?.richGridRenderer != null }?.expandableTabRenderer
-        selectedTab
-            ?.content
-            ?.richGridRenderer
-            ?.contents
-            ?.let { richItems += it }
-
-        val videos = mutableListOf<io.github.aedev.flow.data.model.Video>()
-        var nextContinuation: String? = null
-        richItems.forEach { richItem ->
-            val content = richItem.richItemRenderer?.content
-            content
-                ?.lockupViewModel
-                ?.let { parseLockupViewModel(it, resolvedChannelId, resolvedChannelName, resolvedThumbnail, isLive) }
-                ?.let { videos.add(it) }
-            content
-                ?.videoRenderer
-                ?.let { parseBrowseVideoRenderer(it, resolvedChannelId, resolvedChannelName, resolvedThumbnail, isLive) }
-                ?.let { videos.add(it) }
-            richItem.continuationItemRenderer
-                ?.continuationEndpoint
-                ?.continuationCommand
-                ?.token
-                ?.let { nextContinuation = it }
-        }
-
-        return ChannelVideoSearchResult(
-            videos = videos.distinctBy { it.id },
-            continuation = nextContinuation,
-            channelVideoCountText = response.channelVideoCountText(),
-        )
-    }
-
-    private fun parseLockupViewModel(
-        lockup: ChannelVideosResponse.LockupViewModel,
-        channelId: String,
-        channelName: String,
-        channelThumbnailUrl: String,
-        isLive: Boolean,
-    ): io.github.aedev.flow.data.model.Video? {
-        val videoId = lockup.contentId ?: return null
-        val metadata = lockup.metadata?.lockupMetadataViewModel
-        val title = metadata?.title?.content?.takeIf { it.isNotBlank() } ?: return null
-        val thumbnail =
-            lockup.contentImage
-                ?.thumbnailViewModel
-                ?.image
-                ?.sources
-                ?.maxByOrNull { it.width ?: 0 }
-                ?.url
-                ?: "https://i.ytimg.com/vi/$videoId/hq720.jpg"
-        val durationText =
-            lockup.contentImage
-                ?.thumbnailViewModel
-                ?.overlays
-                ?.firstNotNullOfOrNull { overlay ->
-                    overlay.thumbnailBottomOverlayViewModel
-                        ?.badges
-                        ?.firstNotNullOfOrNull { it.thumbnailBadgeViewModel?.text }
-                }
-        val parts =
-            metadata
-                ?.metadata
-                ?.contentMetadataViewModel
-                ?.metadataRows
-                ?.firstOrNull()
-                ?.metadataParts
-                ?.mapNotNull { it.text?.content?.takeIf(String::isNotBlank) }
-                .orEmpty()
-        val viewsText =
-            parts.firstOrNull { it.contains("view", ignoreCase = true) || it.contains("watching", ignoreCase = true) }
-                ?: parts.firstOrNull()
-        val uploadText =
-            parts
-                .firstOrNull {
-                    !it.contains("view", ignoreCase = true) && !it.contains("watching", ignoreCase = true)
-                }.orEmpty()
-
-        return io.github.aedev.flow.data.model.Video(
-            id = videoId,
-            title = title,
-            channelName = channelName,
-            channelId = channelId,
-            thumbnailUrl = thumbnail,
-            duration = parseLengthText(durationText),
-            viewCount = parseViewCountText(viewsText),
-            uploadDate = uploadText,
-            timestamp = parseRelativeUploadDate(uploadText) ?: 0L,
-            channelThumbnailUrl = channelThumbnailUrl,
-            isLive = isLive || viewsText?.contains("watching", ignoreCase = true) == true,
-        )
-    }
-
-    private fun parseBrowseVideoRenderer(
-        r: ChannelVideosResponse.VideoRenderer,
-        channelId: String,
-        channelName: String,
-        channelThumbnailUrl: String,
-        isLive: Boolean,
-    ): io.github.aedev.flow.data.model.Video? {
-        val videoId = r.videoId ?: return null
-        val title = r.title?.textValue()?.takeIf { it.isNotBlank() } ?: return null
-        val thumbnail =
-            r.thumbnail
-                ?.thumbnails
-                ?.maxByOrNull { it.width ?: 0 }
-                ?.url
-                ?: "https://i.ytimg.com/vi/$videoId/hq720.jpg"
-        val uploadText = r.publishedTimeText?.textValue().orEmpty()
-        val viewsText = r.viewCountText?.textValue()
-        val avatarUrls = r.channelAvatarUrls(channelThumbnailUrl)
-        return io.github.aedev.flow.data.model.Video(
-            id = videoId,
-            title = title,
-            channelName = channelName,
-            channelId = channelId,
-            thumbnailUrl = thumbnail,
-            duration = parseLengthText(r.lengthText?.textValue()),
-            viewCount = parseViewCountText(viewsText),
-            uploadDate = uploadText,
-            timestamp = parseRelativeUploadDate(uploadText) ?: 0L,
-            channelThumbnailUrl = avatarUrls.firstOrNull().orEmpty(),
-            channelThumbnailUrls = avatarUrls,
-            isLive = isLive || viewsText?.contains("watching", ignoreCase = true) == true,
-        )
-    }
-
-    private fun ChannelVideosResponse.SimpleText.textValue(): String? = simpleText ?: runs?.joinToString("") { it.text.orEmpty() }
 
     private fun ChannelVideosResponse.VideoRenderer.channelAvatarUrls(fallback: String): List<String> {
         val supported = channelThumbnailSupportedRenderers
@@ -1544,43 +932,6 @@ object YouTube {
                 else -> 1.0
             }
         return (number * multiplier).toLong()
-    }
-
-    private fun parseRelativeUploadDate(text: String?): Long? {
-        val normalized =
-            text
-                ?.lowercase(Locale.US)
-                ?.replace("streamed", "")
-                ?.replace("premiered", "")
-                ?.replace("live", "")
-                ?.replace("ago", "")
-                ?.trim()
-                ?: return null
-
-        if (normalized.isBlank()) return null
-        if (normalized.contains("just now") || normalized.contains("today")) return System.currentTimeMillis()
-        if (normalized.contains("yesterday")) return System.currentTimeMillis() - 24L * 60L * 60L * 1000L
-
-        val value =
-            Regex("""(\d+)""")
-                .find(normalized)
-                ?.groupValues
-                ?.getOrNull(1)
-                ?.toLongOrNull()
-                ?: return null
-        val unitMillis =
-            when {
-                normalized.contains("second") || normalized.endsWith("s") -> 1_000L
-                normalized.contains("minute") || normalized.endsWith("m") -> 60_000L
-                normalized.contains("hour") || normalized.endsWith("h") -> 3_600_000L
-                normalized.contains("day") || normalized.endsWith("d") -> 86_400_000L
-                normalized.contains("week") || normalized.endsWith("w") -> 7L * 86_400_000L
-                normalized.contains("month") || normalized.endsWith("mo") -> 30L * 86_400_000L
-                normalized.contains("year") || normalized.endsWith("y") -> 365L * 86_400_000L
-                else -> return null
-            }
-
-        return System.currentTimeMillis() - (value * unitMillis)
     }
 
     suspend fun album(
@@ -1815,166 +1166,6 @@ object YouTube {
             ArtistPage.fromBrowseResponse(browseId, innerTube.browse(WEB_REMIX, browseId).body<BrowseResponse>())
         }
 
-    suspend fun artistItems(endpoint: BrowseEndpoint): Result<ArtistItemsPage> =
-        runCatching {
-            val response = innerTube.browse(WEB_REMIX, endpoint.browseId, endpoint.params).body<BrowseResponse>()
-            val sectionContent =
-                response.contents
-                    ?.singleColumnBrowseResultsRenderer
-                    ?.tabs
-                    ?.firstOrNull()
-                    ?.tabRenderer
-                    ?.content
-                    ?.sectionListRenderer
-                    ?.contents
-                    ?.firstOrNull()
-
-            val gridRenderer = sectionContent?.gridRenderer
-            val musicCarouselShelfRenderer = sectionContent?.musicCarouselShelfRenderer
-            val musicPlaylistShelfRenderer = sectionContent?.musicPlaylistShelfRenderer
-            val musicShelfRenderer = sectionContent?.musicShelfRenderer
-
-            when {
-                gridRenderer != null -> {
-                    ArtistItemsPage(
-                        title =
-                            gridRenderer.header
-                                ?.gridHeaderRenderer
-                                ?.title
-                                ?.runs
-                                ?.firstOrNull()
-                                ?.text
-                                .orEmpty(),
-                        items =
-                            gridRenderer.items.mapNotNull {
-                                it.musicTwoRowItemRenderer?.let { renderer ->
-                                    ArtistItemsPage.fromMusicTwoRowItemRenderer(renderer)
-                                }
-                            },
-                        continuation = gridRenderer.continuations?.getContinuation(),
-                    )
-                }
-
-                musicCarouselShelfRenderer != null -> {
-                    ArtistItemsPage(
-                        title =
-                            musicCarouselShelfRenderer.header
-                                ?.musicCarouselShelfBasicHeaderRenderer
-                                ?.title
-                                ?.runs
-                                ?.firstOrNull()
-                                ?.text
-                                .orEmpty(),
-                        items =
-                            musicCarouselShelfRenderer.contents.mapNotNull { content ->
-                                content.musicTwoRowItemRenderer?.let { renderer ->
-                                    ArtistItemsPage.fromMusicTwoRowItemRenderer(renderer)
-                                } ?: content.musicResponsiveListItemRenderer?.let { renderer ->
-                                    ArtistItemsPage.fromMusicResponsiveListItemRenderer(renderer)
-                                }
-                            },
-                        continuation = null,
-                    )
-                }
-
-                musicShelfRenderer != null -> {
-                    ArtistItemsPage(
-                        title =
-                            musicShelfRenderer.title
-                                ?.runs
-                                ?.firstOrNull()
-                                ?.text
-                                ?: response.header
-                                    ?.musicHeaderRenderer
-                                    ?.title
-                                    ?.runs
-                                    ?.firstOrNull()
-                                    ?.text
-                                ?: "",
-                        items =
-                            musicShelfRenderer.contents?.getItems()?.mapNotNull {
-                                ArtistItemsPage.fromMusicResponsiveListItemRenderer(it)
-                            } ?: emptyList(),
-                        continuation = musicShelfRenderer.continuations?.getContinuation(),
-                    )
-                }
-
-                else -> {
-                    ArtistItemsPage(
-                        title =
-                            response.header
-                                ?.musicHeaderRenderer
-                                ?.title
-                                ?.runs
-                                ?.firstOrNull()
-                                ?.text ?: "",
-                        items =
-                            musicPlaylistShelfRenderer?.contents?.getItems()?.mapNotNull {
-                                ArtistItemsPage.fromMusicResponsiveListItemRenderer(it)
-                            } ?: emptyList(),
-                        continuation = musicPlaylistShelfRenderer?.contents?.getContinuation(),
-                    )
-                }
-            }
-        }
-
-    suspend fun artistItemsContinuation(continuation: String): Result<ArtistItemsContinuationPage> =
-        runCatching {
-            val response = innerTube.browse(WEB_REMIX, continuation = continuation).body<BrowseResponse>()
-
-            when {
-                response.continuationContents?.gridContinuation != null -> {
-                    val gridContinuation = response.continuationContents.gridContinuation
-                    ArtistItemsContinuationPage(
-                        items =
-                            gridContinuation.items.mapNotNull {
-                                it.musicTwoRowItemRenderer?.let { renderer ->
-                                    ArtistItemsPage.fromMusicTwoRowItemRenderer(renderer)
-                                }
-                            },
-                        continuation = gridContinuation.continuations?.getContinuation(),
-                    )
-                }
-
-                response.continuationContents?.musicPlaylistShelfContinuation != null -> {
-                    val musicPlaylistShelfContinuation = response.continuationContents.musicPlaylistShelfContinuation
-                    ArtistItemsContinuationPage(
-                        items =
-                            musicPlaylistShelfContinuation.contents.getItems().mapNotNull {
-                                ArtistItemsPage.fromMusicResponsiveListItemRenderer(it)
-                            },
-                        continuation = musicPlaylistShelfContinuation.continuations?.getContinuation(),
-                    )
-                }
-
-                response.continuationContents?.musicShelfContinuation != null -> {
-                    val musicShelfContinuation = response.continuationContents!!.musicShelfContinuation!!
-                    ArtistItemsContinuationPage(
-                        items =
-                            musicShelfContinuation.contents?.getItems()?.mapNotNull {
-                                ArtistItemsPage.fromMusicResponsiveListItemRenderer(it)
-                            } ?: emptyList(),
-                        continuation = musicShelfContinuation.continuations?.getContinuation(),
-                    )
-                }
-
-                else -> {
-                    val continuationItems =
-                        response.onResponseReceivedActions
-                            ?.firstOrNull()
-                            ?.appendContinuationItemsAction
-                            ?.continuationItems
-                    ArtistItemsContinuationPage(
-                        items =
-                            continuationItems?.getItems()?.mapNotNull {
-                                ArtistItemsPage.fromMusicResponsiveListItemRenderer(it)
-                            } ?: emptyList(),
-                        continuation = continuationItems?.getContinuation(),
-                    )
-                }
-            }
-        }
-
     suspend fun playlist(
         playlistId: String,
         via: InnerTube = innerTube,
@@ -2085,16 +1276,6 @@ object YouTube {
                         ?.continuations
                         ?.getContinuation(),
             )
-        }
-
-    /** A music browse response as served, for mappers that read more than the parsed pages keep. */
-    suspend fun browseResponse(
-        browseId: String? = null,
-        continuation: String? = null,
-        via: InnerTube = innerTube,
-    ): Result<BrowseResponse> =
-        runCatching {
-            via.browse(WEB_REMIX, browseId = browseId, continuation = continuation, setLogin = true).body<BrowseResponse>()
         }
 
     suspend fun playlistContinuation(continuation: String): Result<PlaylistContinuationPage> =
@@ -2418,43 +1599,6 @@ object YouTube {
             }
         }
 
-    suspend fun libraryRecentActivity(): Result<LibraryPage> =
-        runCatching {
-            val continuation = LibraryFilter.FILTER_RECENT_ACTIVITY.value
-
-            val response =
-                innerTube
-                    .browse(
-                        client = WEB_REMIX,
-                        continuation = continuation,
-                        setLogin = true,
-                    ).body<BrowseResponse>()
-
-            val items =
-                response.continuationContents
-                    ?.sectionListContinuation
-                    ?.contents
-                    ?.firstOrNull()
-                    ?.gridRenderer
-                    ?.items!!
-                    .mapNotNull {
-                        it.musicTwoRowItemRenderer?.let { renderer ->
-                            LibraryPage.fromMusicTwoRowItemRenderer(renderer)
-                        }
-                    }.toMutableList()
-
-            items.forEachIndexed { index, item ->
-                if (item is ArtistItem) {
-                    items[index] = artist(item.id).getOrNull()?.artist!!.copy(thumbnail = item.thumbnail)
-                }
-            }
-
-            LibraryPage(
-                items = items,
-                continuation = null,
-            )
-        }
-
     suspend fun getChartsPage(
         country: String? = null,
         continuation: String? = null,
@@ -2533,13 +1677,6 @@ object YouTube {
         }
     }
 
-    suspend fun getChannelId(browseId: String): String {
-        artist(browseId).onSuccess {
-            return it.artist.channelId ?: ""
-        }
-        return ""
-    }
-
     suspend fun addToPlaylist(
         playlistId: String,
         videoId: String,
@@ -2580,30 +1717,6 @@ object YouTube {
         name: String,
     ) = runCatching {
         innerTube.renamePlaylist(WEB_REMIX, playlistId, name)
-    }
-
-    suspend fun uploadCustomThumbnailLink(
-        playlistId: String,
-        image: ByteArray,
-    ) = runCatching {
-        val uploadUrl = innerTube.getUploadCustomThumbnailLink(WEB_REMIX, image.size).headers["x-guploader-uploadid"]
-        val blobReq =
-            innerTube.uploadCustomThumbnail(
-                WEB_REMIX,
-                uploadUrl!!,
-                image,
-            )
-        val blobId = Json.decodeFromString<ImageUploadResponse>(blobReq.bodyAsText()).encryptedBlobId
-        innerTube
-            .setThumbnailPlaylist(WEB_REMIX, playlistId, blobId)
-            .body<EditPlaylistResponse>()
-            .newHeader
-            ?.musicEditablePlaylistDetailHeaderRenderer
-            ?.header
-            ?.musicResponsiveHeaderRenderer
-            ?.thumbnail
-            ?.musicThumbnailRenderer
-            ?.getThumbnailUrl()
     }
 
     suspend fun removeThumbnailPlaylist(playlistId: String) =
@@ -2696,9 +1809,6 @@ object YouTube {
         videoId: String,
     ): VideoDescriptionPage = watchNext.toVideoDescriptionPage(videoId)
 
-    /** The continuation that opens [videoId]'s comment section, from an already-fetched watch response. */
-    fun commentsContinuation(watchNext: JsonElement): String? = watchNext.videoCommentsContinuation()
-
     suspend fun comments(
         continuation: String,
         ownVideoId: String?,
@@ -2707,16 +1817,6 @@ object YouTube {
             Json
                 .parseToJsonElement(innerTube.nextWatch(continuation = continuation).bodyAsText())
                 .toVideoCommentsPage(ownVideoId)
-        }
-
-    suspend fun commentReplies(
-        continuation: String,
-        ownVideoId: String?,
-    ): Result<VideoCommentsPage> =
-        runCatching {
-            Json
-                .parseToJsonElement(innerTube.nextWatch(continuation = continuation).bodyAsText())
-                .toCommentRepliesPage(ownVideoId)
         }
 
     suspend fun liveChatContinuation(videoId: String): Result<String?> =
@@ -3013,18 +2113,6 @@ object YouTube {
         }
     }
 
-    @JvmInline
-    value class LibraryFilter(
-        val value: String,
-    ) {
-        companion object {
-            val FILTER_RECENT_ACTIVITY = LibraryFilter("4qmFsgIrEhdGRW11c2ljX2xpYnJhcnlfbGFuZGluZxoQZ2dNR0tnUUlCaEFCb0FZQg%3D%3D")
-            val FILTER_RECENTLY_PLAYED = LibraryFilter("4qmFsgIrEhdGRW11c2ljX2xpYnJhcnlfbGFuZGluZxoQZ2dNR0tnUUlCUkFCb0FZQg%3D%3D")
-            val FILTER_PLAYLISTS_ALPHABETICAL = LibraryFilter("4qmFsgIrEhdGRW11c2ljX2xpa2VkX3BsYXlsaXN0cxoQZ2dNR0tnUUlBUkFBb0FZQg%3D%3D")
-            val FILTER_PLAYLISTS_RECENTLY_SAVED = LibraryFilter("4qmFsgIrEhdGRW11c2ljX2xpa2VkX3BsYXlsaXN0cxoQZ2dNR0tnUUlBQkFCb0FZQg%3D%3D")
-        }
-    }
-
     const val MAX_GET_QUEUE_SIZE = 1000
 
     /**
@@ -3048,15 +2136,6 @@ object YouTube {
         client: YouTubeClient,
         sequenceParams: String,
     ): ReelSequencePage = innerTube.reel(client = client, sequenceParams = sequenceParams).body<JsonObject>().toReelSequencePage()
-
-    /** The reels that follow [videoId]. The response never contains the seed itself. */
-    suspend fun shortsFromVideo(videoId: String): Result<ReelSequencePage> = shorts(ReelParams.seedSequenceParams(videoId))
-
-    /** Title, channel, counts and sound for one reel — everything the sequence leaves out. */
-    suspend fun reelOverlay(videoId: String): Result<ReelOverlay?> =
-        runCatching {
-            innerTube.reelItemWatch(client = WEB, videoId = videoId).body<JsonObject>().toReelOverlay()
-        }
 
     fun getNewPipeStreamUrls(videoId: String): List<Pair<Int, String>> =
         io.github.aedev.flow.innertube.pages.NewPipeExtractor

@@ -31,7 +31,6 @@ import kotlinx.coroutines.withContext
 import java.io.InputStream
 import java.io.OutputStream
 import kotlin.math.ln
-import kotlin.math.log10
 
 /**
  * Flow Neuro Engine (V10.0 — Channel Intelligence + Shorts Vector + Anti-Rec + Momentum)
@@ -572,24 +571,6 @@ class FlowNeuroEngine(
     suspend fun hasCompletedOnboarding(): Boolean = brainMutex.withLock { currentUserBrain.hasCompletedOnboarding }
 
     suspend fun getPreferredTopics(): Set<String> = brainMutex.withLock { currentUserBrain.preferredTopics }
-
-    suspend fun setPreferredTopics(topics: Set<String>) {
-        brainMutex.withLock {
-            val newTopics = currentUserBrain.globalVector.topics.toMutableMap()
-            topics.forEach { topic ->
-                newTopics[tokenizer.normalizeLemma(topic)] = 0.5
-            }
-            currentUserBrain =
-                currentUserBrain.copy(
-                    preferredTopics = topics,
-                    globalVector =
-                        currentUserBrain.globalVector.copy(
-                            topics = newTopics,
-                        ),
-                )
-            storage.save(currentUserBrain)
-        }
-    }
 
     suspend fun restoreContentPreferences(
         preferredTopics: Set<String>,

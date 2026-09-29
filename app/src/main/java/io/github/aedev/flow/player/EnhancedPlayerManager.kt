@@ -28,14 +28,10 @@ import androidx.media3.exoplayer.upstream.DefaultBandwidthMeter
 import androidx.media3.session.MediaSession
 import dagger.hilt.android.EntryPointAccessors
 import io.github.aedev.flow.data.local.PlayerPreferences
-import io.github.aedev.flow.data.local.SponsorBlockAction
-import io.github.aedev.flow.data.local.VideoQuality
 import io.github.aedev.flow.data.localmedia.LocalMediaIds
 import io.github.aedev.flow.data.model.SponsorBlockSegment
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.repository.YouTubeRepository
-import io.github.aedev.flow.innertube.YouTube
-import io.github.aedev.flow.innertube.models.YouTubeClient
 import io.github.aedev.flow.innertube.models.response.PlayerResponse
 import io.github.aedev.flow.player.analytics.PlaybackAnalyticsLogger
 import io.github.aedev.flow.player.audio.AudioEffectsEntryPoint
@@ -53,14 +49,11 @@ import io.github.aedev.flow.player.preload.PreloadTarget
 import io.github.aedev.flow.player.quality.QualityManager
 import io.github.aedev.flow.player.recovery.ClearedMediaRecoveryState
 import io.github.aedev.flow.player.sabr.integration.SabrStreamInfo
-import io.github.aedev.flow.player.sabr.integration.SabrUrlResolver
 import io.github.aedev.flow.player.service.BackgroundServiceManager
 import io.github.aedev.flow.player.sponsorblock.SponsorBlockHandler
 import io.github.aedev.flow.player.state.EnhancedPlayerState
 import io.github.aedev.flow.player.state.PlaybackCompletion
 import io.github.aedev.flow.player.state.QualityOption
-import io.github.aedev.flow.player.state.SubtitleLoadFailure
-import io.github.aedev.flow.player.state.queuePresence
 import io.github.aedev.flow.player.stream.CaptionTrackResolver
 import io.github.aedev.flow.player.stream.InnerTubeVideoMapper
 import io.github.aedev.flow.player.stream.InnerTubeVideoStreamExtractor
@@ -72,7 +65,6 @@ import io.github.aedev.flow.player.surface.SurfaceManager
 import io.github.aedev.flow.player.surface.VideoSurfacePolicy
 import io.github.aedev.flow.player.tracker.PlaybackTracker
 import io.github.aedev.flow.utils.NetworkState
-import io.github.aedev.flow.utils.ThumbnailUrlResolver
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -92,10 +84,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
-import org.schabi.newpipe.extractor.ServiceList
 import org.schabi.newpipe.extractor.stream.AudioStream
-import org.schabi.newpipe.extractor.stream.StreamInfo
-import org.schabi.newpipe.extractor.stream.StreamInfoItem
 import org.schabi.newpipe.extractor.stream.StreamType
 import org.schabi.newpipe.extractor.stream.SubtitlesStream
 import org.schabi.newpipe.extractor.stream.VideoStream
@@ -130,14 +119,12 @@ class EnhancedPlayerManager private constructor() {
     // State management
     private val _playerState = MutableStateFlow(EnhancedPlayerState())
     val playerState: StateFlow<EnhancedPlayerState> = _playerState.asStateFlow()
-    val hasQueue: Flow<Boolean> = playerState.queuePresence()
 
     // Stream data
     private var currentVideoId: String? = null
     private var availableVideoStreams: List<VideoStream> = emptyList()
     private var availableAudioStreams: List<AudioStream> = emptyList()
     private var availableSubtitles: List<SubtitlesStream> = emptyList()
-    private val _subtitleLoadFailedEvent = MutableSharedFlow<SubtitleLoadFailure>(extraBufferCapacity = 1)
     private var currentVideoStream: VideoStream? = null
     private var currentAudioStream: AudioStream? = null
     private var selectedSubtitleIndex: Int? = null
@@ -424,23 +411,6 @@ class EnhancedPlayerManager private constructor() {
         videoMediaSession = null
     }
 
-    /**
-     * Set to true while PlaybackRefocusEffect is recovering from a screen-off/on cycle.
-     * Prevents onPlaybackStateChanged(STATE_ENDED) from skipping to the next video or
-     * seeking to 0 during the transient states that ExoPlayer goes through during recovery.
-     */
-    @Volatile private var isRecoveringFromBackground = false
-
-    /** Call at the start of a screen-off recovery sequence (before prepare()). */
-    fun beginBackgroundRecovery() {
-        isRecoveringFromBackground = true
-    }
-
-    /** Call after the recovery sequence completes or is abandoned. */
-    fun endBackgroundRecovery() {
-        isRecoveringFromBackground = false
-    }
-
     // Modular components
     private val playerFactory = PlayerFactory()
     private val backgroundServiceManager = BackgroundServiceManager()
@@ -456,9 +426,6 @@ class EnhancedPlayerManager private constructor() {
 
     private val _playbackAbandonedEvent = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val playbackAbandonedEvent: SharedFlow<Unit> = _playbackAbandonedEvent.asSharedFlow()
-
-    private val _queueAutoAdvanceEvent = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
-    val queueAutoAdvanceEvent: SharedFlow<Unit> = _queueAutoAdvanceEvent.asSharedFlow()
 
     /** Emitted when a video plays to its end, before looping or autoplay replaces it. */
     private val _playbackCompletedEvent = MutableSharedFlow<PlaybackCompletion>(extraBufferCapacity = 4)
@@ -540,19 +507,6 @@ class EnhancedPlayerManager private constructor() {
                         player?.stop()
                         player?.clearMediaItems()
                         _streamExpiredEvent.emit(Unit)
-                    }
-                }
-                loader.onSubtitleLoadFailed = { index, label ->
-                    val failed = availableSubtitles.getOrNull(index)
-                    scope.launch {
-                        _subtitleLoadFailedEvent.emit(
-                            SubtitleLoadFailure(
-                                index = index,
-                                label = label,
-                                language = failed?.languageTag ?: failed?.locale?.toLanguageTag(),
-                                isTranslated = failed?.let(CaptionTrackResolver::isTranslated) == true,
-                            ),
-                        )
                     }
                 }
             }
@@ -767,7 +721,7 @@ class EnhancedPlayerManager private constructor() {
                         _playerState.value.copy(
                             isBuffering = playbackState == Player.STATE_BUFFERING,
                             playWhenReady = player?.playWhenReady ?: false,
-                            hasEnded = playbackState == Player.STATE_ENDED && !isRecoveringFromBackground && !exoLive,
+                            hasEnded = playbackState == Player.STATE_ENDED && !exoLive,
                         )
                     if (playbackState == Player.STATE_READY ||
                         playbackState == Player.STATE_ENDED ||
@@ -775,11 +729,11 @@ class EnhancedPlayerManager private constructor() {
                     ) {
                         autoNextLog(
                             "onPlaybackStateChanged ${playerStateName(playbackState)} " +
-                                "recovering=$isRecoveringFromBackground live=$exoLive",
+                                "live=$exoLive",
                         )
                     }
 
-                    if (playbackState == Player.STATE_ENDED && !isRecoveringFromBackground && exoLive) {
+                    if (playbackState == Player.STATE_ENDED && exoLive) {
                         val now = System.currentTimeMillis()
                         if (now - lastLiveEdgeRecoveryMs < 2500L) {
                             autoNextLog("STATE_ENDED on live again too soon -> stop recovering")
@@ -793,7 +747,7 @@ class EnhancedPlayerManager private constructor() {
                         return
                     }
 
-                    if (playbackState == Player.STATE_ENDED && !isRecoveringFromBackground) {
+                    if (playbackState == Player.STATE_ENDED) {
                         acquireAdvanceWakeLock()
                         autoNextLog("STATE_ENDED branch entered")
                         emitPlaybackCompletion()
@@ -1433,86 +1387,6 @@ class EnhancedPlayerManager private constructor() {
     /** True when the queue advanced to [videoId]; such items start from the beginning instead of resuming. */
     fun isReachedByQueueAdvance(videoId: String): Boolean = queue.isReachedByAdvance(videoId)
 
-    /**
-     * Insert [video] immediately after the current position (Play Next).
-     * If no queue is active but a video is currently playing, silently build a
-     * [currentVideo, video] queue starting at index 0 — no playback interruption.
-     * If nothing is playing at all, start the video immediately.
-     */
-    fun addVideoToQueueNext(video: Video) {
-        if (!isOnMainThread()) {
-            autoNextLog("addVideoToQueueNext posted to main video=${video.id} from=${Thread.currentThread().name}")
-            mainHandler.post { addVideoToQueueNext(video) }
-            return
-        }
-        autoNextLog("addVideoToQueueNext ${video.id}")
-        when (queue.addNext(video, GlobalPlayerState.currentVideo.value)) {
-            QueueAddOutcome.NoActiveQueue -> setQueue(listOf(video), 0)
-            QueueAddOutcome.QueueCreated -> onQueueMutated("queue-created-play-next")
-            QueueAddOutcome.Inserted -> onQueueMutated("queue-play-next")
-        }
-    }
-
-    /**
-     * Append [video] to the end of the current queue.
-     * If no queue is active but a video is currently playing, silently build a
-     * [currentVideo, video] queue starting at index 0 — no playback interruption.
-     * If nothing is playing at all, start the video immediately.
-     */
-    fun addVideoToQueue(video: Video) {
-        if (!isOnMainThread()) {
-            autoNextLog("addVideoToQueue posted to main video=${video.id} from=${Thread.currentThread().name}")
-            mainHandler.post { addVideoToQueue(video) }
-            return
-        }
-        autoNextLog("addVideoToQueue ${video.id}")
-        when (queue.append(video, GlobalPlayerState.currentVideo.value)) {
-            QueueAddOutcome.NoActiveQueue -> setQueue(listOf(video), 0)
-            QueueAddOutcome.QueueCreated -> onQueueMutated("queue-created-add")
-            QueueAddOutcome.Inserted -> onQueueMutated("queue-add")
-        }
-    }
-
-    fun playVideoAtIndex(
-        index: Int,
-        loadStreamsInPlayer: Boolean = true,
-    ) {
-        if (index == queue.currentIndex) return
-        val video = queue.moveTo(index) ?: return
-        startPlaybackFromQueue(video, loadStreamsInPlayer)
-        updateQueueState()
-    }
-
-    fun removeVideoAtIndex(index: Int) {
-        if (!isOnMainThread()) {
-            mainHandler.post { removeVideoAtIndex(index) }
-            return
-        }
-        if (!queue.removeAt(index)) return
-
-        preload.clear()
-        onQueueMutated("queue-remove")
-    }
-
-    fun moveVideoAtIndex(
-        fromIndex: Int,
-        toIndex: Int,
-    ) {
-        if (!isOnMainThread()) {
-            mainHandler.post { moveVideoAtIndex(fromIndex, toIndex) }
-            return
-        }
-        if (!queue.move(fromIndex, toIndex)) return
-
-        preload.clear()
-        onQueueMutated("queue-move")
-    }
-
-    private fun onQueueMutated(reason: String) {
-        updateQueueState()
-        preload.request(reason)
-    }
-
     private fun startPlaybackFromQueue(
         video: Video,
         loadStreamsInPlayer: Boolean,
@@ -1550,27 +1424,6 @@ class EnhancedPlayerManager private constructor() {
                 isQueueLooping = queue.loopEnabled,
                 isQueueShuffled = queue.shuffleEnabled,
             )
-    }
-
-    fun toggleQueueLoop(enabled: Boolean) {
-        if (!isOnMainThread()) {
-            mainHandler.post { toggleQueueLoop(enabled) }
-            return
-        }
-        queue.setLoopEnabled(enabled)
-        preload.clear()
-        onQueueMutated("queue-loop-toggle")
-    }
-
-    fun toggleQueueShuffle(enabled: Boolean) {
-        if (!isOnMainThread()) {
-            mainHandler.post { toggleQueueShuffle(enabled) }
-            return
-        }
-        if (!queue.setShuffleEnabled(enabled)) return
-
-        preload.clear()
-        onQueueMutated("queue-shuffle-toggle")
     }
 
     fun setAutoplayCandidates(
@@ -1685,7 +1538,6 @@ class EnhancedPlayerManager private constructor() {
                 return
             }
             autoNextLog("auto-advance queue playNext")
-            _queueAutoAdvanceEvent.tryEmit(Unit)
             playNext(loadStreamsInPlayer = true)
         } else {
             autoNextLog("auto-advance related-autoplay")
@@ -1710,14 +1562,6 @@ class EnhancedPlayerManager private constructor() {
         if (!autoplayCountdownController.stop()) return
         releaseAdvanceWakeLock()
         autoNextLog("autoplay countdown cancelled")
-    }
-
-    fun restartFromAutoplayCountdown() {
-        autoplayCountdownController.stop()
-        releaseAdvanceWakeLock()
-        player?.seekTo(0)
-        player?.play()
-        autoNextLog("autoplay countdown -> restart current")
     }
 
     private fun clearAutoplayCountdownInternal() {
@@ -2176,7 +2020,6 @@ class EnhancedPlayerManager private constructor() {
                 liveDurationMs = 0L,
             )
         updateQueueState()
-        _queueAutoAdvanceEvent.tryEmit(Unit)
 
         player?.let { p ->
             val idx = p.currentMediaItemIndex
@@ -2205,8 +2048,6 @@ class EnhancedPlayerManager private constructor() {
         p.play()
     }
 
-    fun recoverClearedMediaAfterForeground(): Boolean = reloadClearedMediaIfNeeded()
-
     private fun reloadClearedMediaIfNeeded(playWhenReadyOverride: Boolean? = null): Boolean {
         val p = player ?: return false
         if (p.playbackState != Player.STATE_IDLE || p.mediaItemCount > 0) return false
@@ -2233,29 +2074,6 @@ class EnhancedPlayerManager private constructor() {
     }
 
     fun pause() = player?.pause()
-
-    /**
-     * Nudges the playhead one frame.
-     *
-     * Only while paused: stepping a running player just fights playback. VOD seeks are
-     * CLOSEST_SYNC, which would snap back to the same keyframe every time, so the step is made
-     * EXACT and the parameter restored afterwards. Stepping backwards is slower than forwards
-     * because it decodes forward from the preceding keyframe, which on YouTube can be seconds back.
-     */
-    fun stepFrame(forward: Boolean) {
-        val p = player ?: return
-        if (p.isPlaying || currentIsLiveStream || p.isCurrentMediaItemLive) return
-        val target =
-            FrameStepPolicy.stepTarget(
-                positionMs = p.currentPosition,
-                durationMs = p.duration,
-                frameRate = p.videoFormat?.frameRate,
-                forward = forward,
-            ) ?: return
-        p.setSeekParameters(SeekParameters.EXACT)
-        p.seekTo(target)
-        p.setSeekParameters(SeekParameters.CLOSEST_SYNC)
-    }
 
     fun seekTo(position: Long) {
         val p = player ?: return
@@ -2315,20 +2133,6 @@ class EnhancedPlayerManager private constructor() {
         }
     }
 
-    fun seekToLiveTimeline(position: Long) {
-        val p = player ?: return
-        val isLive = currentIsLiveStream || p.isCurrentMediaItemLive
-        val target = resolveSeekTarget(p, position)
-        if (isLive) {
-            p.setSeekParameters(SeekParameters.EXACT)
-            markLiveDisplaySeek(target)
-        }
-        p.seekTo(target)
-        if (isLive) {
-            updateLiveEdgeState(p)
-        }
-    }
-
     private fun resolveSeekTarget(
         player: ExoPlayer,
         requestedPositionMs: Long,
@@ -2362,25 +2166,6 @@ class EnhancedPlayerManager private constructor() {
     private fun markLiveDisplaySeek(positionMs: Long) {
         pendingLiveDisplaySeekPositionMs = positionMs.coerceAtLeast(0L)
         pendingLiveDisplaySeekAtMs = SystemClock.elapsedRealtime()
-    }
-
-    fun consumeRecentLiveDisplaySeek(maxAgeMs: Long = 2_000L): Long? {
-        val position = pendingLiveDisplaySeekPositionMs ?: return null
-        if (SystemClock.elapsedRealtime() - pendingLiveDisplaySeekAtMs > maxAgeMs) {
-            pendingLiveDisplaySeekPositionMs = null
-            return null
-        }
-        pendingLiveDisplaySeekPositionMs = null
-        return position
-    }
-
-    fun setScrubbingModeEnabled(enabled: Boolean) {
-        player?.let { p ->
-            val isLive = currentIsLiveStream || p.isCurrentMediaItemLive
-            p.setSeekParameters(
-                if (enabled || isLive) SeekParameters.EXACT else SeekParameters.CLOSEST_SYNC,
-            )
-        }
     }
 
     fun replay() {
@@ -2447,8 +2232,6 @@ class EnhancedPlayerManager private constructor() {
             p.currentMediaItem != null &&
             p.playbackState != Player.STATE_IDLE
     }
-
-    fun hasAbandonedPlayback(): Boolean = errorHandler?.hasGivenUp() == true
 
     private fun resolveSourceVideoAspectRatio(): Float? {
         val innerTubeDimensions =
@@ -2788,31 +2571,11 @@ class EnhancedPlayerManager private constructor() {
 
     fun toggleStableVolume(isEnabled: Boolean) = audioFeaturesManager?.toggleStableVolume(isEnabled, appContext)
 
-    fun toggleSponsorBlock(isEnabled: Boolean) {
-        sponsorBlockHandler?.setEnabled(isEnabled)
-        appContext?.let { ctx ->
-            scope.launch { PlayerPreferences(ctx).setSponsorBlockEnabled(isEnabled) }
-        }
-    }
-
     val sponsorSegments: StateFlow<List<SponsorBlockSegment>>
         get() = sponsorBlockHandler?.sponsorSegments ?: MutableStateFlow(emptyList())
 
-    /** Emits the display label of a subtitle track whose fetch failed and will not be retried. */
-    val subtitleLoadFailedEvent: SharedFlow<SubtitleLoadFailure>
-        get() = _subtitleLoadFailedEvent
-
     val skipEvent: SharedFlow<SponsorBlockSegment>
         get() = sponsorBlockHandler?.skipEvent ?: MutableSharedFlow()
-
-    val sbMuteEvent: SharedFlow<Boolean>
-        get() = sponsorBlockHandler?.muteEvent ?: MutableSharedFlow()
-
-    val sbToastEvent: SharedFlow<SponsorBlockSegment>
-        get() = sponsorBlockHandler?.toastEvent ?: MutableSharedFlow()
-
-    val sbCategoryActions: Map<String, SponsorBlockAction>
-        get() = sponsorBlockHandler?.categoryActions ?: emptyMap()
 
     // ===== Surface Management =====
 
@@ -3014,8 +2777,6 @@ class EnhancedPlayerManager private constructor() {
     }
 
     fun isInAudioOnlyMode(): Boolean = audioOnlyMode.isActive
-
-    fun isVideoSurfaceRestorePending(): Boolean = audioOnlyMode.restorePending
 
     fun setSurfaceReady(ready: Boolean) {
         surfaceManager?.setSurfaceReady(ready)

@@ -82,8 +82,6 @@ object AppProxyManager {
         }
     }
 
-    fun currentConfig(): AppProxyConfig = config
-
     fun currentProxy(): Proxy? = config.toProxy()
 
     fun currentHttpProxyAuthorizationHeader(): String? = config.httpProxyAuthorizationHeader()

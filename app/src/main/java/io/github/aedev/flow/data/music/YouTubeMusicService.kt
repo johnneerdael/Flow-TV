@@ -1,8 +1,6 @@
 package io.github.aedev.flow.data.music
 
 import android.util.Log
-import io.github.aedev.flow.FlowApplication
-import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.data.music.model.ArtistDetails
 import io.github.aedev.flow.data.music.model.MusicPlaylist
 import io.github.aedev.flow.data.music.model.MusicTrack
@@ -10,8 +8,6 @@ import io.github.aedev.flow.data.music.model.PlaylistDetails
 import io.github.aedev.flow.data.newmusic.InnertubeMusicService
 import io.github.aedev.flow.innertube.YouTube
 import io.github.aedev.flow.innertube.models.SongItem
-import io.github.aedev.flow.player.stream.AudioStreamSelector
-import io.github.aedev.flow.utils.NetworkState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -19,7 +15,6 @@ import org.schabi.newpipe.extractor.NewPipe
 import org.schabi.newpipe.extractor.ServiceList
 import org.schabi.newpipe.extractor.playlist.PlaylistInfo
 import org.schabi.newpipe.extractor.playlist.PlaylistInfoItem
-import org.schabi.newpipe.extractor.search.SearchExtractor
 import org.schabi.newpipe.extractor.stream.StreamInfo
 import org.schabi.newpipe.extractor.stream.StreamInfoItem
 
@@ -219,66 +214,6 @@ object YouTubeMusicService {
         }
 
     /**
-     * Search for artists on YouTube
-     */
-    suspend fun searchArtists(
-        query: String,
-        limit: Int = 10,
-    ): List<ArtistDetails> =
-        withContext(Dispatchers.IO) {
-            try {
-                val service = ServiceList.YouTube
-                val searchExtractor = service.getSearchExtractor(query, listOf("channel"), "")
-                searchExtractor.fetchPage()
-
-                searchExtractor.initialPage.items
-                    .filterIsInstance<org.schabi.newpipe.extractor.channel.ChannelInfoItem>()
-                    .take(limit)
-                    .map { item ->
-                        val channelId = item.url.substringAfterLast("/")
-                        ArtistDetails(
-                            name = item.name,
-                            channelId = channelId,
-                            thumbnailUrl = item.thumbnails.maxByOrNull { it.height }?.url ?: "",
-                            subscriberCount = item.subscriberCount,
-                            description = item.description ?: "",
-                            bannerUrl = "", // Not available in search results
-                            topTracks = emptyList(), // Not available in search results
-                        )
-                    }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error searching artists", e)
-                emptyList()
-            }
-        }
-
-    /**
-     * Fetch music tracks by genre/mood
-     */
-    suspend fun fetchMusicByGenre(
-        genre: String,
-        limit: Int = 30,
-    ): List<MusicTrack> =
-        withContext(Dispatchers.IO) {
-            try {
-                // Strategic search for genres
-                val query =
-                    when (genre.lowercase()) {
-                        "workout" -> "high energy workout music 2025"
-                        "relax" -> "chill lo-fi hip hop relax"
-                        "focus" -> "deep focus ambient music"
-                        "energize" -> "party hits 2025"
-                        else -> "$genre songs 2025"
-                    }
-
-                searchMusic(query, limit)
-            } catch (e: Exception) {
-                Log.e(TAG, "Error fetching tracks by genre: $genre", e)
-                emptyList()
-            }
-        }
-
-    /**
      * Get detailed stream info
      */
     suspend fun getStreamInfo(videoId: String): StreamInfo? =
@@ -290,122 +225,6 @@ object YouTubeMusicService {
             } catch (e: Exception) {
                 Log.e(TAG, "Error getting stream info for $videoId", e)
                 null
-            }
-        }
-
-    suspend fun fetchVideoDuration(videoId: String): Int =
-        withContext(Dispatchers.IO) {
-            try {
-                getStreamInfo(videoId)?.duration?.toInt() ?: 0
-            } catch (e: Exception) {
-                0
-            }
-        }
-
-    /**
-     * Get best audio stream object including metadata for DASH optimization
-     */
-    suspend fun getBestAudioStream(videoId: String): Pair<org.schabi.newpipe.extractor.stream.AudioStream, Long>? =
-        withContext(Dispatchers.IO) {
-            try {
-                val streamInfo = getStreamInfo(videoId) ?: return@withContext null
-                val preferences = PlayerPreferences(FlowApplication.appContext)
-                val preferredAudioLanguage = preferences.preferredAudioLanguage.first()
-                val preferredMusicAudioQuality =
-                    preferences.musicAudioQuality
-                        .first()
-                        .resolve(onWifi = NetworkState.isOnWifi(FlowApplication.appContext))
-                val audioStream =
-                    AudioStreamSelector.selectPreferredAudioStream(
-                        streams =
-                            streamInfo.audioStreams
-                                ?.filter { !it.url.isNullOrEmpty() }
-                                ?: emptyList(),
-                        preferredAudioLanguage = preferredAudioLanguage,
-                        preferredMusicAudioQuality = preferredMusicAudioQuality,
-                    )
-
-                if (audioStream != null) {
-                    Pair(audioStream, streamInfo.duration)
-                } else {
-                    null
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error getting best audio stream", e)
-                null
-            }
-        }
-
-    /**
-     * Get best audio stream URL
-     */
-    suspend fun getAudioUrl(videoId: String): String? =
-        withContext(Dispatchers.IO) {
-            try {
-                val streamInfo = getStreamInfo(videoId)
-                val preferences = PlayerPreferences(FlowApplication.appContext)
-                val preferredAudioLanguage = preferences.preferredAudioLanguage.first()
-                val preferredMusicAudioQuality =
-                    preferences.musicAudioQuality
-                        .first()
-                        .resolve(onWifi = NetworkState.isOnWifi(FlowApplication.appContext))
-                val audioStream =
-                    AudioStreamSelector.selectPreferredAudioStream(
-                        streams =
-                            streamInfo
-                                ?.audioStreams
-                                ?.filter { !it.url.isNullOrEmpty() }
-                                ?: emptyList(),
-                        preferredAudioLanguage = preferredAudioLanguage,
-                        preferredMusicAudioQuality = preferredMusicAudioQuality,
-                    )
-
-                audioStream?.url
-            } catch (e: Exception) {
-                Log.e(TAG, "Error getting audio URL", e)
-                null
-            }
-        }
-
-    /**
-     * Get best video stream URL (synced with audio)
-     */
-    suspend fun getVideoUrl(videoId: String): String? =
-        withContext(Dispatchers.IO) {
-            try {
-                val streamInfo = getStreamInfo(videoId)
-                // Prefer video streams that have both audio and video if possible,
-                // but usually we want the highest quality video stream
-                val videoStream =
-                    streamInfo
-                        ?.videoStreams
-                        ?.filter { !it.url.isNullOrEmpty() }
-                        ?.maxByOrNull { it.bitrate }
-
-                videoStream?.url
-            } catch (e: Exception) {
-                Log.e(TAG, "Error getting video URL", e)
-                null
-            }
-        }
-
-    /**
-     * Fetch tracks from a YouTube playlist
-     */
-    suspend fun fetchPlaylistTracks(playlistId: String): List<MusicTrack> =
-        withContext(Dispatchers.IO) {
-            try {
-                val service = ServiceList.YouTube
-                val playlistUrl = "https://www.youtube.com/playlist?list=$playlistId"
-                val playlistInfo = PlaylistInfo.getInfo(service, playlistUrl)
-
-                playlistInfo.relatedItems
-                    .filterIsInstance<StreamInfoItem>()
-                    .filter { isMusicContent(it) } // Filter out compilations in playlists
-                    .mapNotNull { convertToMusicTrack(it) }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error fetching playlist tracks: $playlistId", e)
-                emptyList()
             }
         }
 
@@ -841,6 +660,4 @@ object YouTubeMusicService {
             .trim()
 
     fun getPopularGenres(): List<String> = musicGenres
-
-    suspend fun fetchTopPicks(limit: Int = 20): List<MusicTrack> = fetchTrendingMusic(limit)
 }

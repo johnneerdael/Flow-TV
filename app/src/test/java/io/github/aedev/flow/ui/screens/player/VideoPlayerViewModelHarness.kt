@@ -1,7 +1,6 @@
 package io.github.aedev.flow.ui.screens.player
 
 import android.content.Context
-import io.github.aedev.flow.data.comments.CommentsPageResult
 import io.github.aedev.flow.data.engagement.VideoEngagementSignals
 import io.github.aedev.flow.data.engagement.VideoEngagementUseCase
 import io.github.aedev.flow.data.local.ChannelSubscription
@@ -13,7 +12,6 @@ import io.github.aedev.flow.data.local.SubscriptionRepository
 import io.github.aedev.flow.data.local.VideoQuality
 import io.github.aedev.flow.data.local.ViewHistory
 import io.github.aedev.flow.data.local.entity.WatchHistoryEntity
-import io.github.aedev.flow.data.model.Comment
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.data.recommendation.FlowNeuroEngine
@@ -46,7 +44,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestDispatcher
-import org.schabi.newpipe.extractor.Page
 
 /**
  * Characterisation harness for [VideoPlayerViewModel]: every constructor dependency is a relaxed
@@ -123,7 +120,6 @@ internal class VideoPlayerViewModelHarness(
         // Reset the real singleton before spying it so the reset is not a recorded call.
         GlobalPlayerState.setCurrentVideo(null)
         GlobalPlayerState.setExplicitBackgroundPlaybackActive(false)
-        GlobalPlayerState.hideMiniPlayer()
         mockkObject(GlobalPlayerState)
 
         mockkObject(EnhancedMusicPlayerManager)
@@ -175,9 +171,6 @@ internal class VideoPlayerViewModelHarness(
         every { videoDownloadManager.downloadedVideos } returns downloadedVideos
         coEvery { videoDownloadManager.getSponsorBlockData(any()) } returns null
         coEvery { offlineSubtitleStore.load(any()) } returns emptyList()
-
-        coEvery { repository.getComments(any()) } returns (emptyList<Comment>() to null as Page?)
-        coEvery { repository.getVideoComments(any(), any()) } returns CommentsPageResult.EMPTY
 
         every { subscriptionRepository.isSubscribed(any()) } returns isSubscribed
         every { subscriptionRepository.getSubscription(any()) } returns subscription

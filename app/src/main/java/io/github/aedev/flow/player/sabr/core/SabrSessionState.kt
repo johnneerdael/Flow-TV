@@ -76,7 +76,6 @@ class SabrSessionState {
 
     var screenWidthPixels: Int = 1920
     var screenHeightPixels: Int = 1080
-    var screenDensity: Float = 2.0f
     var estimatedBandwidthBps: Long = 100_000_000
 
     fun poTokenBytes(): ByteArray {

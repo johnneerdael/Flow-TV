@@ -6,8 +6,6 @@ import io.github.aedev.flow.innertube.YouTube
 import io.github.aedev.flow.innertube.models.AccountInfo
 import io.github.aedev.flow.innertube.models.YouTubeClient
 import io.github.aedev.flow.innertube.pages.HistoryPage
-import io.github.aedev.flow.innertube.pages.HomePage
-import io.github.aedev.flow.innertube.pages.LibraryPage
 import io.github.aedev.flow.innertube.pages.PlaylistPage
 import io.github.aedev.flow.innertube.pages.account.AccountVideoFeed
 import io.github.aedev.flow.innertube.pages.account.toAccountVideoFeed
@@ -20,8 +18,6 @@ import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
-const val LIKED_MUSIC_PLAYLIST_ID = "LM"
-private const val LIBRARY_PLAYLISTS_BROWSE_ID = "FEmusic_liked_playlists"
 private const val WATCH_HISTORY_BROWSE_ID = "FEhistory"
 
 /**
@@ -39,49 +35,13 @@ class AccountFeedClient
         private var cached: Pair<AccountSession, InnerTube>? = null
         private var verifiedCookie: String? = null
 
-        // YouTube Music answers a dead cookie with a generic signed-out home, so check the account first.
-        suspend fun musicHome(
-            continuation: String? = null,
-            params: String? = null,
-        ): Result<HomePage> =
-            withTube { tube ->
-                verifyAccount(tube).mapCatching { YouTube.home(continuation = continuation, params = params, via = tube).getOrThrow() }
-            }
-
         suspend fun musicHistory(): Result<HistoryPage> = withTube { YouTube.musicHistory(via = it) }
-
-        suspend fun libraryPlaylists(): Result<LibraryPage> = withTube { YouTube.library(LIBRARY_PLAYLISTS_BROWSE_ID, via = it) }
 
         suspend fun playlist(playlistId: String): Result<PlaylistPage> = withTube { YouTube.playlist(playlistId, via = it) }
 
         suspend fun accountInfo(): Result<AccountInfo> = withTube { YouTube.accountInfo(via = it) }
 
         suspend fun watchHistory(): Result<AccountVideoFeed> = videoFeed(WATCH_HISTORY_BROWSE_ID)
-
-        /**
-         * Adds a play of [videoId] to the account's YouTube Music history by pinging its playback-tracking
-         * URL on the signed-in session, as YouTube Music itself does. [trackingUrl] is the one from the
-         * signed-in stream request; a track that streamed anonymously asks the account's player for one.
-         */
-        suspend fun recordPlay(
-            videoId: String,
-            trackingUrl: String? = null,
-        ): Result<Unit> =
-            withTube { tube ->
-                runCatching {
-                    val tracking =
-                        trackingUrl
-                            ?: YouTube
-                                .player(videoId, client = YouTubeClient.WEB_REMIX, via = tube)
-                                .getOrThrow()
-                                .playbackTracking
-                                ?.videostatsPlaybackUrl
-                                ?.baseUrl
-                            ?: error("No playback tracking for $videoId")
-                    YouTube.registerPlayback(playbackTracking = tracking, via = tube).getOrThrow()
-                    Unit
-                }
-            }
 
         internal suspend fun tube(): InnerTube? = active()?.second
 
@@ -96,15 +56,6 @@ class AccountFeedClient
                 cached?.takeIf { it.first == session }
                     ?: (session to newTube(session)).also { cached = it }
             }
-
-        private suspend fun verifyAccount(tube: InnerTube): Result<Unit> {
-            val cookie = cached?.first?.cookie
-            if (cookie != null && cookie == verifiedCookie) return Result.success(Unit)
-            return YouTube
-                .accountInfo(via = tube)
-                .map { verifiedCookie = cookie }
-                .recoverCatching { error -> throw if (isSignedOutFailure(error)) AccountSessionExpiredException() else error }
-        }
 
         private fun newTube(session: AccountSession) =
             InnerTube(AccountEndpointPolicy.ACCOUNT).apply {
@@ -136,9 +87,5 @@ private const val ACCOUNT_HTTP_CACHE = "account_http_cache"
 private val AUTH_REJECTIONS = setOf(401, 403)
 
 private fun Throwable.isAuthRejection(): Boolean = (this as? ClientRequestException)?.response?.status?.value in AUTH_REJECTIONS
-
-/** accountInfo() throws a NullPointerException when YouTube returns no active account for the cookie. */
-internal fun isSignedOutFailure(error: Throwable): Boolean =
-    error is AccountSessionExpiredException || error is NullPointerException || error.isAuthRejection()
 
 internal fun AccountVideoFeed.requireLoggedIn(): AccountVideoFeed = if (loggedIn == false) throw AccountSessionExpiredException() else this

@@ -70,21 +70,8 @@ class VideoStatsRecorder
         /** A submitted search; [query] is null when search history is off, so only the count is kept. */
         fun onSearch(query: String?) = record { locked { VideoStatsLedgerOps.recordSearch(it, System.currentTimeMillis(), query) } }
 
-        fun onSponsorSkip(
-            category: String,
-            skippedMs: Long,
-        ) = record(requiresRecording = true) {
-            locked { VideoStatsLedgerOps.recordSponsorSkip(it, System.currentTimeMillis(), category, skippedMs) }
-        }
-
         /** Search history was cleared or switched off: the recap forgets every stored search text. */
         fun onSearchHistoryCleared() = record { locked(VideoStatsLedgerOps::clearQueries) }
-
-        /** Counted views in one month, without copying the ledger. */
-        suspend fun monthViews(monthKey: String): Int {
-            ensureInitialized()
-            return mutex.withLock { ledger.months[monthKey]?.views ?: 0 }
-        }
 
         suspend fun snapshot(): VideoStatsSnapshot {
             ensureInitialized()

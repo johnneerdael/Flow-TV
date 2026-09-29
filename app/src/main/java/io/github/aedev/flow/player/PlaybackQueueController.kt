@@ -128,28 +128,6 @@ internal class PlaybackQueueController {
 
     fun movePrevious(): Video? = if (hasPrevious) moveTo(currentIndex - 1) else null
 
-    /** Inserts [video] right after the current position (Play Next). */
-    fun addNext(
-        video: Video,
-        currentlyPlaying: Video?,
-    ): QueueAddOutcome {
-        if (isEmpty) return startQueueFrom(currentlyPlaying, video)
-
-        val current = currentVideo
-        val originalInsertAt =
-            originalItems
-                .indexOfFirst { it.id == current?.id }
-                .takeIf { it >= 0 }
-                ?.plus(1)
-                ?: originalItems.size
-        originalItems =
-            originalItems.toMutableList().apply {
-                add(originalInsertAt.coerceIn(0, size), video)
-            }
-        _videos.value = items.toMutableList().apply { add(currentIndex + 1, video) }
-        return QueueAddOutcome.Inserted
-    }
-
     /** Appends [video] to the end of the queue. */
     fun append(
         video: Video,
@@ -190,30 +168,6 @@ internal class PlaybackQueueController {
 
         // While shuffled, the pre-shuffle order has to survive a manual reorder untouched.
         if (!shuffleEnabled) originalItems = reordered.items
-        publish(reordered.items, reordered.currentIndex)
-        return true
-    }
-
-    fun setLoopEnabled(enabled: Boolean) {
-        loopEnabled = enabled
-    }
-
-    /** @return whether this changed anything, i.e. there was a non-empty queue to reorder. */
-    fun setShuffleEnabled(enabled: Boolean): Boolean {
-        if (shuffleEnabled == enabled || isEmpty) return false
-
-        val reordered =
-            if (enabled) {
-                originalItems = items
-                PlaylistQueueOrder.shuffleFromCurrent(items, currentIndex)
-            } else {
-                PlaylistQueueOrder.restoreOriginal(
-                    original = originalItems,
-                    currentItem = currentVideo,
-                    keySelector = Video::id,
-                )
-            }
-        shuffleEnabled = enabled
         publish(reordered.items, reordered.currentIndex)
         return true
     }

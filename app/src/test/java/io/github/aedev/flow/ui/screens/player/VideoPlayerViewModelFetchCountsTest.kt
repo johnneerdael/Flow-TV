@@ -3,8 +3,6 @@ package io.github.aedev.flow.ui.screens.player
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import io.github.aedev.flow.R
-import io.github.aedev.flow.data.comments.CommentsPageResult
-import io.github.aedev.flow.data.local.ChannelSubscription
 import io.github.aedev.flow.data.model.Comment
 import io.github.aedev.flow.innertube.YouTube
 import io.github.aedev.flow.player.GlobalPlayerState
@@ -34,8 +32,6 @@ import nl.neerdael.milkbeat.plugin.VideoPlayback
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import org.schabi.newpipe.extractor.Page
-import org.schabi.newpipe.extractor.stream.StreamInfo
 import nl.neerdael.milkbeat.catalog.Comment as PluginComment
 
 /**
@@ -306,58 +302,6 @@ class VideoPlayerViewModelFetchCountsTest {
 
             coVerify(exactly = 1) { harness.pluginVideo.resolve("vid_a") }
             coVerify(exactly = 1) { harness.pluginVideo.resolve("vid_b") }
-        }
-
-    @Test
-    fun `loadSubscriptionAndLikeState holds one collector per concern across three different ids`() =
-        runTest {
-            val viewModel = newViewModel()
-
-            viewModel.loadSubscriptionAndLikeState("ch_1", "vid_1")
-            advanceUntilIdle()
-            viewModel.loadSubscriptionAndLikeState("ch_2", "vid_2")
-            advanceUntilIdle()
-            viewModel.loadSubscriptionAndLikeState("ch_3", "vid_3")
-            advanceUntilIdle()
-
-            assertThat(harness.isSubscribed.subscriptionCount.value).isEqualTo(1)
-            assertThat(harness.subscription.subscriptionCount.value).isEqualTo(1)
-            assertThat(harness.likeState.subscriptionCount.value).isEqualTo(1)
-            verify(exactly = 1) { harness.subscriptionRepository.isSubscribed("ch_3") }
-            verify(exactly = 1) { harness.subscriptionRepository.getSubscription("ch_3") }
-            verify(exactly = 1) { harness.likedVideosRepository.getLikeState("vid_3") }
-
-            harness.isSubscribed.value = true
-            harness.subscription.value =
-                ChannelSubscription(
-                    channelId = "ch_3",
-                    channelName = "Channel",
-                    channelThumbnail = "",
-                    isNotificationEnabled = true,
-                )
-            harness.likeState.value = "liked"
-            advanceUntilIdle()
-            assertThat(viewModel.uiState.value.isSubscribed).isTrue()
-            assertThat(viewModel.uiState.value.isNotificationsEnabled).isTrue()
-            assertThat(viewModel.uiState.value.likeState).isEqualTo("liked")
-        }
-
-    @Test
-    fun `loadSubscriptionAndLikeState does not re-collect ids it is already collecting`() =
-        runTest {
-            val viewModel = newViewModel()
-
-            repeat(3) {
-                viewModel.loadSubscriptionAndLikeState("ch_1", "vid_1")
-                advanceUntilIdle()
-            }
-
-            assertThat(harness.isSubscribed.subscriptionCount.value).isEqualTo(1)
-            assertThat(harness.subscription.subscriptionCount.value).isEqualTo(1)
-            assertThat(harness.likeState.subscriptionCount.value).isEqualTo(1)
-            verify(exactly = 1) { harness.subscriptionRepository.isSubscribed("ch_1") }
-            verify(exactly = 1) { harness.subscriptionRepository.getSubscription("ch_1") }
-            verify(exactly = 1) { harness.likedVideosRepository.getLikeState("vid_1") }
         }
 
     @Test

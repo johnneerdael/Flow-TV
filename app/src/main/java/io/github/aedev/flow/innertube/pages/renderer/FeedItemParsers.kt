@@ -64,12 +64,6 @@ internal fun JsonElement?.toFeedItem(owner: FeedItemOwner): FeedItem? {
     }
 }
 
-internal fun JsonElement?.toFeedItems(owner: FeedItemOwner): List<FeedItem> =
-    arrayOrNull()
-        .orEmpty()
-        .mapNotNull { it.toFeedItem(owner) }
-        .distinctBy { it.distinctKey() }
-
 private fun JsonObject.toLockupItem(owner: FeedItemOwner): FeedItem? {
     val contentId = this["contentId"].stringOrNull()?.takeIf(String::isNotBlank) ?: return null
     val metadata = this["metadata"].objectOrNull()?.get("lockupMetadataViewModel").objectOrNull()

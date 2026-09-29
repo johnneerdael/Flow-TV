@@ -30,11 +30,6 @@ data class ShortVideo(
     val playerParams: String? = null,
 )
 
-data class ShortsSequenceResult(
-    val shorts: List<ShortVideo>,
-    val continuation: String?,
-)
-
 fun ReelEntry.toShortVideo(): ShortVideo =
     ShortVideo(
         id = videoId,

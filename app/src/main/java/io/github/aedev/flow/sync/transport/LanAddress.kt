@@ -1,6 +1,5 @@
 package io.github.aedev.flow.sync.transport
 
-import android.util.Log
 import java.net.Inet4Address
 import java.net.NetworkInterface
 
@@ -14,8 +13,6 @@ import java.net.NetworkInterface
  * OS enumerates first even though it exists only inside the tunnel.
  */
 object LanAddress {
-    private const val TAG = "LanAddress"
-
     /** Interface-name prefixes that mean "virtual, container, or VPN adapter". */
     private val VIRTUAL_PREFIXES = listOf("tun", "tap", "utun", "wg", "ppp", "veth", "br-", "zt")
 
@@ -56,11 +53,6 @@ object LanAddress {
             }
         }
         return rank(pairs)
-    }
-
-    fun logCandidates(chosen: String?) {
-        val ranked = candidates()
-        Log.i(TAG, "LAN candidates (best first): ${ranked.joinToString()} -> advertising ${chosen ?: "none"}")
     }
 
     /**

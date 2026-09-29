@@ -20,18 +20,14 @@ import io.github.aedev.flow.data.migration.WatchLaterMetadataMigrator
 import io.github.aedev.flow.data.model.PlaylistInfo
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.music.YouTubeMusicService
-import io.github.aedev.flow.data.playlist.PlaylistFileCodec
 import io.github.aedev.flow.data.playlist.PlaylistTransfer
 import io.github.aedev.flow.data.repository.RemotePlaylistPage
 import io.github.aedev.flow.data.repository.YouTubePlaylistRepository
 import io.github.aedev.flow.data.repository.YouTubeRepository
 import io.github.aedev.flow.data.video.BackgroundDownloadQueuer
-import io.github.aedev.flow.data.video.DownloadBatch
 import io.github.aedev.flow.ui.components.library.PlaylistSortOrder
-import io.github.aedev.flow.ui.components.library.sortedForPlaylist
 import io.github.aedev.flow.ui.components.shared.quickactions.QuickActionUndo
 import io.github.aedev.flow.utils.PerformanceDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,7 +38,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -120,23 +115,6 @@ class PlaylistDetailViewModel
                     .takeIf { it in PlaylistSortOrder.availableFor(isLocal, isLikes) } ?: PlaylistSortOrder.defaultFor(isLikes)
             }.stateIn(viewModelScope, sharing, PlaylistSortOrder.MANUAL)
 
-        val sortedVideos: StateFlow<List<Video>> =
-            combine(_uiState.map { it.videos }, sortOrder) { videos, order ->
-                videos.sortedForPlaylist(order)
-            }.flowOn(Dispatchers.Default)
-                .stateIn(viewModelScope, sharing, emptyList())
-
-        val userCreatedPlaylists: StateFlow<List<PlaylistInfo>> =
-            repository
-                .getUserCreatedVideoPlaylistsFlow()
-                .stateIn(viewModelScope, sharing, emptyList())
-
-        /** The running or just-finished "Download all" for this playlist. */
-        val downloadBatch: StateFlow<DownloadBatch?> =
-            downloadQueuer.batches
-                .map { it[playlistId] }
-                .stateIn(viewModelScope, sharing, null)
-
         init {
             loadPlaylist()
             viewModelScope.launch {
@@ -157,81 +135,9 @@ class PlaylistDetailViewModel
             }
         }
 
-        fun setSortOrder(order: PlaylistSortOrder) {
-            viewModelScope.launch {
-                playerPreferences.setPlaylistSortOrder(playlistId, order.storageValue)
-            }
-        }
-
         fun retry() {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             loadPlaylist()
-        }
-
-        fun saveToLibrary() {
-            viewModelScope.launch {
-                val state = _uiState.value
-                repository.saveExternalVideoPlaylist(
-                    id = playlistId,
-                    name = state.playlistName,
-                    description = state.description,
-                    thumbnailUrl = state.thumbnailUrl.ifEmpty { state.videos.firstOrNull()?.thumbnailUrl ?: "" },
-                )
-                repository.addVideosToPlaylist(playlistId, state.videos)
-                _uiState.update { it.copy(isLocalPlaylist = true, isSaved = true) }
-                _messages.send(PlaylistUiMessage(stringRes = R.string.ui_playlist_saved_to_library))
-            }
-        }
-
-        fun unsaveFromLibrary() {
-            viewModelScope.launch {
-                repository.unsaveExternalPlaylist(playlistId)
-                _uiState.update { it.copy(isLocalPlaylist = false, isSaved = false) }
-                _messages.send(PlaylistUiMessage(stringRes = R.string.ui_playlist_removed_from_library))
-            }
-        }
-
-        fun removeVideo(videoId: String) = removeVideos(setOf(videoId))
-
-        fun removeVideos(videoIds: Set<String>) {
-            if (videoIds.isEmpty()) return
-            if (_uiState.value.isLikes) {
-                unlikeVideos(videoIds)
-                return
-            }
-            viewModelScope.launch {
-                val removed = repository.takeVideosFromPlaylist(playlistId, videoIds)
-                if (removed.isEmpty()) return@launch
-                _messages.send(
-                    PlaylistUiMessage(
-                        pluralRes = R.plurals.playlist_videos_removed,
-                        count = removed.size,
-                        args = listOf(removed.size),
-                        undo = QuickActionUndo.PlaylistRemoval(removed),
-                    ),
-                )
-            }
-        }
-
-        private fun unlikeVideos(videoIds: Set<String>) {
-            viewModelScope.launch {
-                val removed = likedMedia.unlike(videoIds)
-                if (removed.isEmpty()) return@launch
-                _messages.send(
-                    PlaylistUiMessage(
-                        pluralRes = R.plurals.liked_videos_removed,
-                        count = removed.size,
-                        args = listOf(removed.size),
-                        undo = QuickActionUndo.Unlike(removed),
-                    ),
-                )
-            }
-        }
-
-        fun reorderVideos(orderedVideoIds: List<String>) {
-            viewModelScope.launch {
-                repository.reorderVideosInPlaylist(playlistId, orderedVideoIds)
-            }
         }
 
         fun updatePlaylist(
@@ -250,54 +156,12 @@ class PlaylistDetailViewModel
             }
         }
 
-        fun mergeIntoPlaylist(targetPlaylistId: String) {
-            viewModelScope.launch {
-                val videos = _uiState.value.videos
-                try {
-                    repository.addVideosToPlaylist(targetPlaylistId, videos)
-                    val targetInfo = repository.getPlaylistInfo(targetPlaylistId)
-                    _messages.send(
-                        PlaylistUiMessage(
-                            pluralRes = R.plurals.merge_playlist_success,
-                            count = videos.size,
-                            args = listOf(videos.size, targetInfo?.name ?: ""),
-                        ),
-                    )
-                } catch (_: Exception) {
-                    _messages.send(PlaylistUiMessage(stringRes = R.string.toast_failed_to_merge_playlist))
-                }
-            }
-        }
-
-        /** The name offered when the viewer saves this playlist as a file. */
-        val exportFileName: String get() = PlaylistFileCodec.fileName(_uiState.value.playlistName)
-
         fun exportTo(target: Uri) {
             viewModelScope.launch {
                 val state = _uiState.value
                 val saved = transfer.writeTo(target, state.playlistName, state.description, state.videos)
                 _messages.send(PlaylistUiMessage(stringRes = if (saved) R.string.playlist_exported else R.string.playlist_export_failed))
             }
-        }
-
-        /** This playlist as a file another app can read, or null when it could not be written. */
-        suspend fun shareableFile(): Uri? {
-            val state = _uiState.value
-            return transfer.shareableCopy(state.playlistName, state.description, state.videos)
-        }
-
-        fun downloadPlaylist() {
-            val videos = _uiState.value.videos
-            if (videos.isEmpty()) {
-                viewModelScope.launch { _messages.send(PlaylistUiMessage(stringRes = R.string.ui_playlist_empty)) }
-                return
-            }
-            viewModelScope.launch {
-                _messages.send(
-                    PlaylistUiMessage(pluralRes = R.plurals.ui_downloading_videos, count = videos.size, args = listOf(videos.size)),
-                )
-            }
-            downloadQueuer.queueAll(playlistId, videos)
         }
 
         private fun loadPlaylist() {

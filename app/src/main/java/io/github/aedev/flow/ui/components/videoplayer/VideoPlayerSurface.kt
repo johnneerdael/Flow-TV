@@ -36,7 +36,6 @@ import androidx.media3.ui.PlayerView
 import io.github.aedev.flow.R
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.player.EnhancedPlayerManager
-import io.github.aedev.flow.player.PictureInPictureHelper
 import io.github.aedev.flow.player.surface.VideoSurfacePolicy
 import io.github.aedev.flow.player.toDisplayAspectRatioOrNull
 import io.github.aedev.flow.ui.components.videoplayer.ambient.VideoAmbientBackground
@@ -161,22 +160,6 @@ fun VideoPlayerSurface(
         onDispose {
             playerView.player?.removeListener(videoSizeListener)
             playerView.player = null
-        }
-    }
-
-    DisposableEffect(playerView) {
-        val rect = android.graphics.Rect()
-        val updateHint = {
-            if (playerView.getGlobalVisibleRect(rect) && !rect.isEmpty) {
-                PictureInPictureHelper.sourceRectHint = android.graphics.Rect(rect)
-            }
-        }
-        val listener = View.OnLayoutChangeListener { _, _, _, _, _, _, _, _, _ -> updateHint() }
-        playerView.addOnLayoutChangeListener(listener)
-        updateHint()
-        onDispose {
-            playerView.removeOnLayoutChangeListener(listener)
-            PictureInPictureHelper.sourceRectHint = null
         }
     }
 

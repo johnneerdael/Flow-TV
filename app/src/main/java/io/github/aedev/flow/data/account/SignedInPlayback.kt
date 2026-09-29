@@ -50,8 +50,6 @@ class SignedInPlayback
             tracking.put(videoId, playbackUrl)
         }
 
-        fun trackingFor(videoId: String): String? = tracking.get(videoId)
-
         fun forgetTracking() {
             tracking.evictAll()
         }

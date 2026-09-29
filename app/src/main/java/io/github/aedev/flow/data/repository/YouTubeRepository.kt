@@ -2,9 +2,7 @@ package io.github.aedev.flow.data.repository
 
 import android.util.Log
 import android.util.LruCache
-import io.github.aedev.flow.data.comments.CommentsPageResult
 import io.github.aedev.flow.data.local.PlayerPreferences
-import io.github.aedev.flow.data.model.Comment
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.model.VideoCollaborator
 import io.github.aedev.flow.data.model.needsCollaboratorResolution
@@ -22,21 +20,16 @@ import io.github.aedev.flow.utils.PerformanceDispatcher
 import io.github.aedev.flow.utils.RelativeUploadDateParser
 import io.github.aedev.flow.utils.ThumbnailUrlResolver
 import io.github.aedev.flow.utils.avatarImageIdentityKey
-import io.github.aedev.flow.utils.bestImageUrl
 import io.github.aedev.flow.utils.distinctBestImageUrls
-import io.github.aedev.flow.utils.newPipeLocalization
 import io.github.aedev.flow.utils.parseRelativeToTimestamp
 import io.github.aedev.flow.utils.parseToTimestamp
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.supervisorScope
-import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.Json
@@ -45,7 +38,6 @@ import kotlinx.serialization.json.decodeFromJsonElement
 import org.schabi.newpipe.extractor.NewPipe
 import org.schabi.newpipe.extractor.Page
 import org.schabi.newpipe.extractor.ServiceList
-import org.schabi.newpipe.extractor.comments.CommentsInfoItem
 import org.schabi.newpipe.extractor.stream.ContentAvailability
 import org.schabi.newpipe.extractor.stream.StreamInfo
 import org.schabi.newpipe.extractor.stream.StreamInfoItem
@@ -90,13 +82,6 @@ class YouTubeRepository
         private val channelAvatarCache = LruCache<String, String>(300)
         private val videoAvatarStackCache = LruCache<String, List<String>>(300)
         private val videoCollaboratorCache = LruCache<String, List<VideoCollaborator>>(300)
-        private val videoChannelMetadataCache = LruCache<String, VideoChannelMetadata>(300)
-
-        private data class VideoChannelMetadata(
-            val channelId: String,
-            val channelName: String,
-            val avatarUrl: String,
-        )
 
         /**
          * Fetch channel avatar by channelId, with in-memory caching.
@@ -111,163 +96,6 @@ class YouTubeRepository
                 if (url.isNotEmpty()) channelAvatarCache.put(channelId, url)
                 url
             }
-
-        /**
-         * Enrich a list of [Video] objects that are missing [Video.channelThumbnailUrl]
-         * by fetching avatar URLs in parallel (max 5 concurrent channel fetches).
-         */
-        suspend fun enrichVideosWithAvatars(videos: List<Video>): List<Video> =
-            supervisorScope {
-                val channelIds =
-                    videos
-                        .filter { it.channelThumbnailUrl.isEmpty() && it.channelId.isNotEmpty() }
-                        .map { it.channelId }
-                        .distinct()
-
-                if (channelIds.isEmpty()) return@supervisorScope videos
-
-                Log.d(TAG, "enrichVideosWithAvatars: fetching avatars for ${channelIds.size} channels")
-                val avatarMap = mutableMapOf<String, String>()
-                channelIds.chunked(5).forEach { batch ->
-                    batch
-                        .map { id ->
-                            async(Dispatchers.IO) { withTimeoutOrNull(6_000L) { id to fetchChannelAvatarById(id) } }
-                        }.awaitAll()
-                        .forEach { pair ->
-                            pair?.let { (id, url) -> if (url.isNotEmpty()) avatarMap[id] = url }
-                        }
-                }
-                Log.d(TAG, "enrichVideosWithAvatars: resolved ${avatarMap.size}/${channelIds.size} avatars")
-                if (avatarMap.isEmpty()) return@supervisorScope videos
-                videos.map { video ->
-                    if (video.channelThumbnailUrl.isEmpty()) {
-                        avatarMap[video.channelId]?.let { avatar ->
-                            video.copy(
-                                channelThumbnailUrl = avatar,
-                                channelThumbnailUrls = video.channelThumbnailUrls.ifEmpty { listOf(avatar) },
-                            )
-                        } ?: video
-                    } else {
-                        video
-                    }
-                }
-            }
-
-        suspend fun enrichMissingChannelMetadata(
-            videos: List<Video>,
-            limit: Int = 10,
-        ): List<Video> =
-            supervisorScope {
-                val candidates =
-                    videos
-                        .filter { video ->
-                            video.id.isNotBlank() &&
-                                (
-                                    video.channelId.isBlank() ||
-                                        !video.channelId.startsWith("UC") ||
-                                        video.channelThumbnailUrl.isBlank()
-                                )
-                        }.take(limit)
-                if (candidates.isEmpty()) return@supervisorScope videos
-
-                val semaphore = kotlinx.coroutines.sync.Semaphore(4)
-                val metadataByVideoId =
-                    candidates
-                        .map { video ->
-                            async(Dispatchers.IO) {
-                                semaphore.withPermit {
-                                    val metadata = resolveVideoChannelMetadata(video)
-                                    if (metadata != null &&
-                                        metadata.channelId.isNotBlank() &&
-                                        metadata.avatarUrl.isNotBlank()
-                                    ) {
-                                        videoChannelMetadataCache.put(video.id, metadata)
-                                    }
-                                    video.id to metadata
-                                }
-                            }
-                        }.awaitAll()
-                        .mapNotNull { (videoId, metadata) ->
-                            metadata?.let { videoId to it }
-                        }.toMap()
-
-                if (metadataByVideoId.isEmpty()) return@supervisorScope videos
-                videos.map { video ->
-                    val metadata = metadataByVideoId[video.id] ?: return@map video
-                    val avatarUrl = metadata.avatarUrl.ifBlank { video.channelThumbnailUrl }
-                    video.copy(
-                        channelId = metadata.channelId.ifBlank { video.channelId },
-                        channelName = metadata.channelName.ifBlank { video.channelName },
-                        channelThumbnailUrl = avatarUrl,
-                        channelThumbnailUrls =
-                            if (avatarUrl.isNotBlank()) {
-                                (listOf(avatarUrl) + video.channelThumbnailUrls).distinct()
-                            } else {
-                                video.channelThumbnailUrls
-                            },
-                    )
-                }
-            }
-
-        private suspend fun resolveVideoChannelMetadata(video: Video): VideoChannelMetadata? {
-            videoChannelMetadataCache[video.id]?.let { return it }
-
-            val channelMetadata =
-                video.channelId.takeIf { it.isNotBlank() }?.let { channelId ->
-                    withTimeoutOrNull(6_000L) {
-                        getChannelInfo(channelId)?.let { info ->
-                            VideoChannelMetadata(
-                                channelId = info.id.orEmpty(),
-                                channelName = info.name.orEmpty(),
-                                avatarUrl =
-                                    info.avatars
-                                        .maxByOrNull { it.height }
-                                        ?.url
-                                        .orEmpty(),
-                            )
-                        }
-                    }
-                }
-
-            if (channelMetadata?.avatarUrl?.isNotBlank() == true) return channelMetadata
-
-            val watchMetadata =
-                withTimeoutOrNull(5_000L) {
-                    getLiveWatchMetadata(video.id)?.let { result ->
-                        VideoChannelMetadata(
-                            channelId = result.channelId.orEmpty(),
-                            channelName = result.channelName.orEmpty(),
-                            avatarUrl = result.channelAvatarUrl.orEmpty(),
-                        )
-                    }
-                }
-
-            val merged =
-                VideoChannelMetadata(
-                    channelId =
-                        watchMetadata?.channelId.orEmpty().ifBlank {
-                            channelMetadata?.channelId.orEmpty().ifBlank { video.channelId }
-                        },
-                    channelName =
-                        watchMetadata?.channelName.orEmpty().ifBlank {
-                            channelMetadata?.channelName.orEmpty().ifBlank { video.channelName }
-                        },
-                    avatarUrl =
-                        watchMetadata?.avatarUrl.orEmpty().ifBlank {
-                            channelMetadata?.avatarUrl.orEmpty()
-                        },
-                )
-
-            if (merged.avatarUrl.isNotBlank()) return merged
-
-            val fallbackAvatar =
-                merged.channelId
-                    .takeIf { it.isNotBlank() }
-                    ?.let { channelId ->
-                        withTimeoutOrNull(6_000L) { fetchChannelAvatarById(channelId) }
-                    }.orEmpty()
-            return merged.copy(avatarUrl = fallbackAvatar)
-        }
 
         /**
          * Search for videos
@@ -520,17 +348,6 @@ class YouTubeRepository
             }
 
         /**
-         * Get related videos
-         */
-        suspend fun getRelatedVideos(videoId: String): List<Video> =
-            withContext(Dispatchers.IO) {
-                val streamInfo = fetchWatchStreamInfoWithAlternates(videoId) ?: return@withContext emptyList()
-                getRelatedVideosFromStreamInfo(streamInfo)
-                    .filter { it.id.isNotBlank() && it.id != videoId }
-                    .distinctBy { it.id }
-            }
-
-        /**
          * Fetch recent uploads for a single channel (by channelId or channel URL).
          * Limits to `limitPerChannel` videos per channel to avoid OOM and long runs.
          */
@@ -717,35 +534,6 @@ class YouTubeRepository
             }
 
         /**
-         * NEW: Parallel fetch of multiple search queries
-         * Executes all queries simultaneously for faster feed generation
-         */
-        suspend fun parallelSearchQueries(
-            queries: List<String>,
-            limitPerQuery: Int = 15,
-        ): List<Video> =
-            withContext(PerformanceDispatcher.networkIO) {
-                supervisorScope {
-                    val results =
-                        queries
-                            .map { query ->
-                                async(PerformanceDispatcher.networkIO) {
-                                    withTimeoutOrNull(10_000L) {
-                                        try {
-                                            searchVideos(query).first.take(limitPerQuery)
-                                        } catch (e: Exception) {
-                                            Log.w("YouTubeRepository", "Search query '$query' failed: ${e.message}")
-                                            emptyList()
-                                        }
-                                    } ?: emptyList()
-                                }
-                            }.awaitAll()
-
-                    results.flatten().distinctBy { it.id }
-                }
-            }
-
-        /**
          * Fetch a "Lite" Subscription Feed
          * Rotates through subscribed channels to improve fresh-upload coverage.
          */
@@ -894,171 +682,6 @@ class YouTubeRepository
             withContext(Dispatchers.IO) {
                 val response = watchNextResponse(videoId) ?: return@withContext null
                 YouTube.videoDescription(response, videoId).takeIf { !it.isEmpty }
-            }
-
-        /**
-         * The first page of a video's comments, in the order [sortToken] names, or the section's
-         * own default when it is null.
-         *
-         * Falls back to the extractor when InnerTube returns nothing, so a schema change degrades
-         * the section instead of emptying it.
-         */
-        suspend fun getVideoComments(
-            videoId: String,
-            sortToken: String? = null,
-        ): CommentsPageResult =
-            withContext(Dispatchers.IO) {
-                val token =
-                    sortToken
-                        ?: watchNextResponse(videoId)?.let(YouTube::commentsContinuation)
-                val page = token?.let { YouTube.comments(it, videoId).getOrNull() }
-                if (page != null && page.comments.isNotEmpty()) {
-                    return@withContext CommentsPageResult(
-                        comments = page.comments,
-                        continuation = page.continuation,
-                        sortOptions = page.sortOptions,
-                        totalText = page.totalText,
-                        totalCount = page.totalCount,
-                    )
-                }
-                Log.i(TAG, "InnerTube comments empty for $videoId, falling back to the extractor")
-                val (comments, legacyPage) = getComments(videoId)
-                CommentsPageResult(comments = comments, legacyPage = legacyPage)
-            }
-
-        suspend fun getMoreVideoComments(
-            videoId: String,
-            continuation: String,
-        ): CommentsPageResult =
-            withContext(Dispatchers.IO) {
-                val page = YouTube.comments(continuation, videoId).getOrNull() ?: return@withContext CommentsPageResult.EMPTY
-                CommentsPageResult(comments = page.comments, continuation = page.continuation)
-            }
-
-        suspend fun getVideoCommentReplies(
-            videoId: String,
-            continuation: String,
-        ): CommentsPageResult =
-            withContext(Dispatchers.IO) {
-                val page = YouTube.commentReplies(continuation, videoId).getOrNull() ?: return@withContext CommentsPageResult.EMPTY
-                CommentsPageResult(comments = page.comments, continuation = page.continuation)
-            }
-
-        /**
-         * Fetch the first page of comments for a video.
-         * Returns the comments and a next-page token (null if no more pages).
-         */
-        suspend fun getComments(videoId: String): Pair<List<Comment>, Page?> =
-            withContext(Dispatchers.IO) {
-                try {
-                    val url = "https://www.youtube.com/watch?v=$videoId"
-                    val commentsInfo =
-                        org.schabi.newpipe.extractor.comments.CommentsInfo
-                            .getInfo(service, url)
-                    val comments = mapComments(commentsInfo.relatedItems)
-                    Pair(comments, commentsInfo.nextPage)
-                } catch (e: Exception) {
-                    Log.w(TAG, "${e::class.simpleName}: ${e.message}")
-                    Pair(emptyList(), null)
-                }
-            }
-
-        /**
-         * Fetch the next page of top-level comments for a video.
-         * Returns the new comments and an updated next-page token.
-         */
-        suspend fun getMoreComments(
-            videoId: String,
-            nextPage: Page,
-        ): Pair<List<Comment>, Page?> =
-            withContext(Dispatchers.IO) {
-                try {
-                    val url = "https://www.youtube.com/watch?v=$videoId"
-                    val moreItems =
-                        org.schabi.newpipe.extractor.comments.CommentsInfo
-                            .getMoreItems(service, url, nextPage)
-                    val comments = mapComments(moreItems.items)
-                    Pair(comments, moreItems.nextPage)
-                } catch (e: Exception) {
-                    Log.w(TAG, "${e::class.simpleName}: ${e.message}")
-                    Pair(emptyList(), null)
-                }
-            }
-
-        /**
-         * Fetch replies for a comment
-         */
-        suspend fun getCommentReplies(
-            url: String,
-            repliesPage: Page,
-        ): Pair<List<Comment>, Page?> =
-            withContext(Dispatchers.IO) {
-                try {
-                    val moreItems =
-                        org.schabi.newpipe.extractor.comments.CommentsInfo
-                            .getMoreItems(service, url, repliesPage)
-                    val replies = mapComments(moreItems.items)
-                    Pair(replies, moreItems.nextPage)
-                } catch (e: Exception) {
-                    Log.w(TAG, "${e::class.simpleName}: ${e.message}")
-                    Pair(emptyList(), null)
-                }
-            }
-
-        private suspend fun mapComments(items: List<CommentsInfoItem>): List<Comment> =
-            supervisorScope {
-                val embeddedAvatars =
-                    items.map { item ->
-                        ThumbnailUrlResolver.resolveChannelAvatar(item.uploaderAvatars.bestImageUrl())
-                    }
-                val uploaderReferences = items.map { item -> item.uploaderUrl.orEmpty().trim() }
-                val missingAvatarReferences =
-                    items.indices
-                        .asSequence()
-                        .filter { index -> embeddedAvatars[index].isBlank() }
-                        .map { index -> uploaderReferences[index] }
-                        .filter { reference -> reference.isNotBlank() }
-                        .distinct()
-                        .toList()
-
-                val fallbackAvatars = mutableMapOf<String, String>()
-                missingAvatarReferences.chunked(COMMENT_AVATAR_FETCH_CONCURRENCY).forEach { batch ->
-                    batch
-                        .map { reference ->
-                            async(Dispatchers.IO) {
-                                val avatar =
-                                    runCatching {
-                                        withTimeoutOrNull(COMMENT_AVATAR_FETCH_TIMEOUT_MS) {
-                                            fetchChannelAvatarById(reference)
-                                        }
-                                    }.getOrNull().orEmpty()
-                                reference to avatar
-                            }
-                        }.awaitAll()
-                        .forEach { (reference, avatar) ->
-                            if (avatar.isNotBlank()) fallbackAvatars[reference] = avatar
-                        }
-                }
-
-                items.mapIndexed { index, item ->
-                    val uploaderReference = uploaderReferences[index]
-                    Comment(
-                        id = item.commentId ?: "",
-                        author = item.uploaderName ?: "Unknown",
-                        authorThumbnail =
-                            selectCommentAuthorThumbnail(
-                                embeddedAvatar = embeddedAvatars[index],
-                                resolvedChannelAvatar = fallbackAvatars[uploaderReference],
-                            ),
-                        text = item.commentText.content ?: "",
-                        likeCount = item.likeCount.toInt(),
-                        publishedTime = item.textualUploadDate ?: "",
-                        replyCount = item.replyCount.toInt(),
-                        repliesPage = item.replies,
-                        isPinned = item.isPinned,
-                        authorChannelId = extractChannelId(uploaderReference),
-                    )
-                }
             }
 
         /**
@@ -1404,14 +1027,6 @@ class YouTubeRepository
                 instance ?: error("YouTubeRepository not initialized. Call getInstance(playerPreferences) first.")
         }
     }
-
-internal fun selectCommentAuthorThumbnail(
-    embeddedAvatar: String?,
-    resolvedChannelAvatar: String?,
-): String =
-    ThumbnailUrlResolver
-        .resolveChannelAvatar(embeddedAvatar)
-        .ifBlank { ThumbnailUrlResolver.resolveChannelAvatar(resolvedChannelAvatar) }
 
 internal fun mergeWatchMetadata(
     video: Video,

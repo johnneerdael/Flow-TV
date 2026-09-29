@@ -99,8 +99,6 @@ internal class PluginHostApi(
             handler(HostOperations.sleep) { delay(it.ms.coerceIn(0, MAX_SLEEP_MS)) },
         )
 
-    fun handles(path: String): Boolean = path in handlers
-
     /** Runs host function [path] with [requestJson] and answers with its envelope; never throws. */
     suspend fun call(
         path: String,

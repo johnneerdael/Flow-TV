@@ -5,7 +5,6 @@ import com.google.common.truth.Truth.assertThat
 import io.github.aedev.flow.ui.theme.CustomTheme
 import io.github.aedev.flow.ui.theme.FlowPalettes
 import io.github.aedev.flow.ui.theme.ThemeMode
-import io.github.aedev.flow.ui.theme.ThemeVariant
 import org.junit.Test
 
 class CustomThemeCodecTest {
@@ -41,41 +40,12 @@ class CustomThemeCodecTest {
         "outline":"#d7d7d7","onSurface":"$text","onSurfaceVariant":"#5f5f5f","error":"#d32f2f"}"""
 
     @Test
-    fun `a theme survives export and import`() {
-        val once = CustomThemeCodec.encodeOne(theme)
-        val back = CustomThemeCodec.decode(once).single()
-        assertThat(back.id).isEqualTo(theme.id)
-        assertThat(back.name).isEqualTo(theme.name)
-        assertThat(CustomThemeCodec.encodeOne(back)).isEqualTo(once)
-    }
-
-    @Test
-    fun `exports use desktop's shape and plain hex`() {
-        val text = CustomThemeCodec.encodeOne(theme)
-        assertThat(text).contains("\"custom\": true")
-        assertThat(text).contains("\"variants\"")
-        listOf("light", "dark", "amoled").forEach { assertThat(text).contains("\"$it\"") }
-        assertThat(Regex("\"(#[^\"]*)\"").findAll(text).map { it.groupValues[1] }.all { Regex("#[0-9a-f]{6}").matches(it) }).isTrue()
-    }
-
-    @Test
     fun `a desktop theme with color-mix steps imports with the mixes computed`() {
         val imported = CustomThemeCodec.decode(desktopTheme).single()
         assertThat(imported.name).isEqualTo("From desktop")
         // color-mix(in srgb, #111111 7%, #f3f3f3) = 0x11 * 0.07 + 0xf3 * 0.93 = 227 = 0xe3
         assertThat(imported.light.surfaceContainerHigh.toHex()).isEqualTo("#e3e3e3")
         assertThat(imported.amoled.background).isEqualTo(Color.Black)
-    }
-
-    @Test
-    fun `a list imports every valid theme and drops the invalid ones, as desktop does`() {
-        val valid = CustomThemeCodec.encodeOne(theme)
-        val wrongPrefix = valid.replace("custom-test", "mine")
-        val notCustom = valid.replace("\"custom\": true", "\"custom\": false")
-        val longName = valid.replace("\"Ocean\"", "\"" + "x".repeat(CustomTheme.MAX_NAME_LENGTH + 1) + "\"")
-        val missingVariant = valid.replace("\"amoled\"", "\"other\"")
-        val decoded = CustomThemeCodec.decode("[$valid, $wrongPrefix, $notCustom, $longName, $missingVariant]")
-        assertThat(decoded.map { it.id }).containsExactly("custom-test")
     }
 
     @Test
@@ -98,20 +68,6 @@ class CustomThemeCodecTest {
         assertThat(parseThemeColor("red")).isNull()
         assertThat(parseThemeColor("#fff")).isNull()
         assertThat(parseThemeColor("#ff000080")).isNull()
-    }
-
-    @Test
-    fun `the per-style palette older versions stored becomes one theme`() {
-        val raw =
-            """{"light":{"values":{"PRIMARY":4278255360,"ON_PRIMARY":4294967295}},""" +
-                """"dark":{"values":{"PRIMARY":4278190335,"OUTLINE_VARIANT":4282664004,"RETIRED_ROLE":1}},"amoled":{"values":{}}}"""
-        val stored = decodeLegacyCustomPalettes(raw, legacyCsv = null)!!
-        val migrated = legacyCustomTheme(stored, "custom-android-legacy", "My theme")
-        assertThat(migrated.light.primary).isEqualTo(Color(0xFF00FF00))
-        assertThat(migrated.dark.primary).isEqualTo(Color(0xFF0000FF))
-        assertThat(migrated.dark.outline).isEqualTo(Color(0xFF444444))
-        assertThat(migrated.amoled).isEqualTo(FlowPalettes.default.colorsFor(ThemeVariant.AMOLED))
-        assertThat(CustomThemeCodec.decode(CustomThemeCodec.encodeOne(migrated))).hasSize(1)
     }
 
     @Test

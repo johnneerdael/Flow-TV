@@ -161,16 +161,6 @@ class VideoStatsLedgerTest {
     }
 
     @Test
-    fun `sponsor skips add up per category`() {
-        val ledger = VideoStatsLedger()
-        VideoStatsLedgerOps.recordSponsorSkip(ledger, now, "sponsor", 30_000L, zone)
-        VideoStatsLedgerOps.recordSponsorSkip(ledger, now, "sponsor", 12_000L, zone)
-        VideoStatsLedgerOps.recordSponsorSkip(ledger, now, "intro", 0L, zone)
-
-        assertThat(ledger.month().sponsorSkippedMs).containsExactly("sponsor", 42_000L)
-    }
-
-    @Test
     fun `per-month caps drop the weakest channels and their names`() {
         val ledger = VideoStatsLedger()
         repeat(3) { ledger.record(view(videoId = "fav$it", channelId = "UCfav")) }
@@ -193,19 +183,5 @@ class VideoStatsLedgerTest {
         }
         assertThat(ledger.months.size).isEqualTo(VideoStatsParams.MONTHS_MAX)
         assertThat(ledger.months.keys.minOrNull()).isEqualTo("2023-04")
-    }
-
-    @Test
-    fun `the snapshot round trips every field`() {
-        val ledger = VideoStatsLedger()
-        ledger.record(view())
-        ledger.record(view(videoId = "s1", format = ViewFormat.SHORT, counted = false, skipped = true, watchedMs = 3_000L))
-        VideoStatsLedgerOps.recordDislike(ledger, now, DislikedVideo("v2", "Nope", "UCb", now), zone)
-        VideoStatsLedgerOps.recordAction(ledger, now, LedgerAction.SAVE, zone)
-        VideoStatsLedgerOps.recordSponsorSkip(ledger, now, "sponsor", 5_000L, zone)
-
-        val json = LedgerJson.encodeToString(VideoStatsSnapshot.serializer(), ledger.toSnapshot())
-        val restored = LedgerJson.decodeFromString(VideoStatsSnapshot.serializer(), json)
-        assertThat(restored).isEqualTo(ledger.toSnapshot())
     }
 }

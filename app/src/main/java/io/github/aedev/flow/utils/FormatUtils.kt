@@ -6,7 +6,6 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
-import kotlin.math.roundToInt
 
 /**
  * Format a duration as `H:MM:SS` or `M:SS`.
@@ -29,34 +28,7 @@ fun formatDuration(
     }
 }
 
-fun formatDurationMillis(
-    millis: Long,
-    padMinutes: Boolean = false,
-): String = formatDuration((millis / 1000L).toInt(), padMinutes)
-
-/**
- * Format a multiplier as a compact label, e.g. `2x`, `1.5x`, `0.75x`.
- * Trailing zeros are trimmed and the value is clamped to `0.1..maxValue`.
- */
-fun formatMultiplierLabel(
-    value: Float,
-    maxValue: Float = 10.0f,
-): String {
-    val clamped = value.coerceIn(0.1f, maxValue)
-    return if (kotlin.math.abs(clamped - clamped.toInt()) < 0.01f) {
-        "${clamped.toInt()}x"
-    } else {
-        val rounded = kotlin.math.round(clamped * 100f) / 100f
-        "${rounded.toString().trimEnd('0').trimEnd('.')}x"
-    }
-}
-
 fun formatViewCount(count: Long): String = compactCountFormatter().format(count)
-
-fun formatSubscriberCount(count: Long): String {
-    if (count <= 0L) return ""
-    return compactCountFormatter().format(count)
-}
 
 private fun compactCountFormatter(): CompactDecimalFormat =
     CompactDecimalFormat.getInstance(
@@ -72,18 +44,6 @@ fun formatYouTubeRelativeTime(
     formatRelativeSpan(
         spanMillis = (nowMillis - timestampMillis).coerceAtLeast(0L),
         direction = RelativeDateTimeFormatter.Direction.LAST,
-        locale = locale,
-    )
-
-/** "in 4 hours" for a moment still ahead: the mirror of [formatYouTubeRelativeTime]. */
-fun formatTimeUntil(
-    timestampMillis: Long,
-    nowMillis: Long = System.currentTimeMillis(),
-    locale: Locale = Locale.getDefault(),
-): String =
-    formatRelativeSpan(
-        spanMillis = (timestampMillis - nowMillis).coerceAtLeast(0L),
-        direction = RelativeDateTimeFormatter.Direction.NEXT,
         locale = locale,
     )
 
@@ -227,13 +187,6 @@ private fun formatRelativeTime(
         direction,
         unit,
     )
-
-fun formatLikeCount(count: Int): String =
-    when {
-        count >= 1_000_000 -> "${(count / 1_000_000.0 * 10).roundToInt() / 10.0}M"
-        count >= 1_000 -> "${(count / 1_000.0 * 10).roundToInt() / 10.0}K"
-        else -> "$count"
-    }
 
 /**
  * Formats a scheduled premiere date string (from NewPipe extractor) into YouTube-style:

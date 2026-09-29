@@ -95,39 +95,6 @@ class PlaylistRepository(
         savePlaylists(currentPlaylists)
     }
 
-    // Add track to playlist
-    suspend fun addTrackToPlaylist(
-        playlistId: String,
-        track: MusicTrack,
-    ) {
-        val currentPlaylists = playlists.first().toMutableList()
-        val index = currentPlaylists.indexOfFirst { it.id == playlistId }
-        if (index != -1) {
-            val playlist = currentPlaylists[index]
-            val updatedTracks = playlist.tracks.toMutableList()
-            if (!updatedTracks.any { it.videoId == track.videoId }) {
-                updatedTracks.add(track)
-                currentPlaylists[index] = playlist.copy(tracks = updatedTracks)
-                savePlaylists(currentPlaylists)
-            }
-        }
-    }
-
-    // Remove track from playlist
-    suspend fun removeTrackFromPlaylist(
-        playlistId: String,
-        trackVideoId: String,
-    ) {
-        val currentPlaylists = playlists.first().toMutableList()
-        val index = currentPlaylists.indexOfFirst { it.id == playlistId }
-        if (index != -1) {
-            val playlist = currentPlaylists[index]
-            val updatedTracks = playlist.tracks.filter { it.videoId != trackVideoId }
-            currentPlaylists[index] = playlist.copy(tracks = updatedTracks)
-            savePlaylists(currentPlaylists)
-        }
-    }
-
     // Add to favorites
     suspend fun addToFavorites(track: MusicTrack) {
         val currentFavorites = favorites.first().toMutableList()
@@ -143,19 +110,6 @@ class PlaylistRepository(
         currentFavorites.removeIf { it.videoId == trackVideoId }
         saveFavorites(currentFavorites)
     }
-
-    // Check if track is favorite
-    suspend fun isFavorite(trackVideoId: String): Boolean = favorites.first().any { it.videoId == trackVideoId }
-
-    // Toggle favorite
-    suspend fun toggleFavorite(track: MusicTrack): Boolean =
-        if (isFavorite(track.videoId)) {
-            removeFromFavorites(track.videoId)
-            false
-        } else {
-            addToFavorites(track)
-            true
-        }
 
     // Add to history
     suspend fun addToHistory(track: MusicTrack) {

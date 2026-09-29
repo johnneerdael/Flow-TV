@@ -52,18 +52,6 @@ class SubscriptionFeedRepository
          */
         private val refreshLock = Mutex()
 
-        fun observeFeed(): Flow<List<Video>> = cacheDao.getSubscriptionFeed().map { rows -> rows.map { it.toVideo() } }
-
-        /** Which channels are due a refresh right now; empty when everything is still fresh. */
-        suspend fun planRefresh(force: Boolean): SubscriptionRefreshPlan {
-            val subscriptions = subscriptionRepository.getAllSubscriptions().first()
-            return SubscriptionRefreshPlanner.plan(
-                subscriptions = subscriptions,
-                now = System.currentTimeMillis(),
-                force = force,
-            )
-        }
-
         /**
          * Runs [plan] and writes the result. Emits a progressively more complete feed so the caller
          * can render partial results; the cache is written once, when the fetch finishes.
@@ -238,32 +226,6 @@ class SubscriptionFeedRepository
                 cacheDao.insertSubscriptionFeedIfAbsent(rows)
             }
             Log.d(TAG, "Seeded ${rows.size} row(s) for $channelId from the notification check")
-        }
-
-        /** Writes back metadata the on-demand player lookup resolved for already-cached rows. */
-        suspend fun updateEnrichedMetadata(videos: Collection<Video>) {
-            if (videos.isEmpty()) return
-            withContext(PerformanceDispatcher.diskIO) {
-                database.withTransaction {
-                    videos.forEach { video ->
-                        cacheDao.updateSubscriptionFeedMetadata(
-                            videoId = video.id,
-                            title = video.title,
-                            channelName = video.channelName,
-                            channelId = video.channelId,
-                            thumbnailUrl = video.thumbnailUrl,
-                            duration = video.duration,
-                            viewCount = video.viewCount,
-                            // The cache has no column for a scheduled stream, so it is stored as
-                            // live + upcoming and read back the same way.
-                            isLive = video.isLive || video.isScheduledLive,
-                            isUpcoming = video.isUpcoming,
-                            uploadDate = video.uploadDate,
-                            timestamp = video.timestamp,
-                        )
-                    }
-                }
-            }
         }
 
         private suspend fun loadCachedFeed(): List<Video> = cacheDao.getSubscriptionFeed().first().map { it.toVideo() }

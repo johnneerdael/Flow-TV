@@ -7,7 +7,6 @@ import androidx.media3.exoplayer.dash.DashMediaSource
 import androidx.media3.exoplayer.dash.manifest.DashManifestParser
 import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.exoplayer.source.MediaSource
-import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
 
@@ -29,14 +28,6 @@ object MediaSourceBuilder {
             .Factory(dataSourceFactory)
             .createMediaSource(manifest, mediaItem)
     }
-
-    fun buildProgressiveSource(
-        dataSourceFactory: DataSource.Factory,
-        uri: Uri,
-    ): MediaSource =
-        ProgressiveMediaSource
-            .Factory(dataSourceFactory)
-            .createMediaSource(MediaItem.fromUri(uri))
 
     fun buildHlsSource(
         dataSourceFactory: DataSource.Factory,

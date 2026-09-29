@@ -34,17 +34,6 @@ internal object PlaylistQueueOrder {
         return ReorderedQueue(listOf(currentItem) + remainingItems, currentIndex = 0)
     }
 
-    fun <T, K> restoreOriginal(
-        original: List<T>,
-        currentItem: T?,
-        keySelector: (T) -> K,
-    ): ReorderedQueue<T> {
-        if (currentItem == null) return ReorderedQueue(original, currentIndex = -1)
-        val currentKey = keySelector(currentItem)
-        val restoredIndex = original.indexOfFirst { keySelector(it) == currentKey }.coerceAtLeast(0)
-        return ReorderedQueue(original, restoredIndex)
-    }
-
     fun <T> removeAt(
         items: List<T>,
         currentIndex: Int,

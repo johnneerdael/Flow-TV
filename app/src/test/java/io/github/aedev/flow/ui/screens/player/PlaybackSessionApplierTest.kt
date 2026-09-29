@@ -13,7 +13,6 @@ import io.github.aedev.flow.innertube.models.response.PlayerResponse
 import io.github.aedev.flow.player.GlobalPlayerState
 import io.github.aedev.flow.player.stream.CaptionTrackResolver
 import io.github.aedev.flow.player.stream.InnerTubeVideoStreamExtractor
-import io.github.aedev.flow.player.stream.MergedPlayback
 import io.github.aedev.flow.player.stream.PlaybackFailure
 import io.github.aedev.flow.player.stream.ResolvedPlayback
 import io.github.aedev.flow.ui.screens.player.VideoPlayerViewModelHarness.Companion.video
@@ -34,7 +33,6 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import org.schabi.newpipe.extractor.stream.StreamInfo
 
 /**
  * Pins what one resolved step lands on: the state the screen holds afterwards, and the order the

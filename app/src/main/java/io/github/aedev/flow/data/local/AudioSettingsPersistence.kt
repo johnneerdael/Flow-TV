@@ -41,10 +41,6 @@ class AudioSettingsPersistence private constructor(
                 )
             }
 
-    suspend fun savePitch(pitch: Float) {
-        context.audioSettingsDataStore.edit { it[PITCH_KEY] = pitch }
-    }
-
     suspend fun saveSpeed(speed: Float) {
         context.audioSettingsDataStore.edit { it[SPEED_KEY] = speed }
     }

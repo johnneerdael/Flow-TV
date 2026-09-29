@@ -11,8 +11,6 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <!-- Fallback popup player for devices whose ROM does not expose native Android PiP. -->
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
     <!-- Required for writing to external Downloads/Movies on API < 29 -->
     <uses-permission
@@ -33,26 +31,7 @@
     <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
     <!-- Optional: allows saving downloads to public Movies/Music folders (survives app uninstall) -->
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
-    <!-- Required for DLNA/UPnP SSDP device discovery (FOSS casting, no Google services) -->
-    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
-    <!--
-        Request battery optimization exemption so Android Doze mode does not throttle
-        network access or kill the background playback service.  The app will show a
-        system dialog asking the user to approve the exemption; this is the same approach
-        used by most open-source media players to survive aggressive OEM battery managers.
-        (Referenced in-app via PowerManager.isIgnoringBatteryOptimizations check.)
-    -->
-    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
-
-    <!-- Microphone capture for music recognition (Shazam) -->
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-feature android:name="android.hardware.microphone" android:required="false" />
-
-    <!-- Device Sync (FLOW-SYNC/1): resolve the host LAN IP for the QR code. -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <!-- Device Sync: scan the peer's QR code to receive the session key out-of-band. -->
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-feature android:name="android.hardware.camera.any" android:required="false" />
 
     <!-- Lets the equalizer page offer an installed system or third-party equalizer panel. -->
     <queries>
@@ -118,7 +97,6 @@
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|uiMode"
             android:launchMode="singleTop"
             android:resizeableActivity="true"
-            android:supportsPictureInPicture="true"
             android:theme="@style/Theme.Flow.Starting"
             android:windowSoftInputMode="adjustResize"
             android:windowLayoutInDisplayCutoutMode="shortEdges">
@@ -135,60 +113,6 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data android:scheme="milkbeat" android:host="add-plugin" />
-            </intent-filter>
-
-            <!-- Deep Links for YouTube URLs -->
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="http" />
-                <data android:scheme="https" />
-                <data android:host="www.youtube.com" />
-                <data android:host="youtube.com" />
-                <data android:host="m.youtube.com" />
-                <data android:host="music.youtube.com" />
-                <data android:host="m.music.youtube.com" />
-                <data android:pathPrefix="/watch" />
-                <data android:pathPrefix="/v" />
-                <data android:pathPrefix="/channel" />
-                <data android:pathPrefix="/c" />
-                <data android:pathPrefix="/user" />
-                <data android:pathPrefix="/results" />
-                <data android:pathPrefix="/shorts" />
-            </intent-filter>
-
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="http" />
-                <data android:scheme="https" />
-                <data android:host="youtu.be" />
-            </intent-filter>
-
-            <!-- Piped frontend links (same video IDs as YouTube) -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="http" />
-                <data android:scheme="https" />
-                <data android:host="piped.video" />
-                <data android:host="www.piped.video" />
-                <data android:pathPrefix="/watch" />
-                <data android:pathPrefix="/playlist" />
-                <data android:pathPrefix="/shorts" />
-            </intent-filter>
-
-            <!-- Share Intent for text/plain -->
-            <intent-filter>
-                <action android:name="android.intent.action.SEND" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="text/plain" />
             </intent-filter>
 
             <!-- A playlist file shared from Flow opens here and is imported. -->
@@ -241,15 +165,6 @@
             </intent-filter>
         </service>
 
-        <!-- Device Sync (FLOW-SYNC/1) foreground service: keeps the LAN WebSocket
-             transfer alive while the screen is off / app is backgrounded. -->
-        <service
-            android:name=".sync.transport.SyncForegroundService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="dataSync">
-        </service>
-        
         <!-- Notification action receiver for downloads and other actions -->
         <receiver 
             android:name=".notification.NotificationActionReceiver"
@@ -269,86 +184,6 @@
             android:name=".notification.ReminderReceiver"
             android:enabled="true"
             android:exported="false" />
-
-        <!-- Home-screen widgets (Jetpack Glance) -->
-        <receiver
-            android:name=".widget.nowplaying.NowPlayingWidgetReceiver"
-            android:exported="true"
-            android:label="@string/widget_now_playing_label">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_now_playing_info" />
-        </receiver>
-        <receiver
-            android:name=".widget.turntable.TurntableWidgetReceiver"
-            android:exported="true"
-            android:label="@string/widget_turntable_label">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_turntable_info" />
-        </receiver>
-        <receiver
-            android:name=".widget.quickactions.QuickActionsWidgetReceiver"
-            android:exported="true"
-            android:label="@string/widget_quick_actions_label">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_quick_actions_info" />
-        </receiver>
-        <receiver
-            android:name=".widget.recognize.RecognizeWidgetReceiver"
-            android:exported="true"
-            android:label="@string/widget_recognize_label">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_recognize_info" />
-        </receiver>
-        <receiver
-            android:name=".widget.recent.RecentlyPlayedWidgetReceiver"
-            android:exported="true"
-            android:label="@string/widget_recently_played_label">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_recently_played_info" />
-        </receiver>
-        <receiver
-            android:name=".widget.onrepeat.OnRepeatWidgetReceiver"
-            android:exported="true"
-            android:label="@string/widget_on_repeat_label">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_on_repeat_info" />
-        </receiver>
-        <receiver
-            android:name=".widget.downloads.DownloadsWidgetReceiver"
-            android:exported="true"
-            android:label="@string/widget_downloads_label">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_downloads_info" />
-        </receiver>
-
 
         <!-- Files Flow hands to other apps: recap cards and playlist files, only from their cache folders. -->
         <provider

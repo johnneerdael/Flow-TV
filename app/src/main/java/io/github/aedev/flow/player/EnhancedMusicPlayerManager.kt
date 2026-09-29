@@ -78,9 +78,6 @@ object EnhancedMusicPlayerManager {
 
     private var appContext: Context? = null
 
-    private val _playerInstance = MutableStateFlow<Player?>(null)
-    val playerInstance: StateFlow<Player?> = _playerInstance.asStateFlow()
-
     private var controllerFuture: ListenableFuture<MediaController>? = null
     private var isInitialized = false
     private val exceptionHandler =
@@ -90,7 +87,6 @@ object EnhancedMusicPlayerManager {
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob() + exceptionHandler)
 
     private var retryCount = 0
-    private const val MAX_RETRIES = 3
     private var positionUpdateJob: kotlinx.coroutines.Job? = null
 
     // Persistence
@@ -100,9 +96,6 @@ object EnhancedMusicPlayerManager {
     // Audio Settings State
     private val _playbackSpeed = MutableStateFlow(1.0f)
     val playbackSpeed: StateFlow<Float> = _playbackSpeed.asStateFlow()
-
-    private val _playbackPitch = MutableStateFlow(0.0f)
-    val playbackPitch: StateFlow<Float> = _playbackPitch.asStateFlow()
 
     // Player state flows
     private val _playerState = MutableStateFlow(MusicPlayerState())
@@ -120,14 +113,6 @@ object EnhancedMusicPlayerManager {
      * callers are Compose effects.
      */
     private var preciseProgressConsumers = 0
-
-    fun acquirePreciseProgress() {
-        preciseProgressConsumers++
-    }
-
-    fun releasePreciseProgress() {
-        preciseProgressConsumers = (preciseProgressConsumers - 1).coerceAtLeast(0)
-    }
 
     // Events
     sealed class PlayerEvent {
@@ -232,7 +217,6 @@ object EnhancedMusicPlayerManager {
             try {
                 val controller = controllerFuture?.get()
                 player = controller
-                _playerInstance.value = controller
                 if (controller != null) {
                     setupPlayerListener(controller)
                     scope.launch {
@@ -612,15 +596,6 @@ object EnhancedMusicPlayerManager {
             )
     }
 
-    fun setCurrentTrack(
-        track: MusicTrack,
-        sourceName: String?,
-    ) {
-        clearPendingPlayNext()
-        _currentTrack.value = track
-        sourceName?.let { _playingFrom.value = it }
-    }
-
     fun showPlaybackWarning(message: String) {
         _playbackWarnings.tryEmit(message)
     }
@@ -676,37 +651,6 @@ object EnhancedMusicPlayerManager {
         player?.play()
 
         prefetchNextTrack()
-    }
-
-    fun updateQueue(newQueue: List<MusicTrack>) {
-        if (newQueue.isEmpty()) return
-
-        _queue.value = newQueue
-        if (pendingPlayNextMediaId != null && newQueue.none { it.videoId == pendingPlayNextMediaId }) {
-            clearPendingPlayNext()
-        }
-        triggerQueueSave()
-
-        scope.launch {
-            val currentMediaId = player?.currentMediaItem?.mediaId
-            val currentPosition = player?.currentPosition ?: 0L
-
-            val mediaItems = newQueue.map { track -> buildMediaItem(track) }
-
-            val newIndex =
-                MusicQueuePlanner
-                    .currentQueueIndex(
-                        queueIds = newQueue.map { it.videoId },
-                        playerIndex = player?.currentMediaItemIndex ?: _currentQueueIndex.value,
-                        currentTrackId = currentMediaId,
-                    ).coerceAtLeast(0)
-
-            player?.let { p ->
-                if (p.mediaItemCount != mediaItems.size || p.currentMediaItem?.mediaId != currentMediaId) {
-                    p.setMediaItems(mediaItems, newIndex, currentPosition)
-                }
-            }
-        }
     }
 
     /**
@@ -838,32 +782,6 @@ object EnhancedMusicPlayerManager {
             }
         } catch (e: Exception) {
             Log.e("EnhancedMusicPlayer", "Failed to restore queue", e)
-        }
-    }
-
-    /**
-     * Force save current queue immediately.
-     * Uses cached position from StateFlow for thread safety.
-     */
-    fun saveQueueNow() {
-        scope.launch(Dispatchers.IO) {
-            val currentQ = _queue.value
-            if (currentQ.isNotEmpty()) {
-                queuePersistence?.saveQueueImmediate(
-                    queue = currentQ,
-                    currentIndex = _currentQueueIndex.value,
-                    currentPosition = _currentPosition.value, // Use StateFlow for thread safety
-                    currentTrackId = _currentTrack.value?.videoId,
-                    shuffleEnabled = _shuffleEnabled.value,
-                    repeatMode =
-                        when (_repeatMode.value) {
-                            RepeatMode.OFF -> 0
-                            RepeatMode.ALL -> 1
-                            RepeatMode.ONE -> 2
-                        },
-                    automix = _automixItems.value,
-                )
-            }
         }
     }
 
@@ -1002,29 +920,6 @@ object EnhancedMusicPlayerManager {
         }
     }
 
-    fun switchMode(url: String) {
-        scope.launch {
-            player?.let { p ->
-                val currentPos = p.currentPosition
-                val wasPlaying = p.isPlaying
-
-                val currentItem = p.currentMediaItem ?: return@let
-                val newItem =
-                    currentItem
-                        .buildUpon()
-                        .setUri(Uri.parse(url))
-                        .build()
-
-                val currentIndex = p.currentMediaItemIndex
-                if (currentIndex >= 0 && currentIndex < p.mediaItemCount) {
-                    p.replaceMediaItem(currentIndex, newItem)
-                    p.seekTo(currentPos)
-                    if (wasPlaying) p.play()
-                }
-            }
-        }
-    }
-
     fun getCurrentPosition(): Long =
         try {
             if (player?.isPlaying == true) {
@@ -1083,17 +978,6 @@ object EnhancedMusicPlayerManager {
         }
     }
 
-    fun setPlaybackPitch(semitones: Float) {
-        _playbackPitch.value = semitones
-        scope.launch { audioSettingsPersistence?.savePitch(semitones) }
-
-        player?.let { p ->
-            val pitch = 2.0.pow(semitones.toDouble() / 12.0).toFloat()
-            val currentSpeed = p.playbackParameters.speed
-            p.playbackParameters = PlaybackParameters(currentSpeed, pitch)
-        }
-    }
-
     private suspend fun restoreAudioSettings() {
         try {
             val settings = audioSettingsPersistence?.settingsFlow?.first() ?: return
@@ -1101,7 +985,6 @@ object EnhancedMusicPlayerManager {
             Log.d("EnhancedMusicPlayer", "Restoring audio settings: $settings")
 
             _playbackSpeed.value = settings.speed
-            _playbackPitch.value = settings.pitch
 
             player?.let { p ->
                 val pitch = 2.0.pow(settings.pitch.toDouble() / 12.0).toFloat()
@@ -1135,10 +1018,6 @@ object EnhancedMusicPlayerManager {
                 context.stopService(Intent(context, Media3MusicService::class.java))
             }
         }
-    }
-
-    fun removeFromQueue(index: Int) {
-        removeMediaItem(index)
     }
 
     fun removeMediaItem(index: Int) {
@@ -1181,28 +1060,6 @@ object EnhancedMusicPlayerManager {
                 }
                 triggerQueueSave()
             }
-        }
-    }
-
-    fun insertMediaItem(
-        index: Int,
-        track: MusicTrack,
-    ) {
-        scope.launch {
-            val currentQ = _queue.value.toMutableList()
-            val insertIndex = index.coerceIn(0, currentQ.size)
-            currentQ.add(insertIndex, track)
-            _queue.value = currentQ
-            if (pendingPlayNextMediaIndex >= insertIndex) {
-                pendingPlayNextMediaIndex++
-            }
-
-            player?.let { p ->
-                if (insertIndex <= p.mediaItemCount) {
-                    p.addMediaItem(insertIndex, buildMediaItem(track))
-                }
-            }
-            triggerQueueSave()
         }
     }
 }

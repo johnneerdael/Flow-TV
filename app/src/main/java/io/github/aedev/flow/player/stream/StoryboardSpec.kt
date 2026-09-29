@@ -1,24 +1,5 @@
 package io.github.aedev.flow.player.stream
 
-import kotlin.math.abs
-
-/**
- * One scrub-preview frame: where to find it and which part of the sheet it occupies.
- *
- * [sheetWidth] and [sheetHeight] are the sheet's real dimensions, which the caller must draw the
- * image at before cropping to [left]/[top] — the final sheet of a video is short, holding only the
- * rows it needs, so sizing every sheet at columns x rows misplaces every tile near the end.
- */
-data class StoryboardTile(
-    val sheetUrl: String,
-    val left: Int,
-    val top: Int,
-    val width: Int,
-    val height: Int,
-    val sheetWidth: Int,
-    val sheetHeight: Int,
-)
-
 /**
  * One resolution of a video's storyboard.
  *
@@ -38,37 +19,6 @@ data class StoryboardLevel(
     private val nameTemplate: String,
     private val signature: String,
 ) {
-    private val framesPerSheet = columns * rows
-
-    /** The frame covering [positionMs], or null when the level describes nothing usable. */
-    fun tileAt(positionMs: Long): StoryboardTile? {
-        if (framesPerSheet <= 0 || frameCount <= 0 || intervalMs <= 0L) return null
-        val frame = (positionMs.coerceAtLeast(0L) / intervalMs).toInt().coerceIn(0, frameCount - 1)
-        val sheet = frame / framesPerSheet
-        val withinSheet = frame % framesPerSheet
-        val column = withinSheet % columns
-        val row = withinSheet / columns
-
-        val framesOnSheet = (frameCount - sheet * framesPerSheet).coerceAtMost(framesPerSheet)
-        val rowsOnSheet = (framesOnSheet + columns - 1) / columns
-
-        return StoryboardTile(
-            sheetUrl = sheetUrl(sheet),
-            left = column * thumbnailWidth,
-            top = row * thumbnailHeight,
-            width = thumbnailWidth,
-            height = thumbnailHeight,
-            sheetWidth = columns * thumbnailWidth,
-            sheetHeight = rowsOnSheet * thumbnailHeight,
-        )
-    }
-
-    private fun sheetUrl(sheet: Int): String =
-        baseUrl
-            .replace(LEVEL_TOKEN, index.toString())
-            .replace(NAME_TOKEN, nameTemplate.replace(SHEET_TOKEN, sheet.toString())) +
-            "&sigh=" + signature
-
     internal companion object {
         const val LEVEL_TOKEN = "\$L"
         const val NAME_TOKEN = "\$N"
@@ -98,16 +48,6 @@ object StoryboardSpec {
         return segments.drop(1).mapIndexedNotNull { index, segment ->
             parseLevel(index, segment, baseUrl, durationMs)
         }
-    }
-
-    /** The level whose frames are closest to [targetWidthPx], the size actually drawn. */
-    fun levelFor(
-        levels: List<StoryboardLevel>,
-        targetWidthPx: Int,
-    ): StoryboardLevel? {
-        if (levels.isEmpty()) return null
-        if (targetWidthPx <= 0) return levels.last()
-        return levels.minByOrNull { abs(it.thumbnailWidth - targetWidthPx) }
     }
 
     private fun parseLevel(

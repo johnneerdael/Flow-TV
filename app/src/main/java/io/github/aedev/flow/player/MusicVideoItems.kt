@@ -31,12 +31,6 @@ object MusicVideoItems {
         return builder.build()
     }
 
-    /** The same item with the other scheme, e.g. the picture half of a music video. */
-    fun withScheme(
-        uri: Uri,
-        scheme: String,
-    ): Uri = uri.buildUpon().scheme(scheme).build()
-
     /**
      * The track [uri] names. A track saved before tracks carried descriptors (a queue from an older
      * version) is described by its bare id, which YouTube Music resolves.

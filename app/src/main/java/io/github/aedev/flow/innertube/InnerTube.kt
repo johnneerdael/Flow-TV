@@ -22,7 +22,6 @@ import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.compression.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.bodyAsText
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.delay
@@ -30,7 +29,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import okhttp3.ConnectionPool
-import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import java.io.IOException
 import java.net.Proxy
@@ -420,39 +418,6 @@ class InnerTube(
         )
     }
 
-    /**
-     * YouTube Charts, on its own host with its own client. The filter rides a top-level `query`
-     * string rather than a protobuf `params`, and an unsupported country code answers 400 — see
-     * [io.github.aedev.flow.innertube.pages.explore.CHARTS_SUPPORTED_COUNTRIES].
-     */
-    suspend fun analyticsChartsBrowse(
-        browseId: String,
-        query: String,
-    ) = withRetry {
-        val client = YouTubeClient.WEB_MUSIC_ANALYTICS
-        httpClient.post("${YouTubeClient.API_URL_YOUTUBE_CHARTS}browse") {
-            headers {
-                append("X-YouTube-Client-Name", client.clientId)
-                append("X-YouTube-Client-Version", client.clientVersion)
-                append(HttpHeaders.Origin, YouTubeClient.ORIGIN_YOUTUBE_CHARTS)
-                append("Referer", YouTubeClient.REFERER_YOUTUBE_CHARTS)
-            }
-            contentType(ContentType.Application.Json)
-            userAgent(client.userAgent)
-            parameter("alt", "json")
-            parameter("prettyPrint", false)
-            setBody(
-                BrowseBody(
-                    context = client.toContext(locale, null, null),
-                    browseId = browseId,
-                    params = null,
-                    continuation = null,
-                    query = query,
-                ),
-            )
-        }
-    }
-
     private suspend fun <T> withVisitorDataFallback(
         includeVisitorData: Boolean = true,
         block: suspend (String?) -> T,
@@ -471,26 +436,6 @@ class InnerTube(
             Log.w(TAG, "InnerTube rejected visitor data; request succeeded without it")
             response
         }
-    }
-
-    suspend fun postCommentsBrowse(
-        client: YouTubeClient,
-        postId: String? = null,
-        params: String? = null,
-        continuation: String? = null,
-    ) = webBrowse(client) { requestVisitorData ->
-        BrowseBody(
-            context = client.toContext(locale, requestVisitorData, null),
-            browseId = if (continuation == null) "FEpost_detail" else null,
-            params = if (continuation == null) params else null,
-            continuation = continuation,
-            canonicalBaseUrl =
-                if (continuation == null && params == null) {
-                    postId?.let { "/post/$it" }
-                } else {
-                    null
-                },
-        )
     }
 
     suspend fun player(
@@ -674,24 +619,6 @@ class InnerTube(
         ReelBody(
             context = client.toContext(locale, requestVisitorData, null),
             sequenceParams = sequenceParams,
-        )
-    }
-
-    /**
-     * One reel's overlay. Only the id is required: the WEB overlay is complete without a signature
-     * timestamp or the reel's own `playerParams`, which matter only to the inline player response
-     * this never asks for.
-     */
-    suspend fun reelItemWatch(
-        client: YouTubeClient,
-        videoId: String,
-        playerParams: String? = null,
-        disablePlayerResponse: Boolean = true,
-    ) = mainSitePost(client, "reel/reel_item_watch") { requestVisitorData ->
-        ReelItemWatchBody(
-            context = client.toContext(locale, requestVisitorData, null),
-            playerRequest = ReelItemWatchBody.PlayerRequest(videoId = videoId, params = playerParams),
-            disablePlayerResponse = disablePlayerResponse,
         )
     }
 
@@ -1041,56 +968,6 @@ class InnerTube(
                     listOf(
                         Action.RenamePlaylistAction(
                             playlistName = name,
-                        ),
-                    ),
-            ),
-        )
-    }
-
-    suspend fun getUploadCustomThumbnailLink(
-        client: YouTubeClient,
-        contentLength: Int,
-    ) = httpClient.post("https://music.youtube.com/playlist_image_upload/playlist_custom_thumbnail") {
-        ytClient(client, setLogin = true)
-        headers {
-            append("X-Goog-Upload-Command", "start")
-            append("X-Goog-Upload-Protocol", "resumable")
-            append("X-Goog-Upload-Header-Content-Length", contentLength.toString())
-        }
-    }
-
-    suspend fun uploadCustomThumbnail(
-        client: YouTubeClient,
-        uploadId: String,
-        image: ByteArray,
-    ) = httpClient.post("https://music.youtube.com/playlist_image_upload/playlist_custom_thumbnail") {
-        ytClient(client, setLogin = true)
-        parameter("upload_id", uploadId)
-        parameter("upload_protocol", "resumable")
-        headers {
-            append("X-Goog-Upload-Command", "upload, finalize")
-            append("X-Goog-Upload-Offset", "0")
-        }
-        setBody(image)
-    }
-
-    suspend fun setThumbnailPlaylist(
-        client: YouTubeClient,
-        playlistId: String,
-        blobId: String,
-    ) = httpClient.post("browse/edit_playlist") {
-        ytClient(client, setLogin = true)
-        setBody(
-            EditPlaylistBody(
-                context = client.toContext(locale, visitorData, dataSyncId),
-                playlistId = playlistId,
-                actions =
-                    listOf(
-                        Action.SetCustomThumbnailAction(
-                            addedCustomThumbnail =
-                                Action.SetCustomThumbnailAction.AddedCustomThumbnail(
-                                    playlistScottyEncryptedBlobId = blobId,
-                                ),
                         ),
                     ),
             ),

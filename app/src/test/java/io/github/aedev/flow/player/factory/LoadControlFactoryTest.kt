@@ -16,24 +16,8 @@ import org.junit.Test
 @UnstableApi
 class LoadControlFactoryTest {
     @Test
-    fun `shorts profile is accepted by the load control`() {
-        LoadControlFactory.forShorts()
-    }
-
-    @Test
     fun `music profile is accepted by the load control`() {
         LoadControlFactory.forMusic()
-    }
-
-    @Test
-    fun `shorts constants satisfy the load control contract before any coercion`() {
-        assertContractHolds(
-            profile = "shorts",
-            minMs = PlayerConfig.SHORTS_MIN_BUFFER_MS,
-            maxMs = PlayerConfig.SHORTS_MAX_BUFFER_MS,
-            playbackMs = PlayerConfig.SHORTS_BUFFER_FOR_PLAYBACK_MS,
-            rebufferMs = PlayerConfig.SHORTS_BUFFER_FOR_REBUFFER_MS,
-        )
     }
 
     @Test

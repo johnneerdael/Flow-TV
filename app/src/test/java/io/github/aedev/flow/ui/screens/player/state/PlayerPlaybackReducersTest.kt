@@ -5,18 +5,14 @@ import io.github.aedev.flow.data.local.VideoQuality
 import io.github.aedev.flow.data.model.SponsorBlockSegment
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.player.error.VideoErrorMapper
-import io.github.aedev.flow.player.stream.MergedPlayback
 import io.github.aedev.flow.player.stream.ResolvedPlayback
 import io.github.aedev.flow.ui.screens.player.SecondaryMetadata
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
 import org.junit.After
 import org.junit.Test
 import org.schabi.newpipe.extractor.MediaFormat
-import org.schabi.newpipe.extractor.stream.AudioStream
 import org.schabi.newpipe.extractor.stream.DeliveryMethod
-import org.schabi.newpipe.extractor.stream.StreamInfo
 import org.schabi.newpipe.extractor.stream.VideoStream
 
 /**
@@ -267,26 +263,6 @@ class PlayerPlaybackReducersTest {
     }
 
     @Test
-    fun `the live watch fallback video falls back to the cached metadata field by field`() {
-        val streamInfo = mockk<StreamInfo>(relaxed = true)
-        every { streamInfo.name } returns null
-        every { streamInfo.uploaderName } returns null
-        every { streamInfo.uploaderUrl } returns null
-        every { streamInfo.thumbnails } returns emptyList()
-        every { streamInfo.description } returns null
-        every { streamInfo.viewCount } returns 5L
-        val cached = video("vid_a").copy(title = "Cached title", channelName = "Cached channel", thumbnailUrl = "cached.jpg")
-
-        val fallback = VideoPlayerUiState(cachedVideo = cached).liveWatchFallbackVideo("vid_a", streamInfo)
-
-        assertThat(fallback.title).isEqualTo("Cached title")
-        assertThat(fallback.channelName).isEqualTo("Cached channel")
-        assertThat(fallback.thumbnailUrl).isEqualTo("cached.jpg")
-        assertThat(fallback.duration).isEqualTo(0)
-        assertThat(fallback.isLive).isTrue()
-    }
-
-    @Test
     fun `a blank video is only built when the screen holds nothing for the id`() {
         val cached = video("vid_a")
 
@@ -320,38 +296,4 @@ class PlayerPlaybackReducersTest {
             .setIsVideoOnly(true)
             .setDeliveryMethod(DeliveryMethod.PROGRESSIVE_HTTP)
             .build()
-
-    private fun mergedPlayback(
-        selectedVideoStream: VideoStream? = null,
-        selectedAudioStream: AudioStream? = null,
-        availableQualities: List<VideoQuality> = emptyList(),
-        streamSizes: Map<String, Long> = emptyMap(),
-        hlsUrl: String? = null,
-        isLiveStream: Boolean = false,
-        localFilePath: String? = null,
-        preferredQuality: VideoQuality = VideoQuality.AUTO,
-    ): MergedPlayback =
-        MergedPlayback(
-            videoStreams = emptyList(),
-            audioStreams = emptyList(),
-            availableQualities = availableQualities,
-            selectedVideoStream = selectedVideoStream,
-            selectedAudioStream = selectedAudioStream,
-            subtitles = emptyList(),
-            chapters = emptyList(),
-            streamSizes = streamSizes,
-            innerTubeVideoFormats = emptyList(),
-            innerTubeAudioFormats = emptyList(),
-            hlsUrl = hlsUrl,
-            dashManifestUrl = null,
-            isLiveType = isLiveStream,
-            isLiveStream = isLiveStream,
-            hasPlayableContent = true,
-            localFilePath = localFilePath,
-            sabrInfo = null,
-            preferSabr = false,
-            preferredQuality = preferredQuality,
-            preferredCodecKey = "auto",
-            storyboard = emptyList(),
-        )
 }

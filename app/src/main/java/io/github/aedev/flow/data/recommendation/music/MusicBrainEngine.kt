@@ -422,28 +422,6 @@ class MusicBrainEngine
             scheduleDebouncedSave()
         }
 
-        suspend fun getBlockedArtists(): List<String> {
-            ensureInitialized()
-            return mutex.withLock { brain.blockedArtists.sorted() }
-        }
-
-        /** Blocked artists as (key, display name) — id keys are opaque, the UI needs names. */
-        suspend fun getBlockedArtistsWithNames(): List<Pair<String, String>> {
-            ensureInitialized()
-            return mutex.withLock {
-                brain.blockedArtists
-                    .map { key ->
-                        val display =
-                            brain.artistAffinity[key]?.display?.takeIf { it.isNotBlank() }
-                                ?: brain.trackMeta.values
-                                    .firstOrNull { it.artistKey == key }
-                                    ?.artist
-                                ?: key
-                        key to display
-                    }.sortedBy { it.second.lowercase() }
-            }
-        }
-
         suspend fun exportBrainToStream(out: OutputStream) {
             ensureInitialized()
             mutex.withLock { storage.save(brain) }
@@ -468,22 +446,6 @@ class MusicBrainEngine
                 refreshHiddenArtistsLocked()
                 storage.save(brain)
             }
-        }
-
-        /** Artwork per artist from the tracks the engine remembers, for recap portraits with no network. */
-        internal suspend fun artistArtwork(): Map<String, String> {
-            ensureInitialized()
-            return mutex.withLock {
-                brain.trackMeta.values
-                    .filter { it.artistKey.isNotEmpty() && it.thumbnail.isNotBlank() }
-                    .associate { it.artistKey to it.thumbnail }
-            }
-        }
-
-        /** Counted plays in one month, without copying the ledger. */
-        suspend fun monthPlays(monthKey: String): Int {
-            ensureInitialized()
-            return mutex.withLock { ledger.months[monthKey]?.plays ?: 0 }
         }
 
         /** Replaces the listening ledger with a restored one; the brain is untouched. */

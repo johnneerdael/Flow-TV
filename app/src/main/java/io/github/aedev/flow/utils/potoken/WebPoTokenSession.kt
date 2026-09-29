@@ -194,17 +194,6 @@ object WebPoTokenSession {
         }
     }
 
-    /** Unconditional reset, for the user-facing "Reset YouTube session" action. */
-    suspend fun resetIdentity() {
-        rotationMutex.withLock {
-            consecutiveLowTrustMints = 0
-            tokenRejections = 0
-            generator.resetSession()
-            YouTube.visitorData = null
-            identityGeneration++
-        }
-    }
-
     // Pre-warm the BotGuard session at app start so the first real extraction is fast.
     suspend fun prewarm() {
         try {

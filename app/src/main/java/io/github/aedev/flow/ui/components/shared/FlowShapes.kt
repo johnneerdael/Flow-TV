@@ -13,14 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Shape
 
 /**
- * Every artist portrait wears this shape, so an artist is recognisable as
- * one before the label is read. Albums and playlists keep the theme's rounded rectangles.
- */
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@Composable
-fun flowArtistShape(): Shape = MaterialShapes.Cookie9Sided.toShape()
-
-/**
  * The shape behind a shuffle or radio action, distinct from both artists and collections.
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)

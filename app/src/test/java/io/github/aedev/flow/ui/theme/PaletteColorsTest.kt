@@ -15,13 +15,6 @@ class PaletteColorsTest {
     }
 
     @Test
-    fun `every palette in the picker has a seed and every seed is in the picker`() {
-        val catalogued = ThemeCatalog.palettes.map { it.mode }.filterNot { it == ThemeMode.MATERIAL_YOU }
-        assertThat(catalogued).hasSize(26)
-        assertThat(catalogued.map { FlowPalettes.forMode(it).id }.toSet()).hasSize(26)
-    }
-
-    @Test
     fun `surface steps follow Flow Desktop's expansion`() {
         val light = FlowPalettes.default.colorsFor(ThemeVariant.LIGHT)
         assertThat(light.surfaceContainer).isEqualTo(light.surface)
@@ -52,16 +45,6 @@ class PaletteColorsTest {
         assertThat(dark.background).isNotEqualTo(amoled.background)
         assertThat(dark.surface).isNotEqualTo(amoled.surface)
         assertThat(dark.surfaceContainerHigh).isNotEqualTo(amoled.surfaceContainerHigh)
-    }
-
-    @Test
-    fun `rows stand apart from the page in every palette and style`() {
-        ThemeCatalog.palettes.filterNot { it.mode == ThemeMode.MATERIAL_YOU }.forEach { entry ->
-            ThemeVariant.entries.forEach { variant ->
-                val colors = FlowPalettes.forMode(entry.mode).colorsFor(variant)
-                assertThat(colors.surfaceContainerHigh).isNotEqualTo(colors.background)
-            }
-        }
     }
 
     @Test

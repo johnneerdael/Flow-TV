@@ -17,9 +17,7 @@ data class ChannelFilterGroup(
     val title: String?,
     val isDropdown: Boolean,
     val options: List<ChannelFilterOption>,
-) {
-    val selectedIndex: Int get() = options.indexOfFirst { it.selected }
-}
+)
 
 /**
  * A filter arrives as one of two commands and they are not interchangeable: chips and dropdown

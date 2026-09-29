@@ -13,7 +13,6 @@ import io.github.aedev.flow.data.local.LikedVideosRepository
 import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.data.local.ViewHistory
 import io.github.aedev.flow.data.localmedia.LocalMediaIds
-import io.github.aedev.flow.data.lyrics.LyricsCandidate
 import io.github.aedev.flow.data.lyrics.LyricsHelper
 import io.github.aedev.flow.data.music.DownloadManager
 import io.github.aedev.flow.data.music.PlaylistRepository
@@ -30,7 +29,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 import kotlin.math.abs
 
@@ -378,9 +376,6 @@ class MusicPlayerViewModel
             loadAndPlayTrack(track, asRadio = true)
         }
 
-        /** Local files have no InnerTube seed, so no station can be built from one. */
-        fun canStartRadio(track: MusicTrack): Boolean = !isLocalMediaId(track.videoId)
-
         fun togglePlayPause() {
             EnhancedMusicPlayerManager.togglePlayPause()
         }
@@ -391,30 +386,6 @@ class MusicPlayerViewModel
 
         fun pause() {
             EnhancedMusicPlayerManager.pause()
-        }
-
-        fun moveTrack(
-            fromIndex: Int,
-            toIndex: Int,
-        ) {
-            EnhancedMusicPlayerManager.moveMediaItem(fromIndex, toIndex)
-        }
-
-        fun playNextFromQueuePosition(index: Int) {
-            val current = _uiState.value.currentQueueIndex
-            if (index == current) return
-            val target = if (index > current) current + 1 else current
-            if (index != target) EnhancedMusicPlayerManager.moveMediaItem(index, target)
-        }
-
-        fun moveQueueTrackToEnd(index: Int) {
-            val lastIndex = _uiState.value.queue.size - 1
-            if (index in 0 until lastIndex) EnhancedMusicPlayerManager.moveMediaItem(index, lastIndex)
-        }
-
-        fun playNextFromRadio(track: MusicTrack) {
-            EnhancedMusicPlayerManager.playNext(track)
-            EnhancedMusicPlayerManager.removeAutomixItem(track.videoId)
         }
 
         fun addRadioTrackToQueue(track: MusicTrack) {
@@ -431,10 +402,6 @@ class MusicPlayerViewModel
             addRadioTrackToQueue(track)
             val index = EnhancedMusicPlayerManager.queue.value.indexOfFirst { it.videoId == track.videoId }
             if (index >= 0) EnhancedMusicPlayerManager.playFromQueue(index) else loadAndPlayTrack(track)
-        }
-
-        fun setEndlessRadioEnabled(enabled: Boolean) {
-            viewModelScope.launch { playerPreferences.setMusicEndlessRadioEnabled(enabled) }
         }
 
         fun seekTo(position: Long) {
@@ -467,14 +434,6 @@ class MusicPlayerViewModel
             }
 
             return null
-        }
-
-        fun skipToNext() {
-            EnhancedMusicPlayerManager.playNext()
-        }
-
-        fun skipToPrevious() {
-            EnhancedMusicPlayerManager.playPrevious()
         }
 
         fun playFromQueue(index: Int) {
@@ -512,22 +471,6 @@ class MusicPlayerViewModel
             duration: Int? = null,
             album: String? = null,
         ) = lyrics.fetch(videoId, artist, title, duration, album)
-
-        fun ensureLyricsLoaded(track: MusicTrack) = lyrics.ensureLoaded(track)
-
-        fun refreshLyrics() = lyrics.refresh()
-
-        fun browseLyricsCandidates() = lyrics.browseCandidates()
-
-        fun cancelLyricsBrowse() = lyrics.cancelBrowse()
-
-        fun applyLyricsCandidate(candidate: LyricsCandidate) = lyrics.applyCandidate(candidate)
-
-        fun applyEditedLyrics(text: String) = lyrics.applyEdited(text)
-
-        fun adjustLyricsSyncOffset(deltaMs: Long) = lyrics.adjustSyncOffset(deltaMs)
-
-        fun resetLyricsSyncOffset() = lyrics.resetSyncOffset()
 
         fun setLyricsTextAlign(align: String) = lyrics.setTextAlign(align)
 

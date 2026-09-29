@@ -16,12 +16,10 @@ import io.github.aedev.flow.innertube.models.SearchSuggestions
 import io.github.aedev.flow.innertube.models.SongItem
 import io.github.aedev.flow.innertube.models.WatchEndpoint
 import io.github.aedev.flow.innertube.models.YTItem
-import io.github.aedev.flow.innertube.pages.AlbumPage
 import io.github.aedev.flow.innertube.pages.ArtistSectionKind
 import io.github.aedev.flow.innertube.pages.ChartsPage
 import io.github.aedev.flow.innertube.pages.ExplorePage
 import io.github.aedev.flow.innertube.pages.RelatedShelfType
-import io.github.aedev.flow.innertube.pages.SearchSummaryPage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -95,19 +93,6 @@ object InnertubeMusicService {
         withContext(Dispatchers.IO) {
             try {
                 YouTube.searchSuggestions(query).getOrNull()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null
-            }
-        }
-
-    /**
-     * Search with summary (Top result + categories)
-     */
-    suspend fun searchWithSummary(query: String): SearchSummaryPage? =
-        withContext(Dispatchers.IO) {
-            try {
-                YouTube.searchSummary(query).getOrNull()
             } catch (e: Exception) {
                 e.printStackTrace()
                 null
@@ -333,31 +318,6 @@ object InnertubeMusicService {
         }
 
     /**
-     * Fetch all items (Albums, Singles, etc.) for a specific artist section
-     */
-    suspend fun fetchArtistItems(
-        browseId: String,
-        params: String?,
-    ): List<MusicPlaylist> =
-        withContext(Dispatchers.IO) {
-            try {
-                val result =
-                    YouTube.artistItems(
-                        io.github.aedev.flow.innertube.models
-                            .BrowseEndpoint(browseId, params),
-                    )
-                result
-                    .getOrNull()
-                    ?.items
-                    ?.filterIsInstance<io.github.aedev.flow.innertube.models.AlbumItem>()
-                    ?.map { convertAlbumToPlaylist(it) } ?: emptyList()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                emptyList()
-            }
-        }
-
-    /**
      * Fetch continuation items for a playlist
      */
     suspend fun fetchPlaylistContinuation(
@@ -394,24 +354,6 @@ object InnertubeMusicService {
             } catch (e: Exception) {
                 e.printStackTrace()
                 null
-            }
-        }
-
-    /**
-     * Fetch queue metadata for video IDs or a playlist
-     * Uses YouTube.queue() for faster queue loading compared to next()
-     */
-    suspend fun fetchQueue(
-        videoIds: List<String>? = null,
-        playlistId: String? = null,
-    ): List<MusicTrack> =
-        withContext(Dispatchers.IO) {
-            try {
-                val result = YouTube.queue(videoIds, playlistId)
-                result.getOrNull()?.mapNotNull { convertToMusicTrack(it) } ?: emptyList()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                emptyList()
             }
         }
 

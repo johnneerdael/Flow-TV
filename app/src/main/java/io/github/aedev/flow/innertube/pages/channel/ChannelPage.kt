@@ -54,22 +54,4 @@ enum class ChannelTabKind {
     Store,
     Search,
     Unknown,
-    ;
-
-    /** Only for a deep link opening a tab before the landing browse returns its descriptor. */
-    val defaultParams: String?
-        get() =
-            when (this) {
-                Home -> "EghmZWF0dXJlZPIGBAoCMgA="
-                Videos -> "EgZ2aWRlb3PyBgQKAjoA"
-                Shorts -> "EgZzaG9ydHPyBgUKA5oBAA=="
-                Live -> "EgdzdHJlYW1z8gYECgJ6AA=="
-                Shows -> "EgVzaG93c_IGBAoCYgA="
-                Podcasts -> "Eghwb2RjYXN0c_IGBQoDugEA"
-                Playlists -> "EglwbGF5bGlzdHPyBgoKCEIGCgIQaCIA"
-                Posts -> "EgVwb3N0c_IGBAoCSgA="
-                Store -> "EgVzdG9yZfIGBAoCGgA="
-                Search -> "EgZzZWFyY2jyBgQKAloA"
-                Releases, Unknown -> null
-            }
 }

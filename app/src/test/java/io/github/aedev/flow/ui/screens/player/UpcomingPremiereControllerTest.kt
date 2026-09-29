@@ -4,7 +4,6 @@ import android.content.Context
 import com.google.common.truth.Truth.assertThat
 import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.data.model.Video
-import io.github.aedev.flow.notification.UpcomingVideoReminderWorker
 import io.github.aedev.flow.player.GlobalPlayerState
 import io.github.aedev.flow.player.error.PlayerDiagnostics
 import io.github.aedev.flow.player.stream.UpcomingPremiere
@@ -53,10 +52,7 @@ class UpcomingPremiereControllerTest {
     fun setUp() {
         mockkObject(GlobalPlayerState)
         mockkObject(PlayerDiagnostics)
-        mockkObject(UpcomingVideoReminderWorker.Companion)
         every { PlayerDiagnostics.logWarning(any(), any()) } just Runs
-        every { UpcomingVideoReminderWorker.scheduleReminder(any(), any(), any(), any(), any(), any()) } just Runs
-        every { UpcomingVideoReminderWorker.cancelReminder(any(), any()) } just Runs
         every { playerPreferences.upcomingVideoReminderIds } returns reminderIds
         coEvery { probe.probe(any()) } returns UpcomingPremiere.NOT_UPCOMING
     }
@@ -190,52 +186,6 @@ class UpcomingPremiereControllerTest {
             assertThat(controller().tryEnterCountdown(VIDEO_ID, emptyList(), CURRENT_TOKEN)).isFalse()
             assertThat(uiState.value).isEqualTo(before)
             coVerify(exactly = 1) { probe.probe(VIDEO_ID) }
-        }
-
-    @Test
-    fun `arming the reminder stores the id and schedules the work`() =
-        runTest(testDispatcher) {
-            uiState.value =
-                VideoPlayerUiState(cachedVideo = upcomingVideo(), isUpcoming = true, upcomingReleaseTimeMs = RELEASE_MS)
-
-            controller().toggleReminder()
-            advanceUntilIdle()
-
-            coVerify(exactly = 1) { playerPreferences.setUpcomingVideoReminder(VIDEO_ID, true) }
-            verify(exactly = 1) {
-                UpcomingVideoReminderWorker.scheduleReminder(context, VIDEO_ID, RELEASE_MS, any(), any(), any())
-            }
-            assertThat(uiState.value.isUpcomingReminderSet).isTrue()
-        }
-
-    @Test
-    fun `disarming the reminder cancels the work it scheduled`() =
-        runTest(testDispatcher) {
-            uiState.value =
-                VideoPlayerUiState(
-                    cachedVideo = upcomingVideo(),
-                    isUpcoming = true,
-                    upcomingReleaseTimeMs = RELEASE_MS,
-                    isUpcomingReminderSet = true,
-                )
-
-            controller().toggleReminder()
-            advanceUntilIdle()
-
-            coVerify(exactly = 1) { playerPreferences.setUpcomingVideoReminder(VIDEO_ID, false) }
-            verify(exactly = 1) { UpcomingVideoReminderWorker.cancelReminder(context, VIDEO_ID) }
-            assertThat(uiState.value.isUpcomingReminderSet).isFalse()
-        }
-
-    @Test
-    fun `a video that is not counting down has no reminder to toggle`() =
-        runTest(testDispatcher) {
-            uiState.value = VideoPlayerUiState(cachedVideo = upcomingVideo(), upcomingReleaseTimeMs = RELEASE_MS)
-
-            controller().toggleReminder()
-            advanceUntilIdle()
-
-            coVerify(exactly = 0) { playerPreferences.setUpcomingVideoReminder(any(), any()) }
         }
 
     @Test

@@ -106,8 +106,6 @@ object MusicPlayerUtils {
 
     private val resultCache = ConcurrentHashMap<String, CachedResult>()
     private const val MAX_RESULT_CACHE_TTL_MS = 600_000L // 10 minutes
-    private const val LOUDNESS_TARGET_LKFS = -14.0
-    private const val MIN_LOUDNESS_GAIN_DB = -20f
     private const val ESCALATION_WINDOW_MS = 120_000L
     private const val SIGNED_IN_TIMEOUT_MS = 10_000L
 
@@ -123,14 +121,6 @@ object MusicPlayerUtils {
         val usedClient: YouTubeClient,
         val playerResponse: PlayerResponse,
         val streamingPoToken: String? = null,
-    )
-
-    /** The picture half of a music video, resolved from the same player response as its sound. */
-    data class VideoPlaybackStream(
-        val url: String,
-        val userAgent: String,
-        val expiresInSeconds: Int,
-        val format: PlayerResponse.StreamingData.Format,
     )
 
     private data class AudioSelectionPreferences(
@@ -164,17 +154,6 @@ object MusicPlayerUtils {
     fun clearPlaybackCache() {
         resultCache.clear()
         Log.d(TAG, "Cleared all cached playback results")
-    }
-
-    fun cachedLoudnessGainDb(videoId: String): Float? {
-        val data = resultCache[videoId]?.result?.getOrNull() ?: return null
-        val audioConfig = data.audioConfig
-        val gainDb =
-            audioConfig?.perceptualLoudnessDb?.let { (audioConfig.loudnessTargetLkfs ?: LOUDNESS_TARGET_LKFS) - it }
-                ?: audioConfig?.loudnessDb?.let { -it }
-                ?: data.format.loudnessDb?.let { -it }
-                ?: return null
-        return gainDb.toFloat().coerceIn(MIN_LOUDNESS_GAIN_DB, 0f)
     }
 
     suspend fun playerResponseForPlayback(
@@ -536,42 +515,6 @@ object MusicPlayerUtils {
                 usedClient = usedClient,
                 playerResponse = response,
                 streamingPoToken = streamingPoToken,
-            )
-        }
-
-    /**
-     * A music video's picture stream, chosen by [MusicVideoFormats] from the player response its sound
-     * already resolved, so it costs no request of its own.
-     */
-    suspend fun videoStreamForPlayback(
-        videoId: String,
-        maxHeight: Int,
-        codecPreference: String?,
-    ): Result<VideoPlaybackStream> =
-        runCatching {
-            val playback = playerResponseForPlayback(videoId).getOrThrow()
-            val formats =
-                playback.playerResponse.streamingData
-                    ?.adaptiveFormats
-                    .orEmpty()
-            val format =
-                MusicVideoFormats.select(formats, maxHeight, codecPreference, MusicVideoFormats.hardwareCodecs)
-                    ?: throw IOException("No playable video stream for $videoId")
-            val resolved =
-                findUrlOrNull(
-                    format = format,
-                    videoId = videoId,
-                    playerResponse = playback.playerResponse,
-                    allowCipherFallback = true,
-                    allowNewPipeFallback = true,
-                    allowStreamInfoFallback = false,
-                ) ?: throw IOException("No url for video stream ${format.itag} of $videoId")
-            Log.i(TAG, "Music video $videoId: ${format.qualityLabel} ${format.mimeType}")
-            VideoPlaybackStream(
-                url = playableUrl(resolved, videoId, playback.streamingPoToken),
-                userAgent = playback.usedClient.userAgent,
-                expiresInSeconds = playback.streamExpiresInSeconds,
-                format = format,
             )
         }
 

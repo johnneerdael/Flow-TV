@@ -13,7 +13,6 @@ import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.data.local.SubscriptionRepository
 import io.github.aedev.flow.data.repository.NewPipeDownloader
 import io.github.aedev.flow.data.repository.YouTubeRepository
-import io.github.aedev.flow.discord.DiscordPresenceRuntime
 import io.github.aedev.flow.innertube.YouTube
 import io.github.aedev.flow.innertube.models.YouTubeLocale
 import io.github.aedev.flow.innertube.models.normalizeYouTubeHostLanguage
@@ -21,8 +20,6 @@ import io.github.aedev.flow.innertube.pages.NewPipeExtractor
 import io.github.aedev.flow.network.AppProxyManager
 import io.github.aedev.flow.notification.NotificationHelper
 import io.github.aedev.flow.notification.SubscriptionCheckWorker
-import io.github.aedev.flow.platform.DeviceFormFactor
-import io.github.aedev.flow.platform.DeviceFormFactorDetector
 import io.github.aedev.flow.utils.AppLanguageManager
 import io.github.aedev.flow.utils.FlowCrashHandler
 import io.github.aedev.flow.utils.PerformanceDispatcher
@@ -116,8 +113,6 @@ class FlowApplication :
         appContext = applicationContext
         YouTube.cacheDirectory = cacheDir.resolve("innertube_http_cache")
 
-        DiscordPresenceRuntime.initialize(this, okHttpClient)
-
         val playerPreferences = PlayerPreferences(this)
 
         // Injects modern TLS/SSL certificates so OkHttp and Ktor don't crash
@@ -176,15 +171,10 @@ class FlowApplication :
                 intervalMinutes = savedIntervalMinutes.toLong(),
             )
 
-            // Update notifications are for phones, github flavor only; a TV checks while it is open instead.
+            // A TV checks for updates while it is open; periodic checks an earlier phone build scheduled are cancelled.
             if (BuildConfig.UPDATER_ENABLED) {
-                if (DeviceFormFactorDetector.detect(this@FlowApplication) == DeviceFormFactor.TV) {
-                    io.github.aedev.flow.notification.UpdateCheckWorker
-                        .cancelScheduledChecks(this@FlowApplication)
-                } else {
-                    io.github.aedev.flow.notification.UpdateCheckWorker
-                        .schedulePeriodicCheck(this@FlowApplication)
-                }
+                io.github.aedev.flow.notification.UpdateCheckWorker
+                    .cancelScheduledChecks(this@FlowApplication)
             }
         }
 
@@ -351,7 +341,6 @@ class FlowApplication :
     }
 
     override fun onTerminate() {
-        DiscordPresenceRuntime.shutdown()
         super.onTerminate()
         // Clean up performance dispatcher resources
         PerformanceDispatcher.shutdown()

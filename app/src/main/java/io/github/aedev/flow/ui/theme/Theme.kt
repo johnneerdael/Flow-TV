@@ -118,21 +118,6 @@ fun ThemeMode.resolveSystemDefault(
     return if (selectedMode == ThemeMode.SYSTEM) ThemeMode.DARK else selectedMode.canonicalFamily()
 }
 
-fun ThemeMode.isEffectivelyDark(
-    isSystemDark: Boolean,
-    systemLightThemeMode: ThemeMode = ThemeMode.DARK,
-    systemDarkThemeMode: ThemeMode = ThemeMode.DARK,
-    themeVariant: ThemeVariant? = null,
-): Boolean {
-    if (this == ThemeMode.SYSTEM) return isSystemDark
-    themeVariant?.let { return it != ThemeVariant.LIGHT }
-    return when (resolveSystemDefault(isSystemDark, systemLightThemeMode, systemDarkThemeMode)) {
-        ThemeMode.LIGHT, ThemeMode.CREAM_LIGHT -> false
-        ThemeMode.SYSTEM, ThemeMode.MATERIAL_YOU -> isSystemDark
-        else -> true
-    }
-}
-
 data class ExtendedColors(
     val textSecondary: Color,
     val border: Color,

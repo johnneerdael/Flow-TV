@@ -1,59 +1,20 @@
 package io.github.aedev.flow.utils
 
 import android.content.Context
-import android.content.ContextWrapper
 import android.content.res.Configuration
 import android.os.Build
 import android.os.LocaleList
 import java.util.Locale
-
-data class AppLanguageOption(
-    val tag: String,
-    val nativeName: String,
-    val localizedName: String,
-)
 
 object AppLanguageManager {
     const val SYSTEM_DEFAULT = "system"
     private const val PREFS_FILE = "flow_language_prefs"
     private const val PREFS_KEY = "app_language_tag"
 
-    private val supportedLanguageTags =
-        listOf(
-            "en",
-            "ar",
-            "bs",
-            "de",
-            "es",
-            "et",
-            "fr",
-            "hi",
-            "id",
-            "it",
-            "kab",
-            "pl",
-            "pt-BR",
-            "ru",
-            "tr",
-            "uk",
-            "zh-CN",
-        )
-
     fun loadSelectedLanguageTag(context: Context): String =
         context
             .getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
             .getString(PREFS_KEY, SYSTEM_DEFAULT) ?: SYSTEM_DEFAULT
-
-    fun saveLanguageTag(
-        context: Context,
-        tag: String,
-    ) {
-        context
-            .getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
-            .edit()
-            .putString(PREFS_KEY, tag)
-            .apply()
-    }
 
     /**
      * [base] with the chosen language applied, or [base] itself when following the system.
@@ -76,38 +37,6 @@ object AppLanguageManager {
         return base.createConfigurationContext(configuration)
     }
 
-    fun getSupportedLanguages(displayLocale: Locale = Locale.getDefault()): List<AppLanguageOption> =
-        supportedLanguageTags
-            .map { tag ->
-                val locale = localeFromTag(tag)
-                AppLanguageOption(
-                    tag = tag,
-                    nativeName =
-                        locale.getDisplayName(locale).replaceFirstChar { ch ->
-                            if (ch.isLowerCase()) ch.titlecase(locale) else ch.toString()
-                        },
-                    localizedName =
-                        locale.getDisplayName(displayLocale).replaceFirstChar { ch ->
-                            if (ch.isLowerCase()) ch.titlecase(displayLocale) else ch.toString()
-                        },
-                )
-            }.sortedBy { it.localizedName }
-
-    fun getLanguageLabel(
-        tag: String,
-        displayLocale: Locale = Locale.getDefault(),
-    ): String {
-        val normalizedTag = normalizeLanguageTag(tag)
-        if (normalizedTag == SYSTEM_DEFAULT) {
-            return ""
-        }
-
-        val locale = localeFromTag(normalizedTag)
-        return locale.getDisplayName(displayLocale).replaceFirstChar { ch ->
-            if (ch.isLowerCase()) ch.titlecase(displayLocale) else ch.toString()
-        }
-    }
-
     fun normalizeLanguageTag(rawTag: String?): String {
         val value = rawTag?.trim().orEmpty()
         if (value.isEmpty() || value.equals(SYSTEM_DEFAULT, ignoreCase = true)) {
@@ -119,17 +48,6 @@ object AppLanguageManager {
             "pt-rbr", "pt_br", "pt-br" -> "pt-BR"
             else -> localeFromTag(value).toLanguageTag().takeIf { it.isNotBlank() } ?: value
         }
-    }
-
-    fun activityContext(context: Context): android.app.Activity? {
-        var current: Context? = context
-        while (current is ContextWrapper) {
-            if (current is android.app.Activity) {
-                return current
-            }
-            current = current.baseContext
-        }
-        return null
     }
 
     private fun resolveLocale(

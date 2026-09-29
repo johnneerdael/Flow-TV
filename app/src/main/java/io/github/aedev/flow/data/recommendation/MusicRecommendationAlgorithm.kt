@@ -153,23 +153,6 @@ class MusicRecommendationAlgorithm
                 fetchAndCacheHome()
             }
 
-        /**
-         * Load more home content (pagination)
-         */
-        suspend fun loadHomeContinuation(continuation: String): Pair<List<MusicSection>, String?> =
-            withContext(Dispatchers.IO) {
-                try {
-                    val homePage = youTube.home(continuation = continuation).getOrNull()
-                    if (homePage != null) {
-                        val sections = parseHomeSections(homePage)
-                        return@withContext sections to homePage.continuation
-                    }
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error loading home continuation", e)
-                }
-                return@withContext emptyList<MusicSection>() to null
-            }
-
         private suspend fun fetchAndCacheHome(): Pair<List<MusicSection>, String?> {
             try {
                 val homePage = youTube.home().getOrNull()

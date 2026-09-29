@@ -29,7 +29,6 @@ import io.github.aedev.flow.data.local.entity.DownloadItemStatus
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.repository.SponsorBlockRepository
 import io.github.aedev.flow.data.video.BackgroundDownloadQueuer
-import io.github.aedev.flow.data.video.DownloadProgressUpdate
 import io.github.aedev.flow.data.video.OfflineSubtitleStore
 import io.github.aedev.flow.data.video.VideoDownloadManager
 import io.github.aedev.flow.player.sabr.integration.SabrDownloadEngine
@@ -727,15 +726,6 @@ class FlowDownloadService : Service() {
                     while (mission.status == MissionStatus.RUNNING) {
                         val ids = itemIds[videoId]
                         if (!ids.isNullOrEmpty()) {
-                            downloadManager.emitProgress(
-                                DownloadProgressUpdate(
-                                    videoId = videoId,
-                                    itemId = ids.first(),
-                                    downloadedBytes = (mission.downloadedBytes + mission.audioDownloadedBytes),
-                                    totalBytes = (mission.totalBytes + mission.audioTotalBytes),
-                                    status = DownloadItemStatus.DOWNLOADING,
-                                ),
-                            )
                         }
                         updateNotification(mission, videoId)
                         delay(PROGRESS_INTERVAL_MS)
@@ -760,16 +750,6 @@ class FlowDownloadService : Service() {
                     // Notify in-app UI that we are now merging (no byte-progress changes during mux)
                     val ids = itemIds[videoId]
                     if (!ids.isNullOrEmpty()) {
-                        downloadManager.emitProgress(
-                            DownloadProgressUpdate(
-                                videoId = videoId,
-                                itemId = ids.first(),
-                                downloadedBytes = mission.downloadedBytes + mission.audioDownloadedBytes,
-                                totalBytes = mission.totalBytes + mission.audioTotalBytes,
-                                status = DownloadItemStatus.DOWNLOADING,
-                                isMerging = true,
-                            ),
-                        )
                     }
 
                     // Update notification to show muxing phase
@@ -1043,15 +1023,6 @@ class FlowDownloadService : Service() {
                     while (mission.status == MissionStatus.RUNNING) {
                         val ids = itemIds[videoId]
                         if (!ids.isNullOrEmpty()) {
-                            downloadManager.emitProgress(
-                                DownloadProgressUpdate(
-                                    videoId = videoId,
-                                    itemId = ids.first(),
-                                    downloadedBytes = engine.downloadedVideoBytes.get() + engine.downloadedAudioBytes.get(),
-                                    totalBytes = mission.totalBytes.coerceAtLeast(1),
-                                    status = DownloadItemStatus.DOWNLOADING,
-                                ),
-                            )
                         }
                         updateNotification(mission, videoId)
                         delay(500L)
@@ -1089,16 +1060,6 @@ class FlowDownloadService : Service() {
                     Log.d(TAG, "executeSabrDownload: Muxing SABR output...")
                     val ids = itemIds[videoId]
                     if (!ids.isNullOrEmpty()) {
-                        downloadManager.emitProgress(
-                            DownloadProgressUpdate(
-                                videoId = videoId,
-                                itemId = ids.first(),
-                                downloadedBytes = engine.downloadedVideoBytes.get() + engine.downloadedAudioBytes.get(),
-                                totalBytes = engine.downloadedVideoBytes.get() + engine.downloadedAudioBytes.get(),
-                                status = DownloadItemStatus.DOWNLOADING,
-                                isMerging = true,
-                            ),
-                        )
                     }
                     mission.error = getString(R.string.download_merging_audio_video)
                     updateNotification(mission, videoId, isMuxing = true)
@@ -1202,15 +1163,6 @@ class FlowDownloadService : Service() {
             updateAllItemStatuses(videoId, DownloadItemStatus.PAUSED)
             val ids = itemIds[videoId]
             if (!ids.isNullOrEmpty()) {
-                downloadManager.emitProgress(
-                    DownloadProgressUpdate(
-                        videoId = videoId,
-                        itemId = ids.first(),
-                        downloadedBytes = mission.downloadedBytes + mission.audioDownloadedBytes,
-                        totalBytes = mission.totalBytes + mission.audioTotalBytes,
-                        status = DownloadItemStatus.PAUSED,
-                    ),
-                )
             }
         }
 
@@ -1335,15 +1287,6 @@ class FlowDownloadService : Service() {
         }
 
         if (!ids.isNullOrEmpty()) {
-            downloadManager.emitProgress(
-                DownloadProgressUpdate(
-                    videoId = videoId,
-                    itemId = ids.first(),
-                    downloadedBytes = fileSize,
-                    totalBytes = fileSize,
-                    status = DownloadItemStatus.COMPLETED,
-                ),
-            )
         }
 
         updateNotification(mission, videoId, isComplete = true)

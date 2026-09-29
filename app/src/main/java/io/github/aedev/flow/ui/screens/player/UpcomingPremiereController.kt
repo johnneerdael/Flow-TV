@@ -3,7 +3,6 @@ package io.github.aedev.flow.ui.screens.player
 import android.content.Context
 import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.data.model.Video
-import io.github.aedev.flow.notification.UpcomingVideoReminderWorker
 import io.github.aedev.flow.player.GlobalPlayerState
 import io.github.aedev.flow.player.error.PlayerDiagnostics
 import io.github.aedev.flow.player.stream.UpcomingDetails
@@ -20,7 +19,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 /**
  * Everything the player screen does with a video that has not started yet: deciding whether it is a
@@ -119,30 +117,5 @@ internal class UpcomingPremiereController(
                 "probe=${probed.isUpcoming} probeTime=${probed.scheduledStartMs}",
         )
         return UpcomingPremierePolicy.resolve(flagged, listReleaseMs, probed)
-    }
-
-    fun toggleReminder() {
-        val state = uiState.value
-        val video = state.cachedVideo ?: return
-        val releaseTimeMs = state.upcomingReleaseTimeMs ?: UpcomingPremierePolicy.releaseTimeFor(video) ?: return
-        if (!state.isUpcoming) return
-
-        scope.launch {
-            val enableReminder = !state.isUpcomingReminderSet
-            playerPreferences.setUpcomingVideoReminder(video.id, enableReminder)
-            if (enableReminder) {
-                UpcomingVideoReminderWorker.scheduleReminder(
-                    context = context,
-                    videoId = video.id,
-                    releaseTimeMs = releaseTimeMs,
-                    title = video.title,
-                    channelName = video.channelName,
-                    thumbnailUrl = video.thumbnailUrl,
-                )
-            } else {
-                UpcomingVideoReminderWorker.cancelReminder(context, video.id)
-            }
-            uiState.update { it.copy(isUpcomingReminderSet = enableReminder) }
-        }
     }
 }

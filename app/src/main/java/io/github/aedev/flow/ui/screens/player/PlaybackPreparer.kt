@@ -1,7 +1,6 @@
 package io.github.aedev.flow.ui.screens.player
 
 import android.content.Context
-import android.util.Log
 import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.data.model.SponsorBlockSegment
 import io.github.aedev.flow.data.model.Video
@@ -19,7 +18,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import org.schabi.newpipe.extractor.stream.AudioStream
-import org.schabi.newpipe.extractor.stream.StreamInfo
 import org.schabi.newpipe.extractor.stream.StreamType
 import org.schabi.newpipe.extractor.stream.SubtitlesStream
 import org.schabi.newpipe.extractor.stream.VideoStream
@@ -88,92 +86,6 @@ internal class PlaybackPreparer(
         preferredLiveQualityHeight = step.preferredQuality.height,
         isCurrent = isCurrent,
     )
-
-    suspend fun prepareMergedStreams(
-        videoId: String,
-        streamInfo: StreamInfo,
-        videoStream: VideoStream?,
-        audioStream: AudioStream?,
-        videoStreams: List<VideoStream>,
-        audioStreams: List<AudioStream>,
-        subtitles: List<SubtitlesStream>,
-        savedPosition: Long,
-        fallbackDurationSeconds: Long,
-        localFilePath: String?,
-        offlineSegments: List<SponsorBlockSegment>?,
-        hlsUrl: String?,
-        isAdaptiveMode: Boolean,
-        resumeOverrideRequested: Boolean,
-        isCurrent: () -> Boolean,
-        sabrInfo: SabrStreamInfo? = null,
-        itVideoFormats: List<PlayerResponse.StreamingData.Format> = emptyList(),
-        itAudioFormats: List<PlayerResponse.StreamingData.Format> = emptyList(),
-        preferredVideoCodec: String = "auto",
-        dashManifestUrl: String? = null,
-        preferSabr: Boolean = false,
-        preferredLiveQualityHeight: Int = 0,
-    ) = withContext(Dispatchers.Main) {
-        if (!isCurrent()) return@withContext
-        if (playerManager.isPreparedForPlayback(videoId)) return@withContext
-
-        playerManager.initialize(context)
-
-        val durationMs =
-            if (streamInfo.duration > 0L) streamInfo.duration * 1000L else fallbackDurationSeconds * 1000L
-        val isLiveStream = streamInfo.streamType == StreamType.LIVE_STREAM
-        val resumePosition =
-            PlaybackResumePolicy.resolveStartPosition(
-                savedPosition = savedPosition,
-                durationMs = durationMs,
-                resumeAllowed =
-                    !isLiveStream &&
-                        hlsUrl.isNullOrEmpty() &&
-                        (resumeOverrideRequested || !playerManager.isReachedByQueueAdvance(videoId)),
-            )
-
-        if (localFilePath != null) {
-            playerManager.playLocalFile(
-                videoId = videoId,
-                filePath = localFilePath,
-                savedSegments = offlineSegments,
-                preservePosition = resumePosition.takeIf { it > 0L },
-                subtitles = subtitles.ifEmpty { offlineSubtitleStore.load(videoId) },
-            )
-        } else {
-            val effectiveDashUrl = dashManifestUrl?.takeIf { it.isNotEmpty() } ?: streamInfo.dashMpdUrl
-            val hasAnySource =
-                audioStream != null || videoStreams.isNotEmpty() ||
-                    !effectiveDashUrl.isNullOrEmpty() || !hlsUrl.isNullOrEmpty() || sabrInfo != null
-            if (hasAnySource) {
-                if (audioStream == null) {
-                    Log.w(TAG, "Preparing $videoId without a separate audio stream")
-                }
-                playerManager.setStreams(
-                    videoId = videoId,
-                    videoStream = if (isAdaptiveMode) null else videoStream,
-                    audioStream = audioStream,
-                    videoStreams = videoStreams,
-                    audioStreams = audioStreams,
-                    subtitles = subtitles,
-                    durationSeconds = streamInfo.duration,
-                    dashManifestUrl = effectiveDashUrl,
-                    hlsUrl = hlsUrl,
-                    streamType = streamInfo.streamType,
-                    startPosition = resumePosition,
-                    sabrInfo = sabrInfo,
-                    itVideoFormats = itVideoFormats,
-                    itAudioFormats = itAudioFormats,
-                    preferredVideoCodec = preferredVideoCodec,
-                    preferSabr = preferSabr,
-                    preferredLiveQualityHeight = preferredLiveQualityHeight,
-                )
-            }
-        }
-        applyRememberedPlaybackSpeed(isLive = !hlsUrl.isNullOrEmpty())
-
-        if (!isCurrent()) return@withContext
-        playerManager.play()
-    }
 
     /**
      * Returns false when playback was not started — the load is no longer current, or the player

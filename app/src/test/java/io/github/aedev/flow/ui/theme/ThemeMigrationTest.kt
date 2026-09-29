@@ -1,9 +1,7 @@
 package io.github.aedev.flow.ui.theme
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ThemeMigrationTest {
@@ -24,16 +22,6 @@ class ThemeMigrationTest {
         ThemeMode.entries
             .filterNot { it == ThemeMode.LIGHT || it == ThemeMode.DARK || it == ThemeMode.OLED }
             .forEach { mode -> assertEquals(mode, mode.canonicalFamily()) }
-    }
-
-    @Test
-    fun `every retired palette lands on a palette that still exists`() {
-        assertEquals(13, ThemeMode.retiredNames.size)
-        ThemeMode.retiredNames.forEach { name ->
-            val mode = ThemeMode.fromStored(name)
-            assertNotNull(name, mode)
-            assertTrue(name, ThemeCatalog.palettes.any { it.mode == mode })
-        }
     }
 
     @Test

@@ -193,9 +193,6 @@ class Media3MusicService : MediaLibraryService() {
     lateinit var downloadUtil: DownloadUtil
 
     @Inject
-    lateinit var widgetPublisher: io.github.aedev.flow.widget.nowplaying.NowPlayingWidgetPublisher
-
-    @Inject
     lateinit var musicBrain: MusicBrainEngine
 
     @Inject
@@ -258,7 +255,6 @@ class Media3MusicService : MediaLibraryService() {
         lifecycleScope.launch {
             io.github.aedev.flow.player.EnhancedMusicPlayerManager.isLiked.collectLatest {
                 updateNotification()
-                if (::player.isInitialized) widgetPublisher.publish(player)
             }
         }
 
@@ -453,8 +449,6 @@ class Media3MusicService : MediaLibraryService() {
                             }
                         }
                     }
-
-                    widgetPublisher.publish(player)
                 }
 
                 override fun onTimelineChanged(
@@ -483,7 +477,6 @@ class Media3MusicService : MediaLibraryService() {
 
                 override fun onPlaybackStateChanged(playbackState: Int) {
                     updateLocks(isPlaybackActive())
-                    widgetPublisher.publish(player)
                     if (playbackState == Player.STATE_ENDED || playbackState == Player.STATE_IDLE) {
                         // ENDED: the queue ran out — no transition fires for the last track.
                         // IDLE: player.stop() from a dismiss/stop path — same deal.
@@ -520,7 +513,6 @@ class Media3MusicService : MediaLibraryService() {
 
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
                     updateLocks(isPlaybackActive())
-                    widgetPublisher.publish(player)
                     if (isPlaying) {
                         if (learnMediaId == null) learnMediaId = player.currentMediaItem?.mediaId
                         if (learnTrack?.videoId != learnMediaId) learnTrack = resolveLearnTrack(learnMediaId)
@@ -1119,8 +1111,6 @@ class Media3MusicService : MediaLibraryService() {
         audioSessions.close(currentAudioSessionId)
         currentAudioSessionId = 0
         Log.i(TAG, "Audio session destroyed")
-
-        widgetPublisher.publishStopped()
 
         lockReleaseJob?.cancel()
         lockReleaseJob = null

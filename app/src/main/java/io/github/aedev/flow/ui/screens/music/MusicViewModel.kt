@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.aedev.flow.R
-import io.github.aedev.flow.data.local.LikedVideosRepository
 import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.data.music.DownloadManager
 import io.github.aedev.flow.data.music.MusicCache
@@ -30,8 +29,6 @@ import io.github.aedev.flow.data.recommendation.music.graph.MusicGraphStore
 import io.github.aedev.flow.data.recommendation.music.musicArtistKey
 import io.github.aedev.flow.data.recommendation.music.primaryArtistKey
 import io.github.aedev.flow.innertube.YouTube
-import io.github.aedev.flow.innertube.models.BrowseEndpoint
-import io.github.aedev.flow.innertube.models.SongItem
 import io.github.aedev.flow.innertube.pages.ArtistItemsPage
 import io.github.aedev.flow.innertube.pages.HomePage
 import io.github.aedev.flow.innertube.pages.MoodAndGenres
@@ -199,12 +196,6 @@ class MusicViewModel
         // needs the home feed, so it asks for it instead of every first use paying for the whole load.
         @Volatile
         private var homeRequested = false
-
-        fun ensureHomeLoaded() {
-            if (homeRequested) return
-            homeRequested = true
-            loadMusicContent()
-        }
 
         @Volatile
         private var homeStale = false
@@ -1165,47 +1156,6 @@ class MusicViewModel
             )
         }
 
-        fun loadArtistItems(
-            browseId: String,
-            params: String?,
-        ) {
-            viewModelScope.launch(PerformanceDispatcher.networkIO) {
-                _uiState.update { it.copy(isArtistItemsLoading = true, artistItemsPage = null) }
-                YouTube
-                    .artistItems(BrowseEndpoint(browseId, params))
-                    .onSuccess { page ->
-                        _uiState.update { it.copy(artistItemsPage = page, isArtistItemsLoading = false) }
-                    }.onFailure {
-                        _uiState.update { it.copy(isArtistItemsLoading = false) }
-                    }
-            }
-        }
-
-        fun loadMoreArtistItems() {
-            val continuation = _uiState.value.artistItemsPage?.continuation ?: return
-            if (_uiState.value.isMoreLoading) return
-
-            viewModelScope.launch(PerformanceDispatcher.networkIO) {
-                _uiState.update { it.copy(isMoreLoading = true) }
-                YouTube
-                    .artistItemsContinuation(continuation)
-                    .onSuccess { page ->
-                        _uiState.update {
-                            it.copy(
-                                isMoreLoading = false,
-                                artistItemsPage =
-                                    it.artistItemsPage?.copy(
-                                        items = it.artistItemsPage.items + page.items,
-                                        continuation = page.continuation,
-                                    ),
-                            )
-                        }
-                    }.onFailure {
-                        _uiState.update { it.copy(isMoreLoading = false) }
-                    }
-            }
-        }
-
         // Helper to process sections to avoid code duplication
         private suspend fun processHomeSections(sections: List<MusicSection>) {
             val quickPicks =
@@ -1287,27 +1237,6 @@ class MusicViewModel
             }
         }
 
-        fun setHomeChip(chip: HomePage.Chip?) {
-            _uiState.update { it.copy(selectedHomeChip = chip) }
-            if (chip != null && chip.endpoint != null) {
-                viewModelScope.launch(PerformanceDispatcher.networkIO) {
-                    _uiState.update { it.copy(isLoading = true) }
-                    try {
-                        val response = YouTube.home(params = chip.endpoint.params).getOrNull()
-                        response?.let { home ->
-                            processHomeSections(musicRecommendationAlgorithm.parseHomeSections(home))
-                        }
-                    } catch (e: Exception) {
-                        Log.e("MusicViewModel", "Error filtering by chip", e)
-                    } finally {
-                        _uiState.update { it.copy(isLoading = false) }
-                    }
-                }
-            } else {
-                loadMusicContent()
-            }
-        }
-
         fun retry() {
             loadMusicContent()
         }
@@ -1373,41 +1302,6 @@ class MusicViewModel
                         )
                 }
             }
-        }
-
-        fun toggleFollowArtist(artist: ArtistDetails) {
-            viewModelScope.launch(PerformanceDispatcher.diskIO) {
-                if (artist.isSubscribed) {
-                    subscriptionRepository.unsubscribe(artist.channelId)
-                } else {
-                    subscriptionRepository.subscribe(
-                        io.github.aedev.flow.data.local.ChannelSubscription(
-                            channelId = artist.channelId,
-                            channelName = artist.name,
-                            channelThumbnail = artist.thumbnailUrl,
-                            isMusic = true,
-                        ),
-                    )
-                }
-
-                // Update UI state
-                val currentDetails = _uiState.value.artistDetails
-                if (currentDetails?.channelId == artist.channelId) {
-                    _uiState.value =
-                        _uiState.value.copy(
-                            artistDetails = currentDetails.copy(isSubscribed = !artist.isSubscribed),
-                        )
-                }
-            }
-        }
-
-        fun clearArtistDetails() {
-            _uiState.value =
-                _uiState.value.copy(
-                    artistDetails = null,
-                    artistInsights = null,
-                    knownRelatedArtistIds = emptySet(),
-                )
         }
 
         /**
@@ -1492,38 +1386,6 @@ class MusicViewModel
 
         fun clearPlaylistDetails() {
             _uiState.value = _uiState.value.copy(playlistDetails = null)
-        }
-
-        fun loadMoreHomeContent() {
-            val currentContinuation = _uiState.value.homeContinuation ?: return
-            if (_uiState.value.isMoreLoading) return
-
-            viewModelScope.launch(PerformanceDispatcher.networkIO) {
-                _uiState.update { it.copy(isMoreLoading = true) }
-
-                try {
-                    val result = musicRecommendationAlgorithm.loadHomeContinuation(currentContinuation)
-                    val newSections = result.first
-                    val nextContinuation = result.second
-
-                    if (newSections.isNotEmpty()) {
-                        val currentSections = _uiState.value.dynamicSections.toMutableList()
-                        currentSections.addAll(newSections)
-                        _uiState.update {
-                            it.copy(
-                                dynamicSections = currentSections,
-                                homeContinuation = nextContinuation,
-                            )
-                        }
-                    } else {
-                        _uiState.update { it.copy(homeContinuation = null) }
-                    }
-                } catch (e: Exception) {
-                    Log.e("MusicViewModel", "Error loading more home content", e)
-                } finally {
-                    _uiState.update { it.copy(isMoreLoading = false) }
-                }
-            }
         }
 
         private suspend fun loadDailyDiscover() {

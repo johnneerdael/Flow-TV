@@ -2,7 +2,6 @@ package io.github.aedev.flow.data.subscriptions
 
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.utils.ThumbnailUrlResolver
-import io.github.aedev.flow.utils.formatYouTubeRelativeTime
 
 /**
  * Upload-time reconciliation for subscription items.
@@ -102,28 +101,6 @@ fun List<Video>.withStableUploadSortKeys(now: Long): List<Video> =
                 .thenByDescending { it.video.viewCount }
                 .thenBy { it.video.id },
         ).map { it.video }
-
-fun List<Video>.withRelativeUploadDates(now: Long): List<Video> =
-    map { video ->
-        val uploadTimestamp = SubscriptionFeedTimestamps.effectiveUploadTimestamp(video, now)
-        val isFutureUpcoming = video.isUpcoming && uploadTimestamp > now + 60_000L
-        if (isFutureUpcoming) {
-            video.copy(isUpcoming = true)
-        } else if (uploadTimestamp > 0L) {
-            video.copy(
-                uploadDate = formatYouTubeRelativeTime(uploadTimestamp, now),
-                isUpcoming = false,
-            )
-        } else {
-            video.copy(
-                uploadDate =
-                    video.uploadDate
-                        .takeUnless { SubscriptionFeedTimestamps.isUnstableFreshUploadText(it) }
-                        .orEmpty(),
-                isUpcoming = false,
-            )
-        }
-    }
 
 fun List<Video>.withHighQualityThumbnails(): List<Video> =
     map { video ->

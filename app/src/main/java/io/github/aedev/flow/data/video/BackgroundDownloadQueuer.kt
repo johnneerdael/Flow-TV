@@ -12,17 +12,12 @@ import io.github.aedev.flow.data.music.model.toMusicTrack
 import io.github.aedev.flow.data.video.downloader.FlowDownloadService
 import io.github.aedev.flow.player.stream.InnerTubeStreamBridge
 import io.github.aedev.flow.player.stream.VideoCodecUtils
-import io.github.aedev.flow.utils.PerformanceDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -66,59 +61,8 @@ class BackgroundDownloadQueuer
         private val musicDownloadManager: DownloadManager,
         private val preferences: PlayerPreferences,
     ) {
-        // Outlives the screen that asked, so leaving a playlist doesn't drop the rest of its videos.
-        private val scope = CoroutineScope(SupervisorJob() + PerformanceDispatcher.networkIO)
-
         private val _batches = MutableStateFlow<Map<String, DownloadBatch>>(emptyMap())
         val batches: StateFlow<Map<String, DownloadBatch>> = _batches.asStateFlow()
-
-        /**
-         * Queues every video of a collection in the background, [BATCH_WORKERS] lookups at a time, skipping
-         * what is already downloaded or downloading. A second request for a running batch is ignored.
-         */
-        fun queueAll(
-            collectionId: String,
-            videos: List<Video>,
-        ) = runBatch(collectionId, videos.distinctBy { it.id }) { queue(it) }
-
-        /** [queueAll] for songs, which keep their album and artists through the music downloader. */
-        fun queueSongs(
-            collectionId: String,
-            tracks: List<MusicTrack>,
-        ) = runBatch(collectionId, tracks.distinctBy { it.videoId }) { queueSong(it) }
-
-        private fun <T> runBatch(
-            collectionId: String,
-            items: List<T>,
-            work: suspend (T) -> QueueOutcome,
-        ) {
-            if (items.isEmpty()) return
-            val started = DownloadBatch(collectionId, total = items.size)
-            var accepted = false
-            _batches.update { batches ->
-                if (batches[collectionId]?.isFinished == false) {
-                    batches
-                } else {
-                    accepted = true
-                    batches + (collectionId to started)
-                }
-            }
-            if (!accepted) return
-            val pending = Channel<T>(Channel.UNLIMITED)
-            items.forEach(pending::trySend)
-            pending.close()
-            repeat(BATCH_WORKERS) {
-                scope.launch {
-                    for (item in pending) {
-                        val outcome = runCatching { work(item) }.getOrDefault(QueueOutcome.UNAVAILABLE)
-                        _batches.update { batches ->
-                            val batch = batches[collectionId] ?: return@update batches
-                            batches + (collectionId to batch.record(outcome))
-                        }
-                    }
-                }
-            }
-        }
 
         /** Forgets a finished batch once its result has been shown. */
         fun clearBatch(collectionId: String) {

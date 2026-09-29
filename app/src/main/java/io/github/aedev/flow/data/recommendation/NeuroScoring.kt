@@ -105,7 +105,6 @@ internal object NeuroScoring {
     const val CHANNEL_PROFILE_MAX_CHANNELS = 200
     const val CHANNEL_PROFILE_BLEND_WEIGHT = 0.3
     const val CHANNEL_PROFILE_MIN_VIDEOS = 3
-    const val NOT_INTERESTED_GLOBAL_RATE = -0.35
     const val NOT_INTERESTED_TIME_RATE = -0.25
     const val NOT_INTERESTED_SKIP_INCREMENT = 3
     const val PERSONA_STABILITY_THRESHOLD = 3

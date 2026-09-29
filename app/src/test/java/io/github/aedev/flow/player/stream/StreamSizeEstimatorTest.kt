@@ -106,20 +106,6 @@ class StreamSizeEstimatorTest {
         assertEquals(25L, merged[key])
     }
 
-    @Test
-    fun `sizes derived from converted InnerTube streams match the ones derived from the formats`() {
-        val video = videoFormat(itag = 137, mimeType = MP4_VIDEO, height = 1080, contentLength = 50_000_000L)
-        val formatSizes = StreamSizeEstimator.fromInnerTubeFormats(listOf(video), listOf(audioMp4))
-
-        val streamSizes =
-            StreamSizeEstimator.fromExtractorStreams(
-                InnerTubeStreamBridge.convertVideoFormats(listOf(video)),
-                InnerTubeStreamBridge.convertAudioFormats(listOf(audioMp4)),
-            )
-
-        assertEquals(formatSizes, streamSizes)
-    }
-
     private companion object {
         const val MP4_VIDEO = "video/mp4; codecs=\"avc1.640028\""
         const val WEBM_VIDEO = "video/webm; codecs=\"vp9\""

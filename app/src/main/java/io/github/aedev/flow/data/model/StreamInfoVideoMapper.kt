@@ -12,16 +12,6 @@ val StreamInfo.uploaderChannelId: String?
 val StreamInfo.bestThumbnailUrl: String?
     get() = thumbnails.maxByOrNull { it.height }?.url
 
-/** The publication instant behind [StreamInfo.getUploadDate], for the date formatters. */
-val StreamInfo.uploadDateMillis: Long?
-    get() =
-        runCatching {
-            uploadDate
-                ?.offsetDateTime()
-                ?.toInstant()
-                ?.toEpochMilli()
-        }.getOrNull()
-
 /**
  * Rebuilds [base] from the freshly extracted stream, falling back to the cached video for every
  * field the extractor left empty.

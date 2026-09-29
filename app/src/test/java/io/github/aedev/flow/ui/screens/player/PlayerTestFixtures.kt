@@ -1,25 +1,12 @@
 package io.github.aedev.flow.ui.screens.player
 
-import androidx.lifecycle.HasDefaultViewModelProviderFactory
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStore
-import androidx.lifecycle.ViewModelStoreOwner
-import androidx.lifecycle.viewmodel.CreationExtras
-import io.github.aedev.flow.data.model.Comment
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.innertube.models.response.PlayerResponse
 import io.github.aedev.flow.player.state.AudioTrackOption
 import io.github.aedev.flow.player.state.EnhancedPlayerState
 import io.github.aedev.flow.player.state.QualityOption
 import io.github.aedev.flow.player.state.SubtitleOption
-import io.github.aedev.flow.ui.components.shared.quickactions.QuickActionsViewModel
 import io.github.aedev.flow.ui.screens.player.state.VideoPlayerUiState
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.mockkClass
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flowOf
 
 internal fun fakeVideo(
     id: String = "video-1",
@@ -135,56 +122,3 @@ internal fun fakeAudioFormats(): List<PlayerResponse.StreamingData.Format> =
         fakeInnerTubeFormat(itag = 140, mimeType = "audio/mp4; codecs=\"mp4a.40.2\"", bitrate = 128_000),
         fakeInnerTubeFormat(itag = 251, mimeType = "audio/webm; codecs=\"opus\"", bitrate = 160_000),
     )
-
-/**
- * A relaxed [VideoPlayerViewModel] whose flows the player surfaces collect are real state flows, so
- * composables can subscribe without touching the Hilt graph the production ViewModel needs.
- */
-internal fun relaxedVideoPlayerViewModel(
-    uiState: MutableStateFlow<VideoPlayerUiState> = MutableStateFlow(fakeUiState()),
-    comments: MutableStateFlow<List<Comment>> = MutableStateFlow(emptyList()),
-): VideoPlayerViewModel {
-    val viewModel = mockk<VideoPlayerViewModel>(relaxed = true)
-    every { viewModel.uiState } returns uiState
-    every { viewModel.commentsState } returns comments
-    every { viewModel.isLoadingComments } returns MutableStateFlow(false)
-    every { viewModel.hasMoreComments } returns MutableStateFlow(false)
-    every { viewModel.isLoadingMoreComments } returns MutableStateFlow(false)
-    every { viewModel.commentSortOptions } returns MutableStateFlow(emptyList())
-    every { viewModel.commentTotalText } returns MutableStateFlow(null)
-    every { viewModel.descriptionState } returns MutableStateFlow(null)
-    every { viewModel.downloadedVideoIds } returns MutableStateFlow(emptySet())
-    every { viewModel.videoNote } returns MutableStateFlow(null)
-    every { viewModel.videoNotesEnabled } returns MutableStateFlow(false)
-    every { viewModel.isVideoSavedToAnyPlaylist(any()) } returns flowOf(false)
-    return viewModel
-}
-
-/**
- * Stands in for the Hilt-injected activity so `hiltViewModel()` for the quick actions resolves to a
- * relaxed mock instead of trying to construct a real ViewModel through the default factory.
- */
-internal class StubViewModelStoreOwner :
-    ViewModelStoreOwner,
-    HasDefaultViewModelProviderFactory {
-    private val quickActions =
-        mockk<QuickActionsViewModel>(relaxed = true).also {
-            every { it.subscribedChannelIds } returns MutableStateFlow(emptySet())
-        }
-
-    override val viewModelStore: ViewModelStore = ViewModelStore()
-
-    override val defaultViewModelProviderFactory: ViewModelProvider.Factory =
-        object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(
-                modelClass: Class<T>,
-                extras: CreationExtras,
-            ): T =
-                if (modelClass == QuickActionsViewModel::class.java) {
-                    quickActions as T
-                } else {
-                    mockkClass(modelClass.kotlin, relaxed = true)
-                }
-        }
-}

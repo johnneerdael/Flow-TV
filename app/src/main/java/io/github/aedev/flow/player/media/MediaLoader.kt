@@ -24,11 +24,9 @@ import androidx.media3.exoplayer.source.SingleSampleMediaSource
 import io.github.aedev.flow.R
 import io.github.aedev.flow.player.StreamRequestHeaders
 import io.github.aedev.flow.player.cache.PlayerCacheManager
-import io.github.aedev.flow.player.config.PlayerConfig
 import io.github.aedev.flow.player.renderer.subtitle.Srv3SubtitleParser
 import io.github.aedev.flow.player.resolver.VideoPlaybackResolver
 import io.github.aedev.flow.player.sabr.integration.SabrMediaSourceFactory
-import io.github.aedev.flow.player.sabr.integration.SabrMediaSourceResult
 import io.github.aedev.flow.player.sabr.integration.SabrOrchestrator
 import io.github.aedev.flow.player.sabr.integration.SabrStreamInfo
 import io.github.aedev.flow.player.state.EnhancedPlayerState
@@ -74,9 +72,6 @@ class MediaLoader(
     private var activeSabrOrchestrator: SabrOrchestrator? = null
     private var lastSourceWasSabr = false
     var onSabrFallbackNeeded: (() -> Unit)? = null
-
-    /** Invoked with a subtitle track's index and display label once its fetch has finally given up. */
-    var onSubtitleLoadFailed: ((Int, String) -> Unit)? = null
 
     /**
      * Load media with video and audio streams.
@@ -526,7 +521,6 @@ class MediaLoader(
                     return
                 }
                 Log.w(TAG, "Subtitle '$label' gave up after retries (status=$status): ${error.message}")
-                onSubtitleLoadFailed?.invoke(index, label)
             }
         }
 

@@ -25,12 +25,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -38,13 +35,6 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 private val Context.downloadDataStore: DataStore<Preferences> by safePreferencesDataStore(name = "downloads")
-
-enum class DownloadStatus {
-    NOT_DOWNLOADED,
-    DOWNLOADING,
-    DOWNLOADED,
-    FAILED,
-}
 
 data class DownloadedTrack(
     val track: MusicTrack,
@@ -68,27 +58,6 @@ class DownloadManager
         companion object {
             private val DOWNLOADED_TRACKS_KEY = stringPreferencesKey("downloaded_tracks")
         }
-
-        val downloadProgress: StateFlow<Map<String, Int>> =
-            downloadUtil.downloads
-                .map { downloads ->
-                    downloads.mapValues { (_, download) ->
-                        download.percentDownloaded.toInt()
-                    }
-                }.stateIn(scope, SharingStarted.WhileSubscribed(5000), emptyMap())
-
-        val downloadStatus: StateFlow<Map<String, DownloadStatus>> =
-            downloadUtil.downloads
-                .map { downloads ->
-                    downloads.mapValues { (_, download) ->
-                        when (download.state) {
-                            Download.STATE_COMPLETED -> DownloadStatus.DOWNLOADED
-                            Download.STATE_FAILED -> DownloadStatus.FAILED
-                            Download.STATE_DOWNLOADING, Download.STATE_QUEUED, Download.STATE_RESTARTING -> DownloadStatus.DOWNLOADING
-                            else -> DownloadStatus.NOT_DOWNLOADED
-                        }
-                    }
-                }.stateIn(scope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
         /**
          * Check if a track is cached for offline playback.
@@ -277,22 +246,6 @@ class DownloadManager
                 currentTracks.removeAll { it.track.videoId == track.track.videoId }
                 currentTracks.add(track)
                 prefs[DOWNLOADED_TRACKS_KEY] = gson.toJson(currentTracks)
-            }
-        }
-
-        private suspend fun updateDownloadedTrackSize(
-            videoId: String,
-            size: Long,
-        ) {
-            context.downloadDataStore.edit { prefs ->
-                val json = prefs[DOWNLOADED_TRACKS_KEY] ?: "[]"
-                val currentTracks = parseDownloadedTracks(json).toMutableList()
-                val index = currentTracks.indexOfFirst { it.track.videoId == videoId }
-                if (index != -1) {
-                    val existing = currentTracks[index]
-                    currentTracks[index] = existing.copy(fileSize = size, downloadedAt = System.currentTimeMillis())
-                    prefs[DOWNLOADED_TRACKS_KEY] = gson.toJson(currentTracks)
-                }
             }
         }
 

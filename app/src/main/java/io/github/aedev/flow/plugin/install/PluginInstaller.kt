@@ -27,7 +27,6 @@ class PendingInstall(
     /** Hosts the plugin wants that the listener has not granted yet: what the consent screen asks about. */
     val newNetwork: List<String> get() = pack.manifest.permissions.network - installed?.grantedNetwork.orEmpty().toSet()
     val newBrowser: List<String> get() = pack.manifest.permissions.browser - installed?.grantedBrowser.orEmpty().toSet()
-    val needsConsent: Boolean get() = !isUpdate || newNetwork.isNotEmpty() || newBrowser.isNotEmpty()
 }
 
 class PluginInstallException(

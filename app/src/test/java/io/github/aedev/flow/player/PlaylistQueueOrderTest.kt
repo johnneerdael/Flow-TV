@@ -24,21 +24,6 @@ class PlaylistQueueOrderTest {
     }
 
     @Test
-    fun `restore returns original order and current item position`() {
-        val original = listOf("a", "b", "c", "d")
-
-        val result =
-            PlaylistQueueOrder.restoreOriginal(
-                original = original,
-                currentItem = "c",
-                keySelector = { it },
-            )
-
-        assertEquals(original, result.items)
-        assertEquals(2, result.currentIndex)
-    }
-
-    @Test
     fun `remove before current keeps the same item current`() {
         val result =
             requireNotNull(

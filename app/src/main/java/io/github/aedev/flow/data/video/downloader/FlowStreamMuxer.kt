@@ -11,7 +11,7 @@ import java.nio.ByteBuffer
 
 object FlowStreamMuxer {
     private const val TAG = "FlowStreamMuxer"
-    private const val BUFFER_SIZE = 8 * 1024 * 1024  // 8 MB — handles large frames at 4K/8K
+    private const val BUFFER_SIZE = 8 * 1024 * 1024 // 8 MB — handles large frames at 4K/8K
 
     /**
      * Muxes video and audio streams into a single MP4 file.
@@ -25,7 +25,7 @@ object FlowStreamMuxer {
         videoPath: String,
         audioPath: String,
         outputPath: String,
-        onProgress: ((Float) -> Unit)? = null
+        onProgress: ((Float) -> Unit)? = null,
     ): Boolean {
         var videoExtractor: MediaExtractor? = null
         var audioExtractor: MediaExtractor? = null
@@ -59,11 +59,13 @@ object FlowStreamMuxer {
             val videoFormat = videoExtractor.getTrackFormat(videoTrackIndex)
             val videoMime = videoFormat.getString(MediaFormat.KEY_MIME) ?: ""
 
-            val useWebM = videoMime.contains("vp9", ignoreCase = true) ||
-                          videoMime.contains("vp8", ignoreCase = true) ||
-                          videoMime.contains("vp09", ignoreCase = true)
-            val isAv1   = videoMime.contains("av01", ignoreCase = true) ||
-                          videoMime.contains("av1", ignoreCase = true)
+            val useWebM =
+                videoMime.contains("vp9", ignoreCase = true) ||
+                    videoMime.contains("vp8", ignoreCase = true) ||
+                    videoMime.contains("vp09", ignoreCase = true)
+            val isAv1 =
+                videoMime.contains("av01", ignoreCase = true) ||
+                    videoMime.contains("av1", ignoreCase = true)
 
             val audioTrackIndex = selectTrack(audioExtractor, "audio/")
             if (audioTrackIndex < 0) {
@@ -74,29 +76,38 @@ object FlowStreamMuxer {
             val audioFormat = audioExtractor.getTrackFormat(audioTrackIndex)
             val audioMime = audioFormat.getString(MediaFormat.KEY_MIME) ?: ""
 
-            val isOpusOrVorbisAudio = audioMime.contains("opus", ignoreCase = true) ||
-                                      audioMime.contains("vorbis", ignoreCase = true)
+            val isOpusOrVorbisAudio =
+                audioMime.contains("opus", ignoreCase = true) ||
+                    audioMime.contains("vorbis", ignoreCase = true)
 
             // ── AV1 and VP9/VP8 routing → FlowMkvMuxer ───────────────────────────────
             // AV1 requires MKV on API < 34. VP9/VP8 routes here too because Android's
             // MediaMuxer WebM implementation is significantly slower than our Matroska writer
             // for the same data, and MKV (Matroska superset of WebM) plays fine in ExoPlayer.
             if (isAv1 || useWebM) {
-                Log.d(TAG, "${if (isAv1) "AV1" else "VP9/VP8"}: delegating to FlowMkvMuxer (API=${Build.VERSION.SDK_INT}, audio=$audioMime)")
+                Log.d(
+                    TAG,
+                    "${if (isAv1) "AV1" else "VP9/VP8"}: delegating to FlowMkvMuxer (API=${Build.VERSION.SDK_INT}, audio=$audioMime)",
+                )
                 return FlowMkvMuxer.mux(videoPath, audioPath, outputPath)
             }
 
             if (!useWebM && !isAv1 && isOpusOrVorbisAudio) {
-                Log.e(TAG, "INCOMPATIBLE audio codec for MP4 container: '$audioMime'. " +
-                    "Require AAC (audio/mp4a-latm) for H264/H265/HEVC video. " +
-                    "Audio path: $audioPath")
+                Log.e(
+                    TAG,
+                    "INCOMPATIBLE audio codec for MP4 container: '$audioMime'. " +
+                        "Require AAC (audio/mp4a-latm) for H264/H265/HEVC video. " +
+                        "Audio path: $audioPath",
+                )
                 return false
             }
 
-            val muxerFormat = if (useWebM)
-                MediaMuxer.OutputFormat.MUXER_OUTPUT_WEBM
-            else
-                MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4
+            val muxerFormat =
+                if (useWebM) {
+                    MediaMuxer.OutputFormat.MUXER_OUTPUT_WEBM
+                } else {
+                    MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4
+                }
 
             Log.d(TAG, "Video codec: $videoMime → ${if (useWebM) "WebM" else "MPEG-4"} container")
             muxer = MediaMuxer(outputPath, muxerFormat)
@@ -132,7 +143,6 @@ object FlowStreamMuxer {
             onProgress?.invoke(1f)
             Log.d(TAG, "Muxing successful: $outputPath (${File(outputPath).length()} bytes)")
             return true
-
         } catch (e: Exception) {
             Log.e(TAG, "Muxing failed", e)
             try {
@@ -142,53 +152,25 @@ object FlowStreamMuxer {
             }
             return false
         } finally {
-            try { videoExtractor?.release() } catch (_: Exception) {}
-            try { audioExtractor?.release() } catch (_: Exception) {}
-            try { muxer?.release() } catch (_: Exception) {}
-        }
-    }
-
-    /**
-     * Extracts just the audio from a video file (no transcoding — raw copy).
-     * Useful for audio-only downloads from a combined source.
-     */
-    fun extractAudio(inputPath: String, outputPath: String): Boolean {
-        var extractor: MediaExtractor? = null
-        var muxer: MediaMuxer? = null
-
-        try {
-            extractor = MediaExtractor().apply { setDataSource(inputPath) }
-
-            val audioTrackIndex = selectTrack(extractor, "audio/")
-            if (audioTrackIndex < 0) {
-                Log.e(TAG, "No audio track found in $inputPath")
-                return false
+            try {
+                videoExtractor?.release()
+            } catch (_: Exception) {
             }
-            extractor.selectTrack(audioTrackIndex)
-            val audioFormat = extractor.getTrackFormat(audioTrackIndex)
-
-            File(outputPath).parentFile?.mkdirs()
-            muxer = MediaMuxer(outputPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
-            val muxerTrack = muxer.addTrack(audioFormat)
-            muxer.start()
-
-            val buffer = ByteBuffer.allocate(BUFFER_SIZE)
-            val bufferInfo = MediaCodec.BufferInfo()
-            copySamples(extractor, muxer, muxerTrack, buffer, bufferInfo)
-
-            muxer.stop()
-            return true
-        } catch (e: Exception) {
-            Log.e(TAG, "Audio extraction failed", e)
-            try { File(outputPath).takeIf { it.exists() }?.delete() } catch (_: Exception) {}
-            return false
-        } finally {
-            try { extractor?.release() } catch (_: Exception) {}
-            try { muxer?.release() } catch (_: Exception) {}
+            try {
+                audioExtractor?.release()
+            } catch (_: Exception) {
+            }
+            try {
+                muxer?.release()
+            } catch (_: Exception) {
+            }
         }
     }
 
-    private fun selectTrack(extractor: MediaExtractor, mimePrefix: String): Int {
+    private fun selectTrack(
+        extractor: MediaExtractor,
+        mimePrefix: String,
+    ): Int {
         for (i in 0 until extractor.trackCount) {
             val format = extractor.getTrackFormat(i)
             val mime = format.getString(MediaFormat.KEY_MIME) ?: ""
@@ -205,12 +187,12 @@ object FlowStreamMuxer {
         muxerTrackIndex: Int,
         buffer: ByteBuffer,
         bufferInfo: MediaCodec.BufferInfo,
-        onSample: ((Long) -> Unit)? = null
+        onSample: ((Long) -> Unit)? = null,
     ) {
         extractor.seekTo(0, MediaExtractor.SEEK_TO_CLOSEST_SYNC)
         while (true) {
             if (Thread.interrupted()) throw InterruptedException("Mux cancelled")
-            
+
             bufferInfo.offset = 0
             bufferInfo.size = extractor.readSampleData(buffer, 0)
             if (bufferInfo.size < 0) break
@@ -223,11 +205,13 @@ object FlowStreamMuxer {
         }
     }
 
-    private fun MediaFormat.getLongOrDefault(key: String, default: Long): Long {
-        return try {
+    private fun MediaFormat.getLongOrDefault(
+        key: String,
+        default: Long,
+    ): Long =
+        try {
             getLong(key)
         } catch (_: Exception) {
             default
         }
-    }
 }

@@ -5,16 +5,12 @@ import android.net.Uri
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.aedev.flow.data.local.PlaylistRepository
 import io.github.aedev.flow.data.model.Video
-import io.github.aedev.flow.utils.sharedFileUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
-import java.io.File
 import java.io.InputStream
 import javax.inject.Inject
 import javax.inject.Singleton
-
-private const val SHARE_DIR = "playlists"
 
 // Far above any real playlist (5,000 videos is about 2.5 MB), low enough that a wrong file can't exhaust memory.
 private const val MAX_FILE_BYTES = 16L * 1024 * 1024
@@ -58,23 +54,6 @@ class PlaylistTransfer
                     val text = PlaylistFileCodec.encode(name, description, videos, System.currentTimeMillis(), isMusic)
                     checkNotNull(context.contentResolver.openOutputStream(target, "wt")).use { it.write(text.toByteArray()) }
                 }.isSuccess
-            }
-
-        /** A copy in the cache another app can read, replacing the last one shared; null when it could not be written. */
-        suspend fun shareableCopy(
-            name: String,
-            description: String,
-            videos: List<Video>,
-            isMusic: Boolean = false,
-        ): Uri? =
-            withContext(Dispatchers.IO) {
-                runCatching {
-                    val dir = File(context.cacheDir, SHARE_DIR).apply { mkdirs() }
-                    dir.listFiles()?.forEach(File::delete)
-                    val file = File(dir, PlaylistFileCodec.fileName(name))
-                    file.writeText(PlaylistFileCodec.encode(name, description, videos, System.currentTimeMillis(), isMusic))
-                    sharedFileUri(context, file)
-                }.getOrNull()
             }
 
         /** Adds the playlist in [source] as a new playlist of the viewer's own. */

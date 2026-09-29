@@ -2,7 +2,6 @@ package io.github.aedev.flow.ui.screens.player.state
 
 import androidx.compose.runtime.*
 import io.github.aedev.flow.ui.components.shared.CommentSortFilter
-import io.github.aedev.flow.ui.components.videoplayer.settings.PlayerSettingsPage
 import io.github.aedev.flow.ui.components.videoplayer.subtitle.SubtitleStyle
 
 // Every property is snapshot state, so composables taking this instance can skip on identity.
@@ -12,7 +11,6 @@ class PlayerScreenState {
     var showControls by mutableStateOf(true)
     var isTouchLocked by mutableStateOf(false)
     var lockOverlayRevealSignal by mutableIntStateOf(0)
-    var isFullscreen by mutableStateOf(false)
     var isFullscreenPortrait by mutableStateOf(false)
     var lastInteractionTimestamp by mutableLongStateOf(System.currentTimeMillis())
 
@@ -35,17 +33,12 @@ class PlayerScreenState {
 
     // Comment Sorting
     var commentSortFilter by mutableStateOf(CommentSortFilter.TOP)
-    var commentsTimedOnly by mutableStateOf(false)
 
-    // Gesture States
-    var brightnessLevel by mutableFloatStateOf(0.5f)
-    var volumeLevel by mutableFloatStateOf(0.5f)
     var showBrightnessOverlay by mutableStateOf(false)
     var showVolumeOverlay by mutableStateOf(false)
 
     // Seek Animation States
     var showSeekForwardAnimation by mutableStateOf(false)
-    var seekAccumulation by mutableIntStateOf(10)
     var showSeekBackAnimation by mutableStateOf(false)
 
     // Subtitle States
@@ -68,10 +61,6 @@ class PlayerScreenState {
     var zoomIndicatorSequence by mutableIntStateOf(0)
     var exitDragOffsetY by mutableFloatStateOf(0f)
     var exitDragProgress by mutableFloatStateOf(0f)
-
-    // Speed Control
-    var isSpeedBoostActive by mutableStateOf(false)
-    var normalSpeed by mutableFloatStateOf(1.0f)
 
     // Shorts/Music Prompt
     var showShortsPrompt by mutableStateOf(false)
@@ -112,72 +101,4 @@ class PlayerScreenState {
     internal fun open(sheet: PlayerSheet) {
         activeSheet = sheet
     }
-
-    internal fun closeSheet() {
-        activeSheet = PlayerSheet.None
-    }
-
-    internal val isSettingsOpen: Boolean
-        get() = activeSheet is PlayerSheet.Settings
-
-    internal val settingsPage: PlayerSettingsPage
-        get() = (activeSheet as? PlayerSheet.Settings)?.page ?: PlayerSettingsPage.Main
-
-    /**
-     * Re-anchoring the player — collapsing it, entering or leaving fullscreen — drops whatever it
-     * had raised over the stage. Now that [activeSheet] holds a single surface this closes *every*
-     * sheet: the sleep timer, download, cast and quick-action dialogs that the previous
-     * eighteen-boolean state deliberately left standing cannot survive an exclusive state.
-     */
-    fun dismissMediaSheets() {
-        closeSheet()
-    }
-
-    fun cycleResizeMode() {
-        resizeMode = (resizeMode + 1) % 3
-    }
-
-    fun toggleFullscreen() {
-        isFullscreenPortrait = false
-        isFullscreen = !isFullscreen
-    }
-
-    fun enableSubtitles(url: String) {
-        selectedSubtitleUrl = url
-        subtitlesEnabled = true
-    }
-
-    fun disableSubtitles() {
-        subtitlesEnabled = false
-        selectedSubtitleUrl = null
-        selectedTranscriptUrl = null
-    }
-
-    fun onInteraction() {
-        lastInteractionTimestamp = System.currentTimeMillis()
-    }
-
-    fun revealLockOverlay() {
-        lockOverlayRevealSignal++
-    }
 }
-
-@Composable
-fun rememberPlayerScreenState(): PlayerScreenState = remember { PlayerScreenState() }
-
-/**
- * The caption track a transcript should read.
- *
- * The transcript's own language choice wins, then whatever the video is subtitled with, then the
- * first authored track, since an auto-translation is a machine pass over a track already in the
- * list and reads worse than the original. A choice the current video has no track for is dropped
- * rather than fetched, so a queue advance cannot leave the panel reading an empty URL.
- */
-internal fun transcriptTrackUrl(
-    playerState: io.github.aedev.flow.player.EnhancedPlayerState,
-    screenState: PlayerScreenState,
-): String? =
-    screenState.selectedTranscriptUrl?.takeIf { url -> playerState.availableSubtitles.any { it.url == url } }
-        ?: screenState.selectedSubtitleUrl
-        ?: playerState.availableSubtitles.firstOrNull { !it.isTranslated }?.url
-        ?: playerState.availableSubtitles.firstOrNull()?.url
