@@ -1,0 +1,222 @@
+{
+ "playabilityStatus": {
+  "status": "OK"
+ },
+ "streamingData": {
+  "expiresInSeconds": "21540",
+  "adaptiveFormats": [
+   {
+    "itag": 137,
+    "mimeType": "video/mp4; codecs=\"avc1.640028\"",
+    "bitrate": 5018593,
+    "width": 1920,
+    "height": 1080,
+    "quality": "hd1080",
+    "fps": 30,
+    "qualityLabel": "1080p",
+    "projectionType": "RECTANGULAR",
+    "targetDurationSec": 5,
+    "maxDvrDurationSec": 43200,
+    "qualityOrdinal": "QUALITY_ORDINAL_1080P",
+    "url": "https://rr1---sn-fixture.googlevideo.com/videoplayback?expire=1790737271&itag=137&c=VISIONOS&mime=video%2Fmp4"
+   },
+   {
+    "itag": 136,
+    "mimeType": "video/mp4; codecs=\"avc1.4d401f\"",
+    "bitrate": 2684050,
+    "width": 1280,
+    "height": 720,
+    "quality": "hd720",
+    "fps": 30,
+    "qualityLabel": "720p",
+    "projectionType": "RECTANGULAR",
+    "targetDurationSec": 5,
+    "maxDvrDurationSec": 43200,
+    "qualityOrdinal": "QUALITY_ORDINAL_720P",
+    "url": "https://rr1---sn-fixture.googlevideo.com/videoplayback?expire=1790737271&itag=136&c=VISIONOS&mime=video%2Fmp4"
+   },
+   {
+    "itag": 135,
+    "mimeType": "video/mp4; codecs=\"avc1.4d401f\"",
+    "bitrate": 1350025,
+    "width": 854,
+    "height": 480,
+    "quality": "large",
+    "fps": 30,
+    "qualityLabel": "480p",
+    "projectionType": "RECTANGULAR",
+    "targetDurationSec": 5,
+    "maxDvrDurationSec": 43200,
+    "qualityOrdinal": "QUALITY_ORDINAL_480P",
+    "url": "https://rr1---sn-fixture.googlevideo.com/videoplayback?expire=1790737271&itag=135&c=VISIONOS&mime=video%2Fmp4"
+   },
+   {
+    "itag": 134,
+    "mimeType": "video/mp4; codecs=\"avc1.4d401e\"",
+    "bitrate": 1008250,
+    "width": 640,
+    "height": 360,
+    "quality": "medium",
+    "fps": 30,
+    "qualityLabel": "360p",
+    "projectionType": "RECTANGULAR",
+    "targetDurationSec": 5,
+    "maxDvrDurationSec": 43200,
+    "highReplication": true,
+    "qualityOrdinal": "QUALITY_ORDINAL_360P",
+    "url": "https://rr1---sn-fixture.googlevideo.com/videoplayback?expire=1790737271&itag=134&c=VISIONOS&mime=video%2Fmp4"
+   },
+   {
+    "itag": 133,
+    "mimeType": "video/mp4; codecs=\"avc1.4d4015\"",
+    "bitrate": 456228,
+    "width": 426,
+    "height": 240,
+    "quality": "small",
+    "fps": 30,
+    "qualityLabel": "240p",
+    "projectionType": "RECTANGULAR",
+    "targetDurationSec": 5,
+    "maxDvrDurationSec": 43200,
+    "qualityOrdinal": "QUALITY_ORDINAL_240P",
+    "url": "https://rr1---sn-fixture.googlevideo.com/videoplayback?expire=1790737271&itag=133&c=VISIONOS&mime=video%2Fmp4"
+   },
+   {
+    "itag": 160,
+    "mimeType": "video/mp4; codecs=\"avc1.42c00b\"",
+    "bitrate": 212465,
+    "width": 256,
+    "height": 144,
+    "quality": "tiny",
+    "fps": 15,
+    "qualityLabel": "144p",
+    "projectionType": "RECTANGULAR",
+    "targetDurationSec": 5,
+    "maxDvrDurationSec": 43200,
+    "qualityOrdinal": "QUALITY_ORDINAL_144P",
+    "url": "https://rr1---sn-fixture.googlevideo.com/videoplayback?expire=1790737271&itag=160&c=VISIONOS&mime=video%2Fmp4"
+   },
+   {
+    "itag": 139,
+    "mimeType": "audio/mp4; codecs=\"mp4a.40.5\"",
+    "bitrate": 64000,
+    "quality": "tiny",
+    "projectionType": "RECTANGULAR",
+    "targetDurationSec": 5,
+    "maxDvrDurationSec": 43200,
+    "audioQuality": "AUDIO_QUALITY_LOW",
+    "audioSampleRate": "22050",
+    "audioChannels": 2,
+    "qualityOrdinal": "QUALITY_ORDINAL_UNKNOWN",
+    "url": "https://rr1---sn-fixture.googlevideo.com/videoplayback?expire=1790737271&itag=139&c=VISIONOS&mime=audio%2Fmp4"
+   },
+   {
+    "itag": 140,
+    "mimeType": "audio/mp4; codecs=\"mp4a.40.2\"",
+    "bitrate": 144000,
+    "quality": "tiny",
+    "projectionType": "RECTANGULAR",
+    "targetDurationSec": 5,
+    "maxDvrDurationSec": 43200,
+    "highReplication": true,
+    "audioQuality": "AUDIO_QUALITY_MEDIUM",
+    "audioSampleRate": "44100",
+    "audioChannels": 2,
+    "qualityOrdinal": "QUALITY_ORDINAL_UNKNOWN",
+    "url": "https://rr1---sn-fixture.googlevideo.com/videoplayback?expire=1790737271&itag=140&c=VISIONOS&mime=audio%2Fmp4"
+   }
+  ],
+  "hlsManifestUrl": "https://manifest.googlevideo.com/api/manifest/hls_variant/fixture/file/index.m3u8"
+ },
+ "playbackTracking": {
+  "videostatsPlaybackUrl": {
+   "baseUrl": "https://s.youtube.com/api/stats/playback?docid=fixture&ns=yt"
+  }
+ },
+ "videoDetails": {
+  "videoId": "rFZHOHl-L8A",
+  "title": "lofi hip hop radio 📚 beats to relax/study to",
+  "lengthSeconds": "0",
+  "isLive": true,
+  "keywords": [
+   "lo-fi",
+   "lo fi",
+   "lofi",
+   "lofi hiphop",
+   "lo-fi hiphop",
+   "lo fi hiphop",
+   "hiphop",
+   "hip hop",
+   "lofi hip hop",
+   "lo-fi hip hop",
+   "lo fi hip hop",
+   "lofi radio",
+   "lo-fi radio",
+   "lo fi radio",
+   "lofi hip hop radio",
+   "lo-fi hip hop radio",
+   "lo fi hip hop radio",
+   "chilledcow",
+   "chilled cow",
+   "chilled cow radio",
+   "chillhop",
+   "study music",
+   "beats to relax",
+   "music to study",
+   "radio",
+   "relaxing music",
+   "playlist",
+   "music",
+   "lofi girl",
+   "sleep music",
+   "lofi chill",
+   "relax music",
+   "study lofi",
+   "lofi girl radio",
+   "music to relax",
+   "focus music",
+   "lofi study"
+  ],
+  "channelId": "UCSJ4gkVC6NrvII8umztf0Ow",
+  "isOwnerViewing": false,
+  "shortDescription": "New Character Unlocked: discover Lofi Teacher in the new Lofi House radio! https://lnk.to/house_lofi02\n\n🎼 | Listen on S",
+  "isCrawlable": true,
+  "isLiveDvrEnabled": true,
+  "thumbnail": {
+   "thumbnails": [
+    {
+     "url": "https://i.ytimg.com/vi/rFZHOHl-L8A/mqdefault.jpg?v=6aac24f4",
+     "width": 320,
+     "height": 180
+    },
+    {
+     "url": "https://i.ytimg.com/vi/rFZHOHl-L8A/hq720.jpg?v=6aac24f4",
+     "width": 1280,
+     "height": 720
+    }
+   ]
+  },
+  "liveChunkReadahead": 2,
+  "allowRatings": true,
+  "viewCount": "11178659",
+  "author": "Lofi Girl",
+  "isLowLatencyLiveStream": false,
+  "isPrivate": false,
+  "isUnpluggedCorpus": false,
+  "latencyClass": "MDE_STREAM_OPTIMIZATIONS_RENDERER_LATENCY_NORMAL",
+  "isLiveContent": true,
+  "isTvfilmVideo": false
+ },
+ "playerConfig": {
+  "audioConfig": {
+   "enablePerFormatLoudness": true,
+   "loudnessTargetLkfs": -14,
+   "loudnessNormalizationConfig": {
+    "applyStatefulNormalization": false,
+    "preserveStatefulLoudnessTarget": true,
+    "maxStatefulTimeThresholdSec": 300,
+    "minimumLoudnessTargetLkfs": -31
+   }
+  }
+ }
+}
