@@ -1,5 +1,6 @@
 package nl.neerdael.milkbeat.plugin
 
+import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import io.github.smiley4.schemakenerator.jsonschema.JsonSchemaSteps.compileReferencingRoot
 import io.github.smiley4.schemakenerator.jsonschema.JsonSchemaSteps.generateJsonSchema
@@ -13,6 +14,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.descriptors.elementDescriptors
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -95,11 +97,9 @@ class PluginSchemaTest {
             }
         val operations = calls(PluginOperations.all.map { Triple(it.path, it.request, it.response) })
         val host = calls(HostOperations.all.map { Triple(it.path, it.request, it.response) })
-        (
-            PluginOperations.all.flatMap { listOf(it.request.descriptor, it.response.descriptor) } +
-                HostOperations.all.flatMap { listOf(it.request.descriptor, it.response.descriptor) } +
-                PluginManifest.serializer().descriptor
-        ).flatMap(::sealedVariants)
+        withRequiredFromDefaults(definitions)
+        allRoots()
+            .flatMap(::sealedVariants)
             .distinctBy { it.serialName }
             .forEach { variant ->
                 val definition = definitions[variant.serialName]?.jsonObject ?: return@forEach
@@ -128,8 +128,10 @@ class PluginSchemaTest {
 
     /** A variant of a sealed type: kotlinx writes it with `"type": "<serialName>"`. */
     private class SealedVariant(
+        val parent: String,
         val serialName: String,
         val title: String,
+        val hasTypeField: Boolean,
     )
 
     @OptIn(ExperimentalSerializationApi::class)
@@ -138,11 +140,18 @@ class PluginSchemaTest {
         val variants = mutableListOf<SealedVariant>()
 
         fun visit(descriptor: SerialDescriptor) {
-            if (!seen.add(descriptor.serialName)) return
+            val container = descriptor.kind == StructureKind.LIST || descriptor.kind == StructureKind.MAP
+            if (!container && !seen.add(descriptor.serialName)) return
             if (descriptor.kind == PolymorphicKind.SEALED) {
                 val parent = descriptor.serialName.substringAfterLast('.')
                 descriptor.getElementDescriptor(1).elementDescriptors.forEach { variant ->
-                    variants += SealedVariant(variant.serialName, parent + variant.serialName.replaceFirstChar(Char::uppercase))
+                    variants +=
+                        SealedVariant(
+                            parent = descriptor.serialName,
+                            serialName = variant.serialName,
+                            title = parent + variant.serialName.replaceFirstChar(Char::uppercase),
+                            hasTypeField = (0 until variant.elementsCount).any { variant.getElementName(it) == "type" },
+                        )
                     visit(variant)
                 }
             }
@@ -169,29 +178,96 @@ class PluginSchemaTest {
     }
 
     /**
-     * Titles become TypeScript type names, so only objects, enums and unions keep theirs; a string
-     * or a list titled "String" or "ArrayList" would otherwise turn into dozens of aliases.
+     * Titles become TypeScript type names, so only object and enum schemas and unions keep theirs; a
+     * string or a list titled "String" or "ArrayList" would otherwise turn into dozens of aliases, and
+     * a map's title into numbered ones. Property names are data, not schemas, and are never touched.
      */
-    private fun withoutPrimitiveTitles(element: JsonElement): JsonElement =
-        when (element) {
-            is JsonObject -> {
-                val named =
-                    element["type"]?.let { it is JsonPrimitive && it.content == "object" } == true ||
-                        "enum" in element ||
-                        "anyOf" in element
-                JsonObject(
-                    element
-                        .filterKeys { key -> key != "title" || named }
-                        .mapValues { (_, value) -> withoutPrimitiveTitles(value) },
-                )
-            }
+    private fun withoutPrimitiveTitles(element: JsonElement): JsonElement {
+        if (element is JsonArray) return JsonArray(element.map(::withoutPrimitiveTitles))
+        if (element !is JsonObject) return element
+        val isObject = element["type"].let { it is JsonPrimitive && it.content == "object" } && "properties" in element
+        val named = isObject || "enum" in element || "anyOf" in element
+        return JsonObject(
+            element
+                .filterKeys { key -> key != "title" || named }
+                .mapValues { (key, value) ->
+                    if ((key == "properties" || key == "\$defs") && value is JsonObject) {
+                        JsonObject(value.mapValues { (_, schema) -> withoutPrimitiveTitles(schema) })
+                    } else {
+                        withoutPrimitiveTitles(value)
+                    }
+                },
+        )
+    }
 
-            is JsonArray -> {
-                JsonArray(element.map(::withoutPrimitiveTitles))
-            }
+    @Test
+    @OptIn(ExperimentalSerializationApi::class)
+    fun `every field of every class is in the schema`() {
+        val definitions = pluginApiSchema()["\$defs"]!!.jsonObject
+        val missing =
+            allDescriptors()
+                .filter { it.kind == StructureKind.CLASS }
+                .flatMap { descriptor ->
+                    val properties = definitions[descriptor.serialName.removeSuffix("?")]?.jsonObject?.get("properties")?.jsonObject
+                    (0 until descriptor.elementsCount)
+                        .map(descriptor::getElementName)
+                        .filter { properties == null || it !in properties }
+                        .map { "${descriptor.serialName}.$it" }
+                }
+        assertThat(missing).isEmpty()
+    }
 
-            else -> {
-                element
-            }
+    @Test
+    fun `sealed variants have distinct wire names and no field of their own named type`() {
+        val variants = allRoots().flatMap(::sealedVariants).distinctBy { it.parent to it.serialName }
+        assertThat(
+            variants
+                .map { it.serialName }
+                .groupingBy { it }
+                .eachCount()
+                .filterValues { it > 1 },
+        ).isEmpty()
+        val clashing = variants.filter { it.hasTypeField }.map { it.serialName }
+        assertThat(clashing).isEmpty()
+    }
+
+    private fun allRoots(): List<SerialDescriptor> =
+        PluginOperations.all.flatMap { listOf(it.request.descriptor, it.response.descriptor) } +
+            HostOperations.all.flatMap { listOf(it.request.descriptor, it.response.descriptor) } +
+            PluginManifest.serializer().descriptor +
+            PluginError.serializer().descriptor
+
+    @OptIn(ExperimentalSerializationApi::class)
+    private fun allDescriptors(): Collection<SerialDescriptor> {
+        val seen = linkedMapOf<String, SerialDescriptor>()
+
+        // Every list is named kotlin.collections.ArrayList and every map LinkedHashMap, so those are
+        // walked through each time instead of being remembered by name.
+        fun visit(descriptor: SerialDescriptor) {
+            val container = descriptor.kind == StructureKind.LIST || descriptor.kind == StructureKind.MAP
+            if (!container && seen.put(descriptor.serialName.removeSuffix("?"), descriptor) != null) return
+            descriptor.elementDescriptors.forEach(::visit)
         }
+        allRoots().forEach(::visit)
+        return seen.values
+    }
+
+    /**
+     * A field is required only when it has no default, so plugins can leave defaults out. The host
+     * always writes them, so what a plugin receives still has every field.
+     */
+    @OptIn(ExperimentalSerializationApi::class)
+    private fun withRequiredFromDefaults(definitions: MutableMap<String, JsonElement>) {
+        allDescriptors()
+            .filter { it.kind == StructureKind.CLASS }
+            .forEach { descriptor ->
+                val name = descriptor.serialName.removeSuffix("?")
+                val definition = definitions[name]?.jsonObject ?: return@forEach
+                val required =
+                    (0 until descriptor.elementsCount)
+                        .filterNot(descriptor::isElementOptional)
+                        .map { JsonPrimitive(descriptor.getElementName(it)) }
+                definitions[name] = JsonObject(definition + ("required" to JsonArray(required)))
+            }
+    }
 }

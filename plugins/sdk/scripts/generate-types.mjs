@@ -7,12 +7,18 @@ const schemaPath = new URL('../generated/plugin-api.schema.json', import.meta.ur
 const typesPath = new URL('../generated/plugin-api.ts', import.meta.url);
 const schema = JSON.parse(await readFile(schemaPath, 'utf8'));
 
-const types = await compile(schema, 'MilkbeatPluginApi', {
+const compiled = await compile(schema, 'MilkbeatPluginApi', {
   bannerComment: '/* Plugin API v1, generated from plugin-api by scripts/generate-types.mjs. Do not edit. */',
   additionalProperties: false,
   unreachableDefinitions: false,
   style: { singleQuote: true, printWidth: 120 },
 });
+
+// The host functions as data too, so the SDK builds `mb` from exactly the functions the host has.
+const hostOperations = Object.keys(schema.properties.host.properties);
+const types = `${compiled}
+export const HOST_OPERATIONS = ${JSON.stringify(hostOperations, null, 2).replaceAll('"', "'")} as const;
+`;
 
 if (process.argv.includes('--check')) {
   const current = await readFile(typesPath, 'utf8').catch(() => '');

@@ -93,6 +93,22 @@ jobs:
           ./gradlew :app:testGithubDebugUnitTest :app:compileFossDebugKotlin
           --max-workers=1 --build-cache --stacktrace
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: plugins/package-lock.json
+
+      # The plugin API's JSON Schema must match its Kotlin model, and the SDK's TypeScript must match
+      # the schema; either drifting means plugins and the host no longer agree.
+      - name: Check the plugin API contract
+        run: |
+          ./gradlew :plugin-api:test --build-cache --stacktrace
+          cd plugins
+          npm ci --no-audit --no-fund
+          npm run --workspaces --if-present check
+
       # Instrumentation tests are not executed in CI, but they must still
       # compile: breakage here otherwise lands on main unnoticed.
       - name: Compile instrumentation tests

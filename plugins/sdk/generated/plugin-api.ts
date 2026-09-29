@@ -4,12 +4,12 @@ export type MetadataSurface = 'HOME' | 'SEARCH' | 'SUGGEST' | 'ENTITY' | 'TRACKS
 export type EntityKind =
   'TRACK' | 'MUSIC_VIDEO' | 'ALBUM' | 'PLAYLIST' | 'ARTIST' | 'PROFILE' | 'MIX' | 'RADIO' | 'VIDEO' | 'CHANNEL';
 export type VideoSurface = 'SEARCH' | 'SUGGEST' | 'CHANNEL' | 'PLAYLIST' | 'RELATED' | 'COMMENTS' | 'LIVE_CHAT';
+export type SignInMethod = SignInMethodWebLogin;
 export type SettingType = 'TOGGLE' | 'CHOICE' | 'TEXT';
 export type PageBlock = PageBlockCollection | PageBlockHeader;
 export type CollectionLayout = 'HORIZONTAL_SHELF' | 'MULTI_COLUMN_LIST' | 'TRACK_TABLE';
 export type ItemView = 'COVER_CARD' | 'LANDSCAPE_CARD' | 'ARTIST_PORTRAIT' | 'TRACK_ROW';
 export type HeaderStyle = 'PORTRAIT' | 'COVER';
-export type SearchScope = 'MUSIC' | 'VIDEO';
 export type AudioQuality = 'AUTO' | 'HIGH' | 'MEDIUM' | 'LOW';
 export type FormatType = 'AUDIO' | 'VIDEO';
 export type VideoKind = 'VOD' | 'LIVE' | 'UPCOMING';
@@ -23,6 +23,7 @@ export type PluginErrorCode =
   | 'SIGN_IN_EXPIRED'
   | 'RATE_LIMITED'
   | 'NETWORK'
+  | 'TIMEOUT'
   | 'UNSUPPORTED'
   | 'INTERNAL';
 
@@ -33,6 +34,7 @@ export interface MilkbeatPluginApi {
   manifest: PluginManifest;
   operations: {
     'lifecycle.warmUp': {};
+    'lifecycle.settingsChanged': {};
     'metadata.home': {
       request: HomeRequest;
       response: MetadataPage;
@@ -83,6 +85,10 @@ export interface MilkbeatPluginApi {
     'video.entity': {
       request: PageRequest;
       response: MetadataPage;
+    };
+    'video.tracks': {
+      request: TracksRequest;
+      response: TrackList;
     };
     'video.related': {
       request: PageRequest;
@@ -172,6 +178,9 @@ export interface MilkbeatPluginApi {
     'settings.get': {
       response: StorageEntry[];
     };
+    'time.sleep': {
+      request: SleepRequest;
+    };
   };
   error: PluginError;
 }
@@ -185,12 +194,12 @@ export interface PluginManifest {
   description?: string | null;
   author?: null | Author;
   updateUrl?: string | null;
-  entry: string;
+  entry?: string;
   icon?: string | null;
   roles: Roles;
-  signIn: WebLoginMethod[];
-  permissions: Permissions;
-  settings: SettingDefinition[];
+  signIn?: SignInMethod[];
+  permissions?: Permissions;
+  settings?: SettingDefinition[];
 }
 export interface ApiRange {
   min: number;
@@ -212,17 +221,18 @@ export interface MetadataRole {
 }
 export interface AudioRole {
   idSpaces: string[];
-  radio: boolean;
-  musicVideo: boolean;
-  reportPlayback: boolean;
+  radio?: boolean;
+  musicVideo?: boolean;
+  reportPlayback?: boolean;
 }
 export interface VideoRole {
   idSpace: string;
   surfaces: VideoSurface[];
-  live: boolean;
-  reportPlayback: boolean;
+  live?: boolean;
+  reportPlayback?: boolean;
 }
-export interface WebLoginMethod {
+export interface SignInMethodWebLogin {
+  type: 'webLogin';
   id: string;
   label: string;
   startUrl: string;
@@ -232,9 +242,9 @@ export interface WebLoginMethod {
   extractScript?: string | null;
 }
 export interface Permissions {
-  network: string[];
-  browser: string[];
-  storage: number;
+  network?: string[];
+  browser?: string[];
+  storage?: number;
 }
 export interface SettingDefinition {
   key: string;
@@ -242,8 +252,8 @@ export interface SettingDefinition {
   label: string;
   description?: string | null;
   default?: string | null;
-  options: SettingOption[];
-  dynamicOptions: boolean;
+  options?: SettingOption[];
+  dynamicOptions?: boolean;
 }
 export interface SettingOption {
   value: string;
@@ -262,13 +272,15 @@ export interface MetadataPage {
 export interface PageBlockCollection {
   type: 'collection';
   id: string;
-  header?: null | CollectionHeader;
+  header: null | CollectionHeader;
   layout: CollectionLayout;
   defaultItemView: ItemView;
   items: MetadataItem[];
   showAll?: null | EntityRef;
+  showAllFilterId?: string | null;
 }
 export interface CollectionHeader {
+  title: string;
   context?: string | null;
   avatar?: null | Artwork;
   target?: null | EntityRef;
@@ -283,16 +295,18 @@ export interface EntityRef {
 export interface MetadataItem {
   id: string;
   entity: EntityRef;
+  title: string;
   subtitle?: string | null;
   artwork?: null | Artwork;
   view?: null | ItemView;
-  artists: ArtistCredit[];
+  artists?: ArtistCredit[];
   durationSeconds?: number | null;
-  explicit: boolean;
+  explicit?: boolean;
   ordinal?: number | null;
   album?: string | null;
-  details: string[];
-  live: boolean;
+  details?: string[];
+  live?: boolean;
+  upcoming?: boolean;
   track?: null | TrackDescriptor;
 }
 export interface ArtistCredit {
@@ -301,28 +315,29 @@ export interface ArtistCredit {
 }
 export interface TrackDescriptor {
   ref: EntityRef;
-  artists: ArtistCredit[];
+  title: string;
+  artists?: ArtistCredit[];
   album?: string | null;
   albumRef?: null | EntityRef;
   durationMs?: number | null;
-  explicit: boolean;
+  explicit?: boolean;
   artwork?: null | Artwork;
   trackNumber?: number | null;
   discNumber?: number | null;
   year?: number | null;
-  hasVideo: boolean;
-  ids: LinkedHashMapStringString;
-}
-export interface LinkedHashMapStringString {
-  [k: string]: string;
+  hasVideo?: boolean;
+  ids?: {
+    [k: string]: string;
+  };
 }
 export interface PageBlockHeader {
   type: 'header';
   id: string;
   style: HeaderStyle;
   entity: EntityRef;
+  title: string;
   artwork?: null | Artwork;
-  details: string[];
+  details?: string[];
   attribution?: null | Attribution;
   description?: string | null;
   tracks?: null | EntityRef;
@@ -342,19 +357,18 @@ export interface FilterOption {
 }
 export interface SearchRequest {
   query: string;
-  scope: SearchScope;
   filterId?: string | null;
   cursor?: string | null;
 }
 export interface SuggestRequest {
   query: string;
-  scope: SearchScope;
 }
 export interface Suggestions {
   queries: string[];
 }
 export interface PageRequest {
   entity: EntityRef;
+  filterId?: string | null;
   cursor?: string | null;
 }
 export interface TracksRequest {
@@ -376,28 +390,32 @@ export interface RadioRequest {
 }
 export interface ResolveAudioRequest {
   track: TrackDescriptor;
-  quality: AudioQuality;
-  video: boolean;
+  quality?: AudioQuality;
+  video?: boolean;
   maxVideoHeight?: number | null;
-  videoCodecs: string[];
+  videoCodecs?: string[];
   language?: string | null;
-  retry: boolean;
+  failure?: null | StreamFailure;
+}
+export interface StreamFailure {
+  url: string;
+  status?: number | null;
 }
 export interface AudioStream {
   url: string;
   cacheKey: string;
+  renditionId: string;
   mimeType: string;
   codecs?: string | null;
   bitrate?: number | null;
   contentLength?: number | null;
-  headers: LinkedHashMapStringString1;
-  expiresAtMs?: number | null;
+  headers?: {
+    [k: string]: string;
+  };
+  expiresInMs?: number | null;
   loudnessDb?: number | null;
   trackingToken?: string | null;
   video?: null | MediaFormat;
-}
-export interface LinkedHashMapStringString1 {
-  [k: string]: string;
 }
 export interface MediaFormat {
   id: string;
@@ -415,8 +433,11 @@ export interface MediaFormat {
   initRange?: null | ByteRange;
   indexRange?: null | ByteRange;
   qualityLabel?: string | null;
-  hdr: boolean;
+  hdr?: boolean;
   audioTrack?: null | AudioTrackInfo;
+  headers?: {
+    [k: string]: string;
+  };
 }
 export interface ByteRange {
   start: number;
@@ -426,8 +447,8 @@ export interface AudioTrackInfo {
   id: string;
   name?: string | null;
   language?: string | null;
-  original: boolean;
-  drc: boolean;
+  original?: boolean;
+  drc?: boolean;
 }
 export interface ReportPlaybackRequest {
   entity: EntityRef;
@@ -438,26 +459,31 @@ export interface ReportPlaybackRequest {
 export interface ResolveVideoRequest {
   entity: EntityRef;
   maxHeight?: number | null;
-  codecs: string[];
+  codecs?: string[];
   language?: string | null;
-  retry: boolean;
+  captionLanguage?: string | null;
+  failure?: null | StreamFailure;
 }
 export interface VideoPlayback {
   kind: VideoKind;
   details: VideoDetails;
-  formats: MediaFormat[];
+  formats?: MediaFormat[];
   hlsUrl?: string | null;
   dashUrl?: string | null;
-  captions: CaptionTrack[];
-  chapters: Chapter[];
-  skipSegments: SkipSegment[];
-  headers: LinkedHashMapStringString2;
-  expiresAtMs?: number | null;
-  startsAtMs?: number | null;
+  captions?: CaptionTrack[];
+  chapters?: Chapter[];
+  skipSegments?: SkipSegment[];
+  headers?: {
+    [k: string]: string;
+  };
+  expiresInMs?: number | null;
+  startsInMs?: number | null;
+  dvr?: boolean;
   trackingToken?: string | null;
 }
 export interface VideoDetails {
   entity: EntityRef;
+  title: string;
   channelName?: string | null;
   channel?: null | EntityRef;
   channelAvatar?: null | Artwork;
@@ -466,25 +492,24 @@ export interface VideoDetails {
   viewsLabel?: string | null;
   publishedLabel?: string | null;
   artwork?: null | Artwork;
-  keywords: string[];
+  keywords?: string[];
 }
 export interface CaptionTrack {
   url: string;
   language: string;
   name: string;
-  autoGenerated: boolean;
-  mimeType: string;
+  autoGenerated?: boolean;
+  translated?: boolean;
+  mimeType?: string;
 }
 export interface Chapter {
+  title: string;
   startMs: number;
 }
 export interface SkipSegment {
   startMs: number;
   endMs: number;
   category: string;
-}
-export interface LinkedHashMapStringString2 {
-  [k: string]: string;
 }
 export interface CommentsRequest {
   entity: EntityRef;
@@ -494,7 +519,7 @@ export interface CommentsRequest {
 export interface CommentsPage {
   comments: Comment[];
   next?: string | null;
-  sorts: FilterOption[];
+  sorts?: FilterOption[];
   totalLabel?: string | null;
 }
 export interface Comment {
@@ -504,10 +529,10 @@ export interface Comment {
   text: string;
   publishedLabel?: string | null;
   likesLabel?: string | null;
-  replyCount: number;
+  replyCount?: number;
   repliesCursor?: string | null;
-  pinned: boolean;
-  byCreator: boolean;
+  pinned?: boolean;
+  byCreator?: boolean;
 }
 export interface LiveChatRequest {
   entity: EntityRef;
@@ -516,7 +541,7 @@ export interface LiveChatRequest {
 export interface LiveChatBatch {
   messages: LiveChatMessage[];
   next?: string | null;
-  pollAfterMs: number;
+  pollAfterMs?: number;
 }
 export interface LiveChatMessage {
   id: string;
@@ -528,10 +553,9 @@ export interface LiveChatMessage {
 export interface WebLoginResult {
   method: string;
   cookies: string;
-  extracted: LinkedHashMapStringString3;
-}
-export interface LinkedHashMapStringString3 {
-  [k: string]: string;
+  extracted?: {
+    [k: string]: string;
+  };
 }
 export interface ProviderAccountAnonymous {
   type: 'anonymous';
@@ -550,23 +574,21 @@ export interface SettingOptionsRequest {
 }
 export interface HttpRequest {
   url: string;
-  method: string;
-  headers: LinkedHashMapStringString4;
+  method?: string;
+  headers?: {
+    [k: string]: string;
+  };
   body?: string | null;
   timeoutMs?: number | null;
-  followRedirects: boolean;
-}
-export interface LinkedHashMapStringString4 {
-  [k: string]: string;
+  followRedirects?: boolean;
 }
 export interface HttpResponse {
   status: number;
   url: string;
-  headers: LinkedHashMapStringString5;
+  headers: {
+    [k: string]: string;
+  };
   body: string;
-}
-export interface LinkedHashMapStringString5 {
-  [k: string]: string;
 }
 export interface StorageKey {
   key: string;
@@ -624,8 +646,33 @@ export interface BrowserEvaluateRequest {
 export interface BrowserResult {
   value: string;
 }
+export interface SleepRequest {
+  ms: number;
+}
 export interface PluginError {
   code: PluginErrorCode;
   message: string;
+  userMessage?: string | null;
   retryAfterMs?: number | null;
+  detail?: string | null;
 }
+
+export const HOST_OPERATIONS = [
+  'http.fetch',
+  'storage.get',
+  'storage.set',
+  'storage.delete',
+  'secrets.get',
+  'secrets.set',
+  'secrets.delete',
+  'crypto.hash',
+  'code.load',
+  'assets.read',
+  'env.get',
+  'log.write',
+  'browser.open',
+  'browser.evaluate',
+  'browser.close',
+  'settings.get',
+  'time.sleep'
+] as const;

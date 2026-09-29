@@ -2,7 +2,7 @@ package nl.neerdael.milkbeat.catalog
 
 import kotlinx.serialization.Serializable
 
-/** Comments on a video: its top-level comments in [sortId] order, or the replies under [parentCursor]. */
+/** Comments on a video: its top-level comments in [sortId] order, or, with [cursor], the next batch or a comment's replies. */
 @Serializable
 data class CommentsRequest(
     val entity: EntityRef,

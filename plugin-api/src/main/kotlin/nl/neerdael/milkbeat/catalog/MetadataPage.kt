@@ -10,6 +10,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class MetadataPage(
     val id: String,
+    @Serializable(with = LenientListSerializer::class)
     val blocks: List<PageBlock>,
     val filters: FilterControl? = null,
     val nextCursor: String? = null,
@@ -31,8 +32,11 @@ data class CollectionBlock(
     val header: CollectionHeader?,
     val layout: CollectionLayout,
     val defaultItemView: ItemView,
+    @Serializable(with = LenientListSerializer::class)
     val items: List<MetadataItem>,
     val showAll: EntityRef? = null,
+    /** "Show all" re-runs the same page or search with this filter, as in a search's songs section. */
+    val showAllFilterId: String? = null,
 ) : PageBlock
 
 /**

@@ -6,7 +6,19 @@ definePlugin({
     async home(request) {
       const response = await mb.http.fetch({ url: 'https://example.org', headers: {}, method: 'GET', followRedirects: true });
       if (response.status !== 200) fail('NETWORK', `HTTP ${response.status}`);
-      return { id: `home:${request.filterId ?? ''}`, blocks: [] };
+      return {
+        id: `home:${request.filterId ?? ''}`,
+        blocks: [
+          {
+            type: 'collection',
+            id: 'quick-picks',
+            header: { title: 'Quick picks' },
+            layout: 'MULTI_COLUMN_LIST',
+            defaultItemView: 'TRACK_ROW',
+            items: [{ id: 'q1', entity: { kind: 'TRACK', providerId: 'abc' }, title: 'Aria', artists: [{ name: 'Argy' }] }],
+          },
+        ],
+      };
     },
   },
   signIn: {

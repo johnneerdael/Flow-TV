@@ -11,6 +11,7 @@ enum class PluginErrorCode {
     SIGN_IN_EXPIRED,
     RATE_LIMITED,
     NETWORK,
+    TIMEOUT,
     UNSUPPORTED,
     INTERNAL,
 }
@@ -19,5 +20,9 @@ enum class PluginErrorCode {
 data class PluginError(
     val code: PluginErrorCode,
     val message: String,
+    /** Said to the listener as it is, e.g. "This video is not available in your country". */
+    val userMessage: String? = null,
     val retryAfterMs: Long? = null,
+    /** For logs only, such as a stack trace. */
+    val detail: String? = null,
 )

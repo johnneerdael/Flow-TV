@@ -36,6 +36,9 @@ data class SettingOptionsRequest(
 object PluginOperations {
     val warmUp = PluginOperation("lifecycle.warmUp", Unit.serializer(), Unit.serializer())
 
+    /** The listener changed one of the plugin's settings; region- or language-bound caches are stale. */
+    val settingsChanged = PluginOperation("lifecycle.settingsChanged", Unit.serializer(), Unit.serializer())
+
     val home = PluginOperation("metadata.home", HomeRequest.serializer(), MetadataPage.serializer())
     val search = PluginOperation("metadata.search", SearchRequest.serializer(), MetadataPage.serializer())
     val suggest = PluginOperation("metadata.suggest", SuggestRequest.serializer(), Suggestions.serializer())
@@ -51,6 +54,7 @@ object PluginOperations {
     val videoSearch = PluginOperation("video.search", SearchRequest.serializer(), MetadataPage.serializer())
     val videoSuggest = PluginOperation("video.suggest", SuggestRequest.serializer(), Suggestions.serializer())
     val videoEntity = PluginOperation("video.entity", PageRequest.serializer(), MetadataPage.serializer())
+    val videoTracks = PluginOperation("video.tracks", TracksRequest.serializer(), TrackList.serializer())
     val related = PluginOperation("video.related", PageRequest.serializer(), MetadataPage.serializer())
     val resolveVideo = PluginOperation("video.resolve", ResolveVideoRequest.serializer(), VideoPlayback.serializer())
     val comments = PluginOperation("video.comments", CommentsRequest.serializer(), CommentsPage.serializer())
@@ -67,6 +71,7 @@ object PluginOperations {
     val all: List<PluginOperation<*, *>> =
         listOf(
             warmUp,
+            settingsChanged,
             home,
             search,
             suggest,
@@ -80,6 +85,7 @@ object PluginOperations {
             videoSearch,
             videoSuggest,
             videoEntity,
+            videoTracks,
             related,
             resolveVideo,
             comments,

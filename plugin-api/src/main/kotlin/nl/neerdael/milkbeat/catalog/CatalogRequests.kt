@@ -2,19 +2,16 @@ package nl.neerdael.milkbeat.catalog
 
 import kotlinx.serialization.Serializable
 
-/** An entity's page: an artist, album, playlist, mix, channel or profile. [cursor] continues it. */
+/**
+ * An entity's page: an artist, album, playlist, mix, channel or profile. [filterId] selects one of the
+ * page's filter options (a channel's tabs, for instance); [cursor] continues the page.
+ */
 @Serializable
 data class PageRequest(
     val entity: EntityRef,
+    val filterId: String? = null,
     val cursor: String? = null,
 )
-
-/** Music is what the metadata role searches; videos are what the video role searches. */
-@Serializable
-enum class SearchScope {
-    MUSIC,
-    VIDEO,
-}
 
 /**
  * A search. [filterId] is one of the filter options the plugin returned with the unfiltered results
@@ -23,7 +20,6 @@ enum class SearchScope {
 @Serializable
 data class SearchRequest(
     val query: String,
-    val scope: SearchScope,
     val filterId: String? = null,
     val cursor: String? = null,
 )
@@ -31,7 +27,6 @@ data class SearchRequest(
 @Serializable
 data class SuggestRequest(
     val query: String,
-    val scope: SearchScope,
 )
 
 @Serializable
@@ -55,7 +50,9 @@ data class TracksRequest(
 
 /**
  * What a radio continues from: a track (its mix), a collection (its similar content) or a station
- * the plugin named. [cursor] continues a radio already started.
+ * the plugin named, such as an entity header's `station`. Anything the plugin needs to build the radio
+ * (a collection's automix, say) it looks up from [seed] itself. [cursor] continues a radio already
+ * started.
  */
 @Serializable
 data class RadioRequest(

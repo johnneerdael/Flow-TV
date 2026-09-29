@@ -3,9 +3,9 @@ package nl.neerdael.milkbeat.catalog
 import kotlinx.serialization.Serializable
 
 /**
- * One occurrence of an entity on a page. [id] identifies the occurrence, [entity] what it points
- * at: the same album can appear in two shelves under two ids. A playable item carries its [track],
- * so the host can queue it without asking the plugin again.
+ * One occurrence of an entity on a page. [id] identifies the occurrence and must be unique on the
+ * page, [entity] what it points at: the same album can appear in two shelves under two ids. A
+ * playable item carries its [track], so the host can queue it without asking the plugin again.
  */
 @Serializable
 data class MetadataItem(
@@ -23,10 +23,16 @@ data class MetadataItem(
     /** Further short lines under the subtitle, such as a video's views and age. */
     val details: List<String> = emptyList(),
     val live: Boolean = false,
+    /** A scheduled live stream or premiere that has not started. */
+    val upcoming: Boolean = false,
     val track: TrackDescriptor? = null,
 )
 
-/** An entity in the plugin that produced the page; the host keeps which plugin that was. */
+/**
+ * An entity in the plugin that produced the page. The host remembers which plugin and role that was
+ * and sends the ref back only to it; to recognise a track described by another plugin, an audio
+ * plugin reads [TrackDescriptor.ids] under its own id space, never this ref.
+ */
 @Serializable
 data class EntityRef(
     val kind: EntityKind,

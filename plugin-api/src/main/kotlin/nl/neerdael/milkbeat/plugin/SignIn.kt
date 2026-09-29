@@ -1,6 +1,14 @@
 package nl.neerdael.milkbeat.plugin
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+
+/** A way to sign in that the host knows how to run. Only [WebLoginMethod] exists in API v1. */
+@Serializable
+sealed interface SignInMethod {
+    val id: String
+    val label: String
+}
 
 /**
  * A sign-in the host runs in its own web view, driven from the listener's phone: it opens
@@ -9,15 +17,16 @@ import kotlinx.serialization.Serializable
  * of strings), then hands the result to the plugin as a [WebLoginResult] and forgets it.
  */
 @Serializable
+@SerialName("webLogin")
 data class WebLoginMethod(
-    val id: String,
-    val label: String,
+    override val id: String,
+    override val label: String,
     val startUrl: String,
     val successUrlPrefix: String,
     val cookieUrl: String,
     val requiredCookies: List<String>,
     val extractScript: String? = null,
-)
+) : SignInMethod
 
 @Serializable
 data class WebLoginResult(

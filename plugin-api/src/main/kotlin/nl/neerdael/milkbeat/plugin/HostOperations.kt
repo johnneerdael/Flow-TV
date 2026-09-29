@@ -5,7 +5,11 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
 
-/** An HTTP request through the host; only hosts in the manifest's `permissions.network` are reachable. */
+/**
+ * An HTTPS request through the host; only hosts in the manifest's `permissions.network` are reachable,
+ * redirects included. There is no cookie jar: a plugin sends and keeps its own cookies (from
+ * [HttpResponse.headers] `set-cookie`, or a [WebLoginResult]) itself.
+ */
 @Serializable
 data class HttpRequest(
     val url: String,
@@ -134,6 +138,12 @@ data class BrowserResult(
     val value: String,
 )
 
+/** Waits [ms] (at most a minute); QuickJS has no timers of its own, so backoff goes through the host. */
+@Serializable
+data class SleepRequest(
+    val ms: Long,
+)
+
 /** A host function a plugin calls through the global `mb` object: `area.name`, with its JSON shapes. */
 class HostOperation<Request, Response>(
     val path: String,
@@ -159,6 +169,7 @@ object HostOperations {
     val browserEvaluate = HostOperation("browser.evaluate", BrowserEvaluateRequest.serializer(), BrowserResult.serializer())
     val browserClose = HostOperation("browser.close", BrowserSession.serializer(), Unit.serializer())
     val settings = HostOperation("settings.get", Unit.serializer(), ListSerializer(StorageEntry.serializer()))
+    val sleep = HostOperation("time.sleep", SleepRequest.serializer(), Unit.serializer())
 
     val all: List<HostOperation<*, *>> =
         listOf(
@@ -178,5 +189,6 @@ object HostOperations {
             browserEvaluate,
             browserClose,
             settings,
+            sleep,
         )
 }

@@ -24,7 +24,7 @@ data class PluginManifest(
     val entry: String = "plugin.js",
     val icon: String? = null,
     val roles: Roles,
-    val signIn: List<WebLoginMethod> = emptyList(),
+    val signIn: List<SignInMethod> = emptyList(),
     val permissions: Permissions = Permissions(),
     val settings: List<SettingDefinition> = emptyList(),
 )

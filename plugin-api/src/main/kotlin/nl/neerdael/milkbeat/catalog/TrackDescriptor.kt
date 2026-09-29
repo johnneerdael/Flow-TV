@@ -5,7 +5,8 @@ import kotlinx.serialization.Serializable
 /**
  * What any provider needs to recognise a track: the metadata plugin that listed it and every audio
  * plugin that may play it read the same description. [ids] holds known ids by id space, e.g.
- * `ytm`, `spotify`, `isrc`; [ref] is the track in the plugin that described it.
+ * `ytm`, `spotify`, `isrc`, and always includes the describing plugin's own; [ref] is the track in
+ * the plugin that described it.
  */
 @Serializable
 data class TrackDescriptor(
