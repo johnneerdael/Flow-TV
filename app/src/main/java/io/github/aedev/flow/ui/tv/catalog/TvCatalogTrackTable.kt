@@ -36,6 +36,7 @@ internal fun LazyListScope.catalogTrackTable(
     startPadding: Dp,
     endPadding: Dp,
     firstRowFocus: FocusRequester? = null,
+    onShowAllFilter: ((String) -> Unit)? = null,
 ) {
     // A column most rows leave empty is noise; YouTube names the album only on some playlist tracks.
     val showAlbum = collection.items.count { it.album != null } * 2 >= collection.items.size
@@ -44,7 +45,9 @@ internal fun LazyListScope.catalogTrackTable(
         item(key = "${collection.id}/header") {
             TvCatalogTableHeader(
                 title = header.title,
-                onShowAll = collection.showAll?.let { target -> { onOpen(target) } },
+                onShowAll =
+                    collection.showAll?.let { target -> { onOpen(target) } }
+                        ?: collection.showAllFilterId?.let { filterId -> onShowAllFilter?.let { show -> { show(filterId) } } },
                 modifier = padding,
             )
         }

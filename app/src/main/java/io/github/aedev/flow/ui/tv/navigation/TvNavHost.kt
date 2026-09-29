@@ -15,16 +15,15 @@ import io.github.aedev.flow.ui.screens.account.METHOD_ARG
 import io.github.aedev.flow.ui.screens.account.PLUGIN_ARG
 import io.github.aedev.flow.ui.screens.music.CatalogPageViewModel
 import io.github.aedev.flow.ui.screens.music.sharedMusicViewModel
-import io.github.aedev.flow.ui.screens.search.SearchViewModel
 import io.github.aedev.flow.ui.tv.screens.TvCatalogPageScreen
 import io.github.aedev.flow.ui.tv.screens.TvChannelScreen
 import io.github.aedev.flow.ui.tv.screens.TvLibraryScreen
 import io.github.aedev.flow.ui.tv.screens.TvMusicCollectionScreen
 import io.github.aedev.flow.ui.tv.screens.TvMusicScreen
 import io.github.aedev.flow.ui.tv.screens.TvPlaylistDetailScreen
-import io.github.aedev.flow.ui.tv.screens.TvSearchScreen
 import io.github.aedev.flow.ui.tv.screens.TvSettingsScreen
 import io.github.aedev.flow.ui.tv.screens.account.TvAccountSignInScreen
+import io.github.aedev.flow.ui.tv.screens.search.TvSearchScreen
 import nl.neerdael.milkbeat.catalog.EntityRef
 
 /** Top-level TV navigation graph plus detail routes (channel, …). */
@@ -35,7 +34,6 @@ fun TvNavHost(
     onPlayTrack: (MusicTrack, List<MusicTrack>, String) -> Unit,
     onPlayMix: (MusicTrack) -> Unit,
     onPlayCollection: (MusicTrack, List<MusicTrack>, String, String?) -> Unit,
-    searchViewModel: SearchViewModel,
     onPlayVideo: (Video) -> Unit,
     onPlayPlaylist: (List<Video>, String) -> Unit,
     onOpenPlugins: () -> Unit,
@@ -89,7 +87,6 @@ fun TvNavHost(
         }
         composable(TvDestination.SEARCH.route) {
             TvSearchScreen(
-                viewModel = searchViewModel,
                 onVideoClick = onPlayVideo,
                 onChannelClick = openChannel,
                 onOpenPlaylist = { navController.navigate(TvRoutes.playlist(it)) },

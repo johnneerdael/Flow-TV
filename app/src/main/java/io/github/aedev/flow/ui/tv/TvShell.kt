@@ -29,7 +29,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.music.model.MusicTrack
-import io.github.aedev.flow.ui.screens.search.SearchViewModel
 import io.github.aedev.flow.ui.tv.components.TvNavRail
 import io.github.aedev.flow.ui.tv.components.TvNowPlayingStrip
 import io.github.aedev.flow.ui.tv.navigation.TvBackAction
@@ -53,7 +52,6 @@ fun TvShell(
     onPlayTrack: (MusicTrack, List<MusicTrack>, String) -> Unit,
     onPlayMix: (MusicTrack) -> Unit,
     onPlayCollection: (MusicTrack, List<MusicTrack>, String, String?) -> Unit,
-    searchViewModel: SearchViewModel,
     onPlayVideo: (Video) -> Unit,
     onPlayPlaylist: (List<Video>, String) -> Unit,
     activeMusicTrack: MusicTrack?,
@@ -147,7 +145,6 @@ fun TvShell(
                     onPlayTrack = onPlayTrack,
                     onPlayMix = onPlayMix,
                     onPlayCollection = onPlayCollection,
-                    searchViewModel = searchViewModel,
                     onPlayVideo = onPlayVideo,
                     onPlayPlaylist = onPlayPlaylist,
                     onOpenPlugins = { selectTab(TvDestination.SETTINGS) },

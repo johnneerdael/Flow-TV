@@ -67,11 +67,13 @@ internal fun TvCatalogCollection(
     onPlayAll: (() -> Unit)?,
     onOpen: (EntityRef) -> Unit,
     modifier: Modifier = Modifier,
+    onShowAllFilter: ((String) -> Unit)? = null,
 ) {
     val dimens = LocalTvDimens.current
     val header = collection.header
     val openHeader = header?.target?.takeIf { it.kind.isBrowsable }?.let { target -> { onOpen(target) } }
-    val hasActions = header != null && (onPlayAll != null || openHeader != null)
+    val showAll = collection.showAllFilterId?.let { filterId -> onShowAllFilter?.let { show -> { show(filterId) } } }
+    val hasActions = header != null && (onPlayAll != null || openHeader != null || showAll != null)
     val actionsFocus = remember { FocusRequester() }
     // The header's buttons sit at the far right, outside the beam of most cards below them, so a
     // plain Up skipped them for the shelf above; leaving the shelf upwards lands on them instead.
@@ -91,6 +93,7 @@ internal fun TvCatalogCollection(
                 header = it,
                 onPlayAll = onPlayAll,
                 onOpen = openHeader,
+                onShowAll = showAll,
                 actionsModifier =
                     Modifier
                         .focusRequester(actionsFocus)
@@ -117,6 +120,7 @@ private fun TvCatalogHeader(
     header: CollectionHeader,
     onPlayAll: (() -> Unit)?,
     onOpen: (() -> Unit)?,
+    onShowAll: (() -> Unit)?,
     actionsModifier: Modifier,
     modifier: Modifier = Modifier,
 ) {
@@ -170,6 +174,13 @@ private fun TvCatalogHeader(
                     icon = Icons.Outlined.PlayArrow,
                 )
             }
+            onShowAll?.let {
+                TvButton(
+                    text = stringResource(R.string.tv_catalog_show_all),
+                    onClick = it,
+                    icon = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                )
+            }
         }
     }
 }
@@ -181,29 +192,42 @@ private fun TvCatalogShelf(
     modifier: Modifier,
 ) {
     TvMediaRow(items = collection.items, key = MetadataItem::id, modifier = modifier) { item ->
-        val artwork = item.artwork?.url.orEmpty()
-        when (item.view ?: collection.defaultItemView) {
-            ItemView.ARTIST_PORTRAIT -> {
-                TvArtistCard(name = item.title, thumbnailUrl = artwork, onClick = { onItemClick(item) })
-            }
+        TvCatalogItemCard(item = item, view = item.view ?: collection.defaultItemView, onClick = { onItemClick(item) })
+    }
+}
 
-            ItemView.LANDSCAPE_CARD -> {
-                TvMusicLandscapeCard(
-                    title = item.title,
-                    subtitle = item.subtitle,
-                    thumbnailUrl = artwork,
-                    onClick = { onItemClick(item) },
-                )
-            }
+/** One item as a card in the shape its [view] asks for; a track row stands as a square cover. */
+@Composable
+internal fun TvCatalogItemCard(
+    item: MetadataItem,
+    view: ItemView,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val artwork = item.artwork?.url.orEmpty()
+    when (view) {
+        ItemView.ARTIST_PORTRAIT -> {
+            TvArtistCard(name = item.title, thumbnailUrl = artwork, onClick = onClick, modifier = modifier)
+        }
 
-            ItemView.COVER_CARD, ItemView.TRACK_ROW -> {
-                TvMusicCollectionCard(
-                    title = item.title,
-                    subtitle = item.subtitle,
-                    thumbnailUrl = artwork,
-                    onClick = { onItemClick(item) },
-                )
-            }
+        ItemView.LANDSCAPE_CARD -> {
+            TvMusicLandscapeCard(
+                title = item.title,
+                subtitle = item.subtitle,
+                thumbnailUrl = artwork,
+                onClick = onClick,
+                modifier = modifier,
+            )
+        }
+
+        ItemView.COVER_CARD, ItemView.TRACK_ROW -> {
+            TvMusicCollectionCard(
+                title = item.title,
+                subtitle = item.subtitle,
+                thumbnailUrl = artwork,
+                onClick = onClick,
+                modifier = modifier,
+            )
         }
     }
 }
