@@ -91,7 +91,15 @@ internal fun TvCatalogCollection(
                 header = it,
                 onPlayAll = onPlayAll,
                 onOpen = openHeader,
-                actionsModifier = Modifier.focusRequester(actionsFocus).focusGroup(),
+                actionsModifier =
+                    Modifier
+                        .focusRequester(actionsFocus)
+                        .focusProperties {
+                            // Nothing sits right of the header's buttons; a plain search from there
+                            // reached the mini player's Close button below.
+                            @OptIn(ExperimentalComposeUiApi::class)
+                            exit = { direction -> if (direction == FocusDirection.Right) FocusRequester.Cancel else FocusRequester.Default }
+                        }.focusGroup(),
                 modifier = Modifier.padding(horizontal = dimens.overscanHorizontal),
             )
         }
