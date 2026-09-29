@@ -1,0 +1,18 @@
+[
+ {
+  "segment": [
+   5683.447,
+   6212.981
+  ],
+  "category": "outro",
+  "actionType": "skip"
+ },
+ {
+  "segment": [
+   5684.268,
+   6212.981
+  ],
+  "category": "music_offtopic",
+  "actionType": "skip"
+ }
+]

@@ -8,7 +8,7 @@
     "build": "mbplugin build .",
     "pack": "mbplugin build . && mbplugin pack . --key \"${MBPLUGIN_KEY:-../../../.secrets/milkbeat-plugins/plugins-signing.pem}\"",
     "check": "tsc --noEmit -p .",
-    "test": "mbplugin build . && node --test test/"
+    "test": "mbplugin build . && node --test 'test/**/*.test.mjs'"
   },
   "dependencies": {
     "@milkbeat/mbplugin": "1.0.0",
