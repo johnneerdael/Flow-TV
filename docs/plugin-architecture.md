@@ -1,8 +1,8 @@
 # Milkbeat plugin architecture
 
-Status: architecture proposal, 2026-09-29. Supersedes the runtime and packaging sections of
-[Metadata plugin SDK](metadata-plugin-sdk-design.md) (installed APKs, isolated processes). Keeps its
-contract principles and the block vocabulary of [Metadata plugin UI contract](metadata-plugin-ui-contract.md).
+Status: architecture proposal, 2026-09-29. It replaces the earlier metadata plugin SDK proposal
+(installed APKs, isolated processes) and keeps the block vocabulary of the
+[Metadata plugin UI contract](metadata-plugin-ui-contract.md).
 
 ## 1. What we are building
 
