@@ -485,7 +485,7 @@ object EnhancedMusicPlayerManager {
      */
     private fun streamUri(track: MusicTrack): Uri =
         LocalMediaIds.audioUri(track.videoId)
-            ?: Uri.parse(if (carriesPicture(track)) MusicVideoItems.uri(track.videoId) else "music://${track.videoId}")
+            ?: MusicVideoItems.uri(track, withPicture = carriesPicture(track))
 
     private fun carriesPicture(track: MusicTrack): Boolean = showVideo && track.isVideoSong && track.videoId !in videoUnavailableIds
 
@@ -511,7 +511,7 @@ object EnhancedMusicPlayerManager {
         if (useCacheKey) {
             builder.setCustomCacheKey(track.videoId)
         }
-        if (uri.scheme == MusicVideoItems.SCHEME || uri.scheme == "music") {
+        if (uri.scheme == MusicVideoItems.SCHEME || uri.scheme == MusicVideoItems.SONG_SCHEME) {
             streamItemIds += track.videoId
             if (uri.scheme == MusicVideoItems.SCHEME) videoItemIds += track.videoId else videoItemIds -= track.videoId
         } else {

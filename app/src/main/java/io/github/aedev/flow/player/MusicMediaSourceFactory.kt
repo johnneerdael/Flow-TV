@@ -28,7 +28,7 @@ class MusicMediaSourceFactory(
             progressive.createMediaSource(
                 MediaItem
                     .Builder()
-                    .setUri(MusicVideoItems.uri(videoId))
+                    .setUri(mediaItem.localConfiguration!!.uri)
                     .setMediaId(videoId)
                     .setCustomCacheKey(MusicVideoItems.videoKey(videoId))
                     .build(),

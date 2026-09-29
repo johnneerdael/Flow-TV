@@ -7,7 +7,8 @@ import nl.neerdael.milkbeat.catalog.TrackDescriptor
 
 /**
  * A track to resolve for listening. The host asks for the picture too ([video]) only when the
- * listener shows music videos; [maxVideoHeight] and [videoCodecs] describe what this TV decodes.
+ * listener shows music videos; [maxVideoHeight] and [videoCodecs] describe what this TV decodes:
+ * codec keys `h264`, `vp9`, `hevc`, `av1`, those it decodes in hardware, best first.
  */
 @Serializable
 data class ResolveAudioRequest(

@@ -8,6 +8,10 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.aedev.flow.data.local.safePreferencesDataStore
+import io.github.aedev.flow.data.music.model.MusicTrack
+import io.github.aedev.flow.player.MusicVideoItems
+import io.github.aedev.flow.plugin.playback.PluginAudio
+import io.github.aedev.flow.plugin.runtime.PluginCallException
 import io.github.aedev.flow.utils.PerformanceDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -32,16 +36,15 @@ internal fun countsAsPlay(
 ): Boolean = playedMs > 0 && playedMs >= minOf(PLAY_THRESHOLD_MS, durationMs / 2)
 
 /**
- * Sends the tracks listened to while signed in to the account's YouTube history, so YouTube Music's
- * recommendations learn from them. On by default; the account settings can switch it off.
+ * Reports listens to the plugin that played them, so a provider's history and recommendations learn
+ * from them (YouTube Music adds them to the account's history). On by default; settings can switch it off.
  */
 @Singleton
 class AccountPlayHistory
     @Inject
     constructor(
         @ApplicationContext context: Context,
-        private val client: AccountFeedClient,
-        private val signedInPlayback: SignedInPlayback,
+        private val pluginAudio: PluginAudio,
     ) {
         private val dataStore = context.applicationContext.accountPlayHistoryDataStore
 
@@ -56,17 +59,19 @@ class AccountPlayHistory
 
         /** Called once per finished listen; reports it when it counts as a play and the setting is on. */
         fun onListened(
-            videoId: String,
+            track: MusicTrack,
             playedMs: Long,
             durationMs: Long,
         ) {
             if (!countsAsPlay(playedMs, durationMs)) return
             scope.launch {
                 if (!enabled.first()) return@launch
-                client
-                    .recordPlay(videoId, signedInPlayback.trackingFor(videoId))
-                    .onSuccess { Log.d(TAG, "Play of $videoId added to the history") }
-                    .onFailure { if (it !is AccountSignedOutException) Log.w(TAG, "Play of $videoId not added to the history", it) }
+                try {
+                    pluginAudio.reportListen(MusicVideoItems.descriptor(track), playedMs, durationMs)
+                    Log.d(TAG, "Play of ${track.videoId} reported")
+                } catch (e: PluginCallException) {
+                    Log.w(TAG, "Play of ${track.videoId} not reported: ${e.error.message}")
+                }
             }
         }
 

@@ -43,16 +43,10 @@ import io.github.aedev.flow.data.account.AccountPlayHistory
 import io.github.aedev.flow.data.audio.eq.EqualizerRepository
 import io.github.aedev.flow.data.download.DownloadUtil
 import io.github.aedev.flow.data.localmedia.LocalMediaIds
-import io.github.aedev.flow.data.music.YouTubeMusicService
 import io.github.aedev.flow.data.music.model.MusicTrack
-import io.github.aedev.flow.data.newmusic.InnertubeMusicService
 import io.github.aedev.flow.data.recommendation.music.MusicBrainEngine
 import io.github.aedev.flow.data.recommendation.music.primaryArtistKey
 import io.github.aedev.flow.extensions.setOffloadEnabled
-import io.github.aedev.flow.innertube.YouTube
-import io.github.aedev.flow.innertube.models.SongItem
-import io.github.aedev.flow.innertube.models.WatchEndpoint
-import io.github.aedev.flow.innertube.pages.NextResult
 import io.github.aedev.flow.platform.DeviceFormFactor
 import io.github.aedev.flow.platform.DeviceFormFactorDetector
 import io.github.aedev.flow.player.MusicMediaSourceFactory
@@ -71,7 +65,12 @@ import io.github.aedev.flow.player.audio.visualizer.VisualizerTapProcessor
 import io.github.aedev.flow.player.audio.visualizer.followPlayerClock
 import io.github.aedev.flow.player.factory.LoadControlFactory
 import io.github.aedev.flow.player.sessionArtworkBitmapLoader
-import io.github.aedev.flow.utils.MusicPlayerUtils
+import io.github.aedev.flow.plugin.catalog.PluginAccounts
+import io.github.aedev.flow.plugin.catalog.toMusicTrack
+import io.github.aedev.flow.plugin.playback.PluginAudio
+import io.github.aedev.flow.plugin.playback.PluginRadio
+import io.github.aedev.flow.plugin.playback.RadioPage
+import io.github.aedev.flow.plugin.runtime.PluginCallException
 import io.github.aedev.flow.utils.NetworkConnectivityObserver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -82,6 +81,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import nl.neerdael.milkbeat.catalog.EntityKind
+import nl.neerdael.milkbeat.catalog.EntityRef
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.math.min
@@ -107,7 +108,8 @@ class Media3MusicService : MediaLibraryService() {
         // Endless radio: append to the real queue when this few tracks remain,
         // this many at a time, and refill the suggestion pool below this size.
         // LOW_WATER/BATCH mirror the desktop station (3 / 10).
-        private const val ARTIST_STATION_PREFIX = "RDEM"
+        // Normalisation only ever turns tracks down, and never by more than this.
+        private const val MIN_LOUDNESS_GAIN_DB = -20f
         private const val RADIO_MIN_UPCOMING = 3
         private const val RADIO_APPEND_BATCH = 10
         private const val RADIO_POOL_LOW_WATER = 15
@@ -158,7 +160,7 @@ class Media3MusicService : MediaLibraryService() {
     // ── Endless radio session (desktop semantics: seeded once per queue, append-only) ──
     private var radioSeedId: String? = null
     private var radioContinuation: String? = null
-    private var radioEndpoint: WatchEndpoint? = null
+    private var radioSeed: EntityRef? = null
     private var radioTopUpJob: Job? = null
     private var radioAutoplayEnabled = true
     private var loudnessNormalizationEnabled = true
@@ -205,13 +207,19 @@ class Media3MusicService : MediaLibraryService() {
     lateinit var visualizerTap: VisualizerAudioTap
 
     @Inject
-    lateinit var signedInPlayback: io.github.aedev.flow.data.account.SignedInPlayback
+    lateinit var pluginAccounts: PluginAccounts
 
     @Inject
     lateinit var visualizerEngine: VisualizerEngine
 
     @Inject
     lateinit var accountPlayHistory: AccountPlayHistory
+
+    @Inject
+    lateinit var pluginAudio: PluginAudio
+
+    @Inject
+    lateinit var pluginRadio: PluginRadio
 
     @OptIn(UnstableApi::class)
     override fun onCreate() {
@@ -297,7 +305,8 @@ class Media3MusicService : MediaLibraryService() {
         val gainDb =
             mediaId
                 ?.takeIf { loudnessNormalizationEnabled && !LocalMediaIds.isLocal(it) }
-                ?.let(MusicPlayerUtils::cachedLoudnessGainDb)
+                ?.let { pluginAudio.current(it)?.stream?.loudnessDb }
+                ?.let { (-it).toFloat().coerceIn(MIN_LOUDNESS_GAIN_DB, 0f) }
         player.volume = if (gainDb == null) 1f else 10.0.pow(gainDb / 20.0).toFloat()
     }
 
@@ -314,7 +323,6 @@ class Media3MusicService : MediaLibraryService() {
         Log.d(TAG, "Music quality changed — clearing resolution caches")
         try {
             downloadUtil.clearUrlCache()
-            MusicPlayerUtils.clearPlaybackCache()
             io.github.aedev.flow.player.EnhancedMusicPlayerManager
                 .clearUrlCache()
         } catch (e: Exception) {
@@ -394,7 +402,7 @@ class Media3MusicService : MediaLibraryService() {
         player.addListener(VisualizerClockListener(visualizerTap))
         lifecycleScope.launch { followPlayerClock(visualizerTap, player) }
         // Stream URLs belong to the identity that requested them; a sign-in or sign-out starts fresh.
-        lifecycleScope.launch { signedInPlayback.identity.drop(1).collect { downloadUtil.clearUrlCache() } }
+        lifecycleScope.launch { pluginAccounts.accounts.drop(1).collect { downloadUtil.clearUrlCache() } }
 
         player.addListener(
             object : Player.Listener {
@@ -625,7 +633,7 @@ class Media3MusicService : MediaLibraryService() {
         // Engine-scoped, NOT lifecycleScope: the finalize from onDestroy runs after
         // this service's scope is already cancelled, and the session must still land.
         musicBrain.onListenSessionAsync(track, playedMs.toDouble() / durationMs, pinnedGenre, playedMs)
-        accountPlayHistory.onListened(track.videoId, playedMs, durationMs)
+        accountPlayHistory.onListened(track, playedMs, durationMs)
     }
 
     /**
@@ -793,11 +801,6 @@ class Media3MusicService : MediaLibraryService() {
             Log.e(TAG, "Failed to clear download cache for $mediaId", e)
         }
         try {
-            MusicPlayerUtils.forceRefreshForVideo(mediaId)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to clear decryption cache for $mediaId", e)
-        }
-        try {
             io.github.aedev.flow.player.EnhancedMusicPlayerManager
                 .invalidateResolvedStream(mediaId)
         } catch (e: Exception) {
@@ -903,8 +906,9 @@ class Media3MusicService : MediaLibraryService() {
             lifecycleScope.launch {
                 delay(BASE_RETRY_DELAY_MS)
                 try {
+                    // Tell the plugin which stream was refused before the cache forgets it.
+                    pluginAudio.current(mediaId)?.let { pluginAudio.failed(mediaId, it.stream.url, status = 403) }
                     downloadUtil.invalidateUrlCache(mediaId)
-                    MusicPlayerUtils.forceRefreshForVideo(mediaId)
                     io.github.aedev.flow.player.EnhancedMusicPlayerManager
                         .invalidateResolvedStream(mediaId)
                     player.stop()
@@ -1244,7 +1248,7 @@ class Media3MusicService : MediaLibraryService() {
             if (context.explicit) currentId else queueIds.lastOrNull { !LocalMediaIds.isLocal(it) } ?: currentId
         radioSeedId = seedId
         radioContinuation = null
-        radioEndpoint = null
+        radioSeed = null
         radioResumeWhenAppended = false
         explicitRadioRequest = context.explicit
         startRadio(seedId, collectionId.takeUnless { context.explicit })
@@ -1267,29 +1271,22 @@ class Media3MusicService : MediaLibraryService() {
         automixJob =
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
-                    var page = collectionId?.let { collectionMix(it) }
-                    if (page == null || page.items.isEmpty()) page = trackMix(seedId)
-
-                    var mapped = page?.items.orEmpty().toRadioTracks(seedId)
-                    if (mapped.isEmpty()) {
-                        // Related fallback carries no continuation — the pool later
-                        // reseeds from the playing track instead.
-                        radioContinuation = null
-                        radioEndpoint = null
-                        mapped =
-                            YouTubeMusicService
-                                .getRelatedMusic(seedId, 20, audioOnly = true)
-                                .filterNot { it.videoId == seedId }
-                                .distinctBy { it.videoId }
-                    } else {
-                        radioContinuation = page?.continuation
-                        radioEndpoint = page?.endpoint
+                    // A collection continues with its own similar content, a song with its mix.
+                    var result = collectionId?.let { mix(EntityRef(EntityKind.PLAYLIST, it)) }
+                    if (result == null ||
+                        result.second.tracks.tracks
+                            .isEmpty()
+                    ) {
+                        result = mix(EntityRef(EntityKind.TRACK, seedId))
                     }
+                    val mapped = result?.second?.toRadioTracks(seedId).orEmpty()
+                    radioContinuation = result?.second?.tracks?.next
+                    radioSeed = result?.first
 
                     val station = withoutHiddenArtists(mapped)
                     Log.d(
                         TAG,
-                        "Radio seeded from ${collectionId ?: seedId} via ${radioEndpoint?.playlistId}: " +
+                        "Radio seeded from ${collectionId ?: seedId} via ${result?.second?.pluginId}: " +
                             "${station.size} tracks, continuation=${radioContinuation != null}, " +
                             "opening with ${station.take(3).joinToString { it.title }}",
                     )
@@ -1309,42 +1306,21 @@ class Media3MusicService : MediaLibraryService() {
             }
     }
 
-    private suspend fun trackMix(seedId: String): NextResult? {
-        val page = radioPage(WatchEndpoint(videoId = seedId, playlistId = "RDAMVM$seedId"))
-        if (page != null && page.items.size > 1) return page
-        return radioPage(WatchEndpoint(videoId = seedId)) ?: page
-    }
-
-    /**
-     * A collection's similar content, as Metrolist's getAutomix reads it: the collection's watch queue
-     * names its automix playlist, which is then read on its own. Read through the watch queue instead,
-     * the automix opens with the collection's own tracks again under other ids.
-     */
-    private suspend fun collectionMix(playlistId: String): NextResult? {
-        val watch = radioPage(WatchEndpoint(playlistId = playlistId))
-        // An artist's station is already the similar content itself; other RD playlists (curated,
-        // personal mixes) have their own automix like any playlist.
-        if (playlistId.startsWith(ARTIST_STATION_PREFIX)) return watch
-        val mixId = watch?.endpoint?.playlistId?.takeIf { it != playlistId } ?: "RDAMPL$playlistId"
-        return radioPage(WatchEndpoint(playlistId = mixId)) ?: watch
-    }
-
-    /** The account's own mix when signed in, as YouTube Music would queue it; the anonymous one otherwise. */
-    private suspend fun radioPage(
-        endpoint: WatchEndpoint,
-        continuation: String? = null,
-    ): NextResult? {
-        signedInPlayback.account()?.let { account ->
-            YouTube
-                .next(endpoint, continuation, via = account.tube)
-                .onSuccess { return it }
-                .onFailure { Log.w(TAG, "Signed-in mix unavailable, using the anonymous one: ${it.message}") }
+    /** A page of the radio seeded from [seed], from the plugins; null when none can build one. */
+    private suspend fun mix(
+        seed: EntityRef,
+        cursor: String? = null,
+    ): Pair<EntityRef, RadioPage>? =
+        try {
+            pluginRadio.page(seed, cursor)?.let { seed to it }
+        } catch (e: PluginCallException) {
+            Log.w(TAG, "Radio from ${seed.providerId} unavailable: ${e.error.message}")
+            null
         }
-        return YouTube.next(endpoint, continuation).getOrNull()
-    }
 
-    private fun List<SongItem>.toRadioTracks(seedId: String?): List<MusicTrack> =
-        mapNotNull { InnertubeMusicService.convertToMusicTrack(it) }
+    private fun RadioPage.toRadioTracks(seedId: String?): List<MusicTrack> =
+        tracks.tracks
+            .map { it.toMusicTrack(pluginId) }
             .filterNot { it.videoId == seedId }
             .distinctBy { it.videoId }
 
@@ -1408,11 +1384,11 @@ class Media3MusicService : MediaLibraryService() {
         radioTopUpJob =
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
-                    val endpoint = radioEndpoint
+                    val seed = radioSeed
                     val continuation = radioContinuation
-                    val page =
-                        if (endpoint != null && continuation != null) {
-                            radioPage(endpoint, continuation)
+                    val result =
+                        if (seed != null && continuation != null) {
+                            mix(seed, continuation)
                         } else {
                             // The mix ran out: carry on with the mix of what is playing now, as
                             // YouTube Music does, rather than drifting from the far end of the pool.
@@ -1422,13 +1398,12 @@ class Media3MusicService : MediaLibraryService() {
                                     .firstOrNull { it != radioSeedId && !LocalMediaIds.isLocal(it) }
                                     ?: return@launch
                             radioSeedId = seedId
-                            trackMix(seedId)
-                        }
-                    if (page == null) return@launch
-                    radioContinuation = page.continuation
-                    radioEndpoint = page.endpoint
+                            mix(EntityRef(EntityKind.TRACK, seedId))
+                        } ?: return@launch
+                    radioContinuation = result.second.tracks.next
+                    radioSeed = result.first
 
-                    val station = withoutHiddenArtists(page.items.toRadioTracks(seedId = null))
+                    val station = withoutHiddenArtists(result.second.toRadioTracks(seedId = null))
                     Log.d(TAG, "Radio pool topped up with ${station.size} tracks, continuation=${radioContinuation != null}")
                     if (station.isNotEmpty()) {
                         manager.appendAutomixItems(station)

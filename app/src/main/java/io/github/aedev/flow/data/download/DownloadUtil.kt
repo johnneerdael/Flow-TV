@@ -23,6 +23,9 @@ import io.github.aedev.flow.di.DownloadCache
 import io.github.aedev.flow.di.PlayerCache
 import io.github.aedev.flow.network.AppProxyManager
 import io.github.aedev.flow.player.MusicVideoItems
+import io.github.aedev.flow.player.stream.VideoCodecUtils
+import io.github.aedev.flow.plugin.playback.PictureLimits
+import io.github.aedev.flow.plugin.playback.PluginAudio
 import io.github.aedev.flow.service.ExoDownloadService
 import io.github.aedev.flow.utils.MusicPlayerUtils
 import io.github.aedev.flow.utils.MusicVideoFormats
@@ -34,6 +37,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import nl.neerdael.milkbeat.plugin.AudioQuality
 import okhttp3.OkHttpClient
 import java.io.IOException
 import java.util.concurrent.Executor
@@ -50,6 +54,7 @@ class DownloadUtil
         @DownloadCache private val downloadCache: SimpleCache,
         @PlayerCache private val playerCache: SimpleCache,
         private val playerPreferences: PlayerPreferences,
+        private val pluginAudio: PluginAudio,
     ) {
         companion object {
             private const val TAG = "DownloadUtil"
@@ -61,7 +66,17 @@ class DownloadUtil
             private val URL_RANGE_PARAM_REGEX = Regex("""([?&])range=\d+-\d*(&?)""")
         }
 
-        private val songUrlCache = java.util.concurrent.ConcurrentHashMap<String, Triple<String, String, Long>>()
+        /** A URL a plugin resolved, with the headers it needs and until when it may be reused. */
+        private class PlayableUrl(
+            val url: String,
+            val headers: Map<String, String>,
+            val validUntilMs: Long,
+        )
+
+        private val songUrlCache = java.util.concurrent.ConcurrentHashMap<String, PlayableUrl>()
+
+        // The rendition cached bytes belong to; a different one must not be spliced onto them.
+        private val cachedRenditions = java.util.concurrent.ConcurrentHashMap<String, String>()
 
         /** Music videos play no taller than the display, and at most at [MusicVideoFormats.MAX_HEIGHT]. */
         private val maxVideoHeight: Int by lazy {
@@ -148,7 +163,7 @@ class DownloadUtil
             val userAgent = playbackData.usedClient.userAgent
             val expiration = System.currentTimeMillis() + (playbackData.streamExpiresInSeconds - 60) * 1000L
 
-            songUrlCache[mediaId] = Triple(streamUrl, userAgent, expiration)
+            songUrlCache[mediaId] = PlayableUrl(streamUrl, mapOf("User-Agent" to userAgent), expiration)
 
             // Append &range=0-{contentLength} so YouTube CDN serves the full file at full speed
             // Without this, WEB_REMIX streams are throttled to ~real-time playback speed
@@ -224,40 +239,43 @@ class DownloadUtil
                     Log.w(TAG, "[Player] playerCache check error for $mediaId", e)
                 }
 
-                songUrlCache[mediaId]?.takeIf { it.third > System.currentTimeMillis() }?.let { (url, ua, _) ->
+                songUrlCache[mediaId]?.takeIf { it.validUntilMs > System.currentTimeMillis() }?.let { cached ->
                     Log.d(TAG, "[Player] Using cached URL for $mediaId")
-                    return@Factory buildPlaybackDataSpec(dataSpec, url, ua, chunkLengthFor(mediaId, dataSpec.position))
+                    return@Factory buildPlaybackDataSpec(dataSpec, cached.url, cached.headers, chunkLengthFor(mediaId, dataSpec.position))
                 }
 
-                MusicVideoItems.videoIdOfVideoKey(mediaId)?.let { videoId ->
-                    val video =
-                        runBlocking(Dispatchers.IO) {
-                            MusicPlayerUtils.videoStreamForPlayback(
-                                videoId,
-                                maxVideoHeight,
-                                playerPreferences.videoCodecPriority.first(),
-                            )
-                        }.getOrThrow()
-                    val expiration = System.currentTimeMillis() + (video.expiresInSeconds - 60) * 1000L
-                    songUrlCache[mediaId] = Triple(video.url, video.userAgent, expiration)
-                    return@Factory buildPlaybackDataSpec(dataSpec, video.url, video.userAgent, chunkLengthFor(mediaId, dataSpec.position))
-                }
-
-                val playbackData =
+                val picture = MusicVideoItems.videoIdOfVideoKey(mediaId) != null
+                val resolved =
                     runBlocking(Dispatchers.IO) {
-                        MusicPlayerUtils.playerResponseForPlayback(mediaId)
-                    }.getOrThrow()
-
-                val streamUrl = playbackData.streamUrl
-                val userAgent = playbackData.usedClient.userAgent
-                val expiration = System.currentTimeMillis() + (playbackData.streamExpiresInSeconds - 60) * 1000L
-
-                songUrlCache[mediaId] = Triple(streamUrl, userAgent, expiration)
-                Log.d(TAG, "[Player] Resolved $mediaId via ${playbackData.usedClient.clientName}")
-
-                buildPlaybackDataSpec(dataSpec, streamUrl, userAgent)
+                        val limits =
+                            if (picture) {
+                                PictureLimits(
+                                    maxVideoHeight,
+                                    pictureCodecs(playerPreferences.videoCodecPriority.first()),
+                                )
+                            } else {
+                                null
+                            }
+                        val quality = playerPreferences.musicAudioQuality.first()
+                        pluginAudio.resolve(MusicVideoItems.descriptor(dataSpec.uri), limits, AudioQuality.valueOf(quality.name))
+                    }
+                val stream = resolved.stream
+                val format = if (picture) stream.video ?: error("${stream.cacheKey} has no picture") else null
+                val url = format?.url ?: stream.url
+                val headers = stream.headers + format?.headers.orEmpty()
+                val rendition = format?.id ?: stream.renditionId
+                if (cachedRenditions.put(mediaId, rendition).let { it != null && it != rendition }) {
+                    runCatching { playerCache.removeResource(mediaId) }
+                }
+                songUrlCache[mediaId] = PlayableUrl(url, headers, resolved.validUntilMs)
+                Log.d(TAG, "[Player] Resolved $mediaId via ${resolved.pluginId}")
+                buildPlaybackDataSpec(dataSpec, url, headers, chunkLengthFor(mediaId, dataSpec.position))
             }
         }
+
+        /** Codecs this TV decodes in hardware, in the listener's order of preference. */
+        private fun pictureCodecs(preference: String): List<String> =
+            MusicVideoFormats.hardwareCodecs.sortedBy { VideoCodecUtils.codecRankWithPreference(it, preference) }
 
         /**
          * A picture's first range stays audio-sized: it only has to reveal the stream's layout, and while
@@ -271,7 +289,7 @@ class DownloadUtil
         private fun buildPlaybackDataSpec(
             dataSpec: DataSpec,
             streamUrl: String,
-            userAgent: String,
+            headers: Map<String, String>,
             chunkLength: Long = CHUNK_LENGTH,
         ): DataSpec {
             val requestLength = if (dataSpec.length > 0) dataSpec.length else chunkLength
@@ -279,7 +297,7 @@ class DownloadUtil
             return dataSpec
                 .buildUpon()
                 .setUri(removeRangeParameter(streamUrl).toUri())
-                .setHttpRequestHeaders(mapOf("User-Agent" to userAgent))
+                .setHttpRequestHeaders(headers)
                 .setLength(requestLength)
                 .build()
         }
@@ -306,6 +324,7 @@ class DownloadUtil
         fun invalidateUrlCache(mediaId: String) {
             songUrlCache.remove(mediaId)
             songUrlCache.remove(MusicVideoItems.videoKey(mediaId))
+            pluginAudio.forget(mediaId)
             downloadUrlCache.remove(mediaId)
             Log.d(TAG, "Invalidated URL cache for $mediaId")
         }
@@ -315,6 +334,7 @@ class DownloadUtil
          */
         fun clearUrlCache() {
             songUrlCache.clear()
+            pluginAudio.forgetAll()
             downloadUrlCache.clear()
             Log.d(TAG, "Cleared all URL cache entries")
         }
