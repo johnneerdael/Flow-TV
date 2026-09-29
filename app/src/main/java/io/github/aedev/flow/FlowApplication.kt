@@ -66,12 +66,14 @@ class FlowApplication :
     @Inject
     lateinit var signedInPlayback: io.github.aedev.flow.data.account.SignedInPlayback
 
+    @Inject
+    lateinit var downloadUtil: dagger.Lazy<io.github.aedev.flow.data.download.DownloadUtil>
+
     override fun newImageLoader(context: PlatformContext): ImageLoader = imageLoader
 
     /**
-     * The last session's track is restored paused at start; resolving its stream now, after the
-     * PoToken prewarm, means pressing play starts it without waiting on the token, the signature
-     * timestamp or the player request.
+     * The last session's track is restored paused at start; resolving its stream now means pressing
+     * play starts it without waiting on the audio plugin.
      */
     private suspend fun warmRestoredTrack() {
         val track =
@@ -85,9 +87,13 @@ class FlowApplication :
         ) {
             return
         }
-        io.github.aedev.flow.utils.MusicPlayerUtils
-            .playerResponseForPlayback(track.videoId)
-            .onSuccess { Log.d(TAG, "Restored track ${track.videoId} ready to play (${it.usedClient.clientName})") }
+        runCatching {
+            downloadUtil.get().prefetch(
+                io.github.aedev.flow.player.EnhancedMusicPlayerManager
+                    .streamUri(track),
+            )
+        }.onSuccess { Log.d(TAG, "Restored track ${track.videoId} ready to play") }
+            .onFailure { Log.w(TAG, "Restored track ${track.videoId} not resolved: ${it.message}") }
     }
 
     companion object {
@@ -257,8 +263,6 @@ class FlowApplication :
                         ?: getSharedPreferences("flow_prefs", MODE_PRIVATE).getString(VISITOR_DATA_KEY, null)
                 io.github.aedev.flow.utils.MusicPlayerUtils
                     .clearPlaybackCache()
-                io.github.aedev.flow.player.EnhancedMusicPlayerManager
-                    .clearUrlCache()
                 signedInPlayback.forgetTracking()
                 Log.d(TAG, "Account ${if (accountVisitor != null) "signed in" else "signed out"}; playback identity switched")
                 runCatching {

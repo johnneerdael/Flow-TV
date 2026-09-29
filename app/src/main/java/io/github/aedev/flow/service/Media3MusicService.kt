@@ -49,6 +49,7 @@ import io.github.aedev.flow.data.recommendation.music.primaryArtistKey
 import io.github.aedev.flow.extensions.setOffloadEnabled
 import io.github.aedev.flow.platform.DeviceFormFactor
 import io.github.aedev.flow.platform.DeviceFormFactorDetector
+import io.github.aedev.flow.player.EnhancedMusicPlayerManager
 import io.github.aedev.flow.player.MusicMediaSourceFactory
 import io.github.aedev.flow.player.MusicPlaybackRecoveryPlanner
 import io.github.aedev.flow.player.MusicQueuePlanner
@@ -224,6 +225,7 @@ class Media3MusicService : MediaLibraryService() {
     @OptIn(UnstableApi::class)
     override fun onCreate() {
         super.onCreate()
+        EnhancedMusicPlayerManager.prefetcher = downloadUtil::prefetch
 
         recordForegroundStartFailures("music-service")
 
@@ -323,8 +325,6 @@ class Media3MusicService : MediaLibraryService() {
         Log.d(TAG, "Music quality changed — clearing resolution caches")
         try {
             downloadUtil.clearUrlCache()
-            io.github.aedev.flow.player.EnhancedMusicPlayerManager
-                .clearUrlCache()
         } catch (e: Exception) {
             Log.w(TAG, "Failed to clear caches on quality change: ${e.message}")
         }
@@ -800,12 +800,6 @@ class Media3MusicService : MediaLibraryService() {
         } catch (e: Exception) {
             Log.e(TAG, "Failed to clear download cache for $mediaId", e)
         }
-        try {
-            io.github.aedev.flow.player.EnhancedMusicPlayerManager
-                .invalidateResolvedStream(mediaId)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to clear resolved stream cache for $mediaId", e)
-        }
     }
 
     private fun getHttpResponseCode(error: PlaybackException): Int? {
@@ -909,8 +903,6 @@ class Media3MusicService : MediaLibraryService() {
                     // Tell the plugin which stream was refused before the cache forgets it.
                     pluginAudio.current(mediaId)?.let { pluginAudio.failed(mediaId, it.stream.url, status = 403) }
                     downloadUtil.invalidateUrlCache(mediaId)
-                    io.github.aedev.flow.player.EnhancedMusicPlayerManager
-                        .invalidateResolvedStream(mediaId)
                     player.stop()
                     if (refreshStreamMediaItem(failed)) {
                         player.prepare()
@@ -1119,6 +1111,7 @@ class Media3MusicService : MediaLibraryService() {
     }
 
     override fun onDestroy() {
+        EnhancedMusicPlayerManager.prefetcher = null
         // Flush the in-flight listen session before the player goes away.
         finalizeListenSession()
 

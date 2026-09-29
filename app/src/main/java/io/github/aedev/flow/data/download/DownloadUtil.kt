@@ -2,6 +2,7 @@ package io.github.aedev.flow.data.download
 
 import android.content.Context
 import android.hardware.display.DisplayManager
+import android.net.Uri
 import android.util.Log
 import android.view.Display
 import androidx.core.net.toUri
@@ -26,6 +27,7 @@ import io.github.aedev.flow.player.MusicVideoItems
 import io.github.aedev.flow.player.stream.VideoCodecUtils
 import io.github.aedev.flow.plugin.playback.PictureLimits
 import io.github.aedev.flow.plugin.playback.PluginAudio
+import io.github.aedev.flow.plugin.playback.ResolvedAudio
 import io.github.aedev.flow.service.ExoDownloadService
 import io.github.aedev.flow.utils.MusicPlayerUtils
 import io.github.aedev.flow.utils.MusicVideoFormats
@@ -245,20 +247,7 @@ class DownloadUtil
                 }
 
                 val picture = MusicVideoItems.videoIdOfVideoKey(mediaId) != null
-                val resolved =
-                    runBlocking(Dispatchers.IO) {
-                        val limits =
-                            if (picture) {
-                                PictureLimits(
-                                    maxVideoHeight,
-                                    pictureCodecs(playerPreferences.videoCodecPriority.first()),
-                                )
-                            } else {
-                                null
-                            }
-                        val quality = playerPreferences.musicAudioQuality.first()
-                        pluginAudio.resolve(MusicVideoItems.descriptor(dataSpec.uri), limits, AudioQuality.valueOf(quality.name))
-                    }
+                val resolved = runBlocking(Dispatchers.IO) { resolveForPlayback(dataSpec.uri, picture) }
                 val stream = resolved.stream
                 val format = if (picture) stream.video ?: error("${stream.cacheKey} has no picture") else null
                 val url = format?.url ?: stream.url
@@ -271,6 +260,27 @@ class DownloadUtil
                 Log.d(TAG, "[Player] Resolved $mediaId via ${resolved.pluginId}")
                 buildPlaybackDataSpec(dataSpec, url, headers, chunkLengthFor(mediaId, dataSpec.position))
             }
+        }
+
+        /**
+         * Resolves the stream of the queue item at [uri] ahead of time, as playback would, so the next
+         * track starts without waiting for its plugin.
+         */
+        suspend fun prefetch(uri: Uri) {
+            val descriptor = MusicVideoItems.descriptor(uri)
+            val id = descriptor.ref.providerId
+            if (songUrlCache[id]?.validUntilMs?.let { it > System.currentTimeMillis() } == true) return
+            if (runCatching { downloadCache.isCached(id, 0, CHUNK_LENGTH) }.getOrDefault(false)) return
+            resolveForPlayback(uri, picture = uri.scheme == MusicVideoItems.SCHEME)
+        }
+
+        private suspend fun resolveForPlayback(
+            uri: Uri,
+            picture: Boolean,
+        ): ResolvedAudio {
+            val limits = if (picture) PictureLimits(maxVideoHeight, pictureCodecs(playerPreferences.videoCodecPriority.first())) else null
+            val quality = playerPreferences.musicAudioQuality.first()
+            return pluginAudio.resolve(MusicVideoItems.descriptor(uri), limits, AudioQuality.valueOf(quality.name))
         }
 
         /** Codecs this TV decodes in hardware, in the listener's order of preference. */

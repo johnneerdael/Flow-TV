@@ -17,7 +17,6 @@ import io.github.aedev.flow.data.lyrics.LyricsCandidate
 import io.github.aedev.flow.data.lyrics.LyricsHelper
 import io.github.aedev.flow.data.music.DownloadManager
 import io.github.aedev.flow.data.music.PlaylistRepository
-import io.github.aedev.flow.data.music.YouTubeMusicService
 import io.github.aedev.flow.data.music.model.MUSIC_GENRE_SOURCE_PREFIX
 import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.data.recommendation.music.MusicBrainEngine
@@ -145,7 +144,6 @@ class MusicPlayerViewModel
                         if (!isLocalMediaId(it.videoId)) {
                             checkIfFavorite(it.videoId)
                             fetchLyrics(it.videoId, it.artist, it.title, it.duration, it.album)
-                            fetchRelatedContent(it.videoId)
                         } else {
                             favoriteJob?.cancel()
                             _uiState.update { state -> state.copy(isLiked = false) }
@@ -351,12 +349,6 @@ class MusicPlayerViewModel
 
                     // ─── PHASE 2: Background — does NOT block audio ───────────────────────
                     supervisorScope {
-                        launch(PerformanceDispatcher.networkIO) {
-                            if (!localUriOverrides.containsKey(track.videoId) && !downloadManager.isCachedForOffline(track.videoId)) {
-                                EnhancedMusicPlayerManager.resolveStreamUrl(track.videoId)
-                            }
-                        }
-
                         launch(PerformanceDispatcher.diskIO) {
                             playlistRepository.addToHistory(track)
                             viewHistory.savePlaybackPosition(
@@ -371,9 +363,6 @@ class MusicPlayerViewModel
                             )
                         }
 
-                        launch(PerformanceDispatcher.networkIO) {
-                            fetchRelatedContent(track.videoId)
-                        }
                         // Single-track queues need no special automix fill: the service
                         // seeds the radio pool for every new queue context.
                     }
@@ -490,37 +479,6 @@ class MusicPlayerViewModel
 
         fun playFromQueue(index: Int) {
             EnhancedMusicPlayerManager.playFromQueue(index)
-        }
-
-        // Both the currentTrack collector and the (kept-composed) player content request
-        // related tracks for the same id; without this guard every advance fetched twice.
-        private var relatedFetchedForId: String? = null
-
-        fun fetchRelatedContent(videoId: String) {
-            if (relatedFetchedForId == videoId) return
-            relatedFetchedForId = videoId
-            viewModelScope.launch(PerformanceDispatcher.networkIO) {
-                _uiState.update { it.copy(isRelatedLoading = true) }
-                try {
-                    val related =
-                        withTimeoutOrNull(10_000L) {
-                            YouTubeMusicService.getRelatedMusic(videoId, 20)
-                        } ?: emptyList()
-                    if (related.isEmpty()) relatedFetchedForId = null
-
-                    // Related content is display-only here: the radio pool (automix)
-                    // is owned by Media3MusicService and must not churn per track.
-                    _uiState.update {
-                        it.copy(
-                            relatedContent = related,
-                            isRelatedLoading = false,
-                        )
-                    }
-                } catch (e: Exception) {
-                    relatedFetchedForId = null
-                    _uiState.update { it.copy(isRelatedLoading = false) }
-                }
-            }
         }
 
         fun toggleShuffle() {

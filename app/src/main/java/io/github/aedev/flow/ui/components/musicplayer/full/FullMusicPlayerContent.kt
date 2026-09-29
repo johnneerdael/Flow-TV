@@ -146,7 +146,6 @@ internal fun FullMusicPlayerContent(
     }
 
     LaunchedEffect(track.videoId) {
-        viewModel.fetchRelatedContent(track.videoId)
         val managerTrack = EnhancedMusicPlayerManager.currentTrack.value
         val isManagerPlaying = EnhancedMusicPlayerManager.isPlaying()
 

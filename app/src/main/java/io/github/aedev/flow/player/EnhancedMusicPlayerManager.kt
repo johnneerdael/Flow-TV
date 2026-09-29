@@ -195,67 +195,26 @@ object EnhancedMusicPlayerManager {
     private val _isLiked = MutableStateFlow(false)
     val isLiked: StateFlow<Boolean> = _isLiked.asStateFlow()
 
-    // OPTIMIZED: LRU Cache for resolved stream URLs to avoid re-fetching
-    private val urlCache = android.util.LruCache<String, String>(50)
+    /** Resolves a queue item's stream ahead of playback; set by the music service while it runs. */
+    @Volatile
+    var prefetcher: (suspend (Uri) -> Unit)? = null
     private var pendingPlayNextMediaId: String? = null
     private var pendingPlayNextMediaIndex: Int = MusicQueuePlanner.INDEX_UNSET
 
-    // OPTIMIZED: Pre-fetch next track to reduce gap
+    // Resolving the next track while this one plays keeps the gap between them short.
     private fun prefetchNextTrack() {
         val queue = _queue.value
         val idx = currentPlaybackQueueIndex()
-
-        if (idx != -1 && idx < queue.size - 1) {
-            val nextTrack = queue[idx + 1]
-            if (!LocalMediaIds.isLocal(nextTrack.videoId) && urlCache.get(nextTrack.videoId) == null) {
-                scope.launch(Dispatchers.IO) {
-                    try {
-                        resolveStreamUrl(nextTrack.videoId)
-                        Log.d("EnhancedMusicPlayer", "Pre-fetched URL for next track: ${nextTrack.title}")
-                    } catch (e: Exception) {
-                        Log.e("EnhancedMusicPlayer", "Failed to pre-fetch next track", e)
-                    }
-                }
+        val nextTrack = queue.getOrNull(idx + 1)?.takeIf { idx != -1 && !LocalMediaIds.isLocal(it.videoId) } ?: return
+        val prefetch = prefetcher ?: return
+        scope.launch(Dispatchers.IO) {
+            try {
+                prefetch(streamUri(nextTrack))
+                Log.d("EnhancedMusicPlayer", "Pre-fetched stream for next track: ${nextTrack.title}")
+            } catch (e: Exception) {
+                Log.w("EnhancedMusicPlayer", "Failed to pre-fetch next track: ${e.message}")
             }
         }
-    }
-
-    /**
-     * Resolves stream URL with caching
-     */
-    suspend fun resolveStreamUrl(videoId: String): String? {
-        // 1. Check cache
-        urlCache.get(videoId)?.let {
-            Log.d("EnhancedMusicPlayer", "Cache hit for $videoId")
-            return it
-        }
-
-        // 2. Resolve (using MusicPlayerUtils)
-        return try {
-            val playbackData =
-                io.github.aedev.flow.utils.MusicPlayerUtils
-                    .playerResponseForPlayback(videoId)
-                    .getOrNull()
-            val url = playbackData?.streamUrl
-
-            if (url != null) {
-                urlCache.put(videoId, url)
-            }
-            url
-        } catch (e: Exception) {
-            Log.e("EnhancedMusicPlayer", "Error resolving URL for $videoId", e)
-            null
-        }
-    }
-
-    fun invalidateResolvedStream(videoId: String) {
-        urlCache.remove(videoId)
-        Log.d("EnhancedMusicPlayer", "Invalidated resolved URL cache for $videoId")
-    }
-
-    fun clearUrlCache() {
-        urlCache.evictAll()
-        Log.d("EnhancedMusicPlayer", "Cleared all resolved URL cache entries")
     }
 
     fun initialize(context: Context) {
@@ -483,7 +442,8 @@ object EnhancedMusicPlayerManager {
      * A device file plays from its MediaStore URI; a music video as picture and sound, whether or not
      * its picture is shown; everything else resolves through `music://`.
      */
-    private fun streamUri(track: MusicTrack): Uri =
+    /** Where [track] plays from: its local file, or its descriptor for the audio plugins. */
+    fun streamUri(track: MusicTrack): Uri =
         LocalMediaIds.audioUri(track.videoId)
             ?: MusicVideoItems.uri(track, withPicture = carriesPicture(track))
 
