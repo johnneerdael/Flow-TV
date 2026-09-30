@@ -1,5 +1,6 @@
 package io.github.aedev.flow.player.resolver
 
+import android.app.Application
 import android.net.Uri
 import androidx.media3.common.C
 import androidx.media3.exoplayer.dash.manifest.DashManifestParser
@@ -13,9 +14,11 @@ import nl.neerdael.milkbeat.plugin.FormatType
 import nl.neerdael.milkbeat.plugin.MediaFormat
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.annotation.Config
 import java.io.ByteArrayInputStream
 
 @RunWith(AndroidJUnit4::class)
+@Config(sdk = [34], application = Application::class)
 class AdaptiveDashManifestTest {
     private fun vp9(
         height: Int,
