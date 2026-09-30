@@ -9,7 +9,6 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import io.github.aedev.flow.data.local.AppDatabase
 import io.github.aedev.flow.utils.ThumbnailUrlResolver
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 private val Context.subscriptionsDataStore: DataStore<Preferences> by safePreferencesDataStore(name = "subscriptions")
@@ -152,54 +151,6 @@ class SubscriptionRepository private constructor(
             }
         }
 
-    /**
-     * Get all subscription IDs as a Set
-     */
-    suspend fun getAllSubscriptionIds(): Set<String> {
-        val orderString =
-            context.subscriptionsDataStore.data
-                .map { preferences ->
-                    preferences[stringPreferencesKey(SUBSCRIPTIONS_ORDER_KEY)] ?: ""
-                }.first()
-
-        return if (orderString.isEmpty()) {
-            emptySet()
-        } else {
-            orderString.split(",").toSet()
-        }
-    }
-
-    /**
-     * Channels this device has explicitly unsubscribed from, mapped to when it happened.
-     *
-     * Device sync ships these as tombstones. Without them an unsubscribe is indistinguishable from
-     * "never subscribed", and the peer that still holds the channel puts it straight back.
-     */
-    suspend fun unsubscribedTombstones(): Map<String, Long> =
-        context.subscriptionsDataStore.data
-            .map { preferences ->
-                preferences
-                    .asMap()
-                    .mapNotNull { (key, value) ->
-                        if (!key.name.startsWith(UNSUBSCRIBED_PREFIX)) return@mapNotNull null
-                        val at = (value as? String)?.toLongOrNull() ?: return@mapNotNull null
-                        key.name.removePrefix(UNSUBSCRIBED_PREFIX) to at
-                    }.toMap()
-            }.first()
-
-    /** Record a peer's unsubscribe so it keeps propagating to any third device. */
-    suspend fun recordUnsubscribedAt(tombstones: Map<String, Long>) {
-        if (tombstones.isEmpty()) return
-        val now = System.currentTimeMillis()
-        context.subscriptionsDataStore.edit { preferences ->
-            tombstones.forEach { (channelId, at) ->
-                val existing = preferences[unsubscribedKey(channelId)]?.toLongOrNull() ?: 0L
-                if (at > existing) preferences[unsubscribedKey(channelId)] = at.toString()
-            }
-            prune(preferences, now)
-        }
-    }
-
     /** Drop tombstones past the retention window so the store cannot grow without limit. */
     private fun prune(
         preferences: MutablePreferences,
@@ -224,30 +175,6 @@ class SubscriptionRepository private constructor(
             val channelData = preferences[channelKey(channelId)]
             channelData?.let { deserializeChannel(it) }
         }
-
-    suspend fun repairVideoThumbnailSubscriptions(fetchChannelThumbnail: suspend (String) -> String): Int {
-        val subscriptions = getAllSubscriptions().first()
-        val repairs =
-            subscriptions
-                .filter { ThumbnailUrlResolver.isYoutubeVideoThumbnail(it.channelThumbnail) }
-                .mapNotNull { subscription ->
-                    val avatar = fetchChannelThumbnail(subscription.channelId).trim()
-                    if (avatar.isNotEmpty() && !ThumbnailUrlResolver.isYoutubeVideoThumbnail(avatar)) {
-                        subscription.channelId to subscription.copy(channelThumbnail = avatar)
-                    } else {
-                        null
-                    }
-                }.toMap()
-
-        if (repairs.isEmpty()) return 0
-
-        context.subscriptionsDataStore.edit { preferences ->
-            repairs.forEach { (channelId, subscription) ->
-                preferences[channelKey(channelId)] = serializeChannel(subscription)
-            }
-        }
-        return repairs.size
-    }
 
     private fun serializeChannel(channel: ChannelSubscription): String =
         "${channel.channelId}|${channel.channelName}|${channel.channelThumbnail}|${channel.subscribedAt}|${channel.lastVideoId ?: ""}|${channel.lastCheckTime}|${channel.isNotificationEnabled}|${channel.isMusic}|${channel.lastFeedFetchAt}"
@@ -300,52 +227,6 @@ class SubscriptionRepository private constructor(
                 val subscription = deserializeChannel(channelData)
                 if (subscription != null) {
                     val updated = subscription.copy(isNotificationEnabled = enabled)
-                    preferences[channelKey(channelId)] = serializeChannel(updated)
-                }
-            }
-        }
-    }
-
-    /**
-     * Record that the subscription feed has just fetched these channels.
-     *
-     * Written in one [DataStore] transaction so a refresh over hundreds of channels does not
-     * produce hundreds of preference commits.
-     */
-    suspend fun markFeedFetched(
-        channelIds: Collection<String>,
-        fetchedAt: Long,
-    ) {
-        if (channelIds.isEmpty()) return
-
-        context.subscriptionsDataStore.edit { preferences ->
-            channelIds.forEach { channelId ->
-                val subscription = preferences[channelKey(channelId)]?.let { deserializeChannel(it) }
-                if (subscription != null) {
-                    preferences[channelKey(channelId)] =
-                        serializeChannel(subscription.copy(lastFeedFetchAt = fetchedAt))
-                }
-            }
-        }
-    }
-
-    /**
-     * Update the last seen video for a channel
-     */
-    suspend fun updateChannelLatestVideo(
-        channelId: String,
-        videoId: String,
-    ) {
-        context.subscriptionsDataStore.edit { preferences ->
-            val channelData = preferences[channelKey(channelId)]
-            if (channelData != null) {
-                val subscription = deserializeChannel(channelData)
-                if (subscription != null) {
-                    val updated =
-                        subscription.copy(
-                            lastVideoId = videoId,
-                            lastCheckTime = System.currentTimeMillis(),
-                        )
                     preferences[channelKey(channelId)] = serializeChannel(updated)
                 }
             }

@@ -6,7 +6,6 @@ import android.net.Uri
 import android.util.Log
 import android.view.Display
 import androidx.core.net.toUri
-import androidx.media3.common.C
 import androidx.media3.database.DatabaseProvider
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.DefaultDataSource
@@ -29,7 +28,6 @@ import io.github.aedev.flow.plugin.playback.PictureLimits
 import io.github.aedev.flow.plugin.playback.PluginAudio
 import io.github.aedev.flow.plugin.playback.ResolvedAudio
 import io.github.aedev.flow.service.ExoDownloadService
-import io.github.aedev.flow.utils.MusicPlayerUtils
 import io.github.aedev.flow.utils.MusicVideoFormats
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -87,8 +85,8 @@ class DownloadUtil
             shortSide.coerceAtMost(MusicVideoFormats.MAX_HEIGHT)
         }
 
-        // Download-specific cache storing range-appended URLs for full-speed downloads
-        private val downloadUrlCache = java.util.concurrent.ConcurrentHashMap<String, Triple<String, String, Long>>()
+        // URLs the audio plugin resolved for downloads, reused until they expire
+        private val downloadUrlCache = java.util.concurrent.ConcurrentHashMap<String, PlayableUrl>()
         private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
         val downloads = MutableStateFlow<Map<String, Download>>(emptyMap())
 
@@ -142,49 +140,38 @@ class DownloadUtil
             } catch (e: Exception) {
                 Log.w(TAG, "[$source] Error checking downloadCache for $mediaId: ${e.message}")
             }
-            // Check download-specific cache (stores range-appended URLs for full-speed downloads)
-            downloadUrlCache[mediaId]?.takeIf { it.third > System.currentTimeMillis() }?.let { (url, ua, _) ->
+            downloadUrlCache[mediaId]?.takeIf { it.validUntilMs > System.currentTimeMillis() }?.let { cached ->
                 Log.d(TAG, "[$source] Using cached download URL for $mediaId")
                 return dataSpec
                     .buildUpon()
-                    .setUri(url.toUri())
-                    .setHttpRequestHeaders(mapOf("User-Agent" to ua))
+                    .setUri(cached.url.toUri())
+                    .setHttpRequestHeaders(cached.headers)
                     .build()
             }
 
-            Log.d(TAG, "[$source] Resolving URL from network for $mediaId")
-            val playbackData =
-                runBlocking(Dispatchers.IO) {
-                    MusicPlayerUtils.playerResponseForPlayback(mediaId)
-                }.getOrElse { e ->
+            Log.d(TAG, "[$source] Resolving $mediaId through the audio plugin")
+            val songUri =
+                Uri
+                    .Builder()
+                    .scheme(MusicVideoItems.SONG_SCHEME)
+                    .authority(mediaId)
+                    .build()
+            val resolved =
+                try {
+                    runBlocking(Dispatchers.IO) { resolveForPlayback(songUri, picture = false) }
+                } catch (e: Exception) {
                     Log.e(TAG, "[$source] Failed to resolve $mediaId: ${e.message}")
                     throw IOException("Could not resolve URL for $mediaId: ${e.message}", e)
                 }
-
-            val streamUrl = playbackData.streamUrl
-            val userAgent = playbackData.usedClient.userAgent
-            val expiration = System.currentTimeMillis() + (playbackData.streamExpiresInSeconds - 60) * 1000L
-
-            songUrlCache[mediaId] = PlayableUrl(streamUrl, mapOf("User-Agent" to userAgent), expiration)
-
-            // Append &range=0-{contentLength} so YouTube CDN serves the full file at full speed
-            // Without this, WEB_REMIX streams are throttled to ~real-time playback speed
-            val contentLength = playbackData.format.contentLength
-            val downloadUrl =
-                if (contentLength != null) {
-                    val sep = if ("?" in streamUrl) "&" else "?"
-                    "${streamUrl}${sep}range=0-$contentLength"
-                } else {
-                    streamUrl
-                }
-
-            downloadUrlCache[mediaId] = Triple(downloadUrl, userAgent, expiration)
-            Log.d(TAG, "[$source] Resolved $mediaId via ${playbackData.usedClient.clientName}, contentLength=$contentLength")
+            val playable = PlayableUrl(resolved.stream.url, resolved.stream.headers, resolved.validUntilMs)
+            songUrlCache[mediaId] = playable
+            downloadUrlCache[mediaId] = playable
+            Log.d(TAG, "[$source] Resolved $mediaId via ${resolved.pluginId}")
 
             return dataSpec
                 .buildUpon()
-                .setUri(downloadUrl.toUri())
-                .setHttpRequestHeaders(mapOf("User-Agent" to userAgent))
+                .setUri(playable.url.toUri())
+                .setHttpRequestHeaders(playable.headers)
                 .build()
         }
 
@@ -351,7 +338,7 @@ class DownloadUtil
 
         /**
          * Aggressive cache clear for error recovery.
-         * Clears URL cache, player cache, and triggers force refresh.
+         * Clears the resolved URL and the player cache.
          */
         fun performAggressiveCacheClear(mediaId: String) {
             Log.d(TAG, "Performing aggressive cache clear for $mediaId")
@@ -363,8 +350,6 @@ class DownloadUtil
             } catch (e: Exception) {
                 Log.w(TAG, "Error clearing playerCache for $mediaId: ${e.message}")
             }
-
-            MusicPlayerUtils.forceRefreshForVideo(mediaId)
         }
 
         /**

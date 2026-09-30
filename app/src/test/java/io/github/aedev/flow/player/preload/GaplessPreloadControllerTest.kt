@@ -54,8 +54,6 @@ class GaplessPreloadControllerTest {
         streamType = streamType,
         relatedVideos = emptyList(),
         preferredCodec = "avc",
-        itVideoFormats = emptyList(),
-        itAudioFormats = emptyList(),
     )
 
     private fun playerWith(

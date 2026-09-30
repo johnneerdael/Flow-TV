@@ -45,7 +45,6 @@ class PluginPlaybackResolverTest {
                 PlaybackResolutionRequest(
                     VIDEO_ID,
                     isWifi = true,
-                    escalateToSabr = false,
                     resumePositionOverrideMs = resumeMs,
                     allowShorts = true,
                 ),

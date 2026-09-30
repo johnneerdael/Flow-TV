@@ -111,17 +111,6 @@ object VideoStatsLedgerOps {
         tidy(ledger, month)
     }
 
-    fun recordSponsorSkip(
-        ledger: VideoStatsLedger,
-        nowMs: Long,
-        category: String,
-        skippedMs: Long,
-        zone: ZoneId = ZoneId.systemDefault(),
-    ) {
-        if (category.isBlank() || skippedMs <= 0L) return
-        monthAt(ledger, nowMs, zone).sponsorSkippedMs.add(category, skippedMs)
-    }
-
     /** Forgets every stored search text, when search history is cleared or stops being kept. */
     fun clearQueries(ledger: VideoStatsLedger) {
         ledger.months.values.forEach { it.queries.clear() }

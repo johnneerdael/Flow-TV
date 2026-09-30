@@ -56,7 +56,6 @@ class PlayerLoadDecisionsTest {
             VideoPlayerUiState(
                 cachedVideo = video("vid_a").copy(channelThumbnailUrl = "avatar.jpg"),
                 relatedVideos = listOf(video("rel_1")),
-                streamSizes = mapOf("137" to 1L),
                 error = "boom",
                 isSubscribed = true,
                 likeState = "LIKED",
@@ -72,7 +71,6 @@ class PlayerLoadDecisionsTest {
         assertThat(next.isLoading).isTrue()
         assertThat(next.error).isNull()
         assertThat(next.relatedVideos).isEmpty()
-        assertThat(next.streamSizes).isEmpty()
         assertThat(next.isSubscribed).isFalse()
         assertThat(next.likeState).isNull()
         assertThat(next.dislikeCount).isNull()

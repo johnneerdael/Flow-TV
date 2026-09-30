@@ -56,7 +56,6 @@ class VideoEngagementUseCaseTest {
 
     private fun recordSignalOrder() {
         coEvery { signals.channelSubscriptionChanged(any(), any(), any()) } answers { order += "subscriptionSignal" }
-        coEvery { signals.channelTagsLearned(any()) } answers { order += "tags" }
         coEvery { signals.videoInteraction(any(), any()) } answers { order += "interaction" }
     }
 
@@ -73,7 +72,7 @@ class VideoEngagementUseCaseTest {
         )
 
     @Test
-    fun `subscribing writes the channel, reports it, then records the signal and learns the tags`() =
+    fun `subscribing writes the channel, reports it, then records the signal`() =
         runTest(testDispatcher) {
             recordSignalOrder()
             isSubscribed.value = false
@@ -87,11 +86,11 @@ class VideoEngagementUseCaseTest {
             assertThat(written.captured.channelThumbnail).isEqualTo("avatar.jpg")
             coVerify(exactly = 0) { subscriptionRepository.unsubscribe(any()) }
             coVerify(exactly = 1) { signals.channelSubscriptionChanged("ch_1", "Channel One", true) }
-            assertThat(order).containsExactly("applied:true", "subscriptionSignal", "tags").inOrder()
+            assertThat(order).containsExactly("applied:true", "subscriptionSignal").inOrder()
         }
 
     @Test
-    fun `unsubscribing removes the channel and records the signal without learning tags`() =
+    fun `unsubscribing removes the channel and records the signal`() =
         runTest(testDispatcher) {
             recordSignalOrder()
             isSubscribed.value = true
@@ -101,7 +100,6 @@ class VideoEngagementUseCaseTest {
             coVerify(exactly = 1) { subscriptionRepository.unsubscribe("ch_1") }
             coVerify(exactly = 0) { subscriptionRepository.subscribe(any()) }
             coVerify(exactly = 1) { signals.channelSubscriptionChanged("ch_1", "Channel One", false) }
-            coVerify(exactly = 0) { signals.channelTagsLearned(any()) }
             assertThat(order).containsExactly("applied:false", "subscriptionSignal").inOrder()
         }
 
@@ -114,7 +112,6 @@ class VideoEngagementUseCaseTest {
             useCase.toggleSubscription("ch_1", "Channel One", "avatar.jpg")
 
             coVerify(exactly = 1) { subscriptionRepository.subscribe(any()) }
-            coVerify(exactly = 1) { signals.channelTagsLearned("ch_1") }
         }
 
     @Test

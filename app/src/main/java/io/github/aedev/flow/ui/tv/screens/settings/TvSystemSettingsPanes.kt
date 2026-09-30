@@ -6,19 +6,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.aedev.flow.R
-import io.github.aedev.flow.data.local.AppUiModePreferences
 import io.github.aedev.flow.data.local.PlayerPreferences
-import io.github.aedev.flow.platform.AppUiMode
 import io.github.aedev.flow.player.DeepFlowManager
-import io.github.aedev.flow.ui.tv.components.TvSelectionRow
 import io.github.aedev.flow.ui.tv.components.TvToggleRow
 import kotlinx.coroutines.launch
 

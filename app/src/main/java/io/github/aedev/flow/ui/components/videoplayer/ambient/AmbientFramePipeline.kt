@@ -387,8 +387,6 @@ private fun encodeToPixels(
  */
 internal fun linearToSrgb(v: Float): Int = LINEAR_TO_SRGB[(v.coerceIn(0f, 1f) * LINEAR_LUT_SIZE + 0.5f).toInt()]
 
-internal fun srgbToLinear(byteValue: Int): Float = SRGB_TO_LINEAR[byteValue.coerceIn(0, 255)]
-
 /** Mean absolute per-channel difference over a strided subset of the two buffers. */
 internal fun meanAbsDiff(
     current: IntArray,

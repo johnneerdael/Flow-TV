@@ -6,10 +6,8 @@ import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.data.local.VideoQuality
 import io.github.aedev.flow.data.video.OfflineSubtitleStore
 import io.github.aedev.flow.player.EnhancedPlayerManager
-import io.github.aedev.flow.player.sabr.integration.SabrStreamInfo
 import io.github.aedev.flow.utils.NetworkState
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
@@ -29,7 +27,6 @@ import org.junit.Before
 import org.junit.Test
 import org.schabi.newpipe.extractor.stream.StreamInfo
 import org.schabi.newpipe.extractor.stream.StreamType
-import org.schabi.newpipe.extractor.stream.SubtitlesStream
 
 /**
  * Pins the sequence [PlaybackPreparer] drives on one player manager for each way playback can be
@@ -72,115 +69,6 @@ class PlaybackPreparerTest {
     }
 
     @Test
-    fun `merged streams are initialised, pushed at the resumed position and played`() =
-        runTest(testDispatcher) {
-            every { playerPreferences.rememberPlaybackSpeed } returns flowOf(true)
-            every { playerPreferences.playbackSpeed } returns flowOf(1.75f)
-
-            preparer.prepareMergedStreams(
-                videoId = VIDEO_ID,
-                streamInfo = streamInfo(durationSeconds = 120L),
-                videoStream = null,
-                audioStream = null,
-                videoStreams = emptyList(),
-                audioStreams = emptyList(),
-                subtitles = emptyList(),
-                savedPosition = 30_000L,
-                fallbackDurationSeconds = 0L,
-                localFilePath = null,
-                offlineSegments = null,
-                hlsUrl = null,
-                isAdaptiveMode = true,
-                resumeOverrideRequested = false,
-                isCurrent = { true },
-                preferredVideoCodec = "vp9",
-            )
-
-            coVerifyOrder {
-                playerManager.initialize(context)
-                playerManager.setStreams(
-                    videoId = VIDEO_ID,
-                    videoStream = null,
-                    audioStream = null,
-                    videoStreams = emptyList(),
-                    audioStreams = emptyList(),
-                    subtitles = emptyList(),
-                    durationSeconds = 120L,
-                    dashManifestUrl = DASH_URL,
-                    hlsUrl = null,
-                    streamType = StreamType.VIDEO_STREAM,
-                    startPosition = 30_000L,
-                    sabrInfo = null,
-                    itVideoFormats = emptyList(),
-                    itAudioFormats = emptyList(),
-                    preferredVideoCodec = "vp9",
-                    preferSabr = false,
-                    preferredLiveQualityHeight = 0,
-                )
-                playerManager.setPlaybackSpeed(1.75f)
-                playerManager.play()
-            }
-            verify(exactly = 0) { playerManager.playLocalFile(any(), any(), any(), any(), any()) }
-        }
-
-    @Test
-    fun `a downloaded copy of a resolved video plays through playLocalFile with the stored subtitles`() =
-        runTest(testDispatcher) {
-            val stored = listOf(mockk<SubtitlesStream>())
-            coEvery { offlineSubtitleStore.load(VIDEO_ID) } returns stored
-
-            preparer.prepareMergedStreams(
-                videoId = VIDEO_ID,
-                streamInfo = streamInfo(durationSeconds = 120L),
-                videoStream = null,
-                audioStream = null,
-                videoStreams = emptyList(),
-                audioStreams = emptyList(),
-                subtitles = emptyList(),
-                savedPosition = 30_000L,
-                fallbackDurationSeconds = 0L,
-                localFilePath = "/downloads/vid.mp4",
-                offlineSegments = null,
-                hlsUrl = null,
-                isAdaptiveMode = true,
-                resumeOverrideRequested = false,
-                isCurrent = { true },
-            )
-
-            verifyOrder {
-                playerManager.playLocalFile(
-                    videoId = VIDEO_ID,
-                    filePath = "/downloads/vid.mp4",
-                    savedSegments = null,
-                    preservePosition = 30_000L,
-                    subtitles = stored,
-                )
-                playerManager.play()
-            }
-            coVerify(exactly = 0) {
-                playerManager.setStreams(
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                )
-            }
-        }
-
-    @Test
     fun `a live manifest is pushed from the live edge with the speed locked to 1x`() =
         runTest(testDispatcher) {
             val started =
@@ -206,11 +94,7 @@ class PlaybackPreparerTest {
                     hlsUrl = HLS_URL,
                     streamType = StreamType.LIVE_STREAM,
                     startPosition = 0L,
-                    sabrInfo = null,
-                    itVideoFormats = emptyList(),
-                    itAudioFormats = emptyList(),
                     preferredVideoCodec = "auto",
-                    preferSabr = false,
                     preferredLiveQualityHeight = VideoQuality.Q_1080P.height,
                 )
                 playerManager.setPlaybackSpeed(1.0f)
@@ -237,7 +121,7 @@ class PlaybackPreparerTest {
         }
 
     @Test
-    fun `the InnerTube VOD path pushes the converted streams at the resumed position`() =
+    fun `a VOD pushes its streams at the resumed position`() =
         runTest(testDispatcher) {
             preparer.prepareVodStreams(
                 videoId = VIDEO_ID,
@@ -250,9 +134,6 @@ class PlaybackPreparerTest {
                 savedPositionMs = 90_000L,
                 resumeOverrideRequested = false,
                 isAdaptiveMode = false,
-                sabrInfo = null,
-                itVideoFormats = emptyList(),
-                itAudioFormats = emptyList(),
                 preferredVideoCodec = "av1",
                 preferredLiveQualityHeight = 1080,
                 isCurrent = { true },
@@ -271,123 +152,13 @@ class PlaybackPreparerTest {
                     hlsUrl = null,
                     streamType = StreamType.VIDEO_STREAM,
                     startPosition = 90_000L,
-                    sabrInfo = null,
-                    itVideoFormats = emptyList(),
-                    itAudioFormats = emptyList(),
                     preferredVideoCodec = "av1",
-                    preferSabr = false,
                     preferredLiveQualityHeight = 1080,
                 )
                 playerManager.play()
             }
             verify(exactly = 0) { playerManager.initialize(any()) }
         }
-
-    @Test
-    fun `a SABR session that only ties the direct ladder is not played`() =
-        runTest(testDispatcher) {
-            // Measured on device 2026-09-21: a SABR session never receives an initialisation
-            // segment, so ExoPlayer cannot sniff it and every attempt dies with
-            // UnrecognizedInputFormatException. Until that is fixed, playback stays on the direct
-            // ladder — which the extractor now hands over cipher-resolved, n-transformed and
-            // attested, so it is a real fallback rather than URLs GVS has already refused.
-            preparer.prepareVodStreams(
-                videoId = VIDEO_ID,
-                videoStream = null,
-                audioStream = null,
-                videoStreams = emptyList(),
-                audioStreams = emptyList(),
-                subtitles = emptyList(),
-                durationSeconds = 600L,
-                savedPositionMs = 0L,
-                resumeOverrideRequested = false,
-                isAdaptiveMode = false,
-                sabrInfo = sabrInfo(videoHeight = 0),
-                itVideoFormats = emptyList(),
-                itAudioFormats = emptyList(),
-                preferredVideoCodec = "auto",
-                preferredLiveQualityHeight = 1080,
-                isCurrent = { true },
-            )
-
-            coVerify {
-                playerManager.setStreams(
-                    videoId = VIDEO_ID,
-                    videoStream = any(),
-                    audioStream = any(),
-                    videoStreams = any(),
-                    audioStreams = any(),
-                    subtitles = any(),
-                    durationSeconds = any(),
-                    dashManifestUrl = any(),
-                    hlsUrl = any(),
-                    streamType = any(),
-                    startPosition = any(),
-                    sabrInfo = any(),
-                    itVideoFormats = any(),
-                    itAudioFormats = any(),
-                    preferredVideoCodec = any(),
-                    preferSabr = false,
-                    preferredLiveQualityHeight = any(),
-                )
-            }
-        }
-
-    @Test
-    fun `a SABR session taller than the direct ladder is still preferred`() =
-        runTest(testDispatcher) {
-            preparer.prepareVodStreams(
-                videoId = VIDEO_ID,
-                videoStream = null,
-                audioStream = null,
-                videoStreams = emptyList(),
-                audioStreams = emptyList(),
-                subtitles = emptyList(),
-                durationSeconds = 600L,
-                savedPositionMs = 0L,
-                resumeOverrideRequested = false,
-                isAdaptiveMode = false,
-                sabrInfo = sabrInfo(videoHeight = 1080),
-                itVideoFormats = emptyList(),
-                itAudioFormats = emptyList(),
-                preferredVideoCodec = "auto",
-                preferredLiveQualityHeight = 1080,
-                isCurrent = { true },
-            )
-
-            coVerify {
-                playerManager.setStreams(
-                    videoId = VIDEO_ID,
-                    videoStream = any(),
-                    audioStream = any(),
-                    videoStreams = any(),
-                    audioStreams = any(),
-                    subtitles = any(),
-                    durationSeconds = any(),
-                    dashManifestUrl = any(),
-                    hlsUrl = any(),
-                    streamType = any(),
-                    startPosition = any(),
-                    sabrInfo = any(),
-                    itVideoFormats = any(),
-                    itAudioFormats = any(),
-                    preferredVideoCodec = any(),
-                    preferSabr = true,
-                    preferredLiveQualityHeight = any(),
-                )
-            }
-        }
-
-    private fun sabrInfo(videoHeight: Int) =
-        SabrStreamInfo(
-            streamingUrl = "https://rr1.googlevideo.com/videoplayback?sabr=1",
-            audioItag = 140,
-            audioLmt = 1L,
-            videoItag = 137,
-            videoLmt = 2L,
-            durationMs = 600_000L,
-            videoHeight = videoHeight,
-        )
 
     @Test
     fun `local media is initialised, resumed from the saved position and played`() =

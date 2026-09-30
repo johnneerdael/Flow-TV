@@ -1,12 +1,12 @@
 package io.github.aedev.flow.ui.screens.player
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.aedev.flow.data.account.AccountPlayHistory
+import io.github.aedev.flow.data.comments.VideoCommentSort
 import io.github.aedev.flow.data.engagement.FeedInvalidationBus
 import io.github.aedev.flow.data.engagement.VideoEngagementUseCase
 import io.github.aedev.flow.data.local.*
@@ -15,22 +15,14 @@ import io.github.aedev.flow.data.model.Comment
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.recommendation.FlowNeuroEngine
 import io.github.aedev.flow.data.repository.SponsorBlockRepository
-import io.github.aedev.flow.data.repository.YouTubeRepository
 import io.github.aedev.flow.data.transcript.TranscriptRepository
 import io.github.aedev.flow.data.video.VideoDownloadManager
 import io.github.aedev.flow.data.video.VideoQueueStore
 import io.github.aedev.flow.di.IoDispatcher
 import io.github.aedev.flow.di.NetworkIoDispatcher
-import io.github.aedev.flow.innertube.pages.VideoCommentSort
-import io.github.aedev.flow.innertube.pages.VideoDescriptionPage
-import io.github.aedev.flow.player.EnhancedMusicPlayerManager
 import io.github.aedev.flow.player.EnhancedPlayerManager
-import io.github.aedev.flow.player.GlobalPlayerState
-import io.github.aedev.flow.player.MiniPlayerExpansionState
 import io.github.aedev.flow.player.state.EnhancedPlayerState
-import io.github.aedev.flow.player.stream.PlaybackResolutionRequest
 import io.github.aedev.flow.player.stream.PluginPlaybackResolver
-import io.github.aedev.flow.player.stream.UpcomingPremiereProbe
 import io.github.aedev.flow.plugin.playback.PluginVideo
 import io.github.aedev.flow.ui.screens.player.state.*
 import io.github.aedev.flow.utils.NetworkState
@@ -39,9 +31,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.schabi.newpipe.extractor.stream.*
 import javax.inject.Inject
@@ -62,7 +52,6 @@ class VideoPlayerViewModel
     @Inject
     constructor(
         @ApplicationContext private val context: Context,
-        private val repository: YouTubeRepository,
         private val transcriptRepository: TranscriptRepository,
         private val viewHistory: ViewHistory,
         private val engagement: VideoEngagementUseCase,
@@ -75,7 +64,6 @@ class VideoPlayerViewModel
         private val sponsorBlockRepository: SponsorBlockRepository,
         private val homeFeedCacheRepository: HomeFeedCacheRepository,
         private val playerManager: EnhancedPlayerManager,
-        private val upcomingPremiereProbe: UpcomingPremiereProbe,
         private val playbackResolver: PluginPlaybackResolver,
         private val pluginVideo: PluginVideo,
         accountPlayHistory: AccountPlayHistory,
@@ -91,18 +79,11 @@ class VideoPlayerViewModel
 
         private val loads: PlaybackLoadJobs = PlaybackLoadJobs(viewModelScope, networkDispatcher, onCancel = { secondaryMetadata.cancel() })
 
-        val videoNote: StateFlow<String?> = notes.note
         val videoNotesEnabled: StateFlow<Boolean> = notes.enabled
-
-        fun saveVideoNote(
-            videoId: String,
-            text: String,
-        ) = notes.save(videoId, text)
 
         private val collaborators: PlayerCollaborators =
             PlayerCollaborators(
                 context = context,
-                repository = repository,
                 transcriptRepository = transcriptRepository,
                 viewHistory = viewHistory,
                 engagement = engagement,
@@ -114,7 +95,6 @@ class VideoPlayerViewModel
                 accountPlayHistory = accountPlayHistory,
                 homeFeedCacheRepository = homeFeedCacheRepository,
                 playerManager = playerManager,
-                upcomingPremiereProbe = upcomingPremiereProbe,
                 videoStats = videoStats,
                 uiState = _uiState,
                 scope = viewModelScope,
@@ -127,23 +107,15 @@ class VideoPlayerViewModel
             )
 
         private val comments = collaborators.comments
-        private val descriptions = collaborators.descriptions
-        private val transcripts = collaborators.transcripts
         private val secondaryMetadata = collaborators.secondaryMetadata
         private val watchSessions = collaborators.watchSessions
         private val liveChat = collaborators.liveChat
         private val engagementState = collaborators.engagementState
         private val upcomingPremiere = collaborators.upcomingPremiere
-        private val sessionApplier = collaborators.sessionApplier
 
         val commentsState: StateFlow<List<Comment>> = comments.comments
         val isLoadingComments: StateFlow<Boolean> = comments.isLoading
         val hasMoreComments: StateFlow<Boolean> = comments.hasMore
-        val isLoadingMoreComments: StateFlow<Boolean> = comments.isLoadingMore
-        val commentSortOptions: StateFlow<List<VideoCommentSort>> = comments.sortOptions
-        val commentTotalText: StateFlow<String?> = comments.totalText
-        val descriptionState: StateFlow<VideoDescriptionPage?> = descriptions.description
-        val transcriptState: StateFlow<TranscriptState> = transcripts.state
 
         private var clearedUnplayableVideoId: String? = null
 
@@ -187,9 +159,6 @@ class VideoPlayerViewModel
                 resumeQueue = { videos, index, title -> playPlaylist(videos, index, title) },
             )
 
-        private val _expandPlayerRequest = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
-        val expandPlayerRequest: SharedFlow<Unit> = _expandPlayerRequest.asSharedFlow()
-
         private val session: PlayerSessionController =
             PlayerSessionController(
                 context = context,
@@ -207,7 +176,6 @@ class VideoPlayerViewModel
                 shortsEnabled = { shortsContentEnabled },
                 blockedChannelIds = { blockedChannelIds },
                 refreshBlockedChannels = ::refreshBlockedChannels,
-                requestExpandPlayer = { _expandPlayerRequest.tryEmit(Unit) },
             )
 
         val canGoPrevious: StateFlow<Boolean> = session.canGoPrevious
@@ -226,13 +194,6 @@ class VideoPlayerViewModel
             watchSessions.finalizeActiveSession()
             stopLiveChat()
         }
-
-        val downloadedVideoIds =
-            videoDownloadManager.downloadedVideos
-                .map { list -> list.map { it.video.id }.toSet() }
-                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
-
-        fun isVideoSavedToAnyPlaylist(videoId: String): Flow<Boolean> = playlistRepository.isVideoSavedToAnyPlaylistFlow(videoId)
 
         /**
          * Detect whether the device is currently on Wi-Fi.
@@ -322,8 +283,6 @@ class VideoPlayerViewModel
 
         fun clearResumedInMiniPlayer() = presence.clearResumedInMiniPlayer()
 
-        fun toggleUpcomingReminder() = upcomingPremiere.toggleReminder()
-
         fun syncWithCurrentPlayerVideo(video: Video) = session.syncWithCurrentPlayerVideo(video)
 
         /** Shows [video]'s metadata at once and starts loading its streams. */
@@ -402,12 +361,6 @@ class VideoPlayerViewModel
             position: Long,
         ) = watchSessions.trackLive(video, position)
 
-        /** A SponsorBlock segment the player just skipped, for the recap's time-saved total. */
-        fun onSponsorSegmentSkipped(
-            category: String,
-            skippedMs: Long,
-        ) = videoStats.onSponsorSkip(category, skippedMs)
-
         fun toggleSubscription(
             channelId: String,
             channelName: String,
@@ -431,26 +384,11 @@ class VideoPlayerViewModel
 
         fun removeLikeState(videoId: String) = engagementState.removeLike(videoId)
 
-        fun loadSubscriptionAndLikeState(
-            channelId: String,
-            videoId: String,
-        ) = engagementState.observe(channelId, videoId)
-
         fun toggleSubtitles(enabled: Boolean) = settings.setSubtitlesEnabled(enabled)
 
         fun toggleAutoplay(enabled: Boolean) = settings.toggleAutoplay(enabled)
 
         fun toggleLoop(enabled: Boolean) = settings.toggleLoop(enabled)
-
-        fun loadTranscript(trackUrl: String?) = transcripts.load(trackUrl)
-
-        fun loadDescription(videoId: String) {
-            if (isLocalMediaId(videoId)) {
-                descriptions.clear()
-                return
-            }
-            descriptions.load(videoId)
-        }
 
         fun loadComments(videoId: String) {
             if (isLocalMediaId(videoId)) {

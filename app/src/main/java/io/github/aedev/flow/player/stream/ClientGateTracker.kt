@@ -40,23 +40,6 @@ open class ClientGateRegistry(
         return true
     }
 
-    fun isGated(clientName: String?): Boolean {
-        val key = clientName?.takeIf { it.isNotBlank() }?.uppercase() ?: return false
-        val until = gatedUntilMs[key] ?: return false
-        if (clockMs() >= until) {
-            gatedUntilMs.remove(key, until)
-            return false
-        }
-        return true
-    }
-
-    /** The clients currently demoted, for diagnostics. Lapsed entries are dropped on the way out. */
-    fun gatedClients(): Set<String> {
-        val now = clockMs()
-        gatedUntilMs.entries.removeAll { it.value <= now }
-        return gatedUntilMs.keys.toSet()
-    }
-
     fun clear() {
         gatedUntilMs.clear()
         refusalStrikes.clear()

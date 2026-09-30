@@ -4,16 +4,11 @@ import android.content.Context
 import com.google.common.truth.Truth.assertThat
 import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.data.model.Video
-import io.github.aedev.flow.notification.UpcomingVideoReminderWorker
 import io.github.aedev.flow.player.GlobalPlayerState
 import io.github.aedev.flow.player.error.PlayerDiagnostics
-import io.github.aedev.flow.player.stream.UpcomingPremiere
-import io.github.aedev.flow.player.stream.UpcomingPremiereProbe
 import io.github.aedev.flow.ui.screens.player.VideoPlayerViewModelHarness.Companion.video
 import io.github.aedev.flow.ui.screens.player.state.VideoPlayerUiState
 import io.mockk.Runs
-import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -32,9 +27,7 @@ import org.junit.Before
 import org.junit.Test
 
 /**
- * Pins when the player screen counts down instead of playing, and what one countdown costs: the
- * premiere probe is a network call, so a resolution that already knows the release time must not
- * enter it at all and a resolution that does not must enter it exactly once.
+ * Pins when the player screen counts down instead of playing.
  *
  * The countdown's own shape is pinned in `UpcomingPremierePolicyTest`; this is the controller
  * around it — the load currency check, the state write and the reminder work.
@@ -45,7 +38,6 @@ class UpcomingPremiereControllerTest {
     private val uiState = MutableStateFlow(VideoPlayerUiState())
     private val context: Context = mockk(relaxed = true)
     private val playerPreferences: PlayerPreferences = mockk(relaxed = true)
-    private val probe: UpcomingPremiereProbe = mockk()
     private val reminderIds = MutableStateFlow<Set<String>>(emptySet())
     private val controllerScope = CoroutineScope(testDispatcher)
 
@@ -53,12 +45,8 @@ class UpcomingPremiereControllerTest {
     fun setUp() {
         mockkObject(GlobalPlayerState)
         mockkObject(PlayerDiagnostics)
-        mockkObject(UpcomingVideoReminderWorker.Companion)
         every { PlayerDiagnostics.logWarning(any(), any()) } just Runs
-        every { UpcomingVideoReminderWorker.scheduleReminder(any(), any(), any(), any(), any(), any()) } just Runs
-        every { UpcomingVideoReminderWorker.cancelReminder(any(), any()) } just Runs
         every { playerPreferences.upcomingVideoReminderIds } returns reminderIds
-        coEvery { probe.probe(any()) } returns UpcomingPremiere.NOT_UPCOMING
     }
 
     @After
@@ -67,17 +55,16 @@ class UpcomingPremiereControllerTest {
         unmockkAll()
     }
 
-    private val armedMetadata = mutableListOf<Pair<String, String?>>()
+    private val armedMetadata = mutableListOf<String>()
 
     private fun controller(): UpcomingPremiereController =
         UpcomingPremiereController(
             context = context,
             uiState = uiState,
             playerPreferences = playerPreferences,
-            probe = probe,
             scope = controllerScope,
             isLoadCurrent = { token -> token == CURRENT_TOKEN },
-            armMetadata = { videoId, channelId -> armedMetadata += videoId to channelId },
+            armMetadata = { videoId -> armedMetadata += videoId },
         )
 
     @Test
@@ -95,13 +82,13 @@ class UpcomingPremiereControllerTest {
         }
 
     @Test
-    fun `a countdown entered without a load still arms the channel row and related lane`() =
+    fun `a countdown entered without a load still arms the related lane`() =
         runTest(testDispatcher) {
             val video = upcomingVideo()
 
             controller().applyCountdown(video)
 
-            assertThat(armedMetadata).containsExactly(video.id to video.channelId)
+            assertThat(armedMetadata).containsExactly(video.id)
         }
 
     @Test
@@ -156,86 +143,6 @@ class UpcomingPremiereControllerTest {
             assertThat(controller().enterCountdown(VIDEO_ID, RELEASE_MS, emptyList(), CURRENT_TOKEN + 1L)).isTrue()
             assertThat(uiState.value).isEqualTo(before)
             verify(exactly = 0) { GlobalPlayerState.setCurrentVideo(any()) }
-        }
-
-    @Test
-    fun `a flagged video with a known release time is resolved without a probe`() =
-        runTest(testDispatcher) {
-            uiState.value = VideoPlayerUiState(cachedVideo = upcomingVideo())
-
-            val resolved = controller().resolve(VIDEO_ID, knownUpcoming = false)
-
-            assertThat(resolved.isUpcoming).isTrue()
-            assertThat(resolved.scheduledStartMs).isEqualTo(RELEASE_MS)
-            coVerify(exactly = 0) { probe.probe(any()) }
-        }
-
-    @Test
-    fun `a video nothing is known about is probed exactly once`() =
-        runTest(testDispatcher) {
-            coEvery { probe.probe(VIDEO_ID) } returns UpcomingPremiere(isUpcoming = true, scheduledStartMs = RELEASE_MS)
-
-            val resolved = controller().resolve(VIDEO_ID, knownUpcoming = false)
-
-            assertThat(resolved.isUpcoming).isTrue()
-            assertThat(resolved.scheduledStartMs).isEqualTo(RELEASE_MS)
-            coVerify(exactly = 1) { probe.probe(VIDEO_ID) }
-        }
-
-    @Test
-    fun `a load that turns out not to be a premiere reports back without touching the state`() =
-        runTest(testDispatcher) {
-            val before = uiState.value
-
-            assertThat(controller().tryEnterCountdown(VIDEO_ID, emptyList(), CURRENT_TOKEN)).isFalse()
-            assertThat(uiState.value).isEqualTo(before)
-            coVerify(exactly = 1) { probe.probe(VIDEO_ID) }
-        }
-
-    @Test
-    fun `arming the reminder stores the id and schedules the work`() =
-        runTest(testDispatcher) {
-            uiState.value =
-                VideoPlayerUiState(cachedVideo = upcomingVideo(), isUpcoming = true, upcomingReleaseTimeMs = RELEASE_MS)
-
-            controller().toggleReminder()
-            advanceUntilIdle()
-
-            coVerify(exactly = 1) { playerPreferences.setUpcomingVideoReminder(VIDEO_ID, true) }
-            verify(exactly = 1) {
-                UpcomingVideoReminderWorker.scheduleReminder(context, VIDEO_ID, RELEASE_MS, any(), any(), any())
-            }
-            assertThat(uiState.value.isUpcomingReminderSet).isTrue()
-        }
-
-    @Test
-    fun `disarming the reminder cancels the work it scheduled`() =
-        runTest(testDispatcher) {
-            uiState.value =
-                VideoPlayerUiState(
-                    cachedVideo = upcomingVideo(),
-                    isUpcoming = true,
-                    upcomingReleaseTimeMs = RELEASE_MS,
-                    isUpcomingReminderSet = true,
-                )
-
-            controller().toggleReminder()
-            advanceUntilIdle()
-
-            coVerify(exactly = 1) { playerPreferences.setUpcomingVideoReminder(VIDEO_ID, false) }
-            verify(exactly = 1) { UpcomingVideoReminderWorker.cancelReminder(context, VIDEO_ID) }
-            assertThat(uiState.value.isUpcomingReminderSet).isFalse()
-        }
-
-    @Test
-    fun `a video that is not counting down has no reminder to toggle`() =
-        runTest(testDispatcher) {
-            uiState.value = VideoPlayerUiState(cachedVideo = upcomingVideo(), upcomingReleaseTimeMs = RELEASE_MS)
-
-            controller().toggleReminder()
-            advanceUntilIdle()
-
-            coVerify(exactly = 0) { playerPreferences.setUpcomingVideoReminder(any(), any()) }
         }
 
     @Test

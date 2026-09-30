@@ -25,47 +25,6 @@ class VideoAmbientBackgroundTest {
         }
     }
 
-    // ---- linear light ----
-
-    @Test
-    fun `sRGB round trips through linear`() {
-        for (v in 0..255) {
-            assertThat(linearToSrgb(srgbToLinear(v))).isEqualTo(v)
-        }
-    }
-
-    @Test
-    fun `linear conversion anchors at black and white`() {
-        assertThat(srgbToLinear(0)).isEqualTo(0f)
-        assertThat(srgbToLinear(255)).isEqualTo(1f)
-        assertThat(linearToSrgb(0f)).isEqualTo(0)
-        assertThat(linearToSrgb(1f)).isEqualTo(255)
-    }
-
-    @Test
-    fun `mid sRGB is far below mid linear`() {
-        // The whole reason the spatial path moved to linear: 128/255 is ~0.216 of the light, not
-        // half of it. Averaging in sRGB is what made blurred boundaries go muddy.
-        assertThat(srgbToLinear(128)).isWithin(0.005f).of(0.2158f)
-    }
-
-    @Test
-    fun `averaging saturated complementaries stays bright in linear`() {
-        // sRGB-averaging pure red and pure green gives (128,128,0) — darker than either input.
-        // In linear the same average encodes back to ~188.
-        val mixed = linearToSrgb((srgbToLinear(255) + srgbToLinear(0)) / 2f)
-        assertThat(mixed).isAtLeast(185)
-        assertThat(mixed).isAtMost(190)
-    }
-
-    @Test
-    fun `near black keeps distinct steps`() {
-        // The 4096-entry table exists for this: the curve's slope is 12.92 here, so a coarser LUT
-        // would collapse adjacent dim values and band a dim glow.
-        val distinct = (0..8).map { linearToSrgb(srgbToLinear(it)) }.distinct()
-        assertThat(distinct).hasSize(9)
-    }
-
     // ---- blur ----
 
     @Test

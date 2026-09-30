@@ -82,12 +82,6 @@ object AppProxyManager {
         }
     }
 
-    fun currentConfig(): AppProxyConfig = config
-
-    fun currentProxy(): Proxy? = config.toProxy()
-
-    fun currentHttpProxyAuthorizationHeader(): String? = config.httpProxyAuthorizationHeader()
-
     fun currentSignature(): String = config.signature()
 
     fun applyTo(builder: OkHttpClient.Builder): OkHttpClient.Builder {

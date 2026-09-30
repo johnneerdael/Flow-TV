@@ -93,21 +93,6 @@ object LoadControlFactory {
     }
 
     /**
-     * Shorts pool: a deliberately small window so a swipe starts the next clip without a visible
-     * wait. These are not user-tunable and stay below [BufferDurations]' product floors on purpose.
-     */
-    fun forShorts(): DefaultLoadControl =
-        build(
-            minMs = PlayerConfig.SHORTS_MIN_BUFFER_MS,
-            maxMs = PlayerConfig.SHORTS_MAX_BUFFER_MS,
-            playbackMs = PlayerConfig.SHORTS_BUFFER_FOR_PLAYBACK_MS,
-            rebufferMs = PlayerConfig.SHORTS_BUFFER_FOR_REBUFFER_MS,
-            backBufferMs = PlayerConfig.SHORTS_BACK_BUFFER_MS,
-            retainBackBufferFromKeyframe = true,
-            targetBufferBytes = PlayerConfig.SHORTS_TARGET_BUFFER_BYTES,
-        )
-
-    /**
      * Music service: audio-only, so a long window costs little memory and a low playback threshold
      * gets the first note out quickly. No back buffer, and no byte cap — the duration window is the
      * only budget it needs.

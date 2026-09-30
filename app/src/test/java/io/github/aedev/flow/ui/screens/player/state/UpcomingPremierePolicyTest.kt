@@ -3,7 +3,6 @@ package io.github.aedev.flow.ui.screens.player.state
 import com.google.common.truth.Truth.assertThat
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.player.stream.UpcomingDetails
-import io.github.aedev.flow.player.stream.UpcomingPremiere
 import org.junit.Test
 
 class UpcomingPremierePolicyTest {
@@ -80,38 +79,6 @@ class UpcomingPremierePolicyTest {
     }
 
     @Test
-    fun `a probe is only needed when the metadata does not already answer both questions`() {
-        assertThat(UpcomingPremierePolicy.needsProbe(flagged = true, listReleaseMs = now)).isFalse()
-        assertThat(UpcomingPremierePolicy.needsProbe(flagged = true, listReleaseMs = null)).isTrue()
-        assertThat(UpcomingPremierePolicy.needsProbe(flagged = false, listReleaseMs = now)).isTrue()
-        assertThat(UpcomingPremierePolicy.needsProbe(flagged = false, listReleaseMs = null)).isTrue()
-    }
-
-    @Test
-    fun `an unflagged video the probe does not recognise is not upcoming`() {
-        assertThat(
-            UpcomingPremierePolicy.resolve(flagged = false, listReleaseMs = null, probe = UpcomingPremiere.NOT_UPCOMING),
-        ).isEqualTo(UpcomingPremiere.NOT_UPCOMING)
-    }
-
-    @Test
-    fun `a flagged video stays upcoming even when the probe finds nothing`() {
-        assertThat(
-            UpcomingPremierePolicy.resolve(flagged = true, listReleaseMs = null, probe = UpcomingPremiere.NOT_UPCOMING),
-        ).isEqualTo(UpcomingPremiere(isUpcoming = true, scheduledStartMs = null))
-    }
-
-    @Test
-    fun `the list release time wins over the probed one`() {
-        val probe = UpcomingPremiere(isUpcoming = true, scheduledStartMs = now + 7_200_000L)
-
-        assertThat(UpcomingPremierePolicy.resolve(flagged = true, listReleaseMs = now + 60_000L, probe = probe))
-            .isEqualTo(UpcomingPremiere(isUpcoming = true, scheduledStartMs = now + 60_000L))
-        assertThat(UpcomingPremierePolicy.resolve(flagged = false, listReleaseMs = null, probe = probe))
-            .isEqualTo(probe)
-    }
-
-    @Test
     fun `applying the countdown clears the previous video and keeps the queue title`() {
         val previous =
             VideoPlayerUiState(
@@ -169,14 +136,5 @@ class UpcomingPremierePolicyTest {
         val fromCache = UpcomingPremierePolicy.upcomingVideo("vid", cached = video(timestamp = 42L), releaseMs = null)
         assertThat(fromCache.timestamp).isEqualTo(42L)
         assertThat(fromCache.title).isEqualTo("Title")
-    }
-
-    @Test
-    fun `the refresh poll settles briefly, asks every thirty seconds, and gives up after ten minutes`() {
-        assertThat(UpcomingPremierePolicy.SETTLE_MS).isEqualTo(3_000L)
-        assertThat(UpcomingPremierePolicy.REFRESH_INTERVAL_MS).isEqualTo(30_000L)
-        assertThat(UpcomingPremierePolicy.MAX_REFRESH_ATTEMPTS).isEqualTo(20)
-        assertThat(UpcomingPremierePolicy.MAX_REFRESH_ATTEMPTS * UpcomingPremierePolicy.REFRESH_INTERVAL_MS)
-            .isEqualTo(600_000L)
     }
 }

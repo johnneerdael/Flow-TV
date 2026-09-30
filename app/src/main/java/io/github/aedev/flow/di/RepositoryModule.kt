@@ -6,21 +6,11 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import io.github.aedev.flow.data.local.PlayerPreferences
-import io.github.aedev.flow.data.repository.YouTubeRepository
-import io.github.aedev.flow.data.shorts.ChannelReelIndex
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object RepositoryModule {
-    @Provides
-    @Singleton
-    fun provideYouTubeRepository(
-        playerPreferences: PlayerPreferences,
-        channelReelIndex: ChannelReelIndex,
-    ): YouTubeRepository = YouTubeRepository.getInstance(playerPreferences, channelReelIndex)
-
     @Provides
     @Singleton
     fun provideSubscriptionRepository(
@@ -61,7 +51,6 @@ object RepositoryModule {
         io.github.aedev.flow.data.music
             .PlaylistRepository(context)
 
-    // VideoDownloadManager is now @Singleton @Inject — Hilt provides it automatically
     @Provides
     @Singleton
     fun providePlayerPreferences(

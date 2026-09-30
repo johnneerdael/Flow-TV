@@ -8,7 +8,6 @@ import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.player.EnhancedMusicPlayerManager
 import io.github.aedev.flow.player.EnhancedPlayerManager
 import io.github.aedev.flow.player.GlobalPlayerState
-import io.github.aedev.flow.player.MiniPlayerExpansionState
 import io.github.aedev.flow.player.state.EnhancedPlayerState
 import io.github.aedev.flow.player.stream.PlaybackResolutionRequest
 import io.github.aedev.flow.player.stream.PluginPlaybackResolver
@@ -56,7 +55,6 @@ internal class PlayerSessionController(
     private val shortsEnabled: () -> Boolean,
     private val blockedChannelIds: () -> Set<String>,
     private val refreshBlockedChannels: () -> Unit,
-    private val requestExpandPlayer: () -> Unit,
 ) {
     private val sessionApplier = collaborators.sessionApplier
     private val watchSessions = collaborators.watchSessions
@@ -96,11 +94,8 @@ internal class PlayerSessionController(
 
     /** Shows [video]'s metadata at once and starts loading its streams. */
     fun playVideo(video: Video) {
-        val isMiniPlayerCollapsed =
-            GlobalPlayerState.miniPlayerExpansionState.value == MiniPlayerExpansionState.COLLAPSED
-        if (uiState.value.shouldReopenInsteadOfPlaying(video.id, playerManager.playerState.value, isMiniPlayerCollapsed)) {
+        if (uiState.value.shouldReopenInsteadOfPlaying(video.id, playerManager.playerState.value, isMiniPlayerCollapsed = false)) {
             presence.showVideoPlayer()
-            requestExpandPlayer()
             return
         }
 
@@ -167,7 +162,6 @@ internal class PlayerSessionController(
         playerManager.clearAll()
         GlobalPlayerState.setCurrentVideo(null)
         GlobalPlayerState.setExplicitBackgroundPlaybackActive(false)
-        GlobalPlayerState.hideMiniPlayer()
 
         uiState.update { it.clearedForNoVideo() }
 
@@ -175,7 +169,6 @@ internal class PlayerSessionController(
         _canGoPrevious.value = false
 
         collaborators.comments.clear()
-        collaborators.descriptions.clear()
         collaborators.transcripts.clear()
     }
 
@@ -304,7 +297,6 @@ internal class PlayerSessionController(
             PlaybackResolutionRequest(
                 videoId = videoId,
                 isWifi = isWifi,
-                escalateToSabr = false,
                 resumePositionOverrideMs = resumePositionOverrideMs,
                 allowShorts = shortsEnabled(),
                 blockedChannelIds = blockedChannelIds(),

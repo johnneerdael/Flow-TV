@@ -117,9 +117,6 @@ class VideoEngagementUseCase
             runCatching {
                 signals.channelSubscriptionChanged(channelId, channelName, subscribed)
             }.onFailure { Log.w(TAG, "Failed to record subscription signal", it) }
-            if (subscribed) {
-                runCatching { signals.channelTagsLearned(channelId) }
-            }
         }
 
         suspend fun setNotificationEnabled(

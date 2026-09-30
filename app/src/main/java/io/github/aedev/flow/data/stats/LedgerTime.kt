@@ -24,8 +24,6 @@ object LedgerTime {
     /** "2026-09", sortable as text. */
     fun monthKey(month: YearMonth): String = "%04d-%02d".format(month.year, month.monthValue)
 
-    fun parseMonth(key: String): YearMonth? = runCatching { YearMonth.parse(key) }.getOrNull()
-
     /** Drops the weakest entries of [counts] beyond [cap], and their companions in [names]. */
     fun <V : Comparable<V>> capWeakest(
         counts: MutableMap<String, V>,

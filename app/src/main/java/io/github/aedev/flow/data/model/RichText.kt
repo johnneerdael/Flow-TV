@@ -72,6 +72,4 @@ data class RichText(
     val spans: List<RichTextSpan> = emptyList(),
     val emojis: List<RichTextEmoji> = emptyList(),
     val highlights: List<RichTextHighlight> = emptyList(),
-) {
-    val hasTimestamp: Boolean get() = spans.any { it.target is RichTextTarget.Timestamp }
-}
+)

@@ -43,18 +43,6 @@ enum class SearchType {
     SUGGESTION,
 }
 
-data class SearchSuggestion(
-    val text: String,
-    val type: SuggestionType = SuggestionType.VIDEO,
-)
-
-enum class SuggestionType {
-    VIDEO,
-    CHANNEL,
-    PLAYLIST,
-    TRENDING,
-}
-
 @Singleton
 class SearchHistoryRepository
     @Inject
@@ -118,9 +106,6 @@ class SearchHistoryRepository
                 }
             }
 
-        // Get recent searches (limit)
-        suspend fun getRecentSearches(limit: Int = 10): List<SearchHistoryItem> = getSearchHistoryFlow().first().take(limit)
-
         // Delete specific search item
         suspend fun deleteSearchItem(itemId: String) {
             context.searchDataStore.edit { preferences ->
@@ -153,76 +138,12 @@ class SearchHistoryRepository
             }
         }
 
-        // Settings: Enable/disable search history
-        suspend fun setSearchHistoryEnabled(enabled: Boolean) {
-            context.searchDataStore.edit { preferences ->
-                preferences[SEARCH_HISTORY_ENABLED_KEY] = enabled
-            }
-        }
-
         fun isSearchHistoryEnabledFlow(): Flow<Boolean> =
             context.searchDataStore.data.map { preferences ->
                 preferences[SEARCH_HISTORY_ENABLED_KEY] ?: true
             }
 
         suspend fun isSearchHistoryEnabled(): Boolean = isSearchHistoryEnabledFlow().first()
-
-        // Settings: Enable/disable search suggestions
-        suspend fun setSearchSuggestionsEnabled(enabled: Boolean) {
-            context.searchDataStore.edit { preferences ->
-                preferences[SEARCH_SUGGESTIONS_ENABLED_KEY] = enabled
-            }
-        }
-
-        fun isSearchSuggestionsEnabledFlow(): Flow<Boolean> =
-            context.searchDataStore.data.map { preferences ->
-                preferences[SEARCH_SUGGESTIONS_ENABLED_KEY] ?: true
-            }
-
-        suspend fun isSearchSuggestionsEnabled(): Boolean = isSearchSuggestionsEnabledFlow().first()
-
-        // Settings: Max history size
-        suspend fun setMaxHistorySize(size: Int) {
-            context.searchDataStore.edit { preferences ->
-                preferences[MAX_HISTORY_SIZE_KEY] = size
-
-                // Trim existing history if needed
-                val currentHistory = getSearchHistoryList(preferences)
-                if (currentHistory.size > size) {
-                    val trimmedHistory = currentHistory.take(size)
-                    preferences[SEARCH_HISTORY_KEY] = gson.toJson(trimmedHistory)
-                }
-            }
-        }
-
-        fun getMaxHistorySizeFlow(): Flow<Int> =
-            context.searchDataStore.data.map { preferences ->
-                preferences[MAX_HISTORY_SIZE_KEY] ?: DEFAULT_MAX_HISTORY_SIZE
-            }
-
-        // Settings: Auto-delete history
-        suspend fun setAutoDeleteHistory(enabled: Boolean) {
-            context.searchDataStore.edit { preferences ->
-                preferences[AUTO_DELETE_HISTORY_KEY] = enabled
-            }
-        }
-
-        fun isAutoDeleteHistoryEnabledFlow(): Flow<Boolean> =
-            context.searchDataStore.data.map { preferences ->
-                preferences[AUTO_DELETE_HISTORY_KEY] ?: false
-            }
-
-        // Settings: History retention days
-        suspend fun setHistoryRetentionDays(days: Int) {
-            context.searchDataStore.edit { preferences ->
-                preferences[HISTORY_RETENTION_DAYS_KEY] = days
-            }
-        }
-
-        fun getHistoryRetentionDaysFlow(): Flow<Int> =
-            context.searchDataStore.data.map { preferences ->
-                preferences[HISTORY_RETENTION_DAYS_KEY] ?: DEFAULT_RETENTION_DAYS
-            }
 
         suspend fun getSettingsBackup(): SettingsBackup {
             val preferences = context.searchDataStore.data.first()
@@ -274,15 +195,5 @@ class SearchHistoryRepository
             val cutoffTime = System.currentTimeMillis() - (retentionDays * 24 * 60 * 60 * 1000L)
 
             return history.filter { it.timestamp >= cutoffTime }
-        }
-
-        // Get search suggestions from YouTube API (now handled by YouTubeRepository)
-        // This method is kept for backward compatibility but deprecated
-        @Deprecated("Use YouTubeRepository.getSearchSuggestions() instead")
-        fun getSearchSuggestions(query: String): List<SearchSuggestion> {
-            if (query.isBlank()) return emptyList()
-
-            // Return empty list - actual suggestions should come from YouTubeRepository
-            return emptyList()
         }
     }

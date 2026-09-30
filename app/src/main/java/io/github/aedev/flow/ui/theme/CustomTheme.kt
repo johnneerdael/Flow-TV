@@ -28,16 +28,6 @@ data class CustomTheme(
             ThemeVariant.AMOLED -> amoled
         }
 
-    fun withColors(
-        variant: ThemeVariant,
-        colors: PaletteColors,
-    ): CustomTheme =
-        when (variant) {
-            ThemeVariant.LIGHT -> copy(light = colors)
-            ThemeVariant.DARK -> copy(dark = colors)
-            ThemeVariant.AMOLED -> copy(amoled = colors)
-        }
-
     companion object {
         /** Flow Desktop keeps at most this many, and so does Android, so a full set moves both ways. */
         const val MAX_COUNT = 24

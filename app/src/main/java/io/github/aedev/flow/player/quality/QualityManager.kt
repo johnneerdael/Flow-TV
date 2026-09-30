@@ -72,11 +72,6 @@ class QualityManager(
     }
 
     /**
-     * Get the current video stream.
-     */
-    fun getCurrentStream(): VideoStream? = currentVideoStream
-
-    /**
      * Reset quality state for a new video.
      * Defaults to adaptive mode; call setManualMode() after if user has non-AUTO preference.
      */

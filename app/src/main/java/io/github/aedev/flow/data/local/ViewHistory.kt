@@ -188,24 +188,12 @@ class ViewHistory private constructor(
         dao.insertAll(entities)
     }
 
-    suspend fun clearVideoHistory(videoId: String) {
-        dao.deleteEntry(videoId)
-    }
-
     /**
      * Marks the given video as fully watched (position = duration) so it no longer
      * appears in the continue-watching mini-player popup on the next app launch.
      */
     suspend fun markAsWatched(videoId: String) {
         dao.markAsWatched(videoId)
-    }
-
-    suspend fun clearAllHistory() {
-        dao.clearAll()
-    }
-
-    suspend fun clearShortsHistory() {
-        dao.clearShorts()
     }
 
     // ── Reads ────────────────────────────────────────────────────────────────
@@ -222,12 +210,6 @@ class ViewHistory private constructor(
 
     /** Video (non-music) history, newest first. */
     fun getVideoHistoryFlow(): Flow<List<VideoHistoryEntry>> = dao.getVideoHistory().map { list -> list.map { it.toDomain() } }
-
-    /** Music history, newest first. */
-    fun getMusicHistoryFlow(): Flow<List<VideoHistoryEntry>> = dao.getMusicHistory().map { list -> list.map { it.toDomain() } }
-
-    /** Plays of files on the device, newest first: their progress and when they were last played. */
-    fun getLocalHistoryFlow(): Flow<List<VideoHistoryEntry>> = dao.getLocalHistory().map { list -> list.map { it.toDomain() } }
 
     suspend fun getWatchedShortIdsAboveThreshold(
         minPercent: Float = 99f,

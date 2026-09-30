@@ -3,8 +3,6 @@ package io.github.aedev.flow.ui.screens.update
 import io.github.aedev.flow.data.update.UpdateDownload
 import io.github.aedev.flow.data.update.UpdateFailure
 
-const val UPDATE_ROUTE = "update"
-
 /** What the update page's action bar offers next. */
 sealed interface UpdateStage {
     data object Available : UpdateStage

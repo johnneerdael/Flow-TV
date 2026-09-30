@@ -1,7 +1,6 @@
 package io.github.aedev.flow.data.audio.eq
 
 import kotlin.math.abs
-import kotlin.math.pow
 import kotlin.math.round
 
 object EqLimits {
@@ -21,13 +20,6 @@ object EqLimits {
     const val DEFAULT_SHELF_Q = 0.707
     const val BASS_BOOST_FREQUENCY = 60.0
     const val MAX_NAME_LENGTH = 40
-
-    fun defaultQ(type: EqFilterType): Double = if (type == EqFilterType.PEAK) DEFAULT_PEAK_Q else DEFAULT_SHELF_Q
-}
-
-fun Double.roundToDecimals(decimals: Int): Double {
-    val factor = 10.0.pow(decimals)
-    return round(this * factor) / factor
 }
 
 /** Null when the band cannot be made valid (not a number, or a zero or negative frequency or Q). */

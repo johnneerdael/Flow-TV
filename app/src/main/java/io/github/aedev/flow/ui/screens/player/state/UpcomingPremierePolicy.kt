@@ -2,7 +2,6 @@ package io.github.aedev.flow.ui.screens.player.state
 
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.player.stream.UpcomingDetails
-import io.github.aedev.flow.player.stream.UpcomingPremiere
 import io.github.aedev.flow.utils.parsePremiereTimestamp
 
 /**
@@ -29,26 +28,6 @@ internal object UpcomingPremierePolicy {
             video.timestamp > nowMs + TRUSTED_TIMESTAMP_LEAD_MS -> video.timestamp
             else -> parsePremiereTimestamp(video.uploadDate)
         }?.takeIf { it > nowMs }
-    }
-
-    /** A video already known to be upcoming with a known release time needs no network probe. */
-    fun needsProbe(
-        flagged: Boolean,
-        listReleaseMs: Long?,
-    ): Boolean = !(flagged && listReleaseMs != null)
-
-    /** Combines what the list metadata knew with what the probe found. */
-    fun resolve(
-        flagged: Boolean,
-        listReleaseMs: Long?,
-        probe: UpcomingPremiere,
-    ): UpcomingPremiere {
-        if (!flagged && !probe.isUpcoming) return UpcomingPremiere.NOT_UPCOMING
-        return UpcomingPremiere(
-            isUpcoming = true,
-            scheduledStartMs = listReleaseMs ?: probe.scheduledStartMs,
-            details = probe.details,
-        )
     }
 
     /** The countdown state for a video the caller already knows is upcoming, before any load starts. */
@@ -122,21 +101,6 @@ internal object UpcomingPremierePolicy {
             isUpcoming = true,
             upcomingReleaseTimeMs = releaseMs,
         )
-
-    /**
-     * How long after the announced start the player waits before its first re-fetch. Upstream
-     * metadata flips a few seconds late, so asking at the announced instant always misses.
-     */
-    const val SETTLE_MS = 3_000L
-
-    /** How often the player asks again while the premiere still reports itself as upcoming. */
-    const val REFRESH_INTERVAL_MS = 30_000L
-
-    /**
-     * The total number of re-fetches one premiere is worth. At [REFRESH_INTERVAL_MS] this is ten
-     * minutes past the announced start, after which the premiere is not going to appear on its own.
-     */
-    const val MAX_REFRESH_ATTEMPTS = 20
 
     private const val TRUSTED_TIMESTAMP_LEAD_MS = 60_000L
 }

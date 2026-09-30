@@ -106,11 +106,6 @@ class EqualizerRepository internal constructor(
         preview.value = curve?.sanitized()
     }
 
-    /** Held Compare: the players hear the unprocessed sound. Never saved. */
-    fun setBypass(bypassed: Boolean) {
-        bypass.value = bypassed
-    }
-
     /** Waits for the saved state, so an early backup or sync never exports the defaults. */
     suspend fun exportJson(): String {
         _loaded.first { it }

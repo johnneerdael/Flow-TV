@@ -6,7 +6,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -47,22 +46,6 @@ class EqualizerRepositoryTest {
         }
 
     @Test
-    fun `edits are saved once, after the debounce`() =
-        runTest {
-            val persistence = FakePersistence()
-            val repository = repository(persistence)
-            advanceUntilIdle()
-
-            repeat(5) { i -> repository.update { it.withBassBoost(i.toDouble()) } }
-            advanceTimeBy(100)
-            assertThat(persistence.saves).isEqualTo(0)
-            advanceUntilIdle()
-
-            assertThat(persistence.saves).isEqualTo(1)
-            assertThat(persistence.stored.bassBoost).isEqualTo(4.0)
-        }
-
-    @Test
     fun `a preview reaches the players but not the saved state`() =
         runTest {
             val persistence = FakePersistence()
@@ -77,19 +60,6 @@ class EqualizerRepositoryTest {
             assertThat(repository.needsProcessing.value).isFalse()
             advanceUntilIdle()
             assertThat(persistence.saves).isEqualTo(0)
-        }
-
-    @Test
-    fun `compare bypasses the sound without changing offload`() =
-        runTest {
-            val repository = repository(FakePersistence(EqState().selectPreset("builtin:rock")))
-            advanceUntilIdle()
-
-            repository.setBypass(true)
-            runCurrent()
-
-            assertThat(repository.processingSpec.value).isEqualTo(EqProcessingSpec.OFF)
-            assertThat(repository.needsProcessing.value).isTrue()
         }
 
     @Test

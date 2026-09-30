@@ -142,10 +142,4 @@ object EqFilterMath {
     /** Position 0..1 on a log axis from 20 Hz to 20 kHz. */
     fun frequencyAt(fraction: Double): Double =
         EqLimits.MIN_FREQUENCY * (EqLimits.MAX_FREQUENCY / EqLimits.MIN_FREQUENCY).pow(fraction.coerceIn(0.0, 1.0))
-
-    fun fractionOf(frequency: Double): Double =
-        (
-            log10(frequency.coerceIn(EqLimits.MIN_FREQUENCY, EqLimits.MAX_FREQUENCY) / EqLimits.MIN_FREQUENCY) /
-                log10(EqLimits.MAX_FREQUENCY / EqLimits.MIN_FREQUENCY)
-        )
 }

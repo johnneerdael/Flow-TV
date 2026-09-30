@@ -1,7 +1,5 @@
 package io.github.aedev.flow.data.model
 
-import org.schabi.newpipe.extractor.Page
-
 data class VideoCollaborator(
     val name: String,
     val channelId: String = "",
@@ -79,7 +77,6 @@ data class Comment(
     val publishedTime: String,
     val replies: List<Comment> = emptyList(),
     val replyCount: Int = 0,
-    val repliesPage: Page? = null,
     val isPinned: Boolean = false,
     val continuationToken: String? = null,
     val authorChannelId: String = "",
@@ -92,10 +89,3 @@ data class Comment(
     val isCreator: Boolean = false,
     val isArtist: Boolean = false,
 )
-
-enum class SearchFilter {
-    ALL,
-    VIDEOS,
-    CHANNELS,
-    PLAYLISTS,
-}

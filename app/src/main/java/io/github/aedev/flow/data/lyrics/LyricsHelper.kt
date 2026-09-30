@@ -275,67 +275,6 @@ class LyricsHelper(
     fun clearCache(videoId: String? = null) {
         if (videoId != null) cache.remove(videoId) else cache.clear()
     }
-
-    /**
-     * Streams a result from every enabled provider (in the user's configured order) so the UI can
-     * offer alternatives when the automatic pick is wrong. Unlike [getLyrics] it never stops at
-     * the first synced hit and never touches the caches.
-     */
-    suspend fun getAllLyrics(
-        videoId: String,
-        title: String,
-        artist: String,
-        duration: Int,
-        album: String? = null,
-        onCandidate: suspend (LyricsCandidate) -> Unit,
-    ) {
-        val cleanedTitle = LyricsUtils.cleanTitle(title)
-        val cleanedArtist = LyricsUtils.cleanArtist(artist)
-        val orderString = playerPreferences.lyricsProviderOrder.first()
-        val enabledStates = playerPreferences.allLyricsProviderEnabledStates().first()
-        val orderedProviders =
-            registry
-                .getOrderedProviders(orderString)
-                .filter { enabledStates[it.name] != false }
-        for (provider in orderedProviders) {
-            val providerResult =
-                try {
-                    withTimeoutOrNull(PER_PROVIDER_TIMEOUT_MS) {
-                        provider.getLyrics(videoId, cleanedTitle, cleanedArtist, duration, album)
-                    }
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (e: Exception) {
-                    Log.w(TAG, "${provider.name} threw while browsing: ${e.message}")
-                    null
-                }
-            val entries = providerResult?.getOrNull()
-            if (!entries.isNullOrEmpty()) {
-                val cleaned = LyricsUtils.filterCreditLines(normalizeEntries(entries.sorted()))
-                if (cleaned.isNotEmpty() && hasReasonableTimestamps(cleaned, duration)) {
-                    onCandidate(LyricsCandidate(provider.name, cleaned, entriesAreSynced(cleaned)))
-                }
-            }
-        }
-    }
-
-    /**
-     * Makes a user-chosen or user-edited set of entries the lyrics of record for [videoId] by
-     * overwriting both the in-memory and disk caches, so it survives sheet reopens and restarts.
-     */
-    suspend fun applyManualLyrics(
-        videoId: String,
-        entries: List<LyricsEntry>,
-        ctx: Context? = null,
-    ) {
-        if (entries.isEmpty()) return
-        cache[videoId] = entries
-        try {
-            LyricsCacheManager.saveLyrics(ctx ?: context, videoId, entries)
-        } catch (e: Exception) {
-            Log.w(TAG, "Manual lyrics save failed: ${e.message}")
-        }
-    }
 }
 
 data class LyricsCandidate(

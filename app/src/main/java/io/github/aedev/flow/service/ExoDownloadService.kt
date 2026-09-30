@@ -1,13 +1,8 @@
 package io.github.aedev.flow.service
 
 import android.app.Notification
-import android.content.Context
-import android.content.Intent
-import androidx.media3.common.util.NotificationUtil
-import androidx.media3.common.util.Util
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadManager
-import androidx.media3.exoplayer.offline.DownloadNotificationHelper
 import androidx.media3.exoplayer.offline.DownloadService
 import androidx.media3.exoplayer.scheduler.PlatformScheduler
 import androidx.media3.exoplayer.scheduler.Scheduler

@@ -4,11 +4,7 @@ import io.github.aedev.flow.data.local.VideoQuality
 import io.github.aedev.flow.data.model.LiveChatMessage
 import io.github.aedev.flow.data.model.SponsorBlockSegment
 import io.github.aedev.flow.data.model.Video
-import io.github.aedev.flow.innertube.models.response.PlayerResponse
-import io.github.aedev.flow.innertube.models.response.VideoHeatmap
-import io.github.aedev.flow.player.stream.StoryboardLevel
 import org.schabi.newpipe.extractor.stream.AudioStream
-import org.schabi.newpipe.extractor.stream.StreamInfo
 import org.schabi.newpipe.extractor.stream.StreamSegment
 import org.schabi.newpipe.extractor.stream.VideoStream
 
@@ -32,12 +28,9 @@ data class VideoPlayerUiState(
     val channelSubscriberCount: Long? = null,
     val channelAvatarUrl: String? = null,
     val chapters: List<StreamSegment> = emptyList(),
-    val storyboard: List<StoryboardLevel> = emptyList(),
     /** A livestream that has ended: its date reads "Streamed …" rather than a plain date. */
     val isArchivedLivestream: Boolean = false,
-    val heatmap: VideoHeatmap? = null,
     val autoplayEnabled: Boolean = true,
-    val streamSizes: Map<String, Long> = emptyMap(),
     val localFilePath: String? = null,
     val localFileVideoId: String? = null,
     val dislikeCount: Long? = null,
@@ -52,8 +45,6 @@ data class VideoPlayerUiState(
     val isUpcomingReminderSet: Boolean = false,
     /** SponsorBlock segments loaded from local DB for offline playback. Null when streaming online. */
     val offlineSponsorBlockSegments: List<SponsorBlockSegment>? = null,
-    val innerTubeVideoFormats: List<PlayerResponse.StreamingData.Format> = emptyList(),
-    val innerTubeAudioFormats: List<PlayerResponse.StreamingData.Format> = emptyList(),
     val isLive: Boolean = false,
     val isLiveChatAvailable: Boolean = false,
     val liveChatMessages: List<LiveChatMessage> = emptyList(),
@@ -73,7 +64,6 @@ data class VideoPlayerUiState(
             errorHint = null,
             videoStream = null,
             audioStream = null,
-            streamSizes = emptyMap(),
             savedPosition = null,
             relatedVideos = emptyList(),
             isSubscribed = false,

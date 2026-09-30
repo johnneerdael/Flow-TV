@@ -29,17 +29,6 @@ class EqLegacyMigrationTest {
     }
 
     @Test
-    fun `the old Custom curve becomes a saved preset called My curve`() {
-        val custom = """{"preamp":-1.0,"bands":[{"frequency":1000.0,"gain":3.0,"q":1.41,"filterType":"PK","enabled":true}]}"""
-        val state = migrate(profile = "Custom", custom = custom)
-
-        val preset = state.userPreset(state.active.presetId)!!
-        assertThat(preset.name).isEqualTo("My curve")
-        assertThat(preset.curve.bands).containsExactly(EqBand(1_000.0, 3.0, 1.41))
-        assertThat(state.isEdited).isFalse()
-    }
-
-    @Test
     fun `bands keep the sound the old processor made`() {
         val custom =
             """

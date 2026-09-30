@@ -194,38 +194,4 @@ class QueuePersistence private constructor(
                 }
             }
     }
-
-    /**
-     * Stop automatic saving (call when service/player is stopped)
-     */
-    fun stopAutoSave() {
-        autoSaveJob?.cancel()
-        autoSaveJob = null
-    }
-
-    /**
-     * Clear saved queue
-     */
-    suspend fun clearQueue() {
-        try {
-            context.queueDataStore.edit { prefs ->
-                prefs.clear()
-            }
-            Log.d(TAG, "Queue cleared")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to clear queue", e)
-        }
-    }
-
-    /**
-     * Check if there's a saved queue
-     */
-    suspend fun hasSavedQueue(): Boolean =
-        try {
-            val prefs = context.queueDataStore.data.first()
-            val queueJson = prefs[QUEUE_KEY]
-            !queueJson.isNullOrBlank() && queueJson != "[]"
-        } catch (e: Exception) {
-            false
-        }
 }

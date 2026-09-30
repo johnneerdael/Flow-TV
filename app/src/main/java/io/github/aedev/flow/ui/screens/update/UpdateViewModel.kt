@@ -99,8 +99,6 @@ class UpdateViewModel
             state.value.release?.let(::install)
         }
 
-        fun cancelDownload() = installer.cancel()
-
         fun installPermissionIntent(): Intent = installer.installPermissionIntent()
 
         fun skip() {

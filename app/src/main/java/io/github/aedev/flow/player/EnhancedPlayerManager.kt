@@ -28,15 +28,9 @@ import androidx.media3.exoplayer.upstream.DefaultBandwidthMeter
 import androidx.media3.session.MediaSession
 import dagger.hilt.android.EntryPointAccessors
 import io.github.aedev.flow.data.local.PlayerPreferences
-import io.github.aedev.flow.data.local.SponsorBlockAction
-import io.github.aedev.flow.data.local.VideoQuality
 import io.github.aedev.flow.data.localmedia.LocalMediaIds
 import io.github.aedev.flow.data.model.SponsorBlockSegment
 import io.github.aedev.flow.data.model.Video
-import io.github.aedev.flow.data.repository.YouTubeRepository
-import io.github.aedev.flow.innertube.YouTube
-import io.github.aedev.flow.innertube.models.YouTubeClient
-import io.github.aedev.flow.innertube.models.response.PlayerResponse
 import io.github.aedev.flow.player.analytics.PlaybackAnalyticsLogger
 import io.github.aedev.flow.player.audio.AudioEffectsEntryPoint
 import io.github.aedev.flow.player.audio.AudioFeaturesManager
@@ -52,34 +46,22 @@ import io.github.aedev.flow.player.preload.GaplessPreloadController
 import io.github.aedev.flow.player.preload.PreloadTarget
 import io.github.aedev.flow.player.quality.QualityManager
 import io.github.aedev.flow.player.recovery.ClearedMediaRecoveryState
-import io.github.aedev.flow.player.sabr.integration.SabrStreamInfo
-import io.github.aedev.flow.player.sabr.integration.SabrUrlResolver
 import io.github.aedev.flow.player.service.BackgroundServiceManager
 import io.github.aedev.flow.player.sponsorblock.SponsorBlockHandler
 import io.github.aedev.flow.player.state.EnhancedPlayerState
 import io.github.aedev.flow.player.state.PlaybackCompletion
 import io.github.aedev.flow.player.state.QualityOption
-import io.github.aedev.flow.player.state.SubtitleLoadFailure
-import io.github.aedev.flow.player.state.queuePresence
-import io.github.aedev.flow.player.stream.CaptionTrackResolver
-import io.github.aedev.flow.player.stream.InnerTubeVideoMapper
-import io.github.aedev.flow.player.stream.InnerTubeVideoStreamExtractor
 import io.github.aedev.flow.player.stream.ResolvedStreamData
-import io.github.aedev.flow.player.stream.ServicePlaybackStreamSelector
 import io.github.aedev.flow.player.stream.StreamProcessor
 import io.github.aedev.flow.player.stream.VideoCodecUtils
 import io.github.aedev.flow.player.surface.SurfaceManager
 import io.github.aedev.flow.player.surface.VideoSurfacePolicy
 import io.github.aedev.flow.player.tracker.PlaybackTracker
-import io.github.aedev.flow.utils.NetworkState
-import io.github.aedev.flow.utils.ThumbnailUrlResolver
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -91,11 +73,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeoutOrNull
-import org.schabi.newpipe.extractor.ServiceList
 import org.schabi.newpipe.extractor.stream.AudioStream
-import org.schabi.newpipe.extractor.stream.StreamInfo
-import org.schabi.newpipe.extractor.stream.StreamInfoItem
 import org.schabi.newpipe.extractor.stream.StreamType
 import org.schabi.newpipe.extractor.stream.SubtitlesStream
 import org.schabi.newpipe.extractor.stream.VideoStream
@@ -105,7 +83,6 @@ class EnhancedPlayerManager private constructor() {
     companion object {
         private const val TAG = PlayerConfig.TAG
         private const val LIVE_EDGE_THRESHOLD_MS = 700L
-        private const val SABR_QUALITY_KEY_PREFIX = "sabr:"
         private const val LIVE_QUALITY_KEY_PREFIX = "live:"
         private const val AUTO_NEXT_TAG = "FlowVideoAutoNext"
 
@@ -130,19 +107,15 @@ class EnhancedPlayerManager private constructor() {
     // State management
     private val _playerState = MutableStateFlow(EnhancedPlayerState())
     val playerState: StateFlow<EnhancedPlayerState> = _playerState.asStateFlow()
-    val hasQueue: Flow<Boolean> = playerState.queuePresence()
 
     // Stream data
     private var currentVideoId: String? = null
     private var availableVideoStreams: List<VideoStream> = emptyList()
     private var availableAudioStreams: List<AudioStream> = emptyList()
     private var availableSubtitles: List<SubtitlesStream> = emptyList()
-    private val _subtitleLoadFailedEvent = MutableSharedFlow<SubtitleLoadFailure>(extraBufferCapacity = 1)
     private var currentVideoStream: VideoStream? = null
     private var currentAudioStream: AudioStream? = null
     private var selectedSubtitleIndex: Int? = null
-    private var innerTubeVideoFormats: List<PlayerResponse.StreamingData.Format> = emptyList()
-    private var innerTubeAudioFormats: List<PlayerResponse.StreamingData.Format> = emptyList()
 
     // Duration and manifest info
     private var currentDurationSeconds: Long = -1
@@ -167,9 +140,6 @@ class EnhancedPlayerManager private constructor() {
     private var pendingLiveDisplaySeekPositionMs: Long? = null
     private var pendingLiveDisplaySeekAtMs: Long = 0L
     private var pendingInitialLiveEdgeSeek = false
-
-    private var currentSabrInfo: SabrStreamInfo? = null
-    private var sabrPreferred = false
 
     private val audioOnlyMode = AudioOnlyMode()
     private var currentLocalFilePath: String? = null
@@ -201,7 +171,7 @@ class EnhancedPlayerManager private constructor() {
     @Volatile
     var localCopySource: LocalCopySource? = null
 
-    /** Set by the DI graph: where queue advance, autoplay and preload resolve streams. Null keeps InnerTube. */
+    /** Set by the DI graph: where queue advance, autoplay and preload resolve streams. */
     @Volatile
     var videoStreamSource: VideoStreamSource? = null
 
@@ -232,7 +202,7 @@ class EnhancedPlayerManager private constructor() {
             nextTarget = { nextPreloadTarget() },
             isLooping = { _playerState.value.isLooping },
             isLiveStream = { currentIsLiveStream },
-            resolveStreams = { video, ctx -> resolveStreamsForVideo(video, ctx) },
+            resolveStreams = { video, _ -> resolveStreamsForVideo(video) },
             hasLocalCopy = { video -> localCopySource?.localCopyPath(video.id) != null },
             buildMediaSource = { resolved, ctx ->
                 mediaLoader?.buildPreloadMediaSource(
@@ -424,23 +394,6 @@ class EnhancedPlayerManager private constructor() {
         videoMediaSession = null
     }
 
-    /**
-     * Set to true while PlaybackRefocusEffect is recovering from a screen-off/on cycle.
-     * Prevents onPlaybackStateChanged(STATE_ENDED) from skipping to the next video or
-     * seeking to 0 during the transient states that ExoPlayer goes through during recovery.
-     */
-    @Volatile private var isRecoveringFromBackground = false
-
-    /** Call at the start of a screen-off recovery sequence (before prepare()). */
-    fun beginBackgroundRecovery() {
-        isRecoveringFromBackground = true
-    }
-
-    /** Call after the recovery sequence completes or is abandoned. */
-    fun endBackgroundRecovery() {
-        isRecoveringFromBackground = false
-    }
-
     // Modular components
     private val playerFactory = PlayerFactory()
     private val backgroundServiceManager = BackgroundServiceManager()
@@ -456,9 +409,6 @@ class EnhancedPlayerManager private constructor() {
 
     private val _playbackAbandonedEvent = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val playbackAbandonedEvent: SharedFlow<Unit> = _playbackAbandonedEvent.asSharedFlow()
-
-    private val _queueAutoAdvanceEvent = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
-    val queueAutoAdvanceEvent: SharedFlow<Unit> = _queueAutoAdvanceEvent.asSharedFlow()
 
     /** Emitted when a video plays to its end, before looping or autoplay replaces it. */
     private val _playbackCompletedEvent = MutableSharedFlow<PlaybackCompletion>(extraBufferCapacity = 4)
@@ -531,31 +481,7 @@ class EnhancedPlayerManager private constructor() {
 
         // Initialize media loader
         mediaLoader =
-            MediaLoader(context.applicationContext, _playerState, cacheManager, surfaceManager).also { loader ->
-                loader.onSabrFallbackNeeded = {
-                    scope.launch {
-                        Log.w(TAG, "SABR fallback triggered — requesting full re-extraction")
-                        currentSabrInfo = null
-                        loader.releaseSabr()
-                        player?.stop()
-                        player?.clearMediaItems()
-                        _streamExpiredEvent.emit(Unit)
-                    }
-                }
-                loader.onSubtitleLoadFailed = { index, label ->
-                    val failed = availableSubtitles.getOrNull(index)
-                    scope.launch {
-                        _subtitleLoadFailedEvent.emit(
-                            SubtitleLoadFailure(
-                                index = index,
-                                label = label,
-                                language = failed?.languageTag ?: failed?.locale?.toLanguageTag(),
-                                isTranslated = failed?.let(CaptionTrackResolver::isTranslated) == true,
-                            ),
-                        )
-                    }
-                }
-            }
+            MediaLoader(context.applicationContext, _playerState, cacheManager, surfaceManager)
 
         // Initialize quality manager
         qualityManager =
@@ -628,7 +554,6 @@ class EnhancedPlayerManager private constructor() {
                     }
                 },
                 onLivePlaybackTick = { exoPlayer ->
-                    mediaLoader?.getActiveSabrOrchestrator()?.updatePlayhead(exoPlayer.currentPosition)
                     updateLiveEdgeState(exoPlayer)
                     if (currentIsLiveStream &&
                         _playerState.value.playbackSpeed > 1.0f &&
@@ -767,7 +692,7 @@ class EnhancedPlayerManager private constructor() {
                         _playerState.value.copy(
                             isBuffering = playbackState == Player.STATE_BUFFERING,
                             playWhenReady = player?.playWhenReady ?: false,
-                            hasEnded = playbackState == Player.STATE_ENDED && !isRecoveringFromBackground && !exoLive,
+                            hasEnded = playbackState == Player.STATE_ENDED && !exoLive,
                         )
                     if (playbackState == Player.STATE_READY ||
                         playbackState == Player.STATE_ENDED ||
@@ -775,11 +700,11 @@ class EnhancedPlayerManager private constructor() {
                     ) {
                         autoNextLog(
                             "onPlaybackStateChanged ${playerStateName(playbackState)} " +
-                                "recovering=$isRecoveringFromBackground live=$exoLive",
+                                "live=$exoLive",
                         )
                     }
 
-                    if (playbackState == Player.STATE_ENDED && !isRecoveringFromBackground && exoLive) {
+                    if (playbackState == Player.STATE_ENDED && exoLive) {
                         val now = System.currentTimeMillis()
                         if (now - lastLiveEdgeRecoveryMs < 2500L) {
                             autoNextLog("STATE_ENDED on live again too soon -> stop recovering")
@@ -793,7 +718,7 @@ class EnhancedPlayerManager private constructor() {
                         return
                     }
 
-                    if (playbackState == Player.STATE_ENDED && !isRecoveringFromBackground) {
+                    if (playbackState == Player.STATE_ENDED) {
                         acquireAdvanceWakeLock()
                         autoNextLog("STATE_ENDED branch entered")
                         emitPlaybackCompletion()
@@ -968,12 +893,8 @@ class EnhancedPlayerManager private constructor() {
         hlsUrl: String? = null,
         streamType: StreamType? = null,
         startPosition: Long = 0L,
-        sabrInfo: SabrStreamInfo? = null,
-        itVideoFormats: List<io.github.aedev.flow.innertube.models.response.PlayerResponse.StreamingData.Format> = emptyList(),
-        itAudioFormats: List<io.github.aedev.flow.innertube.models.response.PlayerResponse.StreamingData.Format> = emptyList(),
         preferredVideoCodec: String = "auto",
         keepAudioOnly: Boolean = false,
-        preferSabr: Boolean = false,
         preferredLiveQualityHeight: Int = 0,
         requestHeaders: StreamRequestHeaders = StreamRequestHeaders.NONE,
         skipSegments: List<SponsorBlockSegment>? = null,
@@ -994,12 +915,8 @@ class EnhancedPlayerManager private constructor() {
                     hlsUrl = hlsUrl,
                     streamType = streamType,
                     startPosition = startPosition,
-                    sabrInfo = sabrInfo,
-                    itVideoFormats = itVideoFormats,
-                    itAudioFormats = itAudioFormats,
                     preferredVideoCodec = preferredVideoCodec,
                     keepAudioOnly = keepAudioOnly,
-                    preferSabr = preferSabr,
                     preferredLiveQualityHeight = preferredLiveQualityHeight,
                     requestHeaders = requestHeaders,
                     skipSegments = skipSegments,
@@ -1014,18 +931,12 @@ class EnhancedPlayerManager private constructor() {
             TAG,
             "setStreams(id=$videoId, " +
                 "videoHeight=${videoStream?.let(VideoCodecUtils::qualityHeightFromStream)}, " +
-                "sabr=${sabrInfo != null}, preferSabr=$preferSabr, " +
-                "itVideo=${itVideoFormats.size}, itAudio=${itAudioFormats.size}, " +
                 "keepAudioOnly=$keepAudioOnly)",
         )
         resetPlaybackStateForNewVideo(videoId)
         preferredVideoCodecKey = preferredVideoCodec
         currentLocalFilePath = localFilePath
         if (localFilePath != null) configureTrackSelectorForLocalFile()
-        currentSabrInfo = sabrInfo
-        sabrPreferred = preferSabr
-        innerTubeVideoFormats = itVideoFormats
-        innerTubeAudioFormats = itAudioFormats
         currentRequestHeaders = requestHeaders
         audioOnlyMode.applyStreams(keepAudioOnly)
         setVideoTracksDisabled(keepAudioOnly)
@@ -1134,13 +1045,8 @@ class EnhancedPlayerManager private constructor() {
         qualityManager?.resetForNewVideo()
         playbackTracker?.reset()
         errorHandler?.resetExpiryCounter()
-        mediaLoader?.releaseSabr()
-        currentSabrInfo = null
-        sabrPreferred = false
         currentLocalFilePath = null
         clearedMediaRecoveryState.clear()
-        innerTubeVideoFormats = emptyList()
-        innerTubeAudioFormats = emptyList()
         currentRequestHeaders = StreamRequestHeaders.NONE
         lastStreamHttpFailure = null
         currentVideoStream = null
@@ -1284,8 +1190,7 @@ class EnhancedPlayerManager private constructor() {
         }
 
         val audio = audioStream ?: availableAudioStreams.firstOrNull()
-        val hasSabrSession = currentSabrInfo != null
-        if (audioOnly && audio == null && !hasSabrSession) {
+        if (audioOnly && audio == null) {
             Log.w(TAG, "loadMediaInternal: audio-only load requested without an audio stream")
             return false
         }
@@ -1293,7 +1198,6 @@ class EnhancedPlayerManager private constructor() {
             videoStream != null ||
                 currentVideoStream != null ||
                 availableVideoStreams.isNotEmpty() ||
-                hasSabrSession ||
                 !currentDashManifestUrl.isNullOrEmpty() ||
                 !currentHlsUrl.isNullOrEmpty()
         if (audio == null && !hasPlayableVideo) {
@@ -1318,11 +1222,6 @@ class EnhancedPlayerManager private constructor() {
                 audioOnly = audioOnly,
                 playWhenReady = playWhenReady,
                 subtitleStreams = availableSubtitles,
-                sabrInfo = currentSabrInfo,
-                sabrVideoId = currentVideoId,
-                sabrPreferred = sabrPreferred,
-                innerTubeVideoFormats = innerTubeVideoFormats,
-                innerTubeAudioFormats = innerTubeAudioFormats,
                 mediaId = sessionMetadata?.mediaId.orEmpty(),
                 mediaMetadata = sessionMetadata?.toMedia3Metadata() ?: MediaMetadata.EMPTY,
                 requestHeaders = currentRequestHeaders,
@@ -1344,7 +1243,6 @@ class EnhancedPlayerManager private constructor() {
                     .build(),
             )
         }
-        mediaLoader?.getActiveSabrOrchestrator()?.setAudioOnly(disabled)
     }
 
     private fun configureTrackSelectorForLocalFile() {
@@ -1433,86 +1331,6 @@ class EnhancedPlayerManager private constructor() {
     /** True when the queue advanced to [videoId]; such items start from the beginning instead of resuming. */
     fun isReachedByQueueAdvance(videoId: String): Boolean = queue.isReachedByAdvance(videoId)
 
-    /**
-     * Insert [video] immediately after the current position (Play Next).
-     * If no queue is active but a video is currently playing, silently build a
-     * [currentVideo, video] queue starting at index 0 — no playback interruption.
-     * If nothing is playing at all, start the video immediately.
-     */
-    fun addVideoToQueueNext(video: Video) {
-        if (!isOnMainThread()) {
-            autoNextLog("addVideoToQueueNext posted to main video=${video.id} from=${Thread.currentThread().name}")
-            mainHandler.post { addVideoToQueueNext(video) }
-            return
-        }
-        autoNextLog("addVideoToQueueNext ${video.id}")
-        when (queue.addNext(video, GlobalPlayerState.currentVideo.value)) {
-            QueueAddOutcome.NoActiveQueue -> setQueue(listOf(video), 0)
-            QueueAddOutcome.QueueCreated -> onQueueMutated("queue-created-play-next")
-            QueueAddOutcome.Inserted -> onQueueMutated("queue-play-next")
-        }
-    }
-
-    /**
-     * Append [video] to the end of the current queue.
-     * If no queue is active but a video is currently playing, silently build a
-     * [currentVideo, video] queue starting at index 0 — no playback interruption.
-     * If nothing is playing at all, start the video immediately.
-     */
-    fun addVideoToQueue(video: Video) {
-        if (!isOnMainThread()) {
-            autoNextLog("addVideoToQueue posted to main video=${video.id} from=${Thread.currentThread().name}")
-            mainHandler.post { addVideoToQueue(video) }
-            return
-        }
-        autoNextLog("addVideoToQueue ${video.id}")
-        when (queue.append(video, GlobalPlayerState.currentVideo.value)) {
-            QueueAddOutcome.NoActiveQueue -> setQueue(listOf(video), 0)
-            QueueAddOutcome.QueueCreated -> onQueueMutated("queue-created-add")
-            QueueAddOutcome.Inserted -> onQueueMutated("queue-add")
-        }
-    }
-
-    fun playVideoAtIndex(
-        index: Int,
-        loadStreamsInPlayer: Boolean = true,
-    ) {
-        if (index == queue.currentIndex) return
-        val video = queue.moveTo(index) ?: return
-        startPlaybackFromQueue(video, loadStreamsInPlayer)
-        updateQueueState()
-    }
-
-    fun removeVideoAtIndex(index: Int) {
-        if (!isOnMainThread()) {
-            mainHandler.post { removeVideoAtIndex(index) }
-            return
-        }
-        if (!queue.removeAt(index)) return
-
-        preload.clear()
-        onQueueMutated("queue-remove")
-    }
-
-    fun moveVideoAtIndex(
-        fromIndex: Int,
-        toIndex: Int,
-    ) {
-        if (!isOnMainThread()) {
-            mainHandler.post { moveVideoAtIndex(fromIndex, toIndex) }
-            return
-        }
-        if (!queue.move(fromIndex, toIndex)) return
-
-        preload.clear()
-        onQueueMutated("queue-move")
-    }
-
-    private fun onQueueMutated(reason: String) {
-        updateQueueState()
-        preload.request(reason)
-    }
-
     private fun startPlaybackFromQueue(
         video: Video,
         loadStreamsInPlayer: Boolean,
@@ -1550,27 +1368,6 @@ class EnhancedPlayerManager private constructor() {
                 isQueueLooping = queue.loopEnabled,
                 isQueueShuffled = queue.shuffleEnabled,
             )
-    }
-
-    fun toggleQueueLoop(enabled: Boolean) {
-        if (!isOnMainThread()) {
-            mainHandler.post { toggleQueueLoop(enabled) }
-            return
-        }
-        queue.setLoopEnabled(enabled)
-        preload.clear()
-        onQueueMutated("queue-loop-toggle")
-    }
-
-    fun toggleQueueShuffle(enabled: Boolean) {
-        if (!isOnMainThread()) {
-            mainHandler.post { toggleQueueShuffle(enabled) }
-            return
-        }
-        if (!queue.setShuffleEnabled(enabled)) return
-
-        preload.clear()
-        onQueueMutated("queue-shuffle-toggle")
     }
 
     fun setAutoplayCandidates(
@@ -1685,7 +1482,6 @@ class EnhancedPlayerManager private constructor() {
                 return
             }
             autoNextLog("auto-advance queue playNext")
-            _queueAutoAdvanceEvent.tryEmit(Unit)
             playNext(loadStreamsInPlayer = true)
         } else {
             autoNextLog("auto-advance related-autoplay")
@@ -1710,14 +1506,6 @@ class EnhancedPlayerManager private constructor() {
         if (!autoplayCountdownController.stop()) return
         releaseAdvanceWakeLock()
         autoNextLog("autoplay countdown cancelled")
-    }
-
-    fun restartFromAutoplayCountdown() {
-        autoplayCountdownController.stop()
-        releaseAdvanceWakeLock()
-        player?.seekTo(0)
-        player?.play()
-        autoNextLog("autoplay countdown -> restart current")
     }
 
     private fun clearAutoplayCountdownInternal() {
@@ -1779,118 +1567,7 @@ class EnhancedPlayerManager private constructor() {
                         return@launch
                     }
 
-                    videoStreamSource?.let { source ->
-                        playFromStreamSource(source, video, reason, resumeInAudioOnly)
-                        return@launch
-                    }
-
-                    val extractionDeferred =
-                        async(Dispatchers.IO) {
-                            try {
-                                withTimeoutOrNull(25000L) {
-                                    io.github.aedev.flow.player.stream.InnerTubeVideoStreamExtractor
-                                        .extract(video.id)
-                                }
-                            } catch (e: kotlinx.coroutines.CancellationException) {
-                                throw e
-                            } catch (_: Exception) {
-                                null
-                            }
-                        }
-
-                    val extraction =
-                        extractionDeferred.await() ?: run {
-                            autoNextLog("playVideoFromServiceLayer extraction failed video=${video.id}")
-                            if (io.github.aedev.flow.player.stream.InnerTubeVideoStreamExtractor
-                                    .isGone(video.id) && hasNext()
-                            ) {
-                                // Posted so this job has finished and cleared itself before the next one starts.
-                                mainHandler.post { playNext(loadStreamsInPlayer = true) }
-                                return@launch
-                            }
-                            _playerState.value =
-                                _playerState.value.copy(
-                                    isBuffering = false,
-                                    error = appContext?.getString(io.github.aedev.flow.R.string.error_unable_to_load_next_video).orEmpty(),
-                                )
-                            releaseAdvanceWakeLock()
-                            return@launch
-                        }
-                    if (shouldAbortServicePlaybackLoad(video.id, reason, checkpoint = "streams-resolved")) {
-                        return@launch
-                    }
-                    val sabrInfo = extraction.sabrInfo
-                    val enrichedVideo = InnerTubeVideoMapper.videoFromResult(video.id, extraction, fallback = video)
-                    GlobalPlayerState.setCurrentVideo(enrichedVideo)
-                    startBackgroundService(
-                        videoId = enrichedVideo.id,
-                        title = enrichedVideo.title,
-                        channel = enrichedVideo.channelName,
-                        thumbnail = enrichedVideo.thumbnailUrl,
-                    )
-                    setAutoplayCandidates(
-                        sourceVideoId = enrichedVideo.id,
-                        videos = YouTubeRepository.getInstance().getRelatedCandidates(enrichedVideo.id),
-                        enabled = autoplayEnabled,
-                    )
-
-                    val prefs = PlayerPreferences(context)
-                    val preferredQuality =
-                        if (NetworkState.isOnWifi(context)) {
-                            prefs.defaultQualityWifi.first()
-                        } else {
-                            prefs.defaultQualityCellular.first()
-                        }
-                    val preferredAudioLanguage = prefs.preferredAudioLanguage.first()
-                    val preferredSubtitleLanguage = prefs.preferredSubtitleLanguage.first()
-                    val preferredCodecKey = prefs.videoCodecPriority.first()
-                    val mergedVideoStreams =
-                        io.github.aedev.flow.player.stream.InnerTubeStreamBridge
-                            .convertVideoFormats(extraction.videoFormats)
-                    val mergedAudioStreams =
-                        io.github.aedev.flow.player.stream.InnerTubeStreamBridge
-                            .convertAudioFormats(extraction.audioFormats)
-                    Log.d(
-                        TAG,
-                        "Queue advance streams: ${mergedVideoStreams.size} video, " +
-                            "${mergedAudioStreams.size} audio (client=${extraction.usedClient.clientName})",
-                    )
-
-                    val selected =
-                        ServicePlaybackStreamSelector.selectStreams(
-                            videoCandidates = mergedVideoStreams,
-                            audioCandidatesAll = mergedAudioStreams,
-                            preferredQuality = preferredQuality,
-                            preferredAudioLanguage = preferredAudioLanguage,
-                            preferredCodecKey = preferredCodecKey,
-                        )
-                    if (shouldAbortServicePlaybackLoad(video.id, reason, checkpoint = "before-commit")) {
-                        return@launch
-                    }
-                    setStreams(
-                        videoId = enrichedVideo.id,
-                        videoStream = selected.first,
-                        audioStream = selected.second,
-                        videoStreams = mergedVideoStreams,
-                        audioStreams = mergedAudioStreams,
-                        subtitles =
-                            CaptionTrackResolver.resolve(
-                                extraction.playerResponse,
-                                translateTo = preferredSubtitleLanguage,
-                            ),
-                        durationSeconds = InnerTubeVideoMapper.durationSeconds(extraction),
-                        dashManifestUrl = extraction.liveDashUrl,
-                        hlsUrl = extraction.liveHlsUrl,
-                        streamType = InnerTubeVideoMapper.streamType(extraction),
-                        startPosition = 0L,
-                        sabrInfo = sabrInfo,
-                        itVideoFormats = extraction.videoFormats,
-                        itAudioFormats = extraction.audioFormats,
-                        preferredVideoCodec = preferredCodecKey,
-                        keepAudioOnly = resumeInAudioOnly,
-                    )
-                    play()
-                    autoNextLog("playVideoFromServiceLayer loaded video=${video.id} reason=$reason")
+                    playFromStreamSource(video, reason, resumeInAudioOnly)
                 } catch (e: CancellationException) {
                     Log.d(TAG, "Service-layer playback cancelled for ${video.id} ($reason)")
                     autoNextLog("playVideoFromServiceLayer cancelled video=${video.id} reason=$reason")
@@ -1915,15 +1592,14 @@ class EnhancedPlayerManager private constructor() {
             }
     }
 
-    /** The service-layer load through [VideoStreamSource]: resolve, then commit exactly as the InnerTube path does. */
+    /** The service-layer load through [videoStreamSource]: resolve, then commit the streams it returned. */
     private suspend fun playFromStreamSource(
-        source: VideoStreamSource,
         video: Video,
         reason: String,
         resumeInAudioOnly: Boolean,
     ) {
         val data =
-            source.resolve(video) ?: run {
+            videoStreamSource?.resolve(video) ?: run {
                 autoNextLog("playVideoFromServiceLayer source resolved nothing video=${video.id}")
                 _playerState.value =
                     _playerState.value.copy(
@@ -1994,75 +1670,7 @@ class EnhancedPlayerManager private constructor() {
         val videos: List<Video> = emptyList(),
     )
 
-    private suspend fun resolveStreamsForVideo(
-        video: Video,
-        context: Context,
-    ): ResolvedStreamData? {
-        videoStreamSource?.let { return it.resolve(video) }
-        return coroutineScope {
-            val extractionDeferred =
-                async(Dispatchers.IO) {
-                    try {
-                        withTimeoutOrNull(25000L) {
-                            io.github.aedev.flow.player.stream.InnerTubeVideoStreamExtractor
-                                .extract(video.id)
-                        }
-                    } catch (e: CancellationException) {
-                        throw e
-                    } catch (_: Exception) {
-                        null
-                    }
-                }
-            val extraction = extractionDeferred.await() ?: return@coroutineScope null
-            val enrichedVideo = InnerTubeVideoMapper.videoFromResult(video.id, extraction, fallback = video)
-            val prefs = PlayerPreferences(context)
-            val preferredQuality =
-                if (NetworkState.isOnWifi(
-                        context,
-                    )
-                ) {
-                    prefs.defaultQualityWifi.first()
-                } else {
-                    prefs.defaultQualityCellular.first()
-                }
-            val preferredAudioLanguage = prefs.preferredAudioLanguage.first()
-            val preferredSubtitleLanguage = prefs.preferredSubtitleLanguage.first()
-            val preferredCodecKey = prefs.videoCodecPriority.first()
-            val mergedVideoStreams =
-                io.github.aedev.flow.player.stream.InnerTubeStreamBridge
-                    .convertVideoFormats(extraction.videoFormats)
-            val mergedAudioStreams =
-                io.github.aedev.flow.player.stream.InnerTubeStreamBridge
-                    .convertAudioFormats(extraction.audioFormats)
-            val selected =
-                ServicePlaybackStreamSelector.selectStreams(
-                    videoCandidates = mergedVideoStreams,
-                    audioCandidatesAll = mergedAudioStreams,
-                    preferredQuality = preferredQuality,
-                    preferredAudioLanguage = preferredAudioLanguage,
-                    preferredCodecKey = preferredCodecKey,
-                )
-            ResolvedStreamData(
-                enrichedVideo = enrichedVideo,
-                videoStream = selected.first,
-                audioStream = selected.second,
-                videoStreams = mergedVideoStreams,
-                audioStreams = mergedAudioStreams,
-                subtitles =
-                    CaptionTrackResolver.resolve(
-                        extraction.playerResponse,
-                        translateTo = preferredSubtitleLanguage,
-                    ),
-                durationSeconds = InnerTubeVideoMapper.durationSeconds(extraction),
-                dashManifestUrl = extraction.liveDashUrl,
-                streamType = InnerTubeVideoMapper.streamType(extraction),
-                relatedVideos = YouTubeRepository.getInstance().getRelatedCandidates(video.id),
-                preferredCodec = preferredCodecKey,
-                itVideoFormats = extraction.videoFormats,
-                itAudioFormats = extraction.audioFormats,
-            )
-        }
-    }
+    private suspend fun resolveStreamsForVideo(video: Video): ResolvedStreamData? = videoStreamSource?.resolve(video)
 
     private fun nextPreloadTarget(): PreloadTarget? {
         if (autoplayCountdownSeconds > 0) return null
@@ -2083,18 +1691,12 @@ class EnhancedPlayerManager private constructor() {
         val data = pre.data
         Log.d(TAG, "Gapless: promoting auto-advanced item ${data.enrichedVideo.id} (fromQueue=${pre.fromQueue})")
 
-        mediaLoader?.releaseSabr()
-        currentSabrInfo = null
-        sabrPreferred = false
-
         if (pre.fromQueue) {
             queue.nextIndex()?.let { nextIndex -> queue.moveTo(nextIndex) }
         } else {
             autoplayCandidates = autoplayCandidates.filter { it.id != data.enrichedVideo.id }
         }
 
-        innerTubeVideoFormats = data.itVideoFormats
-        innerTubeAudioFormats = data.itAudioFormats
         currentRequestHeaders = data.requestHeaders
         lastStreamHttpFailure = null
         currentDurationSeconds = data.durationSeconds
@@ -2176,7 +1778,6 @@ class EnhancedPlayerManager private constructor() {
                 liveDurationMs = 0L,
             )
         updateQueueState()
-        _queueAutoAdvanceEvent.tryEmit(Unit)
 
         player?.let { p ->
             val idx = p.currentMediaItemIndex
@@ -2205,8 +1806,6 @@ class EnhancedPlayerManager private constructor() {
         p.play()
     }
 
-    fun recoverClearedMediaAfterForeground(): Boolean = reloadClearedMediaIfNeeded()
-
     private fun reloadClearedMediaIfNeeded(playWhenReadyOverride: Boolean? = null): Boolean {
         val p = player ?: return false
         if (p.playbackState != Player.STATE_IDLE || p.mediaItemCount > 0) return false
@@ -2234,38 +1833,11 @@ class EnhancedPlayerManager private constructor() {
 
     fun pause() = player?.pause()
 
-    /**
-     * Nudges the playhead one frame.
-     *
-     * Only while paused: stepping a running player just fights playback. VOD seeks are
-     * CLOSEST_SYNC, which would snap back to the same keyframe every time, so the step is made
-     * EXACT and the parameter restored afterwards. Stepping backwards is slower than forwards
-     * because it decodes forward from the preceding keyframe, which on YouTube can be seconds back.
-     */
-    fun stepFrame(forward: Boolean) {
-        val p = player ?: return
-        if (p.isPlaying || currentIsLiveStream || p.isCurrentMediaItemLive) return
-        val target =
-            FrameStepPolicy.stepTarget(
-                positionMs = p.currentPosition,
-                durationMs = p.duration,
-                frameRate = p.videoFormat?.frameRate,
-                forward = forward,
-            ) ?: return
-        p.setSeekParameters(SeekParameters.EXACT)
-        p.seekTo(target)
-        p.setSeekParameters(SeekParameters.CLOSEST_SYNC)
-    }
-
     fun seekTo(position: Long) {
         val p = player ?: return
         val isLive = currentIsLiveStream || p.isCurrentMediaItemLive
         val target = resolveSeekTarget(p, position)
         val isEndBoundary = !isLive && isEndBoundarySeek(position, p.duration)
-        if (!isLive && !isEndBoundary && mediaLoader?.getActiveSabrOrchestrator() != null) {
-            sabrSeekTo(target)
-            return
-        }
         if (isLive || isEndBoundary) {
             p.setSeekParameters(SeekParameters.EXACT)
         }
@@ -2283,10 +1855,6 @@ class EnhancedPlayerManager private constructor() {
     fun skipToSegmentEnd(endPositionMs: Long) {
         val p = player ?: return
         val isLive = currentIsLiveStream || p.isCurrentMediaItemLive
-        if (!isLive && mediaLoader?.getActiveSabrOrchestrator() != null) {
-            sabrSeekTo(resolveSeekTarget(p, endPositionMs))
-            return
-        }
         val target = resolveSeekTarget(p, endPositionMs)
         p.setSeekParameters(SeekParameters.EXACT)
         if (isLive) {
@@ -2297,35 +1865,6 @@ class EnhancedPlayerManager private constructor() {
             updateLiveEdgeState(p)
         } else {
             p.setSeekParameters(SeekParameters.CLOSEST_SYNC)
-        }
-    }
-
-    private fun sabrSeekTo(positionMs: Long) {
-        val shouldPlay = player?.playWhenReady ?: true
-        Log.d(TAG, "SABR seek: rebuilding session at ${positionMs}ms")
-        _playerState.value = _playerState.value.copy(isBuffering = true)
-        scope.launch {
-            mediaLoader?.releaseSabr()
-            player?.stop()
-            player?.clearMediaItems()
-            val loaded = loadMediaInternal(currentVideoStream, currentAudioStream, positionMs)
-            if (loaded) {
-                player?.playWhenReady = shouldPlay
-            }
-        }
-    }
-
-    fun seekToLiveTimeline(position: Long) {
-        val p = player ?: return
-        val isLive = currentIsLiveStream || p.isCurrentMediaItemLive
-        val target = resolveSeekTarget(p, position)
-        if (isLive) {
-            p.setSeekParameters(SeekParameters.EXACT)
-            markLiveDisplaySeek(target)
-        }
-        p.seekTo(target)
-        if (isLive) {
-            updateLiveEdgeState(p)
         }
     }
 
@@ -2362,25 +1901,6 @@ class EnhancedPlayerManager private constructor() {
     private fun markLiveDisplaySeek(positionMs: Long) {
         pendingLiveDisplaySeekPositionMs = positionMs.coerceAtLeast(0L)
         pendingLiveDisplaySeekAtMs = SystemClock.elapsedRealtime()
-    }
-
-    fun consumeRecentLiveDisplaySeek(maxAgeMs: Long = 2_000L): Long? {
-        val position = pendingLiveDisplaySeekPositionMs ?: return null
-        if (SystemClock.elapsedRealtime() - pendingLiveDisplaySeekAtMs > maxAgeMs) {
-            pendingLiveDisplaySeekPositionMs = null
-            return null
-        }
-        pendingLiveDisplaySeekPositionMs = null
-        return position
-    }
-
-    fun setScrubbingModeEnabled(enabled: Boolean) {
-        player?.let { p ->
-            val isLive = currentIsLiveStream || p.isCurrentMediaItemLive
-            p.setSeekParameters(
-                if (enabled || isLive) SeekParameters.EXACT else SeekParameters.CLOSEST_SYNC,
-            )
-        }
     }
 
     fun replay() {
@@ -2448,119 +1968,23 @@ class EnhancedPlayerManager private constructor() {
             p.playbackState != Player.STATE_IDLE
     }
 
-    fun hasAbandonedPlayback(): Boolean = errorHandler?.hasGivenUp() == true
-
-    private fun resolveSourceVideoAspectRatio(): Float? {
-        val innerTubeDimensions =
-            innerTubeVideoFormats
-                .asSequence()
-                .filterNot { it.isAudio }
-                .mapNotNull { format ->
-                    val width = format.width ?: return@mapNotNull null
-                    val height = format.height ?: return@mapNotNull null
-                    width to height
-                }
-        val extractedDimensions =
-            availableVideoStreams
-                .asSequence()
-                .map { stream -> stream.width to stream.height }
-        return sourceVideoAspectRatio((innerTubeDimensions + extractedDimensions).asIterable())
-    }
+    private fun resolveSourceVideoAspectRatio(): Float? =
+        sourceVideoAspectRatio(availableVideoStreams.map { stream -> stream.width to stream.height })
 
     private fun buildAvailableQualityOptions(): List<QualityOption> {
         val directOptions = qualityManager?.buildQualityOptions().orEmpty()
         val autoOptions = directOptions.filter { it.height == 0 }
         val playableOptions = directOptions.filter { it.height != 0 }
-        val existingKeys =
-            playableOptions
-                .map { VideoCodecUtils.streamSizeKey(it.height, it.codecKey) }
-                .toHashSet()
-
-        val sabrOptions =
-            if (currentSabrInfo != null) {
-                innerTubeVideoFormats
-                    .filter { !it.isAudio && it.itag > 0 }
-                    .groupBy {
-                        VideoCodecUtils.streamSizeKey(
-                            qualityHeightFromFormat(it),
-                            VideoCodecUtils.codecKeyFromMimeType(it.mimeType),
-                        )
-                    }.values
-                    .mapNotNull { formats ->
-                        val best = formats.maxByOrNull { it.averageBitrate ?: it.bitrate } ?: return@mapNotNull null
-                        val height = qualityHeightFromFormat(best)
-                        val codecKey = VideoCodecUtils.codecKeyFromMimeType(best.mimeType)
-                        if (VideoCodecUtils.streamSizeKey(height, codecKey) in existingKeys) return@mapNotNull null
-                        QualityOption(
-                            height = height,
-                            label = "${qualityLabelFromFormat(best)} ${VideoCodecUtils.codecLabelFromKey(codecKey)}",
-                            bitrate = (best.averageBitrate ?: best.bitrate).toLong(),
-                            codecKey = codecKey,
-                            streamKey = "$SABR_QUALITY_KEY_PREFIX${best.itag}",
-                        )
-                    }
-            } else {
-                emptyList()
-            }
 
         val auto = autoOptions.ifEmpty { listOf(QualityOption(height = 0, label = "Auto", bitrate = 0L)) }
         val sortedOptions =
-            (playableOptions + sabrOptions).sortedWith(
+            playableOptions.sortedWith(
                 compareByDescending<QualityOption> { it.height }
                     .thenBy { VideoCodecUtils.playbackCodecRank(it.codecKey) }
                     .thenByDescending { it.bitrate },
             )
         return auto + sortedOptions
     }
-
-    private fun switchSabrQuality(option: QualityOption): Boolean {
-        val streamKey = option.streamKey ?: return false
-        val itag = streamKey.removePrefix(SABR_QUALITY_KEY_PREFIX).toIntOrNull() ?: return false
-        val baseSabr = currentSabrInfo ?: return false
-        val format = innerTubeVideoFormats.firstOrNull { it.itag == itag && !it.isAudio }
-        if (format == null) {
-            Log.w(TAG, "No SABR video format found for itag=$itag")
-            return false
-        }
-
-        val position = player?.currentPosition ?: 0L
-        val shouldPlay = player?.playWhenReady ?: true
-        currentSabrInfo =
-            baseSabr.copy(
-                videoItag = format.itag,
-                videoLmt = format.lastModified ?: 0L,
-                videoMimeType = format.mimeType,
-                durationMs = format.approxDurationMs?.toLongOrNull() ?: baseSabr.durationMs,
-            )
-
-        _playerState.value =
-            _playerState.value.copy(
-                currentQuality = option.height,
-                effectiveQuality = option.height,
-                currentQualityKey = streamKey,
-                isBuffering = true,
-            )
-
-        Log.d(TAG, "Switching SABR quality to ${option.label} (itag=$itag)")
-        scope.launch {
-            mediaLoader?.releaseSabr()
-            player?.stop()
-            player?.clearMediaItems()
-            val loaded = loadMediaInternal(currentVideoStream, currentAudioStream, position)
-            if (loaded) {
-                player?.playWhenReady = shouldPlay
-            }
-        }
-        return true
-    }
-
-    private fun qualityHeightFromFormat(format: PlayerResponse.StreamingData.Format): Int =
-        VideoCodecUtils.qualityHeightFromFormat(format.qualityLabel, format.height ?: format.width ?: 0)
-
-    private fun qualityLabelFromFormat(format: PlayerResponse.StreamingData.Format): String =
-        format.qualityLabel
-            ?.takeIf { it.isNotBlank() }
-            ?: VideoCodecUtils.qualityLabelWithFrameRate(qualityHeightFromFormat(format), format.fps ?: 0)
 
     // ===== Quality & Audio Management =====
 
@@ -2574,9 +1998,6 @@ class EnhancedPlayerManager private constructor() {
     fun switchQuality(height: Int) = switchQualityByHeight(height)
 
     fun switchQuality(option: QualityOption): Boolean? {
-        if (option.streamKey?.startsWith(SABR_QUALITY_KEY_PREFIX) == true) {
-            return switchSabrQuality(option)
-        }
         if (currentIsLiveStream) return switchLiveQuality(option.height)
         return qualityManager?.switchQuality(option, player?.currentPosition ?: 0L)
     }
@@ -2788,31 +2209,11 @@ class EnhancedPlayerManager private constructor() {
 
     fun toggleStableVolume(isEnabled: Boolean) = audioFeaturesManager?.toggleStableVolume(isEnabled, appContext)
 
-    fun toggleSponsorBlock(isEnabled: Boolean) {
-        sponsorBlockHandler?.setEnabled(isEnabled)
-        appContext?.let { ctx ->
-            scope.launch { PlayerPreferences(ctx).setSponsorBlockEnabled(isEnabled) }
-        }
-    }
-
     val sponsorSegments: StateFlow<List<SponsorBlockSegment>>
         get() = sponsorBlockHandler?.sponsorSegments ?: MutableStateFlow(emptyList())
 
-    /** Emits the display label of a subtitle track whose fetch failed and will not be retried. */
-    val subtitleLoadFailedEvent: SharedFlow<SubtitleLoadFailure>
-        get() = _subtitleLoadFailedEvent
-
     val skipEvent: SharedFlow<SponsorBlockSegment>
         get() = sponsorBlockHandler?.skipEvent ?: MutableSharedFlow()
-
-    val sbMuteEvent: SharedFlow<Boolean>
-        get() = sponsorBlockHandler?.muteEvent ?: MutableSharedFlow()
-
-    val sbToastEvent: SharedFlow<SponsorBlockSegment>
-        get() = sponsorBlockHandler?.toastEvent ?: MutableSharedFlow()
-
-    val sbCategoryActions: Map<String, SponsorBlockAction>
-        get() = sponsorBlockHandler?.categoryActions ?: emptyMap()
 
     // ===== Surface Management =====
 
@@ -2899,12 +2300,6 @@ class EnhancedPlayerManager private constructor() {
      */
     private fun resyncAfterSurfaceReattach(p: ExoPlayer) {
         val position = p.currentPosition
-        if (mediaLoader?.getActiveSabrOrchestrator() != null) {
-            // A SABR seek tears the session down and rebuilds it, which is far more than a surface
-            // swap should cost.
-            Log.w("FlowVideoLifecycle", "surfaceReattachResync skipped sabr video=$currentVideoId pos=$position")
-            return
-        }
         val target = VideoSurfacePolicy.resyncSeekTargetMs(position)
         Log.w(
             "FlowVideoLifecycle",
@@ -2954,7 +2349,6 @@ class EnhancedPlayerManager private constructor() {
 
     fun handleCriticalMemoryPressure() {
         Log.w(TAG, "Critical memory pressure; releasing video-heavy player state")
-        mediaLoader?.releaseSabr()
         val p = player ?: return
         val shouldKeepPlaying = p.playWhenReady || p.isPlaying
         if (shouldKeepPlaying) {
@@ -3014,8 +2408,6 @@ class EnhancedPlayerManager private constructor() {
     }
 
     fun isInAudioOnlyMode(): Boolean = audioOnlyMode.isActive
-
-    fun isVideoSurfaceRestorePending(): Boolean = audioOnlyMode.restorePending
 
     fun setSurfaceReady(ready: Boolean) {
         surfaceManager?.setSurfaceReady(ready)
@@ -3087,7 +2479,6 @@ class EnhancedPlayerManager private constructor() {
         audioOnlyMode.reset()
         setVideoTracksDisabled(false)
         updateLivePlaybackMode(isLive = false)
-        mediaLoader?.releaseSabr()
         player?.stop()
         player?.clearMediaItems()
         qualityManager?.resetForNewVideo()
@@ -3184,7 +2575,6 @@ class EnhancedPlayerManager private constructor() {
         releaseVideoMediaSession()
         pendingReloadJob?.cancel()
         pendingReloadJob = null
-        mediaLoader?.releaseSabr()
         clearedMediaRecoveryState.clear()
         playbackTracker?.stop()
         audioFeaturesManager?.clearPlayer()

@@ -41,14 +41,6 @@ class SponsorBlockHandler(
     private val _skipEvent = MutableSharedFlow<SponsorBlockSegment>(extraBufferCapacity = 1)
     val skipEvent: SharedFlow<SponsorBlockSegment> = _skipEvent.asSharedFlow()
 
-    /** Emitted when entering a MUTE segment (true) or leaving one (false). */
-    private val _muteEvent = MutableSharedFlow<Boolean>(extraBufferCapacity = 1)
-    val muteEvent: SharedFlow<Boolean> = _muteEvent.asSharedFlow()
-
-    /** Emitted when a SHOW_TOAST segment is encountered. */
-    private val _toastEvent = MutableSharedFlow<SponsorBlockSegment>(extraBufferCapacity = 1)
-    val toastEvent: SharedFlow<SponsorBlockSegment> = _toastEvent.asSharedFlow()
-
     private var loadJob: Job? = null
     private var lastSkippedSegmentUuid: String? = null
     private var currentMutedSegmentUuid: String? = null
@@ -204,7 +196,6 @@ class SponsorBlockHandler(
             if (mutedSeg == null || posSec >= mutedSeg.endTime || posSec < mutedSeg.startTime) {
                 Log.d(TAG, "Exiting mute segment")
                 currentMutedSegmentUuid = null
-                _muteEvent.tryEmit(false)
             }
         }
 
@@ -222,14 +213,12 @@ class SponsorBlockHandler(
                 SponsorBlockAction.MUTE -> {
                     if (currentMutedSegmentUuid != segment.uuid) {
                         currentMutedSegmentUuid = segment.uuid
-                        _muteEvent.tryEmit(true)
                     }
                     null
                 }
 
                 SponsorBlockAction.SHOW_TOAST -> {
                     lastSkippedSegmentUuid = segment.uuid
-                    _toastEvent.tryEmit(segment)
                     null
                 }
 
@@ -246,9 +235,4 @@ class SponsorBlockHandler(
      * Get the current segments list.
      */
     fun getSegments(): List<SponsorBlockSegment> = _sponsorSegments.value
-
-    /**
-     * Check if segments have been loaded.
-     */
-    fun hasSegments(): Boolean = _sponsorSegments.value.isNotEmpty()
 }

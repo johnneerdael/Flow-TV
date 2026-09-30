@@ -6,13 +6,9 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.util.Log
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
 
 /**
  * Observes network connectivity changes and provides reactive state.
@@ -37,11 +33,6 @@ class NetworkConnectivityObserver(
      * Check current network connectivity status.
      */
     fun checkCurrentConnectivity(): Boolean = NetworkState.isOnline(context)
-
-    /**
-     * Check if the network is metered (e.g., mobile data).
-     */
-    fun isNetworkMetered(): Boolean = connectivityManager.isActiveNetworkMetered
 
     private fun networkRequest(): NetworkRequest =
         NetworkRequest
@@ -115,19 +106,4 @@ class NetworkConnectivityObserver(
         }
         networkCallback = null
     }
-
-    /**
-     * Get network connectivity as a Flow for reactive observation.
-     */
-    fun observeConnectivity(): Flow<Boolean> =
-        callbackFlow {
-            val callback = connectivityCallback { trySend(it) }
-
-            trySend(checkCurrentConnectivity())
-            connectivityManager.registerNetworkCallback(networkRequest(), callback)
-
-            awaitClose {
-                connectivityManager.unregisterNetworkCallback(callback)
-            }
-        }.distinctUntilChanged()
 }

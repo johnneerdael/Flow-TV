@@ -2,7 +2,6 @@ package io.github.aedev.flow.ui.components.videoplayer.subtitle
 
 import android.graphics.Typeface
 import android.util.TypedValue
-import android.view.ViewGroup
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut

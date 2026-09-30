@@ -63,8 +63,6 @@ object CustomThemeCodec {
     fun encodeList(themes: List<CustomTheme>): String =
         json.encodeToString(JsonArray.serializer(), JsonArray(themes.map { json.encodeToJsonElement(it.toDesktop()) }))
 
-    fun encodeOne(theme: CustomTheme): String = json.encodeToString(DesktopCustomTheme.serializer(), theme.toDesktop())
-
     /** The valid themes in [raw], which may hold one theme or a list of them; at most [CustomTheme.MAX_COUNT]. */
     fun decode(raw: String?): List<CustomTheme> {
         if (raw.isNullOrBlank()) return emptyList()

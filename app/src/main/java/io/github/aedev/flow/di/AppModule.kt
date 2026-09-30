@@ -15,7 +15,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.github.aedev.flow.BuildConfig
 import io.github.aedev.flow.data.localmedia.MediaStoreThumbnailFetcher
-import io.github.aedev.flow.innertube.YouTube
 import okhttp3.OkHttpClient
 import okio.Path.Companion.toOkioPath
 import javax.inject.Singleton
@@ -23,10 +22,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
-    @Provides
-    @Singleton
-    fun provideYouTube(): YouTube = YouTube
-
     @Provides
     @Singleton
     fun provideImageLoader(

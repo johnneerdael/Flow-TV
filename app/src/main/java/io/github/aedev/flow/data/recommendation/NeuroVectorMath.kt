@@ -258,18 +258,6 @@ internal object NeuroVectorMath {
         return current.copy(topics = planted)
     }
 
-    fun normalizeTopicVector(topics: MutableMap<String, Double>): Map<String, Double> {
-        if (topics.isEmpty()) return topics
-        var magnitude = 0.0
-        topics.values.forEach { magnitude += it * it }
-        magnitude = sqrt(magnitude)
-        return if (magnitude > 0) {
-            topics.mapValues { (_, v) -> v / magnitude }
-        } else {
-            topics
-        }
-    }
-
     fun calculateTitleSimilarity(
         tokens1: Set<String>,
         tokens2: Set<String>,

@@ -1,7 +1,6 @@
 package io.github.aedev.flow.ui.screens.player
 
 import android.content.Context
-import io.github.aedev.flow.data.comments.CommentsPageResult
 import io.github.aedev.flow.data.engagement.VideoEngagementSignals
 import io.github.aedev.flow.data.engagement.VideoEngagementUseCase
 import io.github.aedev.flow.data.local.ChannelSubscription
@@ -13,26 +12,21 @@ import io.github.aedev.flow.data.local.SubscriptionRepository
 import io.github.aedev.flow.data.local.VideoQuality
 import io.github.aedev.flow.data.local.ViewHistory
 import io.github.aedev.flow.data.local.entity.WatchHistoryEntity
-import io.github.aedev.flow.data.model.Comment
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.data.recommendation.FlowNeuroEngine
 import io.github.aedev.flow.data.repository.SponsorBlockRepository
-import io.github.aedev.flow.data.repository.YouTubeRepository
 import io.github.aedev.flow.data.transcript.TranscriptRepository
 import io.github.aedev.flow.data.video.DownloadedVideo
 import io.github.aedev.flow.data.video.OfflineSubtitleStore
 import io.github.aedev.flow.data.video.VideoDownloadManager
-import io.github.aedev.flow.innertube.YouTube
 import io.github.aedev.flow.player.EnhancedMusicPlayerManager
 import io.github.aedev.flow.player.EnhancedPlayerManager
 import io.github.aedev.flow.player.GlobalPlayerState
 import io.github.aedev.flow.player.error.PlayerDiagnostics
 import io.github.aedev.flow.player.state.EnhancedPlayerState
 import io.github.aedev.flow.player.stream.CaptionTrackResolver
-import io.github.aedev.flow.player.stream.InnerTubeVideoStreamExtractor
 import io.github.aedev.flow.player.stream.PluginPlaybackResolver
-import io.github.aedev.flow.player.stream.UpcomingPremiereProbe
 import io.github.aedev.flow.plugin.playback.PluginVideo
 import io.github.aedev.flow.utils.NetworkState
 import io.mockk.Runs
@@ -46,7 +40,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestDispatcher
-import org.schabi.newpipe.extractor.Page
 
 /**
  * Characterisation harness for [VideoPlayerViewModel]: every constructor dependency is a relaxed
@@ -54,13 +47,12 @@ import org.schabi.newpipe.extractor.Page
  * block collects is backed by a real [MutableStateFlow]/[MutableSharedFlow] so tests can drive it.
  *
  * The defaults describe a healthy, online, empty device: no downloads, no restored session, no
- * music playing, RYD disabled, Auto quality. Individual tests override what they need.
+ * music playing, Auto quality. Individual tests override what they need.
  */
 internal class VideoPlayerViewModelHarness(
     private val testDispatcher: TestDispatcher,
 ) {
     val context: Context = mockk(relaxed = true)
-    val repository: YouTubeRepository = mockk(relaxed = true)
     val transcriptRepository: TranscriptRepository = mockk(relaxed = true)
     val viewHistory: ViewHistory = mockk(relaxed = true)
     val subscriptionRepository: SubscriptionRepository = mockk(relaxed = true)
@@ -84,7 +76,7 @@ internal class VideoPlayerViewModelHarness(
         VideoEngagementUseCase(
             subscriptionRepository = subscriptionRepository,
             likedVideosRepository = likedVideosRepository,
-            signals = VideoEngagementSignals(context, repository),
+            signals = VideoEngagementSignals(context),
             videoStats = videoStats,
         )
     }
@@ -97,7 +89,6 @@ internal class VideoPlayerViewModelHarness(
     val musicCurrentTrack = MutableStateFlow<MusicTrack?>(null)
     val autoplayEnabled = MutableStateFlow(true)
     val continueWatchingEnabled = MutableStateFlow(true)
-    val rytdEnabled = MutableStateFlow(false)
     val downloadedVideos = MutableStateFlow<List<DownloadedVideo>>(emptyList())
     val isSubscribed = MutableStateFlow(false)
     val subscription = MutableStateFlow<ChannelSubscription?>(null)
@@ -123,7 +114,6 @@ internal class VideoPlayerViewModelHarness(
         // Reset the real singleton before spying it so the reset is not a recorded call.
         GlobalPlayerState.setCurrentVideo(null)
         GlobalPlayerState.setExplicitBackgroundPlaybackActive(false)
-        GlobalPlayerState.hideMiniPlayer()
         mockkObject(GlobalPlayerState)
 
         mockkObject(EnhancedMusicPlayerManager)
@@ -134,14 +124,6 @@ internal class VideoPlayerViewModelHarness(
         mockkObject(NetworkState)
         every { NetworkState.isOnWifi(any()) } returns false
         every { NetworkState.isOnline(any()) } returns true
-
-        mockkObject(InnerTubeVideoStreamExtractor)
-        coEvery { InnerTubeVideoStreamExtractor.extract(any(), any()) } returns null
-
-        mockkObject(YouTube)
-        coEvery {
-            YouTube.player(any(), any(), any(), any(), any(), any(), any())
-        } returns Result.failure(IllegalStateException("premiere probe stubbed"))
 
         mockkObject(PlayerDiagnostics)
         every { PlayerDiagnostics.logWarning(any(), any()) } just Runs
@@ -159,7 +141,6 @@ internal class VideoPlayerViewModelHarness(
         every { playerPreferences.miniPlayerContinueWatchingEnabled } returns continueWatchingEnabled
         every { playerPreferences.autoplayEnabled } returns autoplayEnabled
         every { playerPreferences.upcomingVideoReminderIds } returns flowOf(emptySet())
-        every { playerPreferences.rytdEnabled } returns rytdEnabled
         every { playerPreferences.defaultQualityWifi } returns flowOf(VideoQuality.AUTO)
         every { playerPreferences.defaultQualityCellular } returns flowOf(VideoQuality.AUTO)
         every { playerPreferences.preferredAudioLanguage } returns flowOf("original")
@@ -176,9 +157,6 @@ internal class VideoPlayerViewModelHarness(
         coEvery { videoDownloadManager.getSponsorBlockData(any()) } returns null
         coEvery { offlineSubtitleStore.load(any()) } returns emptyList()
 
-        coEvery { repository.getComments(any()) } returns (emptyList<Comment>() to null as Page?)
-        coEvery { repository.getVideoComments(any(), any()) } returns CommentsPageResult.EMPTY
-
         every { subscriptionRepository.isSubscribed(any()) } returns isSubscribed
         every { subscriptionRepository.getSubscription(any()) } returns subscription
         every { likedVideosRepository.getLikeState(any()) } returns likeState
@@ -187,7 +165,6 @@ internal class VideoPlayerViewModelHarness(
     fun createViewModel(): VideoPlayerViewModel =
         VideoPlayerViewModel(
             context = context,
-            repository = repository,
             transcriptRepository = transcriptRepository,
             viewHistory = viewHistory,
             engagement = engagement,
@@ -200,7 +177,6 @@ internal class VideoPlayerViewModelHarness(
             sponsorBlockRepository = sponsorBlockRepository,
             homeFeedCacheRepository = homeFeedCacheRepository,
             playerManager = playerManager,
-            upcomingPremiereProbe = UpcomingPremiereProbe(),
             playbackResolver =
                 PluginPlaybackResolver(
                     pluginVideo = pluginVideo,

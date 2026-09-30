@@ -55,8 +55,6 @@ class PluginVideoStreamSource
                 streamType = if (playable.isLive) StreamType.LIVE_STREAM else StreamType.VIDEO_STREAM,
                 relatedVideos = pluginVideo.related(video.id),
                 preferredCodec = codec,
-                itVideoFormats = emptyList(),
-                itAudioFormats = emptyList(),
                 hlsUrl = playable.hlsUrl,
                 requestHeaders = playable.requestHeaders,
                 skipSegments = playable.skipSegments,

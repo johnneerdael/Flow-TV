@@ -4,23 +4,24 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
 class ThumbnailUrlResolverTest {
-
     @Test
     fun `normalizes jpg thumbnail variants to hq720`() {
-        val result = ThumbnailUrlResolver.normalizeVideoThumbnail(
-            "abc123",
-            "https://i.ytimg.com/vi/abc123/hqdefault.jpg"
-        )
+        val result =
+            ThumbnailUrlResolver.normalizeVideoThumbnail(
+                "abc123",
+                "https://i.ytimg.com/vi/abc123/hqdefault.jpg",
+            )
 
         assertThat(result).isEqualTo("https://i.ytimg.com/vi/abc123/hq720.jpg")
     }
 
     @Test
     fun `normalizes query and webp variants to hq720`() {
-        val result = ThumbnailUrlResolver.normalizeVideoThumbnail(
-            "fallback",
-            "https://i.ytimg.com/vi_webp/abc123/mqdefault.webp?sqp=abc"
-        )
+        val result =
+            ThumbnailUrlResolver.normalizeVideoThumbnail(
+                "fallback",
+                "https://i.ytimg.com/vi_webp/abc123/mqdefault.webp?sqp=abc",
+            )
 
         assertThat(result).isEqualTo("https://i.ytimg.com/vi/abc123/hq720.jpg")
     }
@@ -42,10 +43,11 @@ class ThumbnailUrlResolverTest {
     fun `card candidates never request maxresdefault`() {
         val candidates = ThumbnailUrlResolver.youtubeThumbnailCandidates(VIDEO_ID)
 
-        assertThat(candidates).containsExactly(
-            "https://i.ytimg.com/vi/$VIDEO_ID/hq720.jpg",
-            "https://i.ytimg.com/vi/$VIDEO_ID/hqdefault.jpg",
-        ).inOrder()
+        assertThat(candidates)
+            .containsExactly(
+                "https://i.ytimg.com/vi/$VIDEO_ID/hq720.jpg",
+                "https://i.ytimg.com/vi/$VIDEO_ID/hqdefault.jpg",
+            ).inOrder()
     }
 
     @Test
@@ -79,46 +81,11 @@ class ThumbnailUrlResolverTest {
 
         val candidates = ThumbnailUrlResolver.resolveVideoThumbnailCandidates("", raw)
 
-        assertThat(candidates).containsExactly(
-            "https://i.ytimg.com/vi/$OTHER_ID/hq720.jpg",
-            "https://i.ytimg.com/vi/$OTHER_ID/hqdefault.jpg",
-        ).inOrder()
-    }
-
-    @Test
-    fun `channel avatars default to the list sized tier`() {
-        val raw = "https://yt3.ggpht.com/abc=s512-c-k-c0x00ffffff-no-rj"
-
-        val resolved = ThumbnailUrlResolver.resolveChannelAvatar(raw)
-
-        assertThat(resolved).contains("=s${ThumbnailUrlResolver.AVATAR_SIZE_LIST}")
-        assertThat(resolved).doesNotContain("=s512")
-    }
-
-    @Test
-    fun `channel avatars still honour an explicit larger size`() {
-        val raw = "https://yt3.ggpht.com/abc=s88-c-k-c0x00ffffff-no-rj"
-
-        val resolved = ThumbnailUrlResolver.resolveChannelAvatar(raw, size = 512)
-
-        assertThat(resolved).contains("=s512")
-    }
-
-    @Test
-    fun `avatar resolution is stable so cache keys do not churn`() {
-        val raw = "https://yt3.ggpht.com/abc=s512-c-k-c0x00ffffff-no-rj"
-
-        val first = ThumbnailUrlResolver.resolveChannelAvatar(raw)
-        val second = ThumbnailUrlResolver.resolveChannelAvatar(first)
-
-        assertThat(second).isEqualTo(first)
-    }
-
-    @Test
-    fun `non google avatar urls are left untouched`() {
-        val raw = "https://example.com/avatar.png"
-
-        assertThat(ThumbnailUrlResolver.resolveChannelAvatar(raw)).isEqualTo(raw)
+        assertThat(candidates)
+            .containsExactly(
+                "https://i.ytimg.com/vi/$OTHER_ID/hq720.jpg",
+                "https://i.ytimg.com/vi/$OTHER_ID/hqdefault.jpg",
+            ).inOrder()
     }
 
     private companion object {

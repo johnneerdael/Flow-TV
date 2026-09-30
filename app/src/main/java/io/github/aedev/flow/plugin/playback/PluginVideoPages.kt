@@ -1,9 +1,9 @@
 package io.github.aedev.flow.plugin.playback
 
 import io.github.aedev.flow.data.comments.CommentsPageResult
+import io.github.aedev.flow.data.comments.VideoCommentSort
 import io.github.aedev.flow.data.model.LiveChatMessageType
 import io.github.aedev.flow.data.model.Video
-import io.github.aedev.flow.innertube.pages.VideoCommentSort
 import nl.neerdael.milkbeat.catalog.CollectionBlock
 import nl.neerdael.milkbeat.catalog.CommentsPage
 import nl.neerdael.milkbeat.catalog.EntityKind

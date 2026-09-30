@@ -48,7 +48,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun FlowTvApp(
     deeplinkVideoId: String? = null,
-    isShort: Boolean = false,
     onDeeplinkConsumed: () -> Unit = {},
     pluginLinkPending: Boolean = false,
 ) {
@@ -174,7 +173,6 @@ fun FlowTvApp(
                 duration = 0,
                 viewCount = 0L,
                 uploadDate = "",
-                isShort = isShort,
             ),
         )
         onDeeplinkConsumed()

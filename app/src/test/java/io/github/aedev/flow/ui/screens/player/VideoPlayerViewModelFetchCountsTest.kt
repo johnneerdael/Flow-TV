@@ -3,15 +3,10 @@ package io.github.aedev.flow.ui.screens.player
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import io.github.aedev.flow.R
-import io.github.aedev.flow.data.comments.CommentsPageResult
-import io.github.aedev.flow.data.local.ChannelSubscription
 import io.github.aedev.flow.data.model.Comment
-import io.github.aedev.flow.innertube.YouTube
 import io.github.aedev.flow.player.GlobalPlayerState
 import io.github.aedev.flow.player.state.EnhancedPlayerState
-import io.github.aedev.flow.player.stream.InnerTubeVideoStreamExtractor
 import io.github.aedev.flow.ui.screens.player.VideoPlayerViewModelHarness.Companion.video
-import io.mockk.Called
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -34,8 +29,6 @@ import nl.neerdael.milkbeat.plugin.VideoPlayback
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import org.schabi.newpipe.extractor.Page
-import org.schabi.newpipe.extractor.stream.StreamInfo
 import nl.neerdael.milkbeat.catalog.Comment as PluginComment
 
 /**
@@ -75,12 +68,6 @@ class VideoPlayerViewModelFetchCountsTest {
         clearAllMocks(answers = false, childMocks = false)
     }
 
-    private fun verifyNoYouTubeStack() {
-        coVerify(exactly = 0) { InnerTubeVideoStreamExtractor.extract(any(), any()) }
-        verify(exactly = 0) { harness.playerPreferences.rytdEnabled }
-        coVerify(exactly = 0) { YouTube.player(any(), any(), any(), any(), any(), any(), any()) }
-    }
-
     @Test
     fun `playVideo resets state then makes 1 plugin resolve and no YouTube call`() =
         runTest {
@@ -115,7 +102,6 @@ class VideoPlayerViewModelFetchCountsTest {
             }
 
             coVerify(exactly = 1) { harness.pluginVideo.resolve("vid_a") }
-            verifyNoYouTubeStack()
             verifyOrder {
                 harness.playerManager.pause()
                 harness.playerManager.clearAll()
@@ -148,7 +134,6 @@ class VideoPlayerViewModelFetchCountsTest {
             assertThat(terminal.isLoading).isFalse()
             assertThat(terminal.error).isEqualTo("res:${R.string.error_generic}")
             coVerify(exactly = 1) { harness.pluginVideo.resolve("vid_a") }
-            verifyNoYouTubeStack()
             verify(exactly = 0) { harness.playerManager.pause() }
             verify(exactly = 0) { harness.playerManager.clearAll() }
         }
@@ -175,7 +160,6 @@ class VideoPlayerViewModelFetchCountsTest {
                 harness.pluginVideo.resolve("vid_a")
             }
             coVerify(exactly = 1) { harness.pluginVideo.resolve("vid_a") }
-            verifyNoYouTubeStack()
             coVerify(exactly = 0) { harness.playerManager.clearCacheForCurrentVideo() }
             coVerify(exactly = 0) { harness.playerPreferences.markVideoUnplayable(any()) }
         }
@@ -260,7 +244,6 @@ class VideoPlayerViewModelFetchCountsTest {
             assertThat(terminal.isLoading).isFalse()
             assertThat(terminal.error).isEqualTo("res:${R.string.error_generic}")
             coVerify(exactly = 1) { harness.pluginVideo.resolve("ext_1") }
-            verifyNoYouTubeStack()
             verify(exactly = 0) { harness.playerManager.startBackgroundService(any(), any(), any(), any()) }
         }
 
@@ -306,58 +289,6 @@ class VideoPlayerViewModelFetchCountsTest {
 
             coVerify(exactly = 1) { harness.pluginVideo.resolve("vid_a") }
             coVerify(exactly = 1) { harness.pluginVideo.resolve("vid_b") }
-        }
-
-    @Test
-    fun `loadSubscriptionAndLikeState holds one collector per concern across three different ids`() =
-        runTest {
-            val viewModel = newViewModel()
-
-            viewModel.loadSubscriptionAndLikeState("ch_1", "vid_1")
-            advanceUntilIdle()
-            viewModel.loadSubscriptionAndLikeState("ch_2", "vid_2")
-            advanceUntilIdle()
-            viewModel.loadSubscriptionAndLikeState("ch_3", "vid_3")
-            advanceUntilIdle()
-
-            assertThat(harness.isSubscribed.subscriptionCount.value).isEqualTo(1)
-            assertThat(harness.subscription.subscriptionCount.value).isEqualTo(1)
-            assertThat(harness.likeState.subscriptionCount.value).isEqualTo(1)
-            verify(exactly = 1) { harness.subscriptionRepository.isSubscribed("ch_3") }
-            verify(exactly = 1) { harness.subscriptionRepository.getSubscription("ch_3") }
-            verify(exactly = 1) { harness.likedVideosRepository.getLikeState("vid_3") }
-
-            harness.isSubscribed.value = true
-            harness.subscription.value =
-                ChannelSubscription(
-                    channelId = "ch_3",
-                    channelName = "Channel",
-                    channelThumbnail = "",
-                    isNotificationEnabled = true,
-                )
-            harness.likeState.value = "liked"
-            advanceUntilIdle()
-            assertThat(viewModel.uiState.value.isSubscribed).isTrue()
-            assertThat(viewModel.uiState.value.isNotificationsEnabled).isTrue()
-            assertThat(viewModel.uiState.value.likeState).isEqualTo("liked")
-        }
-
-    @Test
-    fun `loadSubscriptionAndLikeState does not re-collect ids it is already collecting`() =
-        runTest {
-            val viewModel = newViewModel()
-
-            repeat(3) {
-                viewModel.loadSubscriptionAndLikeState("ch_1", "vid_1")
-                advanceUntilIdle()
-            }
-
-            assertThat(harness.isSubscribed.subscriptionCount.value).isEqualTo(1)
-            assertThat(harness.subscription.subscriptionCount.value).isEqualTo(1)
-            assertThat(harness.likeState.subscriptionCount.value).isEqualTo(1)
-            verify(exactly = 1) { harness.subscriptionRepository.isSubscribed("ch_1") }
-            verify(exactly = 1) { harness.subscriptionRepository.getSubscription("ch_1") }
-            verify(exactly = 1) { harness.likedVideosRepository.getLikeState("vid_1") }
         }
 
     @Test
@@ -410,18 +341,5 @@ class VideoPlayerViewModelFetchCountsTest {
 
             coVerify(exactly = 0) { harness.pluginVideo.comments(any()) }
             assertThat(viewModel.isLoadingComments.value).isFalse()
-        }
-
-    @Test
-    fun `loadComments for a local media id short-circuits without a coroutine`() =
-        runTest {
-            val viewModel = newViewModel()
-
-            viewModel.loadComments("local_1")
-
-            verify { harness.repository wasNot Called }
-            coVerify(exactly = 0) { harness.pluginVideo.comments(any()) }
-            assertThat(viewModel.isLoadingComments.value).isFalse()
-            assertThat(viewModel.hasMoreComments.value).isFalse()
         }
 }

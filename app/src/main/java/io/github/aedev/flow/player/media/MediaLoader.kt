@@ -24,16 +24,10 @@ import androidx.media3.exoplayer.source.SingleSampleMediaSource
 import io.github.aedev.flow.R
 import io.github.aedev.flow.player.StreamRequestHeaders
 import io.github.aedev.flow.player.cache.PlayerCacheManager
-import io.github.aedev.flow.player.config.PlayerConfig
 import io.github.aedev.flow.player.renderer.subtitle.Srv3SubtitleParser
 import io.github.aedev.flow.player.resolver.VideoPlaybackResolver
-import io.github.aedev.flow.player.sabr.integration.SabrMediaSourceFactory
-import io.github.aedev.flow.player.sabr.integration.SabrMediaSourceResult
-import io.github.aedev.flow.player.sabr.integration.SabrOrchestrator
-import io.github.aedev.flow.player.sabr.integration.SabrStreamInfo
 import io.github.aedev.flow.player.state.EnhancedPlayerState
 import io.github.aedev.flow.player.stream.CaptionTrackResolver
-import io.github.aedev.flow.player.stream.StreamProcessor
 import io.github.aedev.flow.player.stream.VideoCodecUtils
 import io.github.aedev.flow.player.surface.SurfaceManager
 import io.github.aedev.flow.player.withRequestHeaders
@@ -71,13 +65,6 @@ class MediaLoader(
         internal fun subtitleTrackId(index: Int): String = "flow-subtitle-$index"
     }
 
-    private var activeSabrOrchestrator: SabrOrchestrator? = null
-    private var lastSourceWasSabr = false
-    var onSabrFallbackNeeded: (() -> Unit)? = null
-
-    /** Invoked with a subtitle track's index and display label once its fetch has finally given up. */
-    var onSubtitleLoadFailed: ((Int, String) -> Unit)? = null
-
     /**
      * Load media with video and audio streams.
      *
@@ -112,11 +99,6 @@ class MediaLoader(
         audioOnly: Boolean = false,
         playWhenReady: Boolean = true,
         subtitleStreams: List<SubtitlesStream> = emptyList(),
-        sabrInfo: SabrStreamInfo? = null,
-        sabrVideoId: String? = null,
-        sabrPreferred: Boolean = false,
-        innerTubeVideoFormats: List<io.github.aedev.flow.innertube.models.response.PlayerResponse.StreamingData.Format> = emptyList(),
-        innerTubeAudioFormats: List<io.github.aedev.flow.innertube.models.response.PlayerResponse.StreamingData.Format> = emptyList(),
         mediaId: String = "",
         mediaMetadata: MediaMetadata = MediaMetadata.EMPTY,
         requestHeaders: StreamRequestHeaders = StreamRequestHeaders.NONE,
@@ -153,7 +135,6 @@ class MediaLoader(
 
                 Log.d(TAG, "Resolving media with VideoPlaybackResolver for duration ${finalDuration}s")
 
-                lastSourceWasSabr = false
                 val mediaSource =
                     createMediaSource(
                         context = ctx,
@@ -169,12 +150,6 @@ class MediaLoader(
                         localFilePath = localFilePath,
                         audioOnly = audioOnly,
                         subtitleStreams = subtitleStreams,
-                        sabrInfo = sabrInfo,
-                        sabrVideoId = sabrVideoId,
-                        sabrPreferred = sabrPreferred,
-                        startPositionMs = preservePosition ?: 0L,
-                        innerTubeVideoFormats = innerTubeVideoFormats,
-                        innerTubeAudioFormats = innerTubeAudioFormats,
                         mediaId = mediaId,
                         mediaMetadata = mediaMetadata,
                         requestHeaders = requestHeaders,
@@ -185,9 +160,7 @@ class MediaLoader(
                     exoPlayer.prepare()
                     stateFlow.value = stateFlow.value.copy(isPrepared = true)
 
-                    // SABR sessions already start fetching at the position; seeking the
-                    // unseekable progressive pipe would restart extraction.
-                    if (preservePosition != null && preservePosition > 0 && !lastSourceWasSabr) {
+                    if (preservePosition != null && preservePosition > 0) {
                         exoPlayer.seekTo(preservePosition)
                         Log.d(TAG, "Seeking to preserved position: ${preservePosition}ms")
                     }
@@ -259,13 +232,6 @@ class MediaLoader(
         }
     }
 
-    fun releaseSabr() {
-        activeSabrOrchestrator?.release()
-        activeSabrOrchestrator = null
-    }
-
-    fun getActiveSabrOrchestrator(): SabrOrchestrator? = activeSabrOrchestrator
-
     private fun createMediaSource(
         context: Context,
         dataSourceFactory: DataSource.Factory,
@@ -280,33 +246,10 @@ class MediaLoader(
         localFilePath: String?,
         audioOnly: Boolean,
         subtitleStreams: List<SubtitlesStream>,
-        sabrInfo: SabrStreamInfo? = null,
-        sabrVideoId: String? = null,
-        sabrPreferred: Boolean = false,
-        startPositionMs: Long = 0L,
-        innerTubeVideoFormats: List<io.github.aedev.flow.innertube.models.response.PlayerResponse.StreamingData.Format> = emptyList(),
-        innerTubeAudioFormats: List<io.github.aedev.flow.innertube.models.response.PlayerResponse.StreamingData.Format> = emptyList(),
         mediaId: String = "",
         mediaMetadata: MediaMetadata = MediaMetadata.EMPTY,
         requestHeaders: StreamRequestHeaders = StreamRequestHeaders.NONE,
     ): MediaSource? {
-        val sabrAvailable =
-            sabrInfo != null && sabrInfo.streamingUrl.isNotEmpty() &&
-                sabrVideoId != null && sabrInfo.audioItag > 0 && sabrInfo.videoItag > 0
-
-        val overridesDefaultAudio = StreamProcessor.overridesDefaultAudioTrack(audioStream)
-
-        if (sabrAvailable && sabrPreferred && !overridesDefaultAudio) {
-            createSabrMediaSource(
-                sabrInfo!!,
-                sabrVideoId!!,
-                finalDuration,
-                startPositionMs,
-                mediaId,
-                mediaMetadata,
-            )?.let { return mergeSubtitleSourcesIfNeeded(it, subtitleStreams, dataSourceFactory, context) }
-        }
-
         val mediaSource =
             if (localFilePath != null) {
                 val localUri =
@@ -373,18 +316,6 @@ class MediaLoader(
                 )
             }
 
-        if (mediaSource == null && sabrAvailable && !sabrPreferred) {
-            Log.w(TAG, "No playable extractor streams — falling back to native SABR session")
-            createSabrMediaSource(
-                sabrInfo!!,
-                sabrVideoId!!,
-                finalDuration,
-                startPositionMs,
-                mediaId,
-                mediaMetadata,
-            )?.let { return mergeSubtitleSourcesIfNeeded(it, subtitleStreams, dataSourceFactory, context) }
-        }
-
         return mergeSubtitleSourcesIfNeeded(mediaSource, subtitleStreams, dataSourceFactory, context)
     }
 
@@ -396,43 +327,6 @@ class MediaLoader(
             "webm" -> MimeTypes.VIDEO_WEBM
             "mkv" -> "video/x-matroska"
             else -> null
-        }
-
-    private fun createSabrMediaSource(
-        info: SabrStreamInfo,
-        videoId: String,
-        finalDuration: Long,
-        startPositionMs: Long,
-        mediaId: String,
-        mediaMetadata: MediaMetadata,
-    ): MediaSource? =
-        try {
-            releaseSabr()
-            val durationMs = info.durationMs.takeIf { it > 0 } ?: (finalDuration * 1000L)
-            val result =
-                SabrMediaSourceFactory.create(
-                    info = info,
-                    videoId = videoId,
-                    durationMs = durationMs,
-                    startPositionMs = startPositionMs,
-                    mediaId = mediaId,
-                    mediaMetadata = mediaMetadata,
-                )
-            activeSabrOrchestrator = result.orchestrator
-            result.orchestrator.onError = { _, msg, recoverable ->
-                if (!recoverable) {
-                    Log.w(TAG, "SABR non-recoverable error: $msg — triggering fallback")
-                    onSabrFallbackNeeded?.invoke()
-                }
-            }
-            result.orchestrator.start()
-            lastSourceWasSabr = true
-            Log.d(TAG, "Using SABR MediaSource for $videoId (startPos=${startPositionMs}ms)")
-            result.mediaSource
-        } catch (e: Exception) {
-            Log.w(TAG, "SABR MediaSource creation failed, falling back to DASH/Progressive", e)
-            releaseSabr()
-            null
         }
 
     private fun mergeSubtitleSourcesIfNeeded(
@@ -526,7 +420,6 @@ class MediaLoader(
                     return
                 }
                 Log.w(TAG, "Subtitle '$label' gave up after retries (status=$status): ${error.message}")
-                onSubtitleLoadFailed?.invoke(index, label)
             }
         }
 

@@ -10,13 +10,11 @@ import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.data.local.ViewHistory
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.repository.SponsorBlockRepository
-import io.github.aedev.flow.data.repository.YouTubeRepository
 import io.github.aedev.flow.data.stats.VideoStatsRecorder
 import io.github.aedev.flow.data.transcript.TranscriptRepository
 import io.github.aedev.flow.data.video.OfflineSubtitleStore
 import io.github.aedev.flow.data.video.VideoDownloadManager
 import io.github.aedev.flow.player.EnhancedPlayerManager
-import io.github.aedev.flow.player.stream.UpcomingPremiereProbe
 import io.github.aedev.flow.plugin.playback.PluginCommentsSource
 import io.github.aedev.flow.plugin.playback.PluginVideo
 import io.github.aedev.flow.plugin.playback.PluginVideoPages.toAppMessage
@@ -37,7 +35,6 @@ import kotlinx.coroutines.flow.map
  */
 internal class PlayerCollaborators(
     context: Context,
-    repository: YouTubeRepository,
     transcriptRepository: TranscriptRepository,
     viewHistory: ViewHistory,
     engagement: VideoEngagementUseCase,
@@ -49,7 +46,6 @@ internal class PlayerCollaborators(
     accountPlayHistory: AccountPlayHistory,
     homeFeedCacheRepository: HomeFeedCacheRepository,
     playerManager: EnhancedPlayerManager,
-    upcomingPremiereProbe: UpcomingPremiereProbe,
     private val videoStats: VideoStatsRecorder,
     private val uiState: MutableStateFlow<VideoPlayerUiState>,
     scope: CoroutineScope,
@@ -81,13 +77,6 @@ internal class PlayerCollaborators(
             networkDispatcher = networkDispatcher,
         )
 
-    val descriptions =
-        VideoDescriptionLoader(
-            repository = repository,
-            scope = scope,
-            networkDispatcher = networkDispatcher,
-        )
-
     private val playbackPreparer =
         PlaybackPreparer(
             context = context,
@@ -98,9 +87,7 @@ internal class PlayerCollaborators(
 
     val secondaryMetadata =
         PlayerSecondaryMetadataLoader(
-            repository = repository,
             playerManager = playerManager,
-            playerPreferences = playerPreferences,
             scope = scope,
             networkDispatcher = networkDispatcher,
             currentState = { uiState.value },
@@ -151,12 +138,11 @@ internal class PlayerCollaborators(
             context = context,
             uiState = uiState,
             playerPreferences = playerPreferences,
-            probe = upcomingPremiereProbe,
             scope = scope,
             isLoadCurrent = isLoadCurrent,
             // A countdown the video's own metadata enters skips the load, so it arms what a load would.
-            armMetadata = { videoId, channelId ->
-                sessionApplier.armCountdownMetadata(LoadContext(videoId, currentLoadToken()), emptyList(), channelId)
+            armMetadata = { videoId ->
+                sessionApplier.armCountdownMetadata(LoadContext(videoId, currentLoadToken()), emptyList())
             },
         )
 
@@ -179,11 +165,8 @@ internal class PlayerCollaborators(
             uiState = uiState,
             isLoadCurrent = isLoadCurrent,
             playbackPreparer = playbackPreparer,
-            streamPreparer = PlaybackStreamPreparer(),
             pluginPlayback = pluginPlayback,
             secondaryMetadata = secondaryMetadata,
-            liveChat = liveChat,
-            repository = repository,
             viewHistory = viewHistory,
             playerPreferences = playerPreferences,
             sponsorBlockRepository = sponsorBlockRepository,
@@ -194,7 +177,6 @@ internal class PlayerCollaborators(
             networkDispatcher = networkDispatcher,
             ioDispatcher = ioDispatcher,
             enterUpcoming = upcomingPremiere::enterCountdown,
-            tryEnterUpcoming = upcomingPremiere::tryEnterCountdown,
         )
 
     private fun relatedVideosFor(videoId: String): List<Video> =

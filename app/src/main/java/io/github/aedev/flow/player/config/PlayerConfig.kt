@@ -12,9 +12,6 @@ object PlayerConfig {
     /** Maximum cache size in bytes (500 MB — default) */
     const val CACHE_SIZE_BYTES = 500L * 1024L * 1024L
 
-    /** Cache size options (MB) shown in Settings. 0 = unlimited. */
-    val CACHE_SIZE_OPTIONS_MB = intArrayOf(100, 200, 500, 0)
-
     /** Convert a cache size MB setting to bytes. 0 MB means unlimited (NoOpCacheEvictor). */
     fun cacheSizeMbToBytes(mb: Int): Long = if (mb <= 0) 0L else mb * 1024L * 1024L
 
@@ -48,20 +45,6 @@ object PlayerConfig {
     const val LOW_MEMORY_MAIN_TARGET_BUFFER_BYTES = 4 * 1024 * 1024
     const val MID_MEMORY_MAIN_TARGET_BUFFER_BYTES = 12 * 1024 * 1024
 
-    /** Explicit target buffer budget per shorts player in the pooled shorts stack. */
-    const val SHORTS_TARGET_BUFFER_BYTES = 4 * 1024 * 1024
-
-    /**
-     * Shorts buffer window. Deliberately below the floors in `BufferDurations` — a swipe has to
-     * start the next clip immediately, and three pooled players each holding a long window would
-     * cost more memory than the feed is worth.
-     */
-    const val SHORTS_MIN_BUFFER_MS = 1_500
-    const val SHORTS_MAX_BUFFER_MS = 8_000
-    const val SHORTS_BUFFER_FOR_PLAYBACK_MS = 250
-    const val SHORTS_BUFFER_FOR_REBUFFER_MS = 750
-    const val SHORTS_BACK_BUFFER_MS = 2_000
-
     /** Music buffer window. Audio-only, so a long window is cheap and a low start threshold is safe. */
     const val MUSIC_MIN_BUFFER_MS = 2_500
     const val MUSIC_MAX_BUFFER_MS = 30_000
@@ -70,9 +53,6 @@ object PlayerConfig {
 
     /** Preferred delay from the true live edge. Keeps YouTube live playback stable. */
     const val LIVE_EDGE_GAP_MS = 10_000L
-
-    /** Maximum DVR window requested for live streams where the manifest supports it. */
-    const val LIVE_DVR_MAX_OFFSET_MS = 2 * 60 * 60 * 1000L
 
     // ===== Bandwidth Thresholds =====
 
@@ -119,24 +99,6 @@ object PlayerConfig {
     /** Maximum concurrent requests per host for adaptive streaming */
     const val MAX_REQUESTS_PER_HOST = 20
 
-    /** Maximum total concurrent requests */
-    const val MAX_REQUESTS = 40
-
-    /** Connection pool size */
-    const val CONNECTION_POOL_SIZE = 15
-
-    /** Connection pool keep-alive duration in minutes */
-    const val CONNECTION_POOL_KEEP_ALIVE_MINUTES = 5L
-
-    /** Connect timeout in seconds */
-    const val CONNECT_TIMEOUT_SECONDS = 15L
-
-    /** Read timeout in seconds */
-    const val READ_TIMEOUT_SECONDS = 30L
-
-    /** Write timeout in seconds */
-    const val WRITE_TIMEOUT_SECONDS = 15L
-
     // ===== Position Tracking =====
 
     /** Position tracker polling interval in milliseconds */
@@ -147,11 +109,6 @@ object PlayerConfig {
 
     /** Stuck detection threshold (number of checks with no position change) */
     const val STUCK_DETECTION_THRESHOLD = 2
-
-    // ===== Surface Configuration =====
-
-    /** Default surface ready timeout in milliseconds */
-    const val DEFAULT_SURFACE_TIMEOUT_MS = 500L
 
     // ===== Error Recovery =====
 

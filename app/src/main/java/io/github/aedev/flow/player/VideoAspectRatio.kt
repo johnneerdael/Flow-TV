@@ -4,9 +4,6 @@ import androidx.media3.common.VideoSize
 
 internal const val DEFAULT_VIDEO_ASPECT_RATIO = 16f / 9f
 
-private const val MAX_PIP_ASPECT_RATIO = 2.39f
-private const val MIN_PIP_ASPECT_RATIO = 1f / MAX_PIP_ASPECT_RATIO
-
 internal fun sanitizeDisplayAspectRatio(aspectRatio: Float): Float =
     aspectRatio
         .takeIf { it.isFinite() && it > 0f }
@@ -28,7 +25,3 @@ internal fun sourceVideoAspectRatio(dimensions: Iterable<Pair<Int, Int>>): Float
             ?: return null
     return sourceDimensions.first.toFloat() / sourceDimensions.second.toFloat()
 }
-
-internal fun sanitizePipAspectRatio(aspectRatio: Float): Float =
-    sanitizeDisplayAspectRatio(aspectRatio)
-        .coerceIn(MIN_PIP_ASPECT_RATIO, MAX_PIP_ASPECT_RATIO)
