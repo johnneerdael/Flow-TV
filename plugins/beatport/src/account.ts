@@ -1,16 +1,22 @@
-// The Beatport account: where the API's bearer token comes from, and how the host sees the account.
-// Requests only ever ask the current TokenSource; the source that signs in with Beatport's own app
-// client (and refreshes) replaces the stored-session one without the requests changing.
-import type { PluginDefinition, ProviderAccount } from '@milkbeat/plugin-sdk';
+// The Beatport account, signed in on the web store. The store's own session (its NextAuth cookies)
+// is what the host keeps; the bearer token Beatport's API takes lives ten minutes and is read again
+// from the store's session endpoint, in the host's web view, whenever it is about to lapse.
+import type { PluginDefinition, ProviderAccount, WebLoginResult } from '@milkbeat/plugin-sdk';
 import { fail, mb } from '@milkbeat/plugin-sdk';
+
+export const SIGN_IN_METHOD = 'beatport';
+const SESSION_COOKIE = '__Secure-next-auth.session-token';
+/** A token this close to its end is replaced before it is sent. */
+const REFRESH_MARGIN_MS = 60_000;
 
 /** What the sign-in keeps sealed in the host's secrets. */
 export interface Session {
   accessToken: string;
-  /** Epoch milliseconds after which the token is no longer sent. */
+  /** Epoch milliseconds at which Beatport stops taking the token. */
   expiresAt?: number;
-  refreshToken?: string;
-  /** A stable, credential-free key for the account, such as a hash of its user id. */
+  /** The web store's cookies, which the host hands back to its web view to read a fresh token. */
+  cookies?: string;
+  /** A stable, credential-free key for the account: a hash of its user id. */
   accountKey?: string;
   name?: string;
   expired?: boolean;
@@ -38,23 +44,57 @@ async function readSession(): Promise<Session | undefined> {
   }
 }
 
-export async function saveSession(session: Session): Promise<void> {
+async function saveSession(session: Session): Promise<void> {
   await mb.secrets.set({ key: SESSION_KEY, value: JSON.stringify(session) });
 }
 
-const usable = (session: Session | undefined): session is Session =>
-  !!session && !session.expired && (session.expiresAt === undefined || session.expiresAt > Date.now());
+const fresh = (session: Session) => session.expiresAt === undefined || session.expiresAt - REFRESH_MARGIN_MS > Date.now();
 
-/** A token the sign-in stored; a refused or lapsed one marks the session expired, as nothing refreshes it. */
-export const storedSessionSource: TokenSource = {
+/** The session the web store's extracted values describe, or undefined when it holds no signed-in token. */
+async function sessionFrom(extracted: Record<string, string> | null | undefined, cookies: string): Promise<Session | undefined> {
+  const accessToken = extracted?.accessToken;
+  if (!accessToken || extracted?.anon === 'true') return undefined;
+  const expiresAt = Number(extracted?.expires);
+  const user = extracted?.user;
+  return {
+    accessToken,
+    expiresAt: Number.isFinite(expiresAt) && expiresAt > 0 ? expiresAt : undefined,
+    cookies,
+    accountKey: user ? (await mb.crypto.hash({ algorithm: 'SHA256', text: `beatport:${user}` })).hex.slice(0, 32) : undefined,
+    name: extracted?.name || undefined,
+  };
+}
+
+let refreshing: Promise<Session | undefined> | undefined;
+
+/** Reads a new token through the host's web view; the session is marked expired when the store has signed it out. */
+function refreshed(session: Session): Promise<Session | undefined> {
+  refreshing ??= (async () => {
+    try {
+      const cookies = session.cookies;
+      const result = cookies ? await mb.signIn.refresh({ method: SIGN_IN_METHOD, cookies }) : undefined;
+      const next = cookies && result ? await sessionFrom(result.extracted, result.cookies || cookies) : undefined;
+      await saveSession(next ? { ...next, accountKey: next.accountKey ?? session.accountKey, name: next.name ?? session.name } : { ...session, expired: true });
+      return next;
+    } finally {
+      refreshing = undefined;
+    }
+  })();
+  return refreshing;
+}
+
+const webSession: TokenSource = {
   async token() {
     const session = await readSession();
-    return usable(session) ? session.accessToken : undefined;
+    if (!session || session.expired) return undefined;
+    if (fresh(session)) return session.accessToken;
+    return (await refreshed(session))?.accessToken;
   },
   async rejected(token) {
     const session = await readSession();
-    if (session && session.accessToken === token) await saveSession({ ...session, expired: true });
-    return undefined;
+    if (!session || session.expired) return undefined;
+    if (session.accessToken !== token) return session.accessToken;
+    return (await refreshed(session))?.accessToken;
   },
   session: readSession,
   async signOut() {
@@ -62,32 +102,37 @@ export const storedSessionSource: TokenSource = {
   },
 };
 
-let source: TokenSource = storedSessionSource;
-
 export function tokenSource(): TokenSource {
-  return source;
-}
-
-export function setTokenSource(next: TokenSource): void {
-  source = next;
+  return webSession;
 }
 
 async function describe(session: Session | undefined): Promise<ProviderAccount> {
   if (!session) return { type: 'anonymous' };
-  if (!usable(session)) return { type: 'expired' };
+  if (session.expired) return { type: 'expired' };
   const key = session.accountKey ?? (await mb.crypto.hash({ algorithm: 'SHA256', text: session.accessToken })).hex.slice(0, 32);
   return { type: 'signedIn', key, name: session.name };
 }
 
+async function complete(result: WebLoginResult): Promise<ProviderAccount> {
+  if (!result.cookies.includes(`${SESSION_COOKIE}=`)) fail('SIGN_IN_REQUIRED', 'The Beatport sign-in did not finish');
+  // The store may have moved on from the page the values were read on; its cookies still hold the session.
+  const session =
+    (await sessionFrom(result.extracted, result.cookies)) ??
+    (await (async () => {
+      const read = await mb.signIn.refresh({ method: SIGN_IN_METHOD, cookies: result.cookies });
+      return sessionFrom(read.extracted, read.cookies || result.cookies);
+    })());
+  if (!session) fail('SIGN_IN_REQUIRED', 'Beatport did not sign this account in');
+  await saveSession(session);
+  return describe(session);
+}
+
 export const signIn: NonNullable<PluginDefinition['signIn']> = {
-  // TODO(coordinator): sign in with Beatport's app client and store the Session; manifest `signIn` is empty until then.
-  async complete() {
-    return fail('UNSUPPORTED', 'Beatport sign-in is not available yet');
-  },
+  complete,
   async account() {
-    return describe(await source.session());
+    return describe(await readSession());
   },
   async signOut() {
-    await source.signOut();
+    await webSession.signOut();
   },
 };

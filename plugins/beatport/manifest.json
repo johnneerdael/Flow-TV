@@ -1,24 +1,66 @@
 {
   "format": 1,
-  "api": { "min": 1, "target": 1 },
+  "api": {
+    "min": 1,
+    "target": 1
+  },
   "id": "nl.neerdael.beatport",
   "name": "Beatport",
   "version": "0.1.0",
   "versionCode": 1,
-  "description": "Beatport: the Top 100s, genres with their charts and curated playlists, release, artist and label pages, and your playlists and followed artists and labels.",
-  "author": { "name": "Milkbeat", "url": "https://github.com/johnneerdael/Milkbeat" },
+  "description": "Beatport: stream full-length tracks with your Beatport streaming subscription, and browse the Top 100s, genres with their charts, picks and curated playlists, release, artist and label pages, and your playlists and followed artists and labels.",
+  "author": {
+    "name": "Milkbeat",
+    "url": "https://github.com/johnneerdael/Milkbeat"
+  },
   "updateUrl": "https://github.com/johnneerdael/Milkbeat/releases/latest/download/beatport.mbplugin",
   "roles": {
     "metadata": {
-      "surfaces": ["HOME", "SEARCH", "ENTITY", "TRACKS", "LIBRARY"],
-      "entities": ["TRACK", "ALBUM", "PLAYLIST", "ARTIST", "PROFILE", "MIX"],
+      "surfaces": [
+        "HOME",
+        "SEARCH",
+        "ENTITY",
+        "TRACKS",
+        "LIBRARY"
+      ],
+      "entities": [
+        "TRACK",
+        "ALBUM",
+        "PLAYLIST",
+        "ARTIST",
+        "PROFILE",
+        "MIX"
+      ],
       "idSpace": "beatport"
     },
-    "audio": { "idSpaces": ["beatport"] }
+    "audio": {
+      "idSpaces": [
+        "beatport"
+      ],
+      "reportPlayback": true,
+      "delivery": "HLS"
+    }
   },
-  "signIn": [],
+  "signIn": [
+    {
+      "type": "webLogin",
+      "id": "beatport",
+      "label": "Sign in with Beatport",
+      "startUrl": "https://www.beatport.com/api/auth/signin?callbackUrl=https%3A%2F%2Fwww.beatport.com%2Faccount%2Fredirect-handler",
+      "successUrlPrefix": "https://www.beatport.com/account/redirect-handler",
+      "cookieUrl": "https://www.beatport.com/",
+      "requiredCookies": [
+        "__Secure-next-auth.session-token"
+      ],
+      "extractScript": "fetch('/api/auth/session', {credentials: 'include'}).then(function (r) { return r.json(); }).then(function (s) { var t = (s && s.token) || {}; var i = (s && s.introspect) || {}; return {accessToken: String(t.accessToken || ''), expires: String(t.accessTokenExpires || ''), anon: String(!!t.anon), user: String(i.user_id || ''), name: String(i.username || '')}; })",
+      "refreshUrl": "https://www.beatport.com/api/auth/session"
+    }
+  ],
   "permissions": {
-    "network": ["api.beatport.com", "account.beatport.com", "*.beatport.com"],
+    "network": [
+      "api.beatport.com",
+      "www.beatport.com"
+    ],
     "storage": 1048576
   },
   "settings": []

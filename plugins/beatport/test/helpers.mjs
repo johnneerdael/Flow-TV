@@ -55,7 +55,7 @@ export const API = 'https://api.beatport.com';
 
 /**
  * The plugin, signed in unless `secrets` says otherwise. `routes` are `[match, response]` pairs:
- * `match(call)` sees `{ path, query, url, authorization }`; `response` is `{ status, body }` or a
+ * `match(call)` sees `{ method, path, query, url, authorization, body }`; `response` is `{ status, body }` or a
  * function of the call answering one.
  */
 export function offlinePlugin(options = {}) {
@@ -63,9 +63,17 @@ export function offlinePlugin(options = {}) {
   const routes = options.routes ?? [];
   const plugin = loadPlugin(PLUGIN_DIR, {
     secrets: options.secrets ?? SIGNED_IN,
+    hostOverrides: options.hostOverrides,
     http: async (request) => {
       const url = new URL(request.url);
-      const call = { url: request.url, path: url.pathname, query: Object.fromEntries(url.searchParams), authorization: request.headers?.authorization };
+      const call = {
+        url: request.url,
+        method: request.method ?? 'GET',
+        path: url.pathname,
+        query: Object.fromEntries(url.searchParams),
+        authorization: request.headers?.authorization,
+        body: request.body ? JSON.parse(request.body) : undefined,
+      };
       calls.push(call);
       const route = routes.find(([match]) => match(call));
       let answer = route ? route[1] : fixture(request.url);
