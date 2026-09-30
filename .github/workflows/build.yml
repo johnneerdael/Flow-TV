@@ -116,14 +116,17 @@ jobs:
           PLUGIN_SIGNING_KEY: ${{ secrets.PLUGIN_SIGNING_KEY }}
         run: |
           set -euo pipefail
-          cd plugins/youtube-music
-          npm test
+          plugins="youtube-music beatport"
+          for plugin in $plugins; do (cd "plugins/$plugin" && npm test); done
           if [ -n "$PLUGIN_SIGNING_KEY" ]; then
             key="$RUNNER_TEMP/plugins-signing.pem"
             printf '%s\n' "$PLUGIN_SIGNING_KEY" > "$key"
             chmod 600 "$key"
-            MBPLUGIN_KEY="$key" npm run pack
+            for plugin in $plugins; do (cd "plugins/$plugin" && MBPLUGIN_KEY="$key" npm run pack); done
             rm -f "$key"
+            # One flat folder, so the release job finds every plugin at the top of its download.
+            mkdir -p plugins/dist
+            for plugin in $plugins; do cp "plugins/$plugin/build/$plugin.mbplugin" plugins/dist/; done
           elif [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
             echo "::error::PLUGIN_SIGNING_KEY is unavailable. Refusing to publish unsigned plugins."
             exit 1
@@ -132,11 +135,11 @@ jobs:
           fi
 
       - name: Upload first-party plugins
-        if: ${{ hashFiles('plugins/youtube-music/build/*.mbplugin') != '' }}
+        if: ${{ hashFiles('plugins/dist/*.mbplugin') != '' }}
         uses: actions/upload-artifact@v7
         with:
           name: milkbeat-plugins
-          path: plugins/youtube-music/build/*.mbplugin
+          path: plugins/dist/*.mbplugin
           if-no-files-found: error
           retention-days: 14
           compression-level: 0
@@ -320,6 +323,7 @@ jobs:
             echo "Milkbeat plays nothing until a plugin is added (Settings > Plugins > Add a plugin):"
             echo
             echo "- **YouTube Music and YouTube:** $latest/youtube-music.mbplugin"
+            echo "- **Beatport** (full-length streaming needs a Beatport streaming subscription): $latest/beatport.mbplugin"
             if [ -n "$prev" ]; then
               echo
               echo "**Full changelog:** https://github.com/$REPO/compare/$prev...$TAG"
@@ -341,6 +345,7 @@ jobs:
             dist/milkbeat-armeabi-v7a.apk
             dist/musicviz-universal.apk
             dist/youtube-music.mbplugin
+            dist/beatport.mbplugin
             dist/checksums.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
