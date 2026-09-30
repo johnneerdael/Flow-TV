@@ -40,6 +40,19 @@ class PhoneChannelTest {
     }
 
     @Test
+    fun `text can name the page field it is for, within the fields the phone is offered`() {
+        val ch = channel()
+        assertThat(ch.open(phoneSeal(VECTOR_SESSION_ID, VECTOR_KEY, 1, "text", "pw", field = 1), "192.168.1.20"))
+            .isEqualTo(PhoneInput.Text("pw", field = 1))
+        assertThrows(PhoneChannelRejected::class.java) {
+            ch.open(phoneSeal(VECTOR_SESSION_ID, VECTOR_KEY, 2, "text", "pw", field = MAX_PAGE_FIELDS), "192.168.1.20")
+        }
+        assertThrows(PhoneChannelRejected::class.java) {
+            ch.open(phoneSeal(VECTOR_SESSION_ID, VECTOR_KEY, 3, "text", "pw", field = -1), "192.168.1.20")
+        }
+    }
+
+    @Test
     fun `a replayed envelope is rejected`() {
         val ch = channel()
         val envelope = phoneSeal(VECTOR_SESSION_ID, VECTOR_KEY, 5, "text", "a")
@@ -88,7 +101,7 @@ class PhoneChannelTest {
                 decoder.decode(envelope.c),
                 VECTOR_SESSION_ID + "s2c".encodeToByteArray(),
             )
-        assertThat(plain.decodeToString()).isEqualTo("""{"step":"Enter your password","done":false,"actions":[]}""")
+        assertThat(plain.decodeToString()).isEqualTo("""{"step":"Enter your password","done":false,"actions":[],"fields":[]}""")
     }
 
     @Test

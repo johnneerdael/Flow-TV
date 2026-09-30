@@ -24,6 +24,9 @@
     #actions:empty, h2:has(+ #actions:empty) { display: none; }
     h2 { font-size: 16px; margin: 8px 0 0; }
     #actions button { text-align: left; }
+    #fields { display: grid; gap: 8px; }
+    #fields:empty { display: none; }
+    body.has-fields #text { display: none; }
   </style>
 </head>
 <body>
@@ -32,6 +35,7 @@
     <p>TV is showing: <span id="step">…</span></p>
     <p id="status">Type here, then press Send. Use Enter to continue on the TV.</p>
     <div class="controls">
+      <div id="fields"></div>
       <input id="text" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Text to send to the TV">
       <label><input id="show" type="checkbox" style="width:auto"> Show text</label>
       <div class="row" style="margin-top:8px">

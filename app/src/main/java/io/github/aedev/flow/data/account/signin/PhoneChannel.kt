@@ -13,11 +13,16 @@ enum class PhoneKey { ENTER, TAB, BACKSPACE }
 /** The most page buttons and links the phone is offered at once. */
 const val MAX_PAGE_ACTIONS = 12
 
+/** The most text fields of one page the phone is offered at once. */
+const val MAX_PAGE_FIELDS = 6
+
 sealed interface PhoneInput {
+    /** Text for the page's [field]th text field of the [PhoneStatus.fields] last sent, or its focused one when null. */
     data class Text(
         val value: String,
+        val field: Int? = null,
     ) : PhoneInput {
-        override fun toString(): String = "Text(${value.length} chars)"
+        override fun toString(): String = "Text(${value.length} chars, field $field)"
     }
 
     data class Key(
@@ -36,11 +41,19 @@ data class PhoneEnvelope(
     val c: String,
 )
 
+/** A text field of the TV's page, as the phone shows it: its label, and whether it takes a password. */
+@Serializable
+data class PhoneField(
+    val label: String,
+    val secret: Boolean = false,
+)
+
 @Serializable
 data class PhoneStatus(
     val step: String,
     val done: Boolean = false,
     val actions: List<String> = emptyList(),
+    val fields: List<PhoneField> = emptyList(),
 )
 
 @Serializable
@@ -48,6 +61,7 @@ private data class PhoneInputPayload(
     val seq: Long,
     val type: String,
     val value: String,
+    val field: Int? = null,
 )
 
 class PhoneChannelRejected(
@@ -104,7 +118,8 @@ class PhoneChannel(
         val input =
             when (payload.type) {
                 TYPE_TEXT -> {
-                    PhoneInput.Text(payload.value)
+                    if (payload.field != null && payload.field !in 0 until MAX_PAGE_FIELDS) throw PhoneChannelRejected("bad field")
+                    PhoneInput.Text(payload.value, payload.field)
                 }
 
                 TYPE_KEY -> {

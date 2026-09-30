@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModelStore
 import com.google.common.truth.Truth.assertThat
 import io.github.aedev.flow.data.account.signin.PhoneChannel
+import io.github.aedev.flow.data.account.signin.PhoneField
 import io.github.aedev.flow.data.account.signin.PhoneInput
 import io.github.aedev.flow.data.account.signin.PhoneStatus
 import io.github.aedev.flow.plugin.catalog.PluginAccounts
@@ -225,16 +226,23 @@ class AccountSignInViewModelTest {
         }
 
     @Test
-    fun `the page's buttons reach the phone status and a retry clears them`() =
+    fun `the page's buttons and fields reach the phone status and a retry clears them`() =
         runTest(dispatcher) {
             val vm = viewModel()
             vm.start(loginSupported = true)
             runCurrent()
             vm.onPageTitle("2-Step Verification")
-            vm.onPageActions(listOf("Resend it", "Try another way"))
+            vm.onPageControls(listOf("Resend it", "Try another way"), listOf(PhoneField("Code")))
             assertThat(
                 lastStatus(),
-            ).isEqualTo(PhoneStatus("2-Step Verification", done = false, actions = listOf("Resend it", "Try another way")))
+            ).isEqualTo(
+                PhoneStatus(
+                    "2-Step Verification",
+                    done = false,
+                    actions = listOf("Resend it", "Try another way"),
+                    fields = listOf(PhoneField("Code")),
+                ),
+            )
 
             vm.retry()
             vm.start(loginSupported = true)

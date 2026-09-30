@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.aedev.flow.data.account.signin.PhoneChannel
+import io.github.aedev.flow.data.account.signin.PhoneField
 import io.github.aedev.flow.data.account.signin.PhoneInput
 import io.github.aedev.flow.data.account.signin.PhoneStatus
 import io.github.aedev.flow.plugin.catalog.PluginAccounts
@@ -113,6 +114,8 @@ class AccountSignInViewModel
 
         @Volatile private var actions = emptyList<String>()
 
+        @Volatile private var fields = emptyList<PhoneField>()
+
         fun start(loginSupported: Boolean) {
             if (_state.value != AccountSignInState.Starting || channel != null) return
             if (!loginSupported || method == null) {
@@ -128,7 +131,7 @@ class AccountSignInViewModel
             viewModelScope.launch {
                 val handle =
                     try {
-                        launcher.launch(phoneChannel, host, { PhoneStatus(step, done, actions) }) { inputChannel.send(it) }
+                        launcher.launch(phoneChannel, host, { PhoneStatus(step, done, actions, fields) }) { inputChannel.send(it) }
                     } catch (e: IOException) {
                         Log.w(TAG, "Phone sign-in server could not start", e)
                         stopServer()
@@ -150,8 +153,12 @@ class AccountSignInViewModel
             step = title
         }
 
-        fun onPageActions(labels: List<String>) {
+        fun onPageControls(
+            labels: List<String>,
+            textFields: List<PhoneField>,
+        ) {
             actions = labels
+            fields = textFields
         }
 
         fun onCaptured(result: WebLoginResult) {

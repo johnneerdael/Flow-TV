@@ -35,6 +35,19 @@ class SignInCaptureTest {
     }
 
     @Test
+    fun `a site that signs in on its own domain completes on any of its pages but the sign-in page`() {
+        val store =
+            method.copy(
+                startUrl = "https://store.example/api/auth/signin?callbackUrl=%2F",
+                successUrlPrefix = "https://store.example/",
+            )
+        assertThat(SignInCapture.isSuccessPage("https://store.example/", store)).isTrue()
+        assertThat(SignInCapture.isSuccessPage("https://store.example/genre/techno/6", store)).isTrue()
+        assertThat(SignInCapture.isSuccessPage("https://store.example/api/auth/signin?callbackUrl=%2F", store)).isFalse()
+        assertThat(SignInCapture.isSuccessPage("https://store.example/api/auth/signin?error=OAuthCallback", store)).isFalse()
+    }
+
+    @Test
     fun `the extraction runs the plugin's script, waits for a promise, and unwraps the values`() {
         val script = SignInCapture.extractionScript(method)
         assertThat(script).contains("return (({v: 'x'}));")
@@ -70,6 +83,46 @@ class SignInCaptureTest {
         assertThat(script).contains("document.activeElement")
         assertThat(script).contains(".focus()")
         assertThat(script).doesNotContain("insertText")
+    }
+
+    @Test
+    fun `typing and keys go back to the field last used, not the page's first`() {
+        val script = SignInCapture.focusFieldScript()
+        assertThat(script).contains("window.__mbField")
+        assertThat(script).contains("addEventListener('focusin'")
+        assertThat(script).contains("last.isConnected")
+    }
+
+    @Test
+    fun `Tab moves to the next text field, and says when there is none`() {
+        val script = SignInCapture.nextFieldScript()
+        assertThat(script).contains("l[l.indexOf(a)+1]")
+        assertThat(script).contains("window.__mbField=n")
+        assertThat(SignInCapture.movedToNextField("true")).isTrue()
+        assertThat(SignInCapture.movedToNextField("false")).isFalse()
+        assertThat(SignInCapture.movedToNextField(null)).isFalse()
+    }
+
+    @Test
+    fun `page fields are marked, labelled and unwrapped from evaluateJavascript output`() {
+        val script = SignInCapture.pageFieldsScript()
+        assertThat(script).contains("removeAttribute('data-mv-field')")
+        assertThat(script).contains("el.type==='password'")
+        assertThat(script).doesNotContain(".focus()")
+        val raw = "\"[{\\\"label\\\":\\\"Username\\\",\\\"secret\\\":false},{\\\"label\\\":\\\"Password\\\",\\\"secret\\\":true}]\""
+        assertThat(
+            SignInCapture.parsePageFields(raw),
+        ).containsExactly(PhoneField("Username"), PhoneField("Password", secret = true)).inOrder()
+        assertThat(SignInCapture.parsePageFields("null")).isEmpty()
+        assertThat(SignInCapture.parsePageFields("\"not json\"")).isEmpty()
+    }
+
+    @Test
+    fun `text for a named field replaces what that field holds`() {
+        val script = SignInCapture.insertTextScript("pw", field = 1)
+        assertThat(script).contains("""[data-mv-field="1"]""")
+        assertThat(script).contains("f.select()")
+        assertThat(SignInCapture.insertTextScript("pw")).doesNotContain("data-mv-field")
     }
 
     @Test

@@ -63,21 +63,21 @@ fun TvAccountSignInScreen(
         val login = controller ?: return@LaunchedEffect
         viewModel.inputs.collect { input ->
             when (input) {
-                is PhoneInput.Text -> login.typeText(input.value)
+                is PhoneInput.Text -> login.typeText(input.value, input.field)
                 is PhoneInput.Key -> login.pressKey(input.key)
                 is PhoneInput.Click -> login.clickAction(input.index)
             }
-            viewModel.onPageActions(login.pageActions())
+            viewModel.onPageControls(login.pageActions(), login.pageFields())
         }
     }
     // Google's sign-in is a single-page app with no navigation callback for its steps, so the page's
-    // buttons are re-read on the phone's own polling cadence while it is waiting for this screen.
+    // buttons and fields are re-read on the phone's own polling cadence while it is waiting for this screen.
     val waitingForPhone = state is AccountSignInState.Ready
     LaunchedEffect(controller, waitingForPhone) {
         val login = controller ?: return@LaunchedEffect
         if (!waitingForPhone) return@LaunchedEffect
         while (true) {
-            viewModel.onPageActions(login.pageActions())
+            viewModel.onPageControls(login.pageActions(), login.pageFields())
             delay(PAGE_ACTIONS_REFRESH_MS)
         }
     }

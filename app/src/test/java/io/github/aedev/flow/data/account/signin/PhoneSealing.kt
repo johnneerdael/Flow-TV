@@ -11,9 +11,11 @@ fun phoneSeal(
     seq: Long,
     type: String,
     value: String,
+    field: Int? = null,
 ): PhoneEnvelope {
     val nonce = SyncCrypto.randomNonce()
-    val plain = """{"seq":$seq,"type":"$type","value":${JsonPrimitive(value)}}""".encodeToByteArray()
+    val target = field?.let { ""","field":$it""" }.orEmpty()
+    val plain = """{"seq":$seq,"type":"$type","value":${JsonPrimitive(value)}$target}""".encodeToByteArray()
     val sealed = SyncCrypto.seal(key, nonce, plain, sessionId + "c2s".encodeToByteArray())
     val b64 = Base64.getUrlEncoder().withoutPadding()
     return PhoneEnvelope(b64.encodeToString(nonce), b64.encodeToString(sealed))

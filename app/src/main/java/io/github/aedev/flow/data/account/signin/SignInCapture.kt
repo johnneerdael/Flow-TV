@@ -1,5 +1,6 @@
 package io.github.aedev.flow.data.account.signin
 
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
@@ -10,16 +11,23 @@ import nl.neerdael.milkbeat.plugin.WebLoginMethod
 
 internal object SignInCapture {
     private const val RESULT_SLOT = "__mbSignInResult"
+    private val lenient = Json { ignoreUnknownKeys = true }
 
-    /** Whether [url] is under the method's success prefix, and not a host that merely starts with it. */
+    /**
+     * Whether [url] is under the method's success prefix, and not a host that merely starts with it. The
+     * sign-in's own start page never is, so a site that signs in on its own domain can name that domain.
+     */
     fun isSuccessPage(
         url: String?,
         method: WebLoginMethod,
     ): Boolean {
         val prefix = method.successUrlPrefix
         if (url == null || !url.startsWith(prefix)) return false
+        if (pageOf(url) == pageOf(method.startUrl)) return false
         return url.length == prefix.length || prefix.endsWith("/") || url[prefix.length] in "/?#"
     }
+
+    private fun pageOf(url: String): String = url.substringBefore('#').substringBefore('?')
 
     fun hasRequiredCookies(
         cookie: String?,
@@ -90,19 +98,73 @@ internal object SignInCapture {
             .take(MAX_PAGE_ACTIONS)
     }
 
-    fun insertTextScript(text: String): String =
-        "(function(t){$FOCUS_FIELD return document.execCommand('insertText', false, t);})(${JsonPrimitive(text)});"
+    /**
+     * Marks the page's visible text fields with their index and returns their labels and whether each
+     * takes a password, so the phone can offer one box per field of a form that asks for several at once.
+     */
+    fun pageFieldsScript(): String =
+        "(function(){$FIELDS" +
+            "var o=document.querySelectorAll('[data-mv-field]');" +
+            "for(var i=0;i<o.length;i++){o[i].removeAttribute('data-mv-field');}" +
+            "var out=[],l=fields();" +
+            "for(var j=0;j<l.length&&out.length<$MAX_PAGE_FIELDS;j++){" +
+            "var el=l[j];" +
+            "var t=(el.labels&&el.labels.length?el.labels[0].innerText:" +
+            "(el.getAttribute('aria-label')||el.placeholder||el.name||el.type||'')).replace(/\\s+/g,' ').trim().slice(0,40);" +
+            "el.setAttribute('data-mv-field',out.length);out.push({label:t,secret:el.type==='password'});" +
+            "}" +
+            "return JSON.stringify(out);" +
+            "})();"
+
+    fun parsePageFields(raw: String?): List<PhoneField> {
+        val inner = runCatching { Json.parseToJsonElement(raw.orEmpty()).jsonPrimitive.contentOrNull }.getOrNull() ?: return emptyList()
+        return runCatching { lenient.decodeFromString(ListSerializer(PhoneField.serializer()), inner) }
+            .getOrDefault(emptyList())
+            .take(MAX_PAGE_FIELDS)
+    }
+
+    /**
+     * Types [text] into the page: into the [field]th field the phone was offered, replacing what it held,
+     * or, without one, into the focused field.
+     */
+    fun insertTextScript(
+        text: String,
+        field: Int? = null,
+    ): String {
+        val target =
+            field
+                ?.let {
+                    "var f=document.querySelector('[data-mv-field=\"$it\"]');if(f){f.focus();window.__mbField=f;f.select();}"
+                }.orEmpty()
+        return "(function(t){$target$FOCUS_FIELD return document.execCommand('insertText', false, t);})(${JsonPrimitive(text)});"
+    }
 
     fun focusFieldScript(): String = "(function(){$FOCUS_FIELD})();"
 
-    // Google's pages do not always autofocus their field, and hiding the TV keyboard blurs it again,
-    // so typed text and key presses would otherwise land on the page body.
+    /** Moves to the page's next text field, answering whether there was one; the remote's Tab cannot. */
+    fun nextFieldScript(): String =
+        "(function(){$FOCUS_FIELD var l=fields(),n=l[l.indexOf(a)+1];if(n){n.focus();window.__mbField=n;}return !!n;})();"
+
+    fun movedToNextField(raw: String?): Boolean = raw == "true"
+
+    // Pages do not always autofocus their field, and hiding the TV keyboard blurs it again, so typed
+    // text and key presses would otherwise land on the page body. The field last focused is taken back
+    // (a page with a username and a password on one form would otherwise always get the first), and the
+    // first visible field otherwise.
+    private const val FIELDS =
+        "var fields=function(){return Array.prototype.filter.call(document.querySelectorAll(" +
+            "'input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=button]),textarea')," +
+            "function(e){return e.offsetParent!==null;});};"
+
     private const val FOCUS_FIELD =
-        "var a=document.activeElement;" +
+        FIELDS +
+            "if(!window.__mbFieldWatch){window.__mbFieldWatch=1;document.addEventListener('focusin',function(e){" +
+            "var t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA')){window.__mbField=t;}},true);}" +
+            "var a=document.activeElement;" +
             "if(!a||(a.tagName!=='INPUT'&&a.tagName!=='TEXTAREA')){" +
-            "a=Array.prototype.find.call(document.querySelectorAll(" +
-            "'input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=submit]),textarea')," +
-            "function(e){return e.offsetParent!==null;});" +
+            "var last=window.__mbField;" +
+            "a=last&&last.isConnected&&last.offsetParent!==null?last:fields()[0];" +
             "if(a){a.focus();}" +
-            "}"
+            "}" +
+            "if(a){window.__mbField=a;}"
 }

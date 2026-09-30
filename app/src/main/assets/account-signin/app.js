@@ -29,9 +29,9 @@
   // Strictly increasing across page reloads, which the TV enforces against replays.
   let seq = Date.now();
 
-  async function send(type, value) {
+  async function send(type, value, field) {
     const nonce = randomBytes(12);
-    const body = enc.encode(JSON.stringify({ seq: ++seq, type, value }));
+    const body = enc.encode(JSON.stringify(field === undefined ? { seq: ++seq, type, value } : { seq: ++seq, type, value, field }));
     const sealed = gcm(key, nonce, aad('c2s')).encrypt(body);
     const res = await fetch('/input', {
       method: 'POST',
@@ -52,7 +52,20 @@
     }
   }
 
+  const fieldInputs = () => Array.from($('fields').querySelectorAll('input'));
+
+  // A page with several fields at once (a username and a password) gets one box each, filled in order;
+  // otherwise the one box types into whatever field the TV page has focused.
   const sendText = async () => {
+    const boxes = fieldInputs();
+    if (boxes.length > 0) {
+      for (const box of boxes) {
+        if (box.value.length === 0) continue;
+        await send('text', box.value, Number(box.dataset.field));
+        box.value = '';
+      }
+      return;
+    }
     const value = $('text').value;
     if (value.length === 0) return;
     await send('text', value);
@@ -64,8 +77,34 @@
   $('enter').addEventListener('click', () => run(() => send('key', 'ENTER')));
   $('tab').addEventListener('click', () => run(() => send('key', 'TAB')));
   $('backspace').addEventListener('click', () => run(() => send('key', 'BACKSPACE')));
-  $('show').addEventListener('change', (e) => { $('text').type = e.target.checked ? 'text' : 'password'; });
-  $('text').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); $('sendEnter').click(); } });
+  const hidden = () => !$('show').checked;
+  const sendOnEnter = (e) => { if (e.key === 'Enter') { e.preventDefault(); $('sendEnter').click(); } };
+  $('show').addEventListener('change', () => {
+    $('text').type = hidden() ? 'password' : 'text';
+    for (const box of fieldInputs()) if (box.dataset.secret) box.type = hidden() ? 'password' : 'text';
+  });
+  $('text').addEventListener('keydown', sendOnEnter);
+
+  let shownFields = '';
+
+  function renderFields(fields) {
+    const key = JSON.stringify(fields);
+    if (key === shownFields) return;
+    shownFields = key;
+    $('fields').replaceChildren(...fields.map((field, index) => {
+      const box = document.createElement('input');
+      const label = field.label || `Field ${index + 1}`;
+      box.type = field.secret && hidden() ? 'password' : 'text';
+      box.placeholder = label;
+      box.setAttribute('aria-label', label);
+      box.dataset.field = String(index);
+      if (field.secret) box.dataset.secret = '1';
+      for (const [name, value] of [['autocomplete', 'off'], ['autocapitalize', 'off'], ['autocorrect', 'off'], ['spellcheck', 'false']]) box.setAttribute(name, value);
+      box.addEventListener('keydown', sendOnEnter);
+      return box;
+    }));
+    document.body.classList.toggle('has-fields', fields.length > 0);
+  }
 
   let shownActions = '';
 
@@ -90,6 +129,7 @@
         const status = JSON.parse(dec.decode(gcm(key, b64u.dec(env.n), aad('s2c')).decrypt(b64u.dec(env.c))));
         $('step').textContent = status.step || '…';
         renderActions(Array.isArray(status.actions) ? status.actions : []);
+        renderFields(Array.isArray(status.fields) ? status.fields : []);
         if (status.done) {
           $('status').textContent = 'Signed in. You can close this page.';
           document.body.classList.add('done');

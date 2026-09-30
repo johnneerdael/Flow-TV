@@ -10,6 +10,7 @@ import android.webkit.WebViewClient
 import androidx.webkit.ProfileStore
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
+import io.github.aedev.flow.data.account.signin.PhoneField
 import io.github.aedev.flow.data.account.signin.PhoneKey
 import io.github.aedev.flow.data.account.signin.SignInCapture
 import io.github.aedev.flow.data.account.signin.extract
@@ -55,6 +56,15 @@ internal class LoginWebViewController(
         webView.settings.domStorageEnabled = true
         webView.webViewClient =
             object : WebViewClient() {
+                // A store's home page can take many seconds to finish loading every tracker and banner;
+                // the session is there as soon as it is shown.
+                override fun onPageCommitVisible(
+                    view: WebView,
+                    url: String?,
+                ) {
+                    if (!captured && SignInCapture.isSuccessPage(url, method)) capture()
+                }
+
                 override fun onPageFinished(
                     view: WebView,
                     url: String?,
@@ -67,13 +77,18 @@ internal class LoginWebViewController(
     }
 
     /** Suspends until the text is in the page, so a following key press can never overtake it. */
-    suspend fun typeText(text: String) {
+    suspend fun typeText(
+        text: String,
+        field: Int?,
+    ) {
         webView.requestFocus()
-        evaluate(SignInCapture.insertTextScript(text))
+        evaluate(SignInCapture.insertTextScript(text, field))
         hideKeyboard()
     }
 
     suspend fun pageActions(): List<String> = SignInCapture.parsePageActions(evaluateForResult(SignInCapture.pageActionsScript()))
+
+    suspend fun pageFields(): List<PhoneField> = SignInCapture.parsePageFields(evaluateForResult(SignInCapture.pageFieldsScript()))
 
     suspend fun clickAction(index: Int) {
         evaluate(SignInCapture.clickActionScript(index))
@@ -89,13 +104,17 @@ internal class LoginWebViewController(
         }
 
     suspend fun pressKey(key: PhoneKey) {
+        webView.requestFocus()
+        if (key == PhoneKey.TAB && SignInCapture.movedToNextField(evaluateForResult(SignInCapture.nextFieldScript()))) {
+            hideKeyboard()
+            return
+        }
         val code =
             when (key) {
                 PhoneKey.ENTER -> KeyEvent.KEYCODE_ENTER
                 PhoneKey.TAB -> KeyEvent.KEYCODE_TAB
                 PhoneKey.BACKSPACE -> KeyEvent.KEYCODE_DEL
             }
-        webView.requestFocus()
         evaluate(SignInCapture.focusFieldScript())
         webView.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, code))
         webView.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, code))
