@@ -150,6 +150,22 @@
                     ],
                     "additionalProperties": false
                 },
+                "audio.match": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.MatchAudioRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.AudioMatches"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
                 "audio.radio": {
                     "type": "object",
                     "properties": {
@@ -383,6 +399,7 @@
                 "metadata.library",
                 "metadata.radio",
                 "audio.resolve",
+                "audio.match",
                 "audio.radio",
                 "audio.reportPlayback",
                 "video.search",
@@ -505,6 +522,22 @@
                     "properties": {
                         "request": {
                             "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.HashRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.HashResult"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "crypto.hmac": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.HmacRequest"
                         },
                         "response": {
                             "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.HashResult"
@@ -669,6 +702,7 @@
                 "secrets.set",
                 "secrets.delete",
                 "crypto.hash",
+                "crypto.hmac",
                 "code.load",
                 "assets.read",
                 "env.get",
@@ -1723,6 +1757,19 @@
             ],
             "title": "AudioDelivery"
         },
+        "nl.neerdael.milkbeat.plugin.AudioMatches": {
+            "type": "object",
+            "required": [],
+            "properties": {
+                "candidates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.TrackDescriptor"
+                    }
+                }
+            },
+            "title": "AudioMatches"
+        },
         "nl.neerdael.milkbeat.plugin.AudioQuality": {
             "enum": [
                 "AUTO",
@@ -1744,6 +1791,9 @@
                         "type": "string"
                     },
                     "uniqueItems": true
+                },
+                "match": {
+                    "type": "boolean"
                 },
                 "radio": {
                     "type": "boolean"
@@ -2103,6 +2153,26 @@
             },
             "title": "HashResult"
         },
+        "nl.neerdael.milkbeat.plugin.HmacRequest": {
+            "type": "object",
+            "required": [
+                "algorithm",
+                "keyHex",
+                "messageHex"
+            ],
+            "properties": {
+                "algorithm": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.HashAlgorithm"
+                },
+                "keyHex": {
+                    "type": "string"
+                },
+                "messageHex": {
+                    "type": "string"
+                }
+            },
+            "title": "HmacRequest"
+        },
         "nl.neerdael.milkbeat.plugin.HostEnvironment": {
             "type": "object",
             "required": [
@@ -2228,6 +2298,18 @@
                 }
             },
             "title": "LogRequest"
+        },
+        "nl.neerdael.milkbeat.plugin.MatchAudioRequest": {
+            "type": "object",
+            "required": [
+                "track"
+            ],
+            "properties": {
+                "track": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.TrackDescriptor"
+                }
+            },
+            "title": "MatchAudioRequest"
         },
         "nl.neerdael.milkbeat.plugin.MediaFormat": {
             "type": "object",

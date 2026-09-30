@@ -22,6 +22,22 @@ data class ResolveAudioRequest(
     val failure: StreamFailure? = null,
 )
 
+/** A track another plugin describes, for an audio plugin to find in its own catalog. */
+@Serializable
+data class MatchAudioRequest(
+    val track: TrackDescriptor,
+)
+
+/**
+ * The audio plugin's own tracks that may be [MatchAudioRequest.track], best first, each described in
+ * the plugin's id space. The host scores them (title, artists, duration; an ISRC or exact id is
+ * certain), so every audio plugin is judged the same way.
+ */
+@Serializable
+data class AudioMatches(
+    val candidates: List<TrackDescriptor> = emptyList(),
+)
+
 /** What went wrong with a stream: the URL the host fetched and the HTTP status it got, if any. */
 @Serializable
 data class StreamFailure(

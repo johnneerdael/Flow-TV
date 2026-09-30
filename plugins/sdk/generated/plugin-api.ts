@@ -68,6 +68,10 @@ export interface MilkbeatPluginApi {
       request: ResolveAudioRequest;
       response: AudioStream;
     };
+    'audio.match': {
+      request: MatchAudioRequest;
+      response: AudioMatches;
+    };
     'audio.radio': {
       request: RadioRequest;
       response: TrackList;
@@ -152,6 +156,10 @@ export interface MilkbeatPluginApi {
       request: HashRequest;
       response: HashResult;
     };
+    'crypto.hmac': {
+      request: HmacRequest;
+      response: HashResult;
+    };
     'code.load': {
       request: CodeLoadRequest;
       response: CodeLoadResult;
@@ -227,6 +235,7 @@ export interface MetadataRole {
 }
 export interface AudioRole {
   idSpaces: string[];
+  match?: boolean;
   radio?: boolean;
   musicVideo?: boolean;
   reportPlayback?: boolean;
@@ -458,6 +467,12 @@ export interface AudioTrackInfo {
   original?: boolean;
   drc?: boolean;
 }
+export interface MatchAudioRequest {
+  track: TrackDescriptor;
+}
+export interface AudioMatches {
+  candidates?: TrackDescriptor[];
+}
 export interface ReportPlaybackRequest {
   entity: EntityRef;
   trackingToken?: string | null;
@@ -616,6 +631,11 @@ export interface HashRequest {
 export interface HashResult {
   hex: string;
 }
+export interface HmacRequest {
+  algorithm: HashAlgorithm;
+  keyHex: string;
+  messageHex: string;
+}
 export interface CodeLoadRequest {
   key: string;
   source?: string | null;
@@ -681,6 +701,7 @@ export const HOST_OPERATIONS = [
   'secrets.set',
   'secrets.delete',
   'crypto.hash',
+  'crypto.hmac',
   'code.load',
   'assets.read',
   'env.get',
