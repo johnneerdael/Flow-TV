@@ -1,6 +1,7 @@
 package io.github.aedev.flow.plugin.playback
 
 import android.content.Context
+import android.os.SystemClock
 import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.aedev.flow.data.local.PlayerPreferences
@@ -31,7 +32,7 @@ class PluginVideoStreamSource
                     return null
                 }
             if (playback.kind == VideoKind.UPCOMING) return null
-            val playable = PluginVideoStreams.playable(playback, video)
+            val playable = PluginVideoStreams.playable(playback, video, SystemClock.elapsedRealtime())
             val quality =
                 if (NetworkState.isOnWifi(context)) preferences.defaultQualityWifi.first() else preferences.defaultQualityCellular.first()
             val codec = preferences.videoCodecPriority.first()

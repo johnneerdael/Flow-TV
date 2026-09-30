@@ -54,6 +54,7 @@ internal object PluginVideoStreams {
     fun playable(
         playback: VideoPlayback,
         cached: Video?,
+        receivedAtElapsedMs: Long = 0L,
     ): PlayableVideo {
         val formatDuration =
             playback.formats
@@ -81,7 +82,7 @@ internal object PluginVideoStreams {
             subtitles = subtitles(playback.captions),
             chapters = chapters(playback.chapters),
             skipSegments = skipSegments(playback.skipSegments),
-            requestHeaders = requestHeaders(playback),
+            requestHeaders = requestHeaders(playback, receivedAtElapsedMs),
         )
     }
 
@@ -193,13 +194,18 @@ internal object PluginVideoStreams {
                 )
             }
 
-    fun requestHeaders(playback: VideoPlayback): StreamRequestHeaders =
+    /** The headers the formats ask for, and when their URLs open: [receivedAtElapsedMs] plus the provider's delay. */
+    fun requestHeaders(
+        playback: VideoPlayback,
+        receivedAtElapsedMs: Long = 0L,
+    ): StreamRequestHeaders =
         StreamRequestHeaders(
             common = playback.headers,
             byUrl =
                 playback.formats
                     .filter { it.headers.isNotEmpty() }
                     .associate { it.url to it.headers },
+            opensAtElapsedMs = playback.availableInMs?.takeIf { it > 0 }?.let { receivedAtElapsedMs + it } ?: 0L,
         )
 
     /**

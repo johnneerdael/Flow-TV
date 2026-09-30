@@ -161,6 +161,21 @@ class PluginVideoStreamsTest {
     }
 
     @Test
+    fun `URLs that open after a delay open that long after the answer arrived`() {
+        val delayed =
+            PluginVideoStreams.playable(
+                playback(formats = listOf(video1080)).copy(availableInMs = 5_000L),
+                null,
+                receivedAtElapsedMs = 100_000L,
+            )
+        val immediate = PluginVideoStreams.playable(playback(formats = listOf(video1080)), null, receivedAtElapsedMs = 100_000L)
+
+        assertThat(delayed.requestHeaders.opensAtElapsedMs).isEqualTo(105_000L)
+        assertThat(delayed.requestHeaders.isEmpty).isFalse()
+        assertThat(immediate.requestHeaders.opensAtElapsedMs).isEqualTo(0L)
+    }
+
+    @Test
     fun `the details fill in the video without erasing what the screen knew`() {
         val cached =
             Video(

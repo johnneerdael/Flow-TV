@@ -1,5 +1,6 @@
 package io.github.aedev.flow.player.stream
 
+import android.os.SystemClock
 import android.util.Log
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.repository.SponsorBlockRepository
@@ -119,7 +120,7 @@ class PluginPlaybackResolver
                             ),
                     )
                 }
-                val playable = PluginVideoStreams.playable(playback, cached)
+                val playable = PluginVideoStreams.playable(playback, cached, SystemClock.elapsedRealtime())
                 val playableVod = playable.videoStreams.isNotEmpty() || playable.audioStreams.isNotEmpty()
                 val playableLive = playable.isLive && (playable.hlsUrl != null || playable.dashUrl != null)
                 if (!playableVod && !playableLive) {
