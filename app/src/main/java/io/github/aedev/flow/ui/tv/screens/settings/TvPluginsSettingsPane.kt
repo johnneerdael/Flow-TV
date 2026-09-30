@@ -40,6 +40,7 @@ import io.github.aedev.flow.ui.tv.components.TvNavRow
 import io.github.aedev.flow.ui.tv.components.TvSearchField
 import io.github.aedev.flow.ui.tv.components.TvSectionHeader
 import io.github.aedev.flow.ui.tv.components.TvSelectionRow
+import io.github.aedev.flow.ui.tv.components.TvToggleRow
 import io.github.aedev.flow.ui.tv.focus.ProvideTvColumnPivot
 import nl.neerdael.milkbeat.catalog.ProviderAccount
 import nl.neerdael.milkbeat.plugin.PluginManifest
@@ -57,6 +58,7 @@ fun TvPluginsSettingsPane(
     viewModel: TvPluginsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val playHistory by viewModel.playHistoryEnabled.collectAsStateWithLifecycle()
     var openPlugin by rememberSaveable { mutableStateOf<String?>(null) }
     var choosing by rememberSaveable { mutableStateOf<ProviderRole?>(null) }
     var url by rememberSaveable { mutableStateOf("") }
@@ -82,6 +84,8 @@ fun TvPluginsSettingsPane(
                     detailItems(
                         plugin = plugin,
                         account = state.accounts[plugin.id],
+                        playHistory = playHistory,
+                        onPlayHistoryChange = viewModel::setPlayHistoryEnabled,
                         onSignIn = { method -> onSignIn(plugin.id, method) },
                         onSignOut = { viewModel.signOut(plugin.id) },
                         onRemove = {
@@ -250,6 +254,8 @@ private fun LazyListScope.chooserItems(
 private fun LazyListScope.detailItems(
     plugin: InstalledPlugin,
     account: ProviderAccount?,
+    playHistory: Boolean,
+    onPlayHistoryChange: (Boolean) -> Unit,
     onSignIn: (String) -> Unit,
     onSignOut: () -> Unit,
     onRemove: () -> Unit,
@@ -277,6 +283,20 @@ private fun LazyListScope.detailItems(
             )
         }
         if (account is ProviderAccount.SignedIn) {
+            val reportsPlays =
+                plugin.manifest.roles.audio
+                    ?.reportPlayback == true || plugin.manifest.roles.video
+                    ?.reportPlayback == true
+            if (reportsPlays) {
+                item(key = "detail-play-history") {
+                    TvToggleRow(
+                        label = stringResource(R.string.tv_account_play_history),
+                        supportingText = stringResource(R.string.tv_account_play_history_summary),
+                        checked = playHistory,
+                        onCheckedChange = onPlayHistoryChange,
+                    )
+                }
+            }
             item(key = "detail-sign-out") { TvNavRow(label = stringResource(R.string.tv_plugins_sign_out), onClick = onSignOut) }
         } else {
             items(plugin.manifest.signIn, key = { "detail-sign-in-${it.id}" }) { method ->

@@ -3,6 +3,7 @@ package io.github.aedev.flow.ui.tv.screens.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.aedev.flow.data.account.AccountPlayHistory
 import io.github.aedev.flow.plugin.catalog.PluginAccounts
 import io.github.aedev.flow.plugin.install.PendingInstall
 import io.github.aedev.flow.plugin.install.PluginInstallException
@@ -52,6 +53,7 @@ class TvPluginsViewModel
         private val registry: PluginRegistry,
         private val installer: PluginInstaller,
         private val accounts: PluginAccounts,
+        private val playHistory: AccountPlayHistory,
         links: PluginLinks,
     ) : ViewModel() {
         private val adding = MutableStateFlow<AddPluginState>(AddPluginState.Idle)
@@ -114,6 +116,14 @@ class TvPluginsViewModel
 
         fun select(selection: ProviderSelection) {
             viewModelScope.launch { registry.select(selection) }
+        }
+
+        /** Whether listens and views are added to the signed-in account's history, for plugins that report them. */
+        val playHistoryEnabled: StateFlow<Boolean> =
+            playHistory.enabled.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), true)
+
+        fun setPlayHistoryEnabled(enabled: Boolean) {
+            viewModelScope.launch { playHistory.setEnabled(enabled) }
         }
 
         fun signOut(id: String) {

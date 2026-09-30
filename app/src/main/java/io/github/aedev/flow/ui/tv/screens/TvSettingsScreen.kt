@@ -32,7 +32,6 @@ import androidx.compose.ui.unit.dp
 import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.ui.tv.components.TvScreenScaffold
 import io.github.aedev.flow.ui.tv.screens.settings.TvAboutSettingsPane
-import io.github.aedev.flow.ui.tv.screens.settings.TvAccountSettingsPane
 import io.github.aedev.flow.ui.tv.screens.settings.TvContentSettingsPane
 import io.github.aedev.flow.ui.tv.screens.settings.TvFlowEngineSettingsPane
 import io.github.aedev.flow.ui.tv.screens.settings.TvPlaybackSettingsPane
@@ -94,7 +93,6 @@ fun TvSettingsScreen(
             androidx.compose.foundation.layout.Box(modifier = Modifier.weight(1f)) {
                 when (selectedCategory) {
                     TvSettingsCategory.PLUGINS -> TvPluginsSettingsPane(onSignIn = onOpenPluginSignIn)
-                    TvSettingsCategory.ACCOUNT -> TvAccountSettingsPane(onSignIn = { selectedCategory = TvSettingsCategory.PLUGINS })
                     TvSettingsCategory.PLAYBACK -> TvPlaybackSettingsPane(playerPreferences)
                     TvSettingsCategory.VISUALIZATIONS -> TvVisualizerSettingsPane()
                     TvSettingsCategory.QUALITY -> TvQualitySettingsPane(playerPreferences)

@@ -2,7 +2,6 @@ package io.github.aedev.flow.ui.tv.screens.settings
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Extension
 import androidx.compose.material.icons.outlined.GraphicEq
 import androidx.compose.material.icons.outlined.Info
@@ -19,7 +18,6 @@ enum class TvSettingsCategory(
     val icon: ImageVector,
 ) {
     PLUGINS(R.string.tv_settings_plugins, Icons.Outlined.Extension),
-    ACCOUNT(R.string.tv_settings_account, Icons.Outlined.AccountCircle),
     PLAYBACK(R.string.playback_header, Icons.Outlined.PlayCircleOutline),
     VISUALIZATIONS(R.string.tv_settings_visualizations, Icons.Outlined.GraphicEq),
     QUALITY(R.string.quality, Icons.Outlined.Tune),
