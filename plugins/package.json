@@ -6,7 +6,8 @@
     "sdk",
     "cli",
     "fixture",
-    "youtube-music"
+    "youtube-music",
+    "beatport"
   ],
   "engines": {
     "node": ">=22"

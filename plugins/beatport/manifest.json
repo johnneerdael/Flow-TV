@@ -1,0 +1,25 @@
+{
+  "format": 1,
+  "api": { "min": 1, "target": 1 },
+  "id": "nl.neerdael.beatport",
+  "name": "Beatport",
+  "version": "0.1.0",
+  "versionCode": 1,
+  "description": "Beatport: the Top 100s, genres with their charts and curated playlists, release, artist and label pages, and your playlists and followed artists and labels.",
+  "author": { "name": "Milkbeat", "url": "https://github.com/johnneerdael/Milkbeat" },
+  "updateUrl": "https://github.com/johnneerdael/Milkbeat/releases/latest/download/beatport.mbplugin",
+  "roles": {
+    "metadata": {
+      "surfaces": ["HOME", "SEARCH", "ENTITY", "TRACKS", "LIBRARY"],
+      "entities": ["TRACK", "ALBUM", "PLAYLIST", "ARTIST", "PROFILE", "MIX"],
+      "idSpace": "beatport"
+    },
+    "audio": { "idSpaces": ["beatport"] }
+  },
+  "signIn": [],
+  "permissions": {
+    "network": ["api.beatport.com", "account.beatport.com", "*.beatport.com"],
+    "storage": 1048576
+  },
+  "settings": []
+}

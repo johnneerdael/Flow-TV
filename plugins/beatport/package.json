@@ -1,0 +1,21 @@
+{
+  "name": "@milkbeat/beatport",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Beatport for Milkbeat: home, search, release, artist, label, genre, chart and playlist pages, and the listener's library.",
+  "scripts": {
+    "build": "mbplugin build .",
+    "pack": "mbplugin build . && mbplugin pack . --key \"${MBPLUGIN_KEY:-../../../.secrets/milkbeat-plugins/plugins-signing.pem}\"",
+    "check": "tsc --noEmit -p .",
+    "test": "mbplugin build . && node --test 'test/**/*.test.mjs'",
+    "record": "mbplugin build . && RECORD=1 node scripts/record-fixtures.mjs"
+  },
+  "dependencies": {
+    "@milkbeat/mbplugin": "1.0.0",
+    "@milkbeat/plugin-sdk": "1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2"
+  }
+}
