@@ -151,10 +151,27 @@ export interface FollowedEntry extends Named {
   count?: number;
 }
 
-/** A curated module of a Beatport page (a genre's hype picks, its new releases, its shortlists). */
+/** One entry of a page module: a release, chart or track, or for a banner, a picture linking somewhere on the store. */
+export interface PageModuleItem {
+  item_type?: { name?: string } | null;
+  item?: (Release & Chart & Track) | null;
+  image?: Image | null;
+  external_url?: string | null;
+}
+
+/** A curated module of a Beatport page (a genre's banners, hype picks, staff picks, charts). */
 export interface PageModule {
   id: number;
   name?: string;
+  enabled?: boolean;
   type?: { name?: string } | null;
-  items?: { item_type?: { name?: string } | null; item?: (Release & Chart & Track) | null }[];
+  items?: PageModuleItem[];
+}
+
+/** A curated page: a genre has one per Beatport surface (the web store is `sushi`). */
+export interface CurationPage {
+  id: number;
+  name?: string;
+  type?: { name?: string } | null;
+  source_type?: { name?: string } | null;
 }

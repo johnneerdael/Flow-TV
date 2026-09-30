@@ -153,22 +153,47 @@ describe('genre', async () => {
     assert.ok(last.blocks[0].items.length > 0);
   });
 
-  test('editorial modules lead when the account may read them', async () => {
+  test('the web store’s editorial modules lay out the page when the account may read them', async () => {
     const releases = recorded(`${API}/v4/catalog/releases/top/100/?per_page=100`).results;
     const charts = recorded(`${API}/v4/catalog/charts/?order_by=-publish_date&page=1&per_page=20`).results;
-    const modules = {
+    const entries = (type, list) => ({ results: list.map((item) => ({ item_type: { name: type }, item })) });
+    const pages = {
       results: [
-        { id: 1, name: 'Hype Picks (Mobile App)', type: { name: 'hypeFeature' }, items: releases.map((item) => ({ item_type: { name: 'release' }, item })) },
-        { id: 2, name: 'Shortlists (Mobile App)', type: { name: 'chartFeature' }, items: charts.map((item) => ({ item_type: { name: 'chart' }, item })) },
-        { id: 3, name: 'Staff Picks', type: { name: 'releaseFeature' }, items: releases.map((item) => ({ item_type: { name: 'release' }, item })) },
+        { id: 757, name: 'Mobile', type: { name: 'genre' }, source_type: { name: 'mobileapp' } },
+        { id: 435, name: 'Web', type: { name: 'genre' }, source_type: { name: 'sushi' } },
       ],
     };
-    const curated = offlinePlugin({ routes: [[pathIs('/v4/curation/page-modules/'), { status: 200, body: modules }]] });
+    const modules = {
+      results: [
+        { id: 1, name: 'Melodic New Releases: Week 39', type: { name: 'releaseFeature' } },
+        { id: 2, name: 'Melodic Banners: Week 39', type: { name: 'genreLargeSlideshow' } },
+        { id: 3, name: 'Melodic Hype Picks: Week 39', type: { name: 'hypeFeature' } },
+        { id: 4, name: 'Melodic Staff Picks: Week 39', type: { name: 'releaseFeature' } },
+        { id: 5, name: 'Melodic Charts: Week 39', type: { name: 'chartFeature' } },
+        { id: 6, name: 'Retired', enabled: false, type: { name: 'releaseFeature' } },
+      ],
+    };
+    const banner = { results: [{ item_type: null, item: null, image: { uri: 'https://geo-media.beatport.com/image_size/920x642/banner.jpg' }, external_url: 'https://www.beatport.com/genre/indie-tech/112' }] };
+    const items = { 1: entries('release', releases.slice(0, 3)), 2: banner, 3: entries('release', releases.slice(1, 3)), 4: entries('release', releases.slice(0, 2)), 5: entries('chart', charts.slice(0, 2)) };
+    const curated = offlinePlugin({
+      routes: [
+        [(c) => c.path === '/v4/curation/pages/' && c.query.item_id === IDS.genre, { body: pages }],
+        [(c) => c.path === '/v4/curation/page-modules/' && c.query.page_id === '435', { body: modules }],
+        [(c) => /^\/v4\/curation\/page-modules\/\d+\/items\/$/.test(c.path), (c) => ({ body: items[c.path.split('/')[4]] })],
+      ],
+    });
     const featured = await curated.call('metadata.entity', { entity: ref('MIX', `genre:${IDS.genre}`) });
-    const titles = collections(featured).map((shelf) => shelf.header.title);
-    assert.deepEqual(titles.slice(0, 5), ['Hype Picks', titles[1], 'Shortlists', titles[3], 'Staff Picks']);
-    assert.match(titles[1], /^New .* Charts$/);
-    assert.match(titles[3], /^Latest .* Releases$/);
+    const shelves = collections(featured);
+
+    const [banners, newCharts, latest, hype, staff] = shelves;
+    assert.equal(banners.header, null);
+    assert.deepEqual([banners.items[0].view, banners.items[0].entity, banners.items[0].artwork.url], ['LANDSCAPE_CARD', ref('MIX', 'genre:112'), 'https://geo-media.beatport.com/image_size/920x642/banner.jpg']);
+    assert.match(newCharts.header.title, /^New .* Charts$/);
+    assert.deepEqual(newCharts.items.map((item) => item.entity.providerId), charts.slice(0, 2).map((chart) => `chart:${chart.id}`));
+    assert.match(latest.header.title, /^Latest .* Releases$/);
+    assert.deepEqual(latest.items.map((item) => item.entity.providerId), releases.slice(0, 3).map((release) => String(release.id)));
+    assert.deepEqual([hype.header.title, staff.header.title], ['Hype Picks', 'Staff Picks']);
+    assert.ok(!curated.calls.some((c) => c.path === '/v4/curation/page-modules/6/items/'));
   });
 
   test('a tab of the genre keeps its header and tabs', async () => {
