@@ -104,6 +104,7 @@ jobs:
       # the schema; either drifting means plugins and the host no longer agree.
       - name: Check the plugin API contract
         run: |
+          node --test .github/scripts/test_phone_viewer.mjs
           ./gradlew :plugin-api:test --build-cache --stacktrace
           cd plugins
           npm ci --no-audit --no-fund
@@ -116,7 +117,7 @@ jobs:
           PLUGIN_SIGNING_KEY: ${{ secrets.PLUGIN_SIGNING_KEY }}
         run: |
           set -euo pipefail
-          plugins="youtube-music beatport"
+          plugins="youtube-music beatport spotify"
           for plugin in $plugins; do (cd "plugins/$plugin" && npm test); done
           if [ -n "$PLUGIN_SIGNING_KEY" ]; then
             key="$RUNNER_TEMP/plugins-signing.pem"
@@ -324,6 +325,7 @@ jobs:
             echo
             echo "- **YouTube Music and YouTube:** $latest/youtube-music.mbplugin"
             echo "- **Beatport** (full-length streaming needs a Beatport streaming subscription): $latest/beatport.mbplugin"
+            echo "- **Spotify** (metadata; select YouTube Music for audio): $latest/spotify.mbplugin"
             if [ -n "$prev" ]; then
               echo
               echo "**Full changelog:** https://github.com/$REPO/compare/$prev...$TAG"
@@ -346,6 +348,7 @@ jobs:
             dist/musicviz-universal.apk
             dist/youtube-music.mbplugin
             dist/beatport.mbplugin
+            dist/spotify.mbplugin
             dist/checksums.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,1627 @@
+{
+  "data": {
+    "home": {
+      "__typename": "HomeResponsePayload",
+      "greeting": {
+        "transformedLabel": "Good afternoon",
+        "translatedBaseText": "Good afternoon"
+      },
+      "sectionContainer": {
+        "sections": {
+          "items": [
+            {
+              "data": {
+                "__typename": "HomeShortsSectionData"
+              },
+              "sectionItems": {
+                "items": [
+                  {
+                    "content": {
+                      "__typename": "PlaylistResponseWrapper",
+                      "data": {
+                        "__typename": "Playlist",
+                        "content": {
+                          "__typename": "PlaylistItemsPage",
+                          "totalCount": 50
+                        },
+                        "description": "With Khåen, Corren Cavini, Joseph Ray and more",
+                        "format": "inspiredby-mix",
+                        "images": {
+                          "items": [
+                            {
+                              "sources": [
+                                {
+                                  "height": null,
+                                  "url": "https://pickasso.spotifycdn.com/image/ab67c0de0000deef/dt/v1/img/radio/artist/3vcY5vaGqSQF6UA9N2iC4L/en",
+                                  "width": null
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        "name": "Mees Salomé Radio",
+                        "ownerV2": {
+                          "data": {
+                            "__typename": "User",
+                            "name": "Spotify",
+                            "uri": "spotify:user:spotify"
+                          }
+                        },
+                        "uri": "spotify:playlist:37i9dQZF1E4nEKBB5aeJyd"
+                      }
+                    },
+                    "data": {
+                      "__typename": "HomeRecsItemData"
+                    },
+                    "uri": "spotify:playlist:37i9dQZF1E4nEKBB5aeJyd"
+                  },
+                  {
+                    "content": {
+                      "__typename": "ArtistResponseWrapper",
+                      "data": {
+                        "__typename": "Artist",
+                        "profile": {
+                          "name": "19:26"
+                        },
+                        "uri": "spotify:artist:2IelDQgKvM3U4P7HVVmaOX",
+                        "visuals": {
+                          "avatarImage": {
+                            "sources": [
+                              {
+                                "height": 640,
+                                "url": "https://i.scdn.co/image/ab6761610000e5eb74e9eb5a326c9708fcfebdb8",
+                                "width": 640
+                              },
+                              {
+                                "height": 160,
+                                "url": "https://i.scdn.co/image/ab6761610000f17874e9eb5a326c9708fcfebdb8",
+                                "width": 160
+                              },
+                              {
+                                "height": 320,
+                                "url": "https://i.scdn.co/image/ab6761610000517474e9eb5a326c9708fcfebdb8",
+                                "width": 320
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "data": null,
+                    "uri": "spotify:artist:2IelDQgKvM3U4P7HVVmaOX"
+                  },
+                  {
+                    "content": {
+                      "__typename": "PlaylistResponseWrapper",
+                      "data": {
+                        "__typename": "Playlist",
+                        "content": {
+                          "__typename": "PlaylistItemsPage",
+                          "totalCount": 50
+                        },
+                        "description": "With Anyma, Chris Avantgarde, MRAK and more",
+                        "format": "inspiredby-mix",
+                        "images": {
+                          "items": [
+                            {
+                              "sources": [
+                                {
+                                  "height": null,
+                                  "url": "https://pickasso.spotifycdn.com/image/ab67c0de0000deef/dt/v1/img/radio/artist/113reBz1jA6rVxbXl55mlj/en",
+                                  "width": null
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        "name": "Rebūke Radio",
+                        "ownerV2": {
+                          "data": {
+                            "__typename": "User",
+                            "name": "Spotify",
+                            "uri": "spotify:user:spotify"
+                          }
+                        },
+                        "uri": "spotify:playlist:37i9dQZF1E4zNJcRyJXyCF"
+                      }
+                    },
+                    "data": {
+                      "__typename": "HomeRecsItemData"
+                    },
+                    "uri": "spotify:playlist:37i9dQZF1E4zNJcRyJXyCF"
+                  }
+                ],
+                "pagingInfo": {
+                  "nextOffset": null
+                },
+                "totalCount": 3
+              },
+              "uri": "spotify:section:0JQ5DAIiKWzVFULQfUm85Y"
+            },
+            {
+              "data": {
+                "__typename": "HomeNativeAdsSectionData",
+                "subtitle": {
+                  "transformedLabel": "Sponsored recommendation",
+                  "translatedBaseText": "Sponsored recommendation"
+                },
+                "title": {
+                  "transformedLabel": "You might like",
+                  "translatedBaseText": "You might like"
+                }
+              },
+              "sectionItems": {
+                "items": [
+                  {
+                    "content": {
+                      "__typename": "AlbumResponseWrapper",
+                      "data": {
+                        "__typename": "Album",
+                        "artists": {
+                          "items": [
+                            {
+                              "profile": {
+                                "name": "Mavie Monroe"
+                              },
+                              "uri": "spotify:artist:50aKGmIrYwv03pUw6NoXw4"
+                            }
+                          ]
+                        },
+                        "coverArt": {
+                          "sources": [
+                            {
+                              "height": 300,
+                              "url": "https://i.scdn.co/image/ab67616d00001e02e6f3092ae66949e78fbd1053",
+                              "width": 300
+                            },
+                            {
+                              "height": 64,
+                              "url": "https://i.scdn.co/image/ab67616d00004851e6f3092ae66949e78fbd1053",
+                              "width": 64
+                            },
+                            {
+                              "height": 640,
+                              "url": "https://i.scdn.co/image/ab67616d0000b273e6f3092ae66949e78fbd1053",
+                              "width": 640
+                            }
+                          ]
+                        },
+                        "isPreRelease": false,
+                        "name": "I'll Be There",
+                        "playability": {
+                          "playable": true,
+                          "reason": "PLAYABLE"
+                        },
+                        "preReleaseEndDateTime": null,
+                        "albumType": "SINGLE",
+                        "uri": "spotify:album:4FzCSeNsAHHULkQtHfyI09"
+                      }
+                    },
+                    "data": null,
+                    "uri": "spotify:album:4FzCSeNsAHHULkQtHfyI09"
+                  }
+                ],
+                "pagingInfo": {
+                  "nextOffset": null
+                },
+                "totalCount": 1
+              },
+              "uri": "spotify:section:0JQ5DApMPy0jM78k6Ozvy5"
+            },
+            {
+              "data": {
+                "__typename": "HomeGenericSectionData",
+                "headerEntity": {
+                  "__typename": "UnknownType"
+                },
+                "subtitle": {
+                  "transformedLabel": "",
+                  "translatedBaseText": null
+                },
+                "title": {
+                  "transformedLabel": "Your top mixes",
+                  "translatedBaseText": "Your top mixes"
+                }
+              },
+              "sectionItems": {
+                "items": [
+                  {
+                    "content": {
+                      "__typename": "PlaylistResponseWrapper",
+                      "data": {
+                        "__typename": "Playlist",
+                        "content": {
+                          "__typename": "PlaylistItemsPage",
+                          "totalCount": 50
+                        },
+                        "description": "<a href=spotify:playlist:37i9dQZF1EIUmtOQ9VpTA2>Mees Salomé</a>, <a href=spotify:playlist:37i9dQZF1EIVKKu1narsT3>Anyma</a> and <a href=spotify:playlist:37i9dQZF1EIWqBTt0B59q9>Chris Avantgarde</a>",
+                        "format": "artist-mix-reader",
+                        "images": {
+                          "items": [
+                            {
+                              "sources": [
+                                {
+                                  "height": null,
+                                  "url": "https://pickasso.spotifycdn.com/image/ab67c0de0000deef/dt/v1/img/artistmix/113reBz1jA6rVxbXl55mlj/en",
+                                  "width": null
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        "name": "Rebūke Mix",
+                        "ownerV2": {
+                          "data": {
+                            "__typename": "User",
+                            "name": "Spotify",
+                            "uri": "spotify:user:spotify"
+                          }
+                        },
+                        "uri": "spotify:playlist:37i9dQZF1EIZnagm4tNw0i"
+                      }
+                    },
+                    "data": null,
+                    "uri": "spotify:playlist:37i9dQZF1EIZnagm4tNw0i"
+                  },
+                  {
+                    "content": {
+                      "__typename": "PlaylistResponseWrapper",
+                      "data": {
+                        "__typename": "Playlist",
+                        "content": {
+                          "__typename": "PlaylistItemsPage",
+                          "totalCount": 50
+                        },
+                        "description": "<a href=spotify:playlist:37i9dQZF1EIZE6REcjNQaq>Ben Böhmer</a>, <a href=spotify:playlist:37i9dQZF1EIVIk0YW2PPbk>Trilucid</a>, <a href=spotify:playlist:37i9dQZF1EIZcOa7jd0GIT>Lyke</a> and more",
+                        "format": "topic-mix",
+                        "images": {
+                          "items": [
+                            {
+                              "sources": [
+                                {
+                                  "height": null,
+                                  "url": "https://pickasso.spotifycdn.com/image/ab67c0de0000deef/dt/v1/img/topic/house/5tDjiBYUsTqzd0RkTZxK7u/en",
+                                  "width": null
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        "name": "House Mix",
+                        "ownerV2": {
+                          "data": {
+                            "__typename": "User",
+                            "name": "Spotify",
+                            "uri": "spotify:user:spotify"
+                          }
+                        },
+                        "uri": "spotify:playlist:37i9dQZF1EQpoj8u9Hn81e"
+                      }
+                    },
+                    "data": null,
+                    "uri": "spotify:playlist:37i9dQZF1EQpoj8u9Hn81e"
+                  },
+                  {
+                    "content": {
+                      "__typename": "PlaylistResponseWrapper",
+                      "data": {
+                        "__typename": "Playlist",
+                        "content": {
+                          "__typename": "PlaylistItemsPage",
+                          "totalCount": 50
+                        },
+                        "description": "<a href=spotify:playlist:37i9dQZF1EIZnagm4tNw0i>Rebūke</a>, <a href=spotify:playlist:37i9dQZF1EIWuZJCqHNImW>Solomun</a>, <a href=spotify:playlist:37i9dQZF1EIZH3O8Ss1QGW>Agents Of Time</a> and more",
+                        "format": "topic-mix",
+                        "images": {
+                          "items": [
+                            {
+                              "sources": [
+                                {
+                                  "height": null,
+                                  "url": "https://pickasso.spotifycdn.com/image/ab67c0de0000deef/dt/v1/img/topic/techno/113reBz1jA6rVxbXl55mlj/en",
+                                  "width": null
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        "name": "Techno Mix",
+                        "ownerV2": {
+                          "data": {
+                            "__typename": "User",
+                            "name": "Spotify",
+                            "uri": "spotify:user:spotify"
+                          }
+                        },
+                        "uri": "spotify:playlist:37i9dQZF1EQvUtXaHaHpw2"
+                      }
+                    },
+                    "data": null,
+                    "uri": "spotify:playlist:37i9dQZF1EQvUtXaHaHpw2"
+                  }
+                ],
+                "pagingInfo": {
+                  "nextOffset": 10
+                },
+                "totalCount": 12
+              },
+              "uri": "spotify:section:0JQ5DAnM3wGh0gz1MXnu89"
+            },
+            {
+              "data": {
+                "__typename": "HomeRecentlyPlayedSectionData",
+                "headerEntity": {
+                  "__typename": "UnknownType"
+                },
+                "title": {
+                  "transformedLabel": "Recents",
+                  "translatedBaseText": "Recents"
+                }
+              },
+              "sectionItems": {
+                "items": [
+                  {
+                    "content": {
+                      "__typename": "ListResponseWrapper",
+                      "data": {
+                        "__typename": "List",
+                        "items": {
+                          "items": [
+                            {
+                              "entity": {
+                                "__typename": "EntityResponseWrapper",
+                                "_uri": "spotify:playlist:37i9dQZF1DX9gPDOAK0Yqv",
+                                "data": {
+                                  "__typename": "Entity",
+                                  "consumptionExperienceTrait": {
+                                    "__typename": "NotFound"
+                                  },
+                                  "entityTypeTrait": {
+                                    "__typename": "EntityTypeTrait",
+                                    "type": "ENTITY_TYPE_PLAYLIST"
+                                  },
+                                  "identityTrait": {
+                                    "__typename": "IdentityTrait",
+                                    "contentHierarchyParent": null,
+                                    "contributors": {
+                                      "items": [
+                                        {
+                                          "name": "Spotify",
+                                          "uri": "spotify:user:spotify"
+                                        }
+                                      ],
+                                      "totalCount": 1
+                                    },
+                                    "description": "A hypnotic journey through Melodic Techno. Photographer: Kevin Mazur via Getty Images",
+                                    "name": "Melodic Techno Elements",
+                                    "type": "Playlist"
+                                  },
+                                  "typedEntity": {
+                                    "__typename": "PlaylistResponseWrapper"
+                                  },
+                                  "uri": "spotify:playlist:37i9dQZF1DX9gPDOAK0Yqv",
+                                  "visualIdentityTrait": {
+                                    "__typename": "VisualIdentityTrait",
+                                    "squareCoverImage": {
+                                      "image": {
+                                        "data": {
+                                          "__typename": "ImageV2",
+                                          "sources": [
+                                            {
+                                              "imageFormat": "JPEG",
+                                              "maxHeight": 64,
+                                              "maxWidth": 64,
+                                              "url": "https://image-cdn-fa.spotifycdn.com/image/ab67706f000000015c820da003375796b71df840"
+                                            },
+                                            {
+                                              "imageFormat": "JPEG",
+                                              "maxHeight": 300,
+                                              "maxWidth": 300,
+                                              "url": "https://image-cdn-fa.spotifycdn.com/image/ab67706f000000025c820da003375796b71df840"
+                                            },
+                                            {
+                                              "imageFormat": "JPEG",
+                                              "maxHeight": 640,
+                                              "maxWidth": 640,
+                                              "url": "https://image-cdn-fa.spotifycdn.com/image/ab67706f000000035c820da003375796b71df840"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "originalInstances": [
+                                        {
+                                          "flatFile": {
+                                            "cdnUrl": "https://i.scdn.co/image/ab67706f000000025c820da003375796b71df840"
+                                          },
+                                          "size": "IMAGE_SIZE_DEFAULT"
+                                        },
+                                        {
+                                          "flatFile": {
+                                            "cdnUrl": "https://i.scdn.co/image/ab67706f000000015c820da003375796b71df840"
+                                          },
+                                          "size": "IMAGE_SIZE_SMALL"
+                                        },
+                                        {
+                                          "flatFile": {
+                                            "cdnUrl": "https://i.scdn.co/image/ab67706f000000035c820da003375796b71df840"
+                                          },
+                                          "size": "IMAGE_SIZE_LARGE"
+                                        }
+                                      ]
+                                    }
+                                  }
+                                }
+                              },
+                              "formatListAttributes": [
+                                {
+                                  "key": "group_id_0",
+                                  "value": ""
+                                },
+                                {
+                                  "key": "group_metadata",
+                                  "value": ""
+                                },
+                                {
+                                  "key": "recent_type_saved",
+                                  "value": ""
+                                }
+                              ]
+                            },
+                            {
+                              "entity": {
+                                "__typename": "EntityResponseWrapper",
+                                "_uri": "spotify:collection:tracks",
+                                "data": {
+                                  "__typename": "Entity",
+                                  "consumptionExperienceTrait": {
+                                    "__typename": "NotFound"
+                                  },
+                                  "entityTypeTrait": {
+                                    "__typename": "EntityTypeTrait",
+                                    "type": "ENTITY_TYPE_PLAYLIST"
+                                  },
+                                  "identityTrait": {
+                                    "__typename": "IdentityTrait",
+                                    "contentHierarchyParent": null,
+                                    "contributors": {
+                                      "items": [
+                                        {
+                                          "name": "Fixture Listener",
+                                          "uri": "spotify:user:31mp752vp3oh3sh7uaioyxwr76ai"
+                                        }
+                                      ],
+                                      "totalCount": 1
+                                    },
+                                    "description": "",
+                                    "name": "Liked Songs",
+                                    "type": "Playlist"
+                                  },
+                                  "typedEntity": {
+                                    "__typename": "UnknownType"
+                                  },
+                                  "uri": "spotify:collection:tracks",
+                                  "visualIdentityTrait": {
+                                    "__typename": "VisualIdentityTrait",
+                                    "squareCoverImage": {
+                                      "image": {
+                                        "data": {
+                                          "__typename": "ImageV2",
+                                          "sources": [
+                                            {
+                                              "imageFormat": "JPEG",
+                                              "maxHeight": 0,
+                                              "maxWidth": 0,
+                                              "url": "https://misc.scdn.co/liked-songs/liked-songs-300.png"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "originalInstances": [
+                                        {
+                                          "flatFile": {
+                                            "cdnUrl": "https://misc.scdn.co/liked-songs/liked-songs-300.png"
+                                          },
+                                          "size": "IMAGE_SIZE_DEFAULT"
+                                        },
+                                        {
+                                          "flatFile": {
+                                            "cdnUrl": "https://misc.scdn.co/liked-songs/liked-songs-640.png"
+                                          },
+                                          "size": "IMAGE_SIZE_XLARGE"
+                                        }
+                                      ]
+                                    }
+                                  }
+                                }
+                              },
+                              "formatListAttributes": [
+                                {
+                                  "key": "group_id_0",
+                                  "value": ""
+                                },
+                                {
+                                  "key": "children_group_id",
+                                  "value": "2"
+                                },
+                                {
+                                  "key": "group_metadata",
+                                  "value": "CAESJHNwb3RpZnk6dHJhY2s6NTIzd1N5Y1pIQnc0UjNxakNabDlxTSIJCgVtdXNpYxAB"
+                                }
+                              ]
+                            },
+                            {
+                              "entity": {
+                                "__typename": "EntityResponseWrapper",
+                                "_uri": "spotify:album:3rnIb3VZ1ZwR4dFntgv3Zs",
+                                "data": {
+                                  "__typename": "Entity",
+                                  "consumptionExperienceTrait": {
+                                    "__typename": "ConsumptionExperienceTrait",
+                                    "contentRatings": [],
+                                    "duration": {
+                                      "nanoSeconds": 0,
+                                      "seconds": 206
+                                    }
+                                  },
+                                  "entityTypeTrait": {
+                                    "__typename": "EntityTypeTrait",
+                                    "type": "ENTITY_TYPE_ALBUM"
+                                  },
+                                  "identityTrait": {
+                                    "__typename": "IdentityTrait",
+                                    "contentHierarchyParent": null,
+                                    "contributors": {
+                                      "items": [
+                                        {
+                                          "name": "Hollt",
+                                          "uri": "spotify:artist:7G5LXo0b0pFlVzgWNGOngl"
+                                        }
+                                      ],
+                                      "totalCount": 1
+                                    },
+                                    "description": "",
+                                    "name": "Welcome To The DCC (Remix of Nothing But Thieves)",
+                                    "type": "Single"
+                                  },
+                                  "typedEntity": {
+                                    "__typename": "AlbumResponseWrapper"
+                                  },
+                                  "uri": "spotify:album:3rnIb3VZ1ZwR4dFntgv3Zs",
+                                  "visualIdentityTrait": {
+                                    "__typename": "VisualIdentityTrait",
+                                    "squareCoverImage": {
+                                      "image": {
+                                        "data": {
+                                          "__typename": "ImageV2",
+                                          "sources": [
+                                            {
+                                              "imageFormat": "JPEG",
+                                              "maxHeight": 300,
+                                              "maxWidth": 300,
+                                              "url": "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e0294130a8d08c89a07c9a4ac2a"
+                                            },
+                                            {
+                                              "imageFormat": "JPEG",
+                                              "maxHeight": 64,
+                                              "maxWidth": 64,
+                                              "url": "https://image-cdn-ak.spotifycdn.com/image/ab67616d0000485194130a8d08c89a07c9a4ac2a"
+                                            },
+                                            {
+                                              "imageFormat": "JPEG",
+                                              "maxHeight": 640,
+                                              "maxWidth": 640,
+                                              "url": "https://image-cdn-ak.spotifycdn.com/image/ab67616d0000b27394130a8d08c89a07c9a4ac2a"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "originalInstances": [
+                                        {
+                                          "flatFile": {
+                                            "cdnUrl": "https://i.scdn.co/image/ab67616d0000485194130a8d08c89a07c9a4ac2a"
+                                          },
+                                          "size": "IMAGE_SIZE_SMALL"
+                                        },
+                                        {
+                                          "flatFile": {
+                                            "cdnUrl": "https://i.scdn.co/image/ab67616d00001e0294130a8d08c89a07c9a4ac2a"
+                                          },
+                                          "size": "IMAGE_SIZE_DEFAULT"
+                                        },
+                                        {
+                                          "flatFile": {
+                                            "cdnUrl": "https://i.scdn.co/image/ab67616d0000b27394130a8d08c89a07c9a4ac2a"
+                                          },
+                                          "size": "IMAGE_SIZE_LARGE"
+                                        }
+                                      ]
+                                    }
+                                  }
+                                }
+                              },
+                              "formatListAttributes": [
+                                {
+                                  "key": "group_id_0",
+                                  "value": ""
+                                },
+                                {
+                                  "key": "group_metadata",
+                                  "value": ""
+                                },
+                                {
+                                  "key": "recent_type_played",
+                                  "value": ""
+                                }
+                              ]
+                            }
+                          ],
+                          "totalCount": 10
+                        },
+                        "uri": "spotify:list:recents:main"
+                      }
+                    },
+                    "data": null,
+                    "uri": "spotify:list:recents:main"
+                  }
+                ],
+                "pagingInfo": {
+                  "nextOffset": null
+                },
+                "totalCount": 1
+              },
+              "uri": "spotify:section:0JQ5DAroEmF9ANbLaiJ7XR"
+            },
+            {
+              "data": {
+                "__typename": "HomeGenericSectionData",
+                "headerEntity": {
+                  "__typename": "UnknownType"
+                },
+                "subtitle": {
+                  "transformedLabel": "Non-stop music based on your favorite songs and artists.",
+                  "translatedBaseText": "Non-stop music based on your favorite songs and artists."
+                },
+                "title": {
+                  "transformedLabel": "Recommended Stations",
+                  "translatedBaseText": "Recommended Stations"
+                }
+              },
+              "sectionItems": {
+                "items": [
+                  {
+                    "content": {
+                      "__typename": "PlaylistResponseWrapper",
+                      "data": {
+                        "__typename": "Playlist",
+                        "content": {
+                          "__typename": "PlaylistItemsPage",
+                          "totalCount": 50
+                        },
+                        "description": "With MRAK, Anyma, Kevin de Vries and more",
+                        "format": "inspiredby-mix",
+                        "images": {
+                          "items": [
+                            {
+                              "sources": [
+                                {
+                                  "height": null,
+                                  "url": "https://pickasso.spotifycdn.com/image/ab67c0de0000deef/dt/v1/img/radio/artist/2IelDQgKvM3U4P7HVVmaOX/en",
+                                  "width": null
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        "name": "19:26 Radio",
+                        "ownerV2": {
+                          "data": {
+                            "__typename": "User",
+                            "name": "Spotify",
+                            "uri": "spotify:user:spotify"
+                          }
+                        },
+                        "uri": "spotify:playlist:37i9dQZF1E4v2POPOrlq2S"
+                      }
+                    },
+                    "data": {
+                      "__typename": "HomeRecsItemData"
+                    },
+                    "uri": "spotify:playlist:37i9dQZF1E4v2POPOrlq2S"
+                  },
+                  {
+                    "content": {
+                      "__typename": "PlaylistResponseWrapper",
+                      "data": {
+                        "__typename": "Playlist",
+                        "content": {
+                          "__typename": "PlaylistItemsPage",
+                          "totalCount": 50
+                        },
+                        "description": "With Anyma, Cassian, Kevin de Vries and more",
+                        "format": "inspiredby-mix",
+                        "images": {
+                          "items": [
+                            {
+                              "sources": [
+                                {
+                                  "height": null,
+                                  "url": "https://pickasso.spotifycdn.com/image/ab67c0de0000deef/dt/v1/img/radio/artist/6htWLP8aiuf19FYMA4VQAZ/en",
+                                  "width": null
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        "name": "Massano Radio",
+                        "ownerV2": {
+                          "data": {
+                            "__typename": "User",
+                            "name": "Spotify",
+                            "uri": "spotify:user:spotify"
+                          }
+                        },
+                        "uri": "spotify:playlist:37i9dQZF1E4vkaJ8dOJiNl"
+                      }
+                    },
+                    "data": {
+                      "__typename": "HomeRecsItemData"
+                    },
+                    "uri": "spotify:playlist:37i9dQZF1E4vkaJ8dOJiNl"
+                  },
+                  {
+                    "content": {
+                      "__typename": "PlaylistResponseWrapper",
+                      "data": {
+                        "__typename": "Playlist",
+                        "content": {
+                          "__typename": "PlaylistItemsPage",
+                          "totalCount": 50
+                        },
+                        "description": "With North Sea Gas, The McCalmans, Old Blind Dogs and more",
+                        "format": "inspiredby-mix",
+                        "images": {
+                          "items": [
+                            {
+                              "sources": [
+                                {
+                                  "height": null,
+                                  "url": "https://pickasso.spotifycdn.com/image/ab67c0de0000deef/dt/v1/img/radio/artist/0eAAt9LEUeyVb37G70DHC1/en",
+                                  "width": null
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        "name": "Robin Laing Radio",
+                        "ownerV2": {
+                          "data": {
+                            "__typename": "User",
+                            "name": "Spotify",
+                            "uri": "spotify:user:spotify"
+                          }
+                        },
+                        "uri": "spotify:playlist:37i9dQZF1E4zUIncWDtF6V"
+                      }
+                    },
+                    "data": {
+                      "__typename": "HomeRecsItemData"
+                    },
+                    "uri": "spotify:playlist:37i9dQZF1E4zUIncWDtF6V"
+                  }
+                ],
+                "pagingInfo": {
+                  "nextOffset": null
+                },
+                "totalCount": 6
+              },
+              "uri": "spotify:section:0JQ5DAnM3wGh0gz1MXnu3R"
+            },
+            {
+              "data": {
+                "__typename": "HomeGenericSectionData",
+                "headerEntity": {
+                  "__typename": "UnknownType"
+                },
+                "subtitle": {
+                  "transformedLabel": "Bringing together the top songs from an artist.",
+                  "translatedBaseText": "Bringing together the top songs from an artist."
+                },
+                "title": {
+                  "transformedLabel": "Best of artists",
+                  "translatedBaseText": "Best of artists"
+                }
+              },
+              "sectionItems": {
+                "items": [
+                  {
+                    "content": {
+                      "__typename": "PlaylistResponseWrapper",
+                      "data": {
+                        "__typename": "Playlist",
+                        "content": {
+                          "__typename": "PlaylistItemsPage",
+                          "totalCount": 50
+                        },
+                        "description": "This is Rebūke. The essential tracks, all in one playlist.",
+                        "format": "artistsets",
+                        "images": {
+                          "items": [
+                            {
+                              "sources": [
+                                {
+                                  "height": null,
+                                  "url": "https://pickasso.spotifycdn.com/image/ab67c0de0000deef/dt/v1/img/thisisv3/113reBz1jA6rVxbXl55mlj/en",
+                                  "width": null
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        "name": "This Is Rebūke",
+                        "ownerV2": {
+                          "data": {
+                            "__typename": "User",
+                            "name": "Spotify",
+                            "uri": "spotify:user:spotify"
+                          }
+                        },
+                        "uri": "spotify:playlist:37i9dQZF1DZ06evO0xsMJH"
+                      }
+                    },
+                    "data": null,
+                    "uri": "spotify:playlist:37i9dQZF1DZ06evO0xsMJH"
+                  },
+                  {
+                    "content": {
+                      "__typename": "PlaylistResponseWrapper",
+                      "data": {
+                        "__typename": "Playlist",
+                        "content": {
+                          "__typename": "PlaylistItemsPage",
+                          "totalCount": 50
+                        },
+                        "description": "This is Mees Salomé. The essential tracks, all in one playlist.",
+                        "format": "artistsets",
+                        "images": {
+                          "items": [
+                            {
+                              "sources": [
+                                {
+                                  "height": null,
+                                  "url": "https://pickasso.spotifycdn.com/image/ab67c0de0000deef/dt/v1/img/thisisv3/3vcY5vaGqSQF6UA9N2iC4L/en",
+                                  "width": null
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        "name": "This Is Mees Salomé",
+                        "ownerV2": {
+                          "data": {
+                            "__typename": "User",
+                            "name": "Spotify",
+                            "uri": "spotify:user:spotify"
+                          }
+                        },
+                        "uri": "spotify:playlist:37i9dQZF1DZ06evO22dLAk"
+                      }
+                    },
+                    "data": null,
+                    "uri": "spotify:playlist:37i9dQZF1DZ06evO22dLAk"
+                  },
+                  {
+                    "content": {
+                      "__typename": "PlaylistResponseWrapper",
+                      "data": {
+                        "__typename": "Playlist",
+                        "content": {
+                          "__typename": "PlaylistItemsPage",
+                          "totalCount": 50
+                        },
+                        "description": "This is Massano. The essential tracks, all in one playlist.",
+                        "format": "artistsets",
+                        "images": {
+                          "items": [
+                            {
+                              "sources": [
+                                {
+                                  "height": null,
+                                  "url": "https://pickasso.spotifycdn.com/image/ab67c0de0000deef/dt/v1/img/thisisv3/6htWLP8aiuf19FYMA4VQAZ/en",
+                                  "width": null
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        "name": "This Is Massano",
+                        "ownerV2": {
+                          "data": {
+                            "__typename": "User",
+                            "name": "Spotify",
+                            "uri": "spotify:user:spotify"
+                          }
+                        },
+                        "uri": "spotify:playlist:37i9dQZF1DZ06evO3HSEEg"
+                      }
+                    },
+                    "data": null,
+                    "uri": "spotify:playlist:37i9dQZF1DZ06evO3HSEEg"
+                  }
+                ],
+                "pagingInfo": {
+                  "nextOffset": null
+                },
+                "totalCount": 6
+              },
+              "uri": "spotify:section:0JQ5DAnM3wGh0gz1MXnu3n"
+            },
+            {
+              "data": {
+                "__typename": "HomeGenericSectionData",
+                "headerEntity": {
+                  "__typename": "UnknownType"
+                },
+                "subtitle": {
+                  "transformedLabel": "Inspired by your recent activity",
+                  "translatedBaseText": "Inspired by your recent activity"
+                },
+                "title": {
+                  "transformedLabel": "Recommended for today",
+                  "translatedBaseText": "Recommended for today"
+                }
+              },
+              "sectionItems": {
+                "items": [
+                  {
+                    "content": {
+                      "__typename": "AlbumResponseWrapper",
+                      "data": {
+                        "__typename": "Album",
+                        "artists": {
+                          "items": [
+                            {
+                              "profile": {
+                                "name": "CAMELPHAT"
+                              },
+                              "uri": "spotify:artist:240wlM8vDrf6S4zCyzGj2W"
+                            }
+                          ]
+                        },
+                        "coverArt": {
+                          "sources": [
+                            {
+                              "height": 300,
+                              "url": "https://i.scdn.co/image/ab67616d00001e027c07b1e9df93f84394007555",
+                              "width": 300
+                            },
+                            {
+                              "height": 64,
+                              "url": "https://i.scdn.co/image/ab67616d000048517c07b1e9df93f84394007555",
+                              "width": 64
+                            },
+                            {
+                              "height": 640,
+                              "url": "https://i.scdn.co/image/ab67616d0000b2737c07b1e9df93f84394007555",
+                              "width": 640
+                            }
+                          ]
+                        },
+                        "isPreRelease": false,
+                        "name": "Spiritual Milk",
+                        "playability": {
+                          "playable": true,
+                          "reason": "PLAYABLE"
+                        },
+                        "preReleaseEndDateTime": null,
+                        "albumType": "ALBUM",
+                        "uri": "spotify:album:6GupLKo0sruoLNQZZ8MFTW"
+                      }
+                    },
+                    "data": null,
+                    "uri": "spotify:album:6GupLKo0sruoLNQZZ8MFTW"
+                  },
+                  {
+                    "content": {
+                      "__typename": "AlbumResponseWrapper",
+                      "data": {
+                        "__typename": "Album",
+                        "artists": {
+                          "items": [
+                            {
+                              "profile": {
+                                "name": "ARTBAT"
+                              },
+                              "uri": "spotify:artist:3BkRu2TGd2I1uBxZKddfg1"
+                            },
+                            {
+                              "profile": {
+                                "name": "Another Life"
+                              },
+                              "uri": "spotify:artist:7fMAxXqd5hhcwbC1d0VkLQ"
+                            },
+                            {
+                              "profile": {
+                                "name": "CAY (DE)"
+                              },
+                              "uri": "spotify:artist:2ug2jpxDeOgYfYleeYzg2K"
+                            }
+                          ]
+                        },
+                        "coverArt": {
+                          "sources": [
+                            {
+                              "height": 300,
+                              "url": "https://i.scdn.co/image/ab67616d00001e02c858bf328a2d5dbc877bd31a",
+                              "width": 300
+                            },
+                            {
+                              "height": 64,
+                              "url": "https://i.scdn.co/image/ab67616d00004851c858bf328a2d5dbc877bd31a",
+                              "width": 64
+                            },
+                            {
+                              "height": 640,
+                              "url": "https://i.scdn.co/image/ab67616d0000b273c858bf328a2d5dbc877bd31a",
+                              "width": 640
+                            }
+                          ]
+                        },
+                        "isPreRelease": false,
+                        "name": "In Your Arms",
+                        "playability": {
+                          "playable": true,
+                          "reason": "PLAYABLE"
+                        },
+                        "preReleaseEndDateTime": null,
+                        "albumType": "SINGLE",
+                        "uri": "spotify:album:0KIJ5H16buFOBL0vNpmSsi"
+                      }
+                    },
+                    "data": null,
+                    "uri": "spotify:album:0KIJ5H16buFOBL0vNpmSsi"
+                  },
+                  {
+                    "content": {
+                      "__typename": "AlbumResponseWrapper",
+                      "data": {
+                        "__typename": "Album",
+                        "artists": {
+                          "items": [
+                            {
+                              "profile": {
+                                "name": "Mees Salomé"
+                              },
+                              "uri": "spotify:artist:3vcY5vaGqSQF6UA9N2iC4L"
+                            },
+                            {
+                              "profile": {
+                                "name": "Joris Voorn"
+                              },
+                              "uri": "spotify:artist:4jGpKAmwvU263l0tUh4xKU"
+                            }
+                          ]
+                        },
+                        "coverArt": {
+                          "sources": [
+                            {
+                              "height": 300,
+                              "url": "https://i.scdn.co/image/ab67616d00001e02042ae5461c729e46fb2ccff6",
+                              "width": 300
+                            },
+                            {
+                              "height": 64,
+                              "url": "https://i.scdn.co/image/ab67616d00004851042ae5461c729e46fb2ccff6",
+                              "width": 64
+                            },
+                            {
+                              "height": 640,
+                              "url": "https://i.scdn.co/image/ab67616d0000b273042ae5461c729e46fb2ccff6",
+                              "width": 640
+                            }
+                          ]
+                        },
+                        "isPreRelease": false,
+                        "name": "Fool's Paradise (Joris Voorn Remix)",
+                        "playability": {
+                          "playable": true,
+                          "reason": "PLAYABLE"
+                        },
+                        "preReleaseEndDateTime": null,
+                        "albumType": "SINGLE",
+                        "uri": "spotify:album:7qcjHaXG3iYB6o3ifQYUel"
+                      }
+                    },
+                    "data": null,
+                    "uri": "spotify:album:7qcjHaXG3iYB6o3ifQYUel"
+                  }
+                ],
+                "pagingInfo": {
+                  "nextOffset": 10
+                },
+                "totalCount": 15
+              },
+              "uri": "spotify:section:0JQ5DAnM3wGh0gz1MXnu3F"
+            },
+            {
+              "data": {
+                "__typename": "HomeGenericSectionData",
+                "headerEntity": {
+                  "__typename": "UnknownType"
+                },
+                "subtitle": {
+                  "transformedLabel": "",
+                  "translatedBaseText": null
+                },
+                "title": {
+                  "transformedLabel": "Playlists van de Spotify redactie",
+                  "translatedBaseText": "Playlists van de Spotify redactie"
+                }
+              },
+              "sectionItems": {
+                "items": [
+                  {
+                    "content": {
+                      "__typename": "PlaylistResponseWrapper",
+                      "data": {
+                        "__typename": "Playlist",
+                        "content": {
+                          "__typename": "PlaylistItemsPage",
+                          "totalCount": 100
+                        },
+                        "description": "Zo klinkt de herfst van 2026. ",
+                        "format": "format-shows-shuffle",
+                        "images": {
+                          "items": [
+                            {
+                              "sources": [
+                                {
+                                  "height": null,
+                                  "url": "https://i.scdn.co/image/ab67706f00000002d21b522e45135db1c34265e1",
+                                  "width": null
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        "name": "Herfst 2026",
+                        "ownerV2": {
+                          "data": {
+                            "__typename": "User",
+                            "name": "Spotify",
+                            "uri": "spotify:user:spotify"
+                          }
+                        },
+                        "uri": "spotify:playlist:37i9dQZF1DXcx1szy2g67M"
+                      }
+                    },
+                    "data": {
+                      "__typename": "HomeRecsItemData"
+                    },
+                    "uri": "spotify:playlist:37i9dQZF1DXcx1szy2g67M"
+                  },
+                  {
+                    "content": {
+                      "__typename": "PlaylistResponseWrapper",
+                      "data": {
+                        "__typename": "Playlist",
+                        "content": {
+                          "__typename": "PlaylistItemsPage",
+                          "totalCount": 60
+                        },
+                        "description": "#fyp songs voor je playlist. Cover: Ilse DeLange",
+                        "format": "editorial",
+                        "images": {
+                          "items": [
+                            {
+                              "sources": [
+                                {
+                                  "height": null,
+                                  "url": "https://i.scdn.co/image/ab67706f000000025ef4b602ad1893006188b8c7",
+                                  "width": null
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        "name": "Viral Hits NL",
+                        "ownerV2": {
+                          "data": {
+                            "__typename": "User",
+                            "name": "Spotify",
+                            "uri": "spotify:user:spotify"
+                          }
+                        },
+                        "uri": "spotify:playlist:37i9dQZF1DX7br4y32b7L8"
+                      }
+                    },
+                    "data": {
+                      "__typename": "HomeRecsItemData"
+                    },
+                    "uri": "spotify:playlist:37i9dQZF1DX7br4y32b7L8"
+                  },
+                  {
+                    "content": {
+                      "__typename": "PlaylistResponseWrapper",
+                      "data": {
+                        "__typename": "Playlist",
+                        "content": {
+                          "__typename": "PlaylistItemsPage",
+                          "totalCount": 62
+                        },
+                        "description": "❗️Nieuwe tracks: Mula & Lijpe, Rits, Yade Lauren, Jiggy Djé en meer. ",
+                        "format": "format-shows-shuffle",
+                        "images": {
+                          "items": [
+                            {
+                              "sources": [
+                                {
+                                  "height": null,
+                                  "url": "https://i.scdn.co/image/ab67706f00000002e27dd4a9d86110756cce46e0",
+                                  "width": null
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        "name": "Woordenschat",
+                        "ownerV2": {
+                          "data": {
+                            "__typename": "User",
+                            "name": "Spotify",
+                            "uri": "spotify:user:spotify"
+                          }
+                        },
+                        "uri": "spotify:playlist:37i9dQZF1DX19xRtMyA5LM"
+                      }
+                    },
+                    "data": {
+                      "__typename": "HomeRecsItemData"
+                    },
+                    "uri": "spotify:playlist:37i9dQZF1DX19xRtMyA5LM"
+                  }
+                ],
+                "pagingInfo": {
+                  "nextOffset": 0
+                },
+                "totalCount": 16
+              },
+              "uri": "spotify:section:0JQ5DAuChZYPe9iDhh2mJz"
+            },
+            {
+              "data": {
+                "__typename": "HomeGenericSectionData",
+                "headerEntity": {
+                  "__typename": "UnknownType"
+                },
+                "subtitle": {
+                  "transformedLabel": "",
+                  "translatedBaseText": null
+                },
+                "title": {
+                  "transformedLabel": "Your shows",
+                  "translatedBaseText": "Your shows"
+                }
+              },
+              "sectionItems": {
+                "items": [
+                  {
+                    "content": {
+                      "__typename": "PodcastOrAudiobookResponseWrapper",
+                      "data": {
+                        "__typename": "Podcast",
+                        "contentRatingV2": null,
+                        "coverArt": {
+                          "sources": [
+                            {
+                              "height": 64,
+                              "url": "https://i.scdn.co/image/ab6765630000f68d462855647872a32e1d6e6b3b",
+                              "width": 64
+                            },
+                            {
+                              "height": 300,
+                              "url": "https://i.scdn.co/image/ab67656300005f1f462855647872a32e1d6e6b3b",
+                              "width": 300
+                            },
+                            {
+                              "height": 640,
+                              "url": "https://i.scdn.co/image/ab6765630000ba8a462855647872a32e1d6e6b3b",
+                              "width": 640
+                            }
+                          ]
+                        },
+                        "mediaType": "AUDIO",
+                        "name": "Enter",
+                        "publisher": {
+                          "name": "NCSC"
+                        },
+                        "uri": "spotify:show:2fZzw0BKgXHIjBzQ7jBIQy"
+                      }
+                    },
+                    "data": null,
+                    "uri": "spotify:show:2fZzw0BKgXHIjBzQ7jBIQy"
+                  },
+                  {
+                    "content": {
+                      "__typename": "PodcastOrAudiobookResponseWrapper",
+                      "data": {
+                        "__typename": "Podcast",
+                        "contentRatingV2": {
+                          "labels": [
+                            "EXPLICIT"
+                          ]
+                        },
+                        "coverArt": {
+                          "sources": [
+                            {
+                              "height": 64,
+                              "url": "https://i.scdn.co/image/ab6765630000f68dddb9b8ea4c2a801cf07e29ff",
+                              "width": 64
+                            },
+                            {
+                              "height": 300,
+                              "url": "https://i.scdn.co/image/ab67656300005f1fddb9b8ea4c2a801cf07e29ff",
+                              "width": 300
+                            },
+                            {
+                              "height": 640,
+                              "url": "https://i.scdn.co/image/ab6765630000ba8addb9b8ea4c2a801cf07e29ff",
+                              "width": 640
+                            }
+                          ]
+                        },
+                        "mediaType": "AUDIO",
+                        "name": "The Next Level",
+                        "publisher": {
+                          "name": "The Bulwark"
+                        },
+                        "uri": "spotify:show:1PaE1uy02ZclFQESFb5cyD"
+                      }
+                    },
+                    "data": null,
+                    "uri": "spotify:show:1PaE1uy02ZclFQESFb5cyD"
+                  },
+                  {
+                    "content": {
+                      "__typename": "PodcastOrAudiobookResponseWrapper",
+                      "data": {
+                        "__typename": "Podcast",
+                        "contentRatingV2": null,
+                        "coverArt": {
+                          "sources": [
+                            {
+                              "height": 64,
+                              "url": "https://i.scdn.co/image/ab6765630000f68dc0ac07038709cc5170161fee",
+                              "width": 64
+                            },
+                            {
+                              "height": 300,
+                              "url": "https://i.scdn.co/image/ab67656300005f1fc0ac07038709cc5170161fee",
+                              "width": 300
+                            },
+                            {
+                              "height": 640,
+                              "url": "https://i.scdn.co/image/ab6765630000ba8ac0ac07038709cc5170161fee",
+                              "width": 640
+                            }
+                          ]
+                        },
+                        "mediaType": "AUDIO",
+                        "name": "The NPR Politics Podcast",
+                        "publisher": {
+                          "name": "NPR"
+                        },
+                        "uri": "spotify:show:2PnWnDNwU3wKesCHCpy252"
+                      }
+                    },
+                    "data": null,
+                    "uri": "spotify:show:2PnWnDNwU3wKesCHCpy252"
+                  }
+                ],
+                "pagingInfo": {
+                  "nextOffset": 10
+                },
+                "totalCount": 15
+              },
+              "uri": "spotify:section:0JQ5DAnM3wGh0gz1MXnu3N"
+            },
+            {
+              "data": {
+                "__typename": "HomeGenericSectionData",
+                "headerEntity": {
+                  "__typename": "UnknownType"
+                },
+                "subtitle": {
+                  "transformedLabel": "",
+                  "translatedBaseText": null
+                },
+                "title": {
+                  "transformedLabel": "Popular radio",
+                  "translatedBaseText": "Popular radio"
+                }
+              },
+              "sectionItems": {
+                "items": [
+                  {
+                    "content": {
+                      "__typename": "PlaylistResponseWrapper",
+                      "data": {
+                        "__typename": "Playlist",
+                        "content": {
+                          "__typename": "PlaylistItemsPage",
+                          "totalCount": 50
+                        },
+                        "description": "With The Rolling Stones, The Police, R.E.M. and more",
+                        "format": "inspiredby-mix",
+                        "images": {
+                          "items": [
+                            {
+                              "sources": [
+                                {
+                                  "height": null,
+                                  "url": "https://pickasso.spotifycdn.com/image/ab67c0de0000deef/dt/v1/img/radio/artist/0WwSkZ7LtFUFjGjMZBMt6T/en",
+                                  "width": null
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        "name": "Dire Straits Radio",
+                        "ownerV2": {
+                          "data": {
+                            "__typename": "User",
+                            "name": "Spotify",
+                            "uri": "spotify:user:spotify"
+                          }
+                        },
+                        "uri": "spotify:playlist:37i9dQZF1E4xptzFi20KXi"
+                      }
+                    },
+                    "data": {
+                      "__typename": "HomeRecsItemData"
+                    },
+                    "uri": "spotify:playlist:37i9dQZF1E4xptzFi20KXi"
+                  },
+                  {
+                    "content": {
+                      "__typename": "PlaylistResponseWrapper",
+                      "data": {
+                        "__typename": "Playlist",
+                        "content": {
+                          "__typename": "PlaylistItemsPage",
+                          "totalCount": 50
+                        },
+                        "description": "With Amy Winehouse, Thee Sacred Souls, berlioz and more",
+                        "format": "inspiredby-mix",
+                        "images": {
+                          "items": [
+                            {
+                              "sources": [
+                                {
+                                  "height": null,
+                                  "url": "https://pickasso.spotifycdn.com/image/ab67c0de0000deef/dt/v1/img/radio/artist/47zz7sob9NUcODy0BTDvKx/en",
+                                  "width": null
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        "name": "Sade Radio",
+                        "ownerV2": {
+                          "data": {
+                            "__typename": "User",
+                            "name": "Spotify",
+                            "uri": "spotify:user:spotify"
+                          }
+                        },
+                        "uri": "spotify:playlist:37i9dQZF1E4wLAWK8WaQtJ"
+                      }
+                    },
+                    "data": {
+                      "__typename": "HomeRecsItemData"
+                    },
+                    "uri": "spotify:playlist:37i9dQZF1E4wLAWK8WaQtJ"
+                  },
+                  {
+                    "content": {
+                      "__typename": "PlaylistResponseWrapper",
+                      "data": {
+                        "__typename": "Playlist",
+                        "content": {
+                          "__typename": "PlaylistItemsPage",
+                          "totalCount": 50
+                        },
+                        "description": "With Harry Styles, Lady Gaga, Calvin Harris and more",
+                        "format": "inspiredby-mix",
+                        "images": {
+                          "items": [
+                            {
+                              "sources": [
+                                {
+                                  "height": null,
+                                  "url": "https://pickasso.spotifycdn.com/image/ab67c0de0000deef/dt/v1/img/radio/artist/6M2wZ9GZgrQXHCFfjv46we/en",
+                                  "width": null
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        "name": "Dua Lipa Radio",
+                        "ownerV2": {
+                          "data": {
+                            "__typename": "User",
+                            "name": "Spotify",
+                            "uri": "spotify:user:spotify"
+                          }
+                        },
+                        "uri": "spotify:playlist:37i9dQZF1E4yMj4BGCYzsQ"
+                      }
+                    },
+                    "data": {
+                      "__typename": "HomeRecsItemData"
+                    },
+                    "uri": "spotify:playlist:37i9dQZF1E4yMj4BGCYzsQ"
+                  }
+                ],
+                "pagingInfo": {
+                  "nextOffset": 10
+                },
+                "totalCount": 50
+              },
+              "uri": "spotify:section:0JQ5DAnM3wGh0gz1MXnu4h"
+            }
+          ],
+          "totalCount": 31
+        },
+        "uri": "spotify:page:0JQ5DAozXW0GUBAKjHsifH"
+      },
+      "homeChips": [
+        {
+          "highlightColor": null,
+          "highlightScheme": null,
+          "id": "music-chip",
+          "label": {
+            "transformedLabel": "Music",
+            "translatedBaseText": "Music"
+          },
+          "subChips": [
+            {
+              "id": "music-following-chip",
+              "label": {
+                "transformedLabel": "Following",
+                "translatedBaseText": "Following"
+              }
+            }
+          ]
+        },
+        {
+          "highlightColor": null,
+          "highlightScheme": null,
+          "id": "podcasts-chip",
+          "label": {
+            "transformedLabel": "Podcasts",
+            "translatedBaseText": "Podcasts"
+          },
+          "subChips": [
+            {
+              "id": "podcasts-following-chip",
+              "label": {
+                "transformedLabel": "Following",
+                "translatedBaseText": "Following"
+              }
+            }
+          ]
+        },
+        {
+          "highlightColor": null,
+          "highlightScheme": null,
+          "id": "audiobooks-chip",
+          "label": {
+            "transformedLabel": "Audiobooks",
+            "translatedBaseText": "Audiobooks"
+          },
+          "subChips": []
+        }
+      ]
+    }
+  }
+}

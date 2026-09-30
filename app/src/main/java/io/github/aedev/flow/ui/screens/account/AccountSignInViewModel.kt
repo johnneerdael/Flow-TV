@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.aedev.flow.data.account.signin.PhoneChannel
 import io.github.aedev.flow.data.account.signin.PhoneField
+import io.github.aedev.flow.data.account.signin.PhoneFrame
 import io.github.aedev.flow.data.account.signin.PhoneInput
 import io.github.aedev.flow.data.account.signin.PhoneStatus
 import io.github.aedev.flow.plugin.catalog.PluginAccounts
@@ -47,6 +48,7 @@ interface PhoneServerLauncher {
         host: String,
         status: () -> PhoneStatus,
         onInput: suspend (PhoneInput) -> Unit,
+        captureFrame: suspend () -> PhoneFrame?,
     ): PhoneServerHandle
 }
 
@@ -112,9 +114,17 @@ class AccountSignInViewModel
 
         @Volatile private var done = false
 
+        @Volatile private var completing = false
+
         @Volatile private var actions = emptyList<String>()
 
         @Volatile private var fields = emptyList<PhoneField>()
+
+        @Volatile private var frameProvider: (suspend () -> PhoneFrame?)? = null
+
+        fun frameProvider(provider: (suspend () -> PhoneFrame?)?) {
+            frameProvider = provider
+        }
 
         fun start(loginSupported: Boolean) {
             if (_state.value != AccountSignInState.Starting || channel != null) return
@@ -131,7 +141,13 @@ class AccountSignInViewModel
             viewModelScope.launch {
                 val handle =
                     try {
-                        launcher.launch(phoneChannel, host, { PhoneStatus(step, done, actions, fields) }) { inputChannel.send(it) }
+                        launcher.launch(
+                            phoneChannel,
+                            host,
+                            { PhoneStatus(step, done, actions, fields) },
+                            { inputChannel.send(it) },
+                            { if (completing || done) null else frameProvider?.invoke() },
+                        )
                     } catch (e: IOException) {
                         Log.w(TAG, "Phone sign-in server could not start", e)
                         stopServer()
@@ -163,7 +179,7 @@ class AccountSignInViewModel
 
         fun onCaptured(result: WebLoginResult) {
             viewModelScope.launch {
-                done = true
+                completing = true
                 timeoutJob?.cancel()
                 val next =
                     try {
@@ -171,6 +187,7 @@ class AccountSignInViewModel
                     } catch (e: PluginCallException) {
                         AccountSignInState.Failed(e.error.userMessage ?: e.error.message)
                     }
+                done = next is AccountSignInState.SignedIn
                 delay(STATUS_GRACE_MS)
                 stopServer()
                 _state.value = next
@@ -180,12 +197,15 @@ class AccountSignInViewModel
         fun retry() {
             stopServer()
             done = false
+            completing = false
             step = ""
             actions = emptyList()
+            fields = emptyList()
             _state.value = AccountSignInState.Starting
         }
 
         override fun onCleared() {
+            frameProvider = null
             stopServer()
         }
 

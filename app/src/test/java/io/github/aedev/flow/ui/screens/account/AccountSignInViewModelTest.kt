@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelStore
 import com.google.common.truth.Truth.assertThat
 import io.github.aedev.flow.data.account.signin.PhoneChannel
 import io.github.aedev.flow.data.account.signin.PhoneField
+import io.github.aedev.flow.data.account.signin.PhoneFrame
 import io.github.aedev.flow.data.account.signin.PhoneInput
 import io.github.aedev.flow.data.account.signin.PhoneStatus
 import io.github.aedev.flow.plugin.catalog.PluginAccounts
@@ -76,6 +77,7 @@ class AccountSignInViewModelTest {
     private var launches = 0
     private var stops = 0
     private var lastStatus: () -> PhoneStatus = { PhoneStatus("") }
+    private var lastFrame: suspend () -> PhoneFrame? = { null }
     private val launcher =
         object : PhoneServerLauncher {
             override suspend fun launch(
@@ -83,9 +85,11 @@ class AccountSignInViewModelTest {
                 host: String,
                 status: () -> PhoneStatus,
                 onInput: suspend (PhoneInput) -> Unit,
+                captureFrame: suspend () -> io.github.aedev.flow.data.account.signin.PhoneFrame?,
             ): PhoneServerHandle {
                 launches++
                 lastStatus = status
+                lastFrame = captureFrame
                 return object : PhoneServerHandle {
                     override val port = 4321
 
@@ -179,6 +183,31 @@ class AccountSignInViewModelTest {
         }
 
     @Test
+    fun `a failed completion keeps the viewer available for retry`() =
+        runTest(dispatcher) {
+            coEvery { accounts.complete(any(), any()) } throws
+                PluginCallException(plugin.id, PluginError(PluginErrorCode.NETWORK, "retry"))
+            val vm = viewModel()
+            val frame = PhoneFrame(1, 1, "jpeg")
+            vm.frameProvider { frame }
+            vm.start(loginSupported = true)
+            runCurrent()
+            assertThat(lastFrame()).isEqualTo(frame)
+            vm.onCaptured(WebLoginResult(method = "google", cookies = "SAPISID=x"))
+            runCurrent()
+            assertThat(lastFrame()).isNull()
+            assertThat(lastStatus().done).isFalse()
+            advanceUntilIdle()
+            runCurrent()
+            assertThat(vm.state.value).isInstanceOf(AccountSignInState.Failed::class.java)
+            vm.retry()
+            vm.start(loginSupported = true)
+            runCurrent()
+            assertThat(lastFrame()).isEqualTo(frame)
+            assertThat(lastStatus().done).isFalse()
+        }
+
+    @Test
     fun `a method the plugin does not declare shows Unsupported`() =
         runTest(dispatcher) {
             val vm = viewModel(methodId = "other")
@@ -210,6 +239,7 @@ class AccountSignInViewModelTest {
                         host: String,
                         status: () -> PhoneStatus,
                         onInput: suspend (PhoneInput) -> Unit,
+                        captureFrame: suspend () -> io.github.aedev.flow.data.account.signin.PhoneFrame?,
                     ): PhoneServerHandle = throw java.net.BindException("address in use")
                 }
             val vm =
@@ -248,5 +278,6 @@ class AccountSignInViewModelTest {
             vm.start(loginSupported = true)
             runCurrent()
             assertThat(lastStatus().actions).isEmpty()
+            assertThat(lastStatus().fields).isEmpty()
         }
 }

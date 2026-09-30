@@ -3,8 +3,8 @@
   "api": { "min": 1, "target": 1 },
   "id": "nl.neerdael.youtube-music",
   "name": "YouTube Music",
-  "version": "0.1.0",
-  "versionCode": 1,
+  "version": "0.1.1",
+  "versionCode": 2,
   "description": "YouTube Music and YouTube: home, search, artist, album and playlist pages, radio, music videos and videos.",
   "author": { "name": "Milkbeat", "url": "https://github.com/johnneerdael/Milkbeat" },
   "updateUrl": "https://github.com/johnneerdael/Milkbeat/releases/latest/download/youtube-music.mbplugin",
@@ -14,7 +14,7 @@
       "entities": ["TRACK", "MUSIC_VIDEO", "ALBUM", "PLAYLIST", "ARTIST", "PROFILE", "MIX", "RADIO"],
       "idSpace": "ytm"
     },
-    "audio": { "idSpaces": ["ytm", "yt"], "radio": true, "musicVideo": true, "reportPlayback": true },
+    "audio": { "idSpaces": ["ytm", "yt"], "match": true, "radio": true, "musicVideo": true, "reportPlayback": true },
     "video": {
       "idSpace": "yt",
       "surfaces": ["SEARCH", "SUGGEST", "CHANNEL", "PLAYLIST", "RELATED", "COMMENTS", "LIVE_CHAT"],

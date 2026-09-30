@@ -134,4 +134,37 @@ class PhoneChannelTest {
             }
         }
     }
+
+    @Test
+    fun `a native pointer gesture is decoded from the encrypted channel`() {
+        val value = """{"action":"DOWN","x":0.25,"y":0.5}"""
+        val input = channel().open(phoneSeal(VECTOR_SESSION_ID, VECTOR_KEY, 1, "pointer", value), "192.168.1.20")
+        assertThat(input).isEqualTo(PhoneInput.Pointer(PhonePointerAction.DOWN, 0.25f, 0.5f))
+    }
+
+    @Test
+    fun `a frame request uses the same peer and replay protection`() {
+        val ch = channel()
+        val envelope = phoneSeal(VECTOR_SESSION_ID, VECTOR_KEY, 1, "frame", "")
+        assertThat(ch.open(envelope, "192.168.1.20").javaClass.simpleName).isEqualTo("Frame")
+        assertThrows(PhoneChannelRejected::class.java) { ch.open(envelope, "192.168.1.20") }
+        assertThrows(PhoneChannelRejected::class.java) {
+            ch.open(phoneSeal(VECTOR_SESSION_ID, VECTOR_KEY, 2, "frame", ""), "192.168.1.99")
+        }
+    }
+
+    @Test
+    fun `invalid pointer coordinates are rejected without binding a phone`() {
+        val ch = channel()
+        listOf("-0.01", "1.01", "\"NaN\"").forEachIndexed { index, x ->
+            assertThrows(PhoneChannelRejected::class.java) {
+                ch.open(
+                    phoneSeal(VECTOR_SESSION_ID, VECTOR_KEY, index + 1L, "pointer", """{"action":"DOWN","x":$x,"y":0.5}"""),
+                    "192.168.1.99",
+                )
+            }
+        }
+        assertThat(ch.open(phoneSeal(VECTOR_SESSION_ID, VECTOR_KEY, 4, "frame", ""), "192.168.1.20"))
+            .isEqualTo(PhoneInput.Frame(4))
+    }
 }

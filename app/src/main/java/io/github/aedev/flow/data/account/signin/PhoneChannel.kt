@@ -10,6 +10,30 @@ import java.util.Base64
 
 enum class PhoneKey { ENTER, TAB, BACKSPACE }
 
+@Serializable
+enum class PhonePointerAction { DOWN, MOVE, UP, CANCEL }
+
+@Serializable
+data class PhonePointerPayload(
+    val action: PhonePointerAction,
+    val x: Float,
+    val y: Float,
+)
+
+@Serializable
+data class PhoneFrame(
+    val width: Int,
+    val height: Int,
+    val jpeg: String,
+)
+
+@Serializable
+data class PhoneFrameReply(
+    val seq: Long,
+    val frame: PhoneFrame,
+    val type: String = "frame",
+)
+
 /** The most page buttons and links the phone is offered at once. */
 const val MAX_PAGE_ACTIONS = 12
 
@@ -32,6 +56,16 @@ sealed interface PhoneInput {
     /** Clicks the [index]th entry of the [PhoneStatus.actions] the phone was last sent. */
     data class Click(
         val index: Int,
+    ) : PhoneInput
+
+    data class Pointer(
+        val action: PhonePointerAction,
+        val x: Float,
+        val y: Float,
+    ) : PhoneInput
+
+    data class Frame(
+        val seq: Long,
     ) : PhoneInput
 }
 
@@ -132,6 +166,24 @@ class PhoneChannel(
                     )
                 }
 
+                TYPE_POINTER -> {
+                    val pointer =
+                        try {
+                            json.decodeFromString(PhonePointerPayload.serializer(), payload.value)
+                        } catch (e: IllegalArgumentException) {
+                            throw PhoneChannelRejected("bad pointer")
+                        }
+                    if (!pointer.x.isFinite() || !pointer.y.isFinite() || pointer.x !in 0f..1f || pointer.y !in 0f..1f) {
+                        throw PhoneChannelRejected("pointer outside viewport")
+                    }
+                    PhoneInput.Pointer(pointer.action, pointer.x, pointer.y)
+                }
+
+                TYPE_FRAME -> {
+                    if (payload.value.isNotEmpty()) throw PhoneChannelRejected("bad frame request")
+                    PhoneInput.Frame(payload.seq)
+                }
+
                 else -> {
                     throw PhoneChannelRejected("unknown type")
                 }
@@ -141,13 +193,17 @@ class PhoneChannel(
         return input
     }
 
-    fun seal(status: PhoneStatus): PhoneEnvelope {
+    fun seal(status: PhoneStatus): PhoneEnvelope = sealPayload(json.encodeToString(PhoneStatus.serializer(), status))
+
+    fun seal(reply: PhoneFrameReply): PhoneEnvelope = sealPayload(json.encodeToString(PhoneFrameReply.serializer(), reply))
+
+    private fun sealPayload(payload: String): PhoneEnvelope {
         val nonce = SyncCrypto.randomNonce()
         val sealed =
             SyncCrypto.seal(
                 key,
                 nonce,
-                json.encodeToString(PhoneStatus.serializer(), status).encodeToByteArray(),
+                payload.encodeToByteArray(),
                 aad(HOST_TO_CLIENT),
             )
         return PhoneEnvelope(encode(nonce), encode(sealed))
@@ -165,6 +221,8 @@ class PhoneChannel(
         private const val TYPE_TEXT = "text"
         private const val TYPE_KEY = "key"
         private const val TYPE_CLICK = "click"
+        private const val TYPE_POINTER = "pointer"
+        private const val TYPE_FRAME = "frame"
         private const val SESSION_ID_BYTES = 16
         private const val KEY_BYTES = 32
         private val encoder = Base64.getUrlEncoder().withoutPadding()

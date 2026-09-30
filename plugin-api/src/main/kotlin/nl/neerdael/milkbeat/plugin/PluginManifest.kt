@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 import nl.neerdael.milkbeat.catalog.EntityKind
 
 /** The newest plugin API this host implements; a plugin whose [ApiRange.min] is higher cannot run. */
-const val PLUGIN_API_VERSION = 1
+const val PLUGIN_API_VERSION = 2
 
 /** The container format this host reads. */
 const val PLUGIN_FORMAT_VERSION = 1
@@ -72,6 +72,8 @@ data class MetadataRole(
 data class AudioRole(
     /** Id spaces this plugin resolves directly, without matching. */
     val idSpaces: Set<String>,
+    /** Whether the plugin can find its own version of a track described by another plugin (`audio.match`). */
+    val match: Boolean = false,
     val radio: Boolean = false,
     val musicVideo: Boolean = false,
     val reportPlayback: Boolean = false,

@@ -29,7 +29,7 @@ export type PluginErrorCode =
   | 'INTERNAL';
 
 /**
- * Plugin API v1, generated from the plugin-api module. Do not edit.
+ * Plugin API v2, generated from the plugin-api module. Do not edit.
  */
 export interface MilkbeatPluginApi {
   manifest: PluginManifest;
@@ -67,6 +67,10 @@ export interface MilkbeatPluginApi {
     'audio.resolve': {
       request: ResolveAudioRequest;
       response: AudioStream;
+    };
+    'audio.match': {
+      request: MatchAudioRequest;
+      response: AudioMatches;
     };
     'audio.radio': {
       request: RadioRequest;
@@ -152,6 +156,10 @@ export interface MilkbeatPluginApi {
       request: HashRequest;
       response: HashResult;
     };
+    'crypto.hmac': {
+      request: HmacRequest;
+      response: HashResult;
+    };
     'code.load': {
       request: CodeLoadRequest;
       response: CodeLoadResult;
@@ -227,6 +235,7 @@ export interface MetadataRole {
 }
 export interface AudioRole {
   idSpaces: string[];
+  match?: boolean;
   radio?: boolean;
   musicVideo?: boolean;
   reportPlayback?: boolean;
@@ -248,6 +257,7 @@ export interface SignInMethodWebLogin {
   requiredCookies: string[];
   extractScript?: string | null;
   refreshUrl?: string | null;
+  pageScript?: string | null;
 }
 export interface Permissions {
   network?: string[];
@@ -458,6 +468,12 @@ export interface AudioTrackInfo {
   original?: boolean;
   drc?: boolean;
 }
+export interface MatchAudioRequest {
+  track: TrackDescriptor;
+}
+export interface AudioMatches {
+  candidates?: TrackDescriptor[];
+}
 export interface ReportPlaybackRequest {
   entity: EntityRef;
   trackingToken?: string | null;
@@ -616,6 +632,11 @@ export interface HashRequest {
 export interface HashResult {
   hex: string;
 }
+export interface HmacRequest {
+  algorithm: HashAlgorithm;
+  keyHex: string;
+  messageHex: string;
+}
 export interface CodeLoadRequest {
   key: string;
   source?: string | null;
@@ -681,6 +702,7 @@ export const HOST_OPERATIONS = [
   'secrets.set',
   'secrets.delete',
   'crypto.hash',
+  'crypto.hmac',
   'code.load',
   'assets.read',
   'env.get',

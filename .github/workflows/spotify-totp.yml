@@ -1,0 +1,78 @@
+name: Spotify provider data
+
+# Derives the Spotify web-player TOTP secrets from Spotify's own bundle and
+# publishes them and current query hashes on the orphan branch `spotify-data`:
+#   https://raw.githubusercontent.com/johnneerdael/Milkbeat/spotify-data/totp.json
+# It never pushes to main, so build.yml (push: main only) is not triggered.
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: spotify-totp
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  DATA_BRANCH: spotify-data
+
+jobs:
+  extract:
+    name: Extract and publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout scripts
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+
+      - name: Test the derivation
+        run: python3 -m unittest discover -s .github/scripts -p 'test_extract_spotify*.py' -v
+
+      - name: Extract and validate
+        run: python3 .github/scripts/extract_spotify_totp.py --output "$RUNNER_TEMP/totp.json"
+
+      - name: Extract query hashes
+        run: python3 .github/scripts/extract_spotify_hashes.py --output "$RUNNER_TEMP/hashes.json"
+
+      - name: Publish to ${{ env.DATA_BRANCH }}
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          set +e
+          git ls-remote --exit-code --heads origin "$DATA_BRANCH" > /dev/null
+          status=$?
+          set -e
+          if [ "$status" -eq 0 ]; then
+            git fetch --no-tags --depth=1 origin "$DATA_BRANCH"
+            git checkout --quiet -B "$DATA_BRANCH" FETCH_HEAD
+          elif [ "$status" -eq 2 ]; then
+            echo "Branch $DATA_BRANCH does not exist yet; creating it as an orphan."
+            git checkout --quiet --orphan "$DATA_BRANCH"
+            git rm -rf --quiet .
+          else
+            echo "::error::git ls-remote failed with status $status"
+            exit "$status"
+          fi
+          git clean -ffdxq
+
+          cp "$RUNNER_TEMP/totp.json" totp.json
+          cp "$RUNNER_TEMP/hashes.json" hashes.json
+          git add totp.json hashes.json
+          if git diff --cached --quiet; then
+            echo "Spotify data unchanged; nothing to publish."
+            exit 0
+          fi
+
+          latest=$(python3 -c 'import json,sys; print(max(e["v"] for e in json.load(open(sys.argv[1]))))' totp.json)
+          git commit --quiet -m "chore(spotify): provider data with TOTP v$latest"
+          git push origin "HEAD:refs/heads/$DATA_BRANCH"
+          echo "Published Spotify data (latest TOTP v$latest) to $DATA_BRANCH."

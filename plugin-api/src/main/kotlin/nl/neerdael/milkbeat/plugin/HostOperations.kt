@@ -64,6 +64,17 @@ data class HashResult(
 )
 
 /**
+ * An HMAC of [messageHex] under [keyHex], both hex so binary keys and messages (a TOTP's decoded
+ * secret and its eight-byte counter) pass unchanged; answered as a [HashResult].
+ */
+@Serializable
+data class HmacRequest(
+    val algorithm: HashAlgorithm,
+    val keyHex: String,
+    val messageHex: String,
+)
+
+/**
  * Evaluates the script cached under [key] in the plugin's context, compiling [source] first when
  * nothing is cached yet. Loading cached bytecode skips parsing, so a key must name its exact content
  * (e.g. `player:fb50cd46`). Without [source], a miss answers `loaded = false` and evaluates nothing,
@@ -168,6 +179,7 @@ object HostOperations {
     val secretSet = HostOperation("secrets.set", StorageEntry.serializer(), Unit.serializer())
     val secretDelete = HostOperation("secrets.delete", StorageKey.serializer(), Unit.serializer())
     val hash = HostOperation("crypto.hash", HashRequest.serializer(), HashResult.serializer())
+    val hmac = HostOperation("crypto.hmac", HmacRequest.serializer(), HashResult.serializer())
     val codeLoad = HostOperation("code.load", CodeLoadRequest.serializer(), CodeLoadResult.serializer())
     val assetRead = HostOperation("assets.read", AssetRequest.serializer(), AssetText.serializer())
     val environment = HostOperation("env.get", Unit.serializer(), HostEnvironment.serializer())
@@ -189,6 +201,7 @@ object HostOperations {
             secretSet,
             secretDelete,
             hash,
+            hmac,
             codeLoad,
             assetRead,
             environment,

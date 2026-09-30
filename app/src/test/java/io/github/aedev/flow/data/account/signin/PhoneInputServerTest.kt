@@ -14,12 +14,17 @@ import java.util.Base64
 
 class PhoneInputServerTest {
     private val received = mutableListOf<PhoneInput>()
+    private var captures = 0
     private val server =
         PhoneInputServer(
             channel = PhoneChannel(VECTOR_SESSION_ID.copyOf(), VECTOR_KEY.copyOf()),
             readAsset = { path -> "asset:$path".encodeToByteArray() },
             status = { PhoneStatus(step = "Welcome") },
             onInput = { received += it },
+            captureFrame = {
+                captures++
+                PhoneFrame(320, 240, "fixture-pixels")
+            },
         )
     private val http = OkHttpClient()
 
@@ -80,5 +85,46 @@ class PhoneInputServerTest {
         val d = Base64.getUrlDecoder()
         val plain = SyncCrypto.open(VECTOR_KEY, d.decode(envelope.n), d.decode(envelope.c), VECTOR_SESSION_ID + "s2c".encodeToByteArray())
         assertThat(plain.decodeToString()).contains("Welcome")
+    }
+
+    @Test
+    fun `a viewport is captured only for an authenticated frame request and returned encrypted`() {
+        val base = start()
+
+        fun frame(body: String) =
+            http
+                .newCall(
+                    Request
+                        .Builder()
+                        .url("$base/frame")
+                        .post(body.toRequestBody("application/json".toMediaType()))
+                        .build(),
+                ).execute()
+        frame("{}").use { assertThat(it.code).isEqualTo(403) }
+        assertThat(captures).isEqualTo(0)
+        val body = Json.encodeToString(PhoneEnvelope.serializer(), phoneSeal(VECTOR_SESSION_ID, VECTOR_KEY, 1, "frame", ""))
+        frame(body).use { response ->
+            assertThat(response.code).isEqualTo(200)
+            assertThat(response.header("Cache-Control")).isEqualTo("no-store")
+            val sealed = response.body!!.string()
+            assertThat(sealed).doesNotContain("fixture-pixels")
+            val envelope = Json.decodeFromString(PhoneEnvelope.serializer(), sealed)
+            val d = Base64.getUrlDecoder()
+            val plain =
+                SyncCrypto.open(
+                    VECTOR_KEY,
+                    d.decode(envelope.n),
+                    d.decode(envelope.c),
+                    VECTOR_SESSION_ID + "s2c".encodeToByteArray(),
+                )
+            assertThat(
+                Json.decodeFromString(PhoneFrameReply.serializer(), plain.decodeToString()),
+            ).isEqualTo(PhoneFrameReply(1, PhoneFrame(320, 240, "fixture-pixels")))
+        }
+        frame(body).use { assertThat(it.code).isEqualTo(403) }
+        val next = Json.encodeToString(PhoneEnvelope.serializer(), phoneSeal(VECTOR_SESSION_ID, VECTOR_KEY, 2, "frame", ""))
+        frame(next).use { assertThat(it.code).isEqualTo(429) }
+        assertThat(captures).isEqualTo(1)
+        assertThat(received).isEmpty()
     }
 }

@@ -16,6 +16,7 @@ import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 
@@ -25,8 +26,11 @@ class PhoneInputServer(
     private val readAsset: (String) -> ByteArray,
     private val status: () -> PhoneStatus,
     private val onInput: suspend (PhoneInput) -> Unit,
+    private val captureFrame: suspend () -> PhoneFrame? = { null },
 ) {
     private var server: EmbeddedServer<*, *>? = null
+    private val frameLock = Mutex()
+    private var lastFrameAt = 0L
 
     suspend fun start(host: String): Int {
         val engine =
@@ -50,11 +54,53 @@ class PhoneInputServer(
                             } catch (e: IllegalArgumentException) {
                                 null
                             }
-                        if (input == null) {
+                        if (input == null || input is PhoneInput.Frame) {
                             call.respond(HttpStatusCode.Forbidden)
                         } else {
                             onInput(input)
                             call.respond(HttpStatusCode.NoContent)
+                        }
+                    }
+                    post("/frame") {
+                        call.noStore()
+                        val request =
+                            try {
+                                channel.open(
+                                    Json.decodeFromString(PhoneEnvelope.serializer(), call.receiveText()),
+                                    call.request.origin.remoteHost,
+                                )
+                            } catch (e: PhoneChannelRejected) {
+                                null
+                            } catch (e: IllegalArgumentException) {
+                                null
+                            }
+                        if (request !is PhoneInput.Frame) {
+                            call.respond(HttpStatusCode.Forbidden)
+                        } else if (!frameLock.tryLock()) {
+                            call.respond(HttpStatusCode.TooManyRequests)
+                        } else {
+                            try {
+                                val now = System.nanoTime()
+                                if (lastFrameAt != 0L && now - lastFrameAt < FRAME_INTERVAL_NS) {
+                                    call.respond(HttpStatusCode.TooManyRequests)
+                                } else {
+                                    lastFrameAt = now
+                                    val frame = captureFrame()
+                                    if (frame == null) {
+                                        call.respond(HttpStatusCode.ServiceUnavailable)
+                                    } else {
+                                        call.respondText(
+                                            Json.encodeToString(
+                                                PhoneEnvelope.serializer(),
+                                                channel.seal(PhoneFrameReply(request.seq, frame)),
+                                            ),
+                                            ContentType.Application.Json,
+                                        )
+                                    }
+                                }
+                            } finally {
+                                frameLock.unlock()
+                            }
                         }
                     }
                     get("/status") {
@@ -97,5 +143,6 @@ class PhoneInputServer(
         const val INDEX = "$ASSET_DIR/index.html"
         const val APP_JS = "$ASSET_DIR/app.js"
         const val NOBLE_JS = "$ASSET_DIR/noble-ciphers-2.4.0.min.js"
+        private const val FRAME_INTERVAL_NS = 500_000_000L
     }
 }

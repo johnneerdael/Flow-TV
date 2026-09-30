@@ -48,6 +48,7 @@ object PluginOperations {
     val radio = PluginOperation("metadata.radio", RadioRequest.serializer(), TrackList.serializer())
 
     val resolveAudio = PluginOperation("audio.resolve", ResolveAudioRequest.serializer(), AudioStream.serializer())
+    val matchAudio = PluginOperation("audio.match", MatchAudioRequest.serializer(), AudioMatches.serializer())
     val audioRadio = PluginOperation("audio.radio", RadioRequest.serializer(), TrackList.serializer())
     val reportListen = PluginOperation("audio.reportPlayback", ReportPlaybackRequest.serializer(), Unit.serializer())
 
@@ -80,6 +81,7 @@ object PluginOperations {
             library,
             radio,
             resolveAudio,
+            matchAudio,
             audioRadio,
             reportListen,
             videoSearch,

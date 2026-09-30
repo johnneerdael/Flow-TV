@@ -15,6 +15,7 @@ import io.github.aedev.flow.data.local.dao.RecognitionHistoryDao
 import io.github.aedev.flow.data.local.dao.SubscriptionGroupDao
 import io.github.aedev.flow.data.local.dao.SyncLogDao
 import io.github.aedev.flow.data.local.dao.SyncPeerDao
+import io.github.aedev.flow.data.local.dao.TrackMatchDao
 import io.github.aedev.flow.data.local.dao.VideoDao
 import io.github.aedev.flow.data.local.dao.WatchHistoryDao
 import io.github.aedev.flow.data.local.entity.DownloadEntity
@@ -36,6 +37,7 @@ import io.github.aedev.flow.data.local.entity.SubscriptionFeedEntity
 import io.github.aedev.flow.data.local.entity.SubscriptionGroupEntity
 import io.github.aedev.flow.data.local.entity.SyncLogEntity
 import io.github.aedev.flow.data.local.entity.SyncPeerEntity
+import io.github.aedev.flow.data.local.entity.TrackMatchEntity
 import io.github.aedev.flow.data.local.entity.VideoEntity
 import io.github.aedev.flow.data.local.entity.WatchHistoryEntity
 import io.github.aedev.flow.data.local.migrations.MIGRATIONS
@@ -64,13 +66,15 @@ import io.github.aedev.flow.data.local.migrations.Migration24To25
         MusicGraphPlaylistEntity::class,
         MusicGraphEdgeEntity::class,
         NoteEntity::class,
+        TrackMatchEntity::class,
     ],
     autoMigrations = [
         AutoMigration(from = 24, to = 25, spec = Migration24To25::class),
         AutoMigration(from = 25, to = 26),
         AutoMigration(from = 26, to = 27),
+        AutoMigration(from = 27, to = 28),
     ],
-    version = 27,
+    version = 28,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -99,6 +103,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun syncPeerDao(): SyncPeerDao
 
     abstract fun musicGraphDao(): MusicGraphDao
+
+    abstract fun trackMatchDao(): TrackMatchDao
 
     companion object {
         @Volatile

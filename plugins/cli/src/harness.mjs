@@ -2,7 +2,7 @@
 // `vm` context (standard JavaScript only, like QuickJS: no URL, console, timers or fetch) and answers
 // its host calls with the same rules as the app: HTTPS to granted hosts only, the {result}|{error}
 // envelope, quota-bound storage. `http` can be replaced to serve recorded responses offline.
-import { createHash } from 'node:crypto';
+import { createHash, createHmac } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import vm from 'node:vm';
@@ -80,6 +80,9 @@ export function loadPlugin(pluginDir, options = {}) {
     'secrets.set': ({ key, value }) => (secrets.set(key, value), {}),
     'secrets.delete': ({ key }) => (secrets.delete(key), {}),
     'crypto.hash': ({ algorithm, text }) => ({ hex: createHash(algorithm === 'SHA1' ? 'sha1' : 'sha256').update(text).digest('hex') }),
+    'crypto.hmac': ({ algorithm, keyHex, messageHex }) => ({
+      hex: createHmac(algorithm === 'SHA1' ? 'sha1' : 'sha256', Buffer.from(keyHex, 'hex')).update(Buffer.from(messageHex, 'hex')).digest('hex'),
+    }),
     'code.load': ({ key, source }) => {
       const code = codeCache.get(key) ?? source;
       if (code === undefined) return { loaded: false };
@@ -88,7 +91,7 @@ export function loadPlugin(pluginDir, options = {}) {
       return { loaded: true };
     },
     'assets.read': ({ path }) => ({ text: readFileSync(join(pluginDir, path), 'utf8') }),
-    'env.get': () => ({ apiVersion: 1, appVersion: 'harness', locale: 'en-US', region: 'US', deviceClass: 'tv', pluginVersion: manifest.version }),
+    'env.get': () => ({ apiVersion: 2, appVersion: 'harness', locale: 'en-US', region: 'US', deviceClass: 'tv', pluginVersion: manifest.version }),
     'log.write': ({ level, message }) => (log(level, message), {}),
     'settings.get': () => Object.entries(settings).map(([key, value]) => ({ key, value })),
     'time.sleep': ({ ms }) => new Promise((done) => setTimeout(() => done({}), Math.min(ms, 60000))),

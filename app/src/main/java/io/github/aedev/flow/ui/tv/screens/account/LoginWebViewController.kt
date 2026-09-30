@@ -2,7 +2,10 @@ package io.github.aedev.flow.ui.tv.screens.account
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Rect
 import android.view.KeyEvent
+import android.view.Window
+import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.webkit.CookieManager
 import android.webkit.WebView
@@ -11,6 +14,8 @@ import androidx.webkit.ProfileStore
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
 import io.github.aedev.flow.data.account.signin.PhoneField
+import io.github.aedev.flow.data.account.signin.PhoneFrame
+import io.github.aedev.flow.data.account.signin.PhoneInput
 import io.github.aedev.flow.data.account.signin.PhoneKey
 import io.github.aedev.flow.data.account.signin.SignInCapture
 import io.github.aedev.flow.data.account.signin.extract
@@ -40,11 +45,30 @@ internal class LoginWebViewController(
     private val onPageTitle: (String) -> Unit,
     private val method: WebLoginMethod,
     private val onCaptured: (WebLoginResult) -> Unit,
+    window: Window? = null,
 ) {
     val webView: WebView = WebView(context)
     private val cookies: CookieManager
     private var captured = false
     private val scope = MainScope()
+    private val remote = window?.let { LoginRemoteView(webView, it) }
+
+    suspend fun frame(): PhoneFrame? = remote?.frame()
+
+    fun viewportBounds(bounds: Rect) {
+        remote?.viewportBounds = bounds
+    }
+
+    fun pointer(input: PhoneInput.Pointer) {
+        webView.requestFocus()
+        remote?.pointer(input)
+        hideKeyboard()
+    }
+
+    fun visible(visible: Boolean) {
+        remote?.visible = visible
+        if (visible) webView.onResume() else webView.onPause()
+    }
 
     init {
         WebViewCompat.setProfile(webView, LOGIN_PROFILE)
@@ -54,6 +78,8 @@ internal class LoginWebViewController(
         cookies.setAcceptThirdPartyCookies(webView, true)
         webView.settings.javaScriptEnabled = true
         webView.settings.domStorageEnabled = true
+        webView.settings.useWideViewPort = true
+        webView.settings.loadWithOverviewMode = true
         webView.webViewClient =
             object : WebViewClient() {
                 // A store's home page can take many seconds to finish loading every tracker and banner;
@@ -69,6 +95,7 @@ internal class LoginWebViewController(
                     view: WebView,
                     url: String?,
                 ) {
+                    method.pageScript?.let { view.evaluateJavascript(it, null) }
                     onPageTitle(view.title.orEmpty())
                     if (!captured && SignInCapture.isSuccessPage(url, method)) capture()
                 }
@@ -82,6 +109,10 @@ internal class LoginWebViewController(
         field: Int?,
     ) {
         webView.requestFocus()
+        if (field == null && webView.onCreateInputConnection(EditorInfo())?.commitText(text, 1) == true) {
+            hideKeyboard()
+            return
+        }
         evaluate(SignInCapture.insertTextScript(text, field))
         hideKeyboard()
     }
@@ -105,17 +136,12 @@ internal class LoginWebViewController(
 
     suspend fun pressKey(key: PhoneKey) {
         webView.requestFocus()
-        if (key == PhoneKey.TAB && SignInCapture.movedToNextField(evaluateForResult(SignInCapture.nextFieldScript()))) {
-            hideKeyboard()
-            return
-        }
         val code =
             when (key) {
                 PhoneKey.ENTER -> KeyEvent.KEYCODE_ENTER
                 PhoneKey.TAB -> KeyEvent.KEYCODE_TAB
                 PhoneKey.BACKSPACE -> KeyEvent.KEYCODE_DEL
             }
-        evaluate(SignInCapture.focusFieldScript())
         webView.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, code))
         webView.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, code))
         hideKeyboard()
@@ -126,6 +152,13 @@ internal class LoginWebViewController(
         webView.context
             .getSystemService(InputMethodManager::class.java)
             ?.hideSoftInputFromWindow(webView.windowToken, 0)
+    }
+
+    fun restart() {
+        captured = false
+        cookies.removeAllCookies(null)
+        cookies.flush()
+        webView.loadUrl(method.startUrl)
     }
 
     fun destroy() {

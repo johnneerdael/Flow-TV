@@ -33,6 +33,8 @@ data class WebLoginMethod(
     val requiredCookies: List<String>,
     val extractScript: String? = null,
     val refreshUrl: String? = null,
+    /** Runs after a sign-in document loads, for provider-specific page compatibility fixes. */
+    val pageScript: String? = null,
 ) : SignInMethod
 
 /** Runs [method]'s [WebLoginMethod.refreshUrl] again with the [cookies] the plugin was handed. */

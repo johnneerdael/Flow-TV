@@ -23,6 +23,8 @@ private const val DEFAULT_LIFETIME_MS = 5 * 60 * 60_000L
 /** A stream an audio plugin handed out, with the plugin and when to ask again. */
 class ResolvedAudio(
     val pluginId: String,
+    /** The track as the plugin knows it: the listener's own, or the plugin's match for it. */
+    val track: TrackDescriptor,
     val stream: AudioStream,
     val validUntilMs: Long,
     /** Whether the plugin was asked for the picture too. */
@@ -37,9 +39,10 @@ class PictureLimits(
 
 /**
  * Plays tracks through the listener's audio plugins: each is tried in order for tracks whose ids fall
- * in its id spaces, and the next only when one says it cannot (unavailable, not found). One resolve
- * serves a music video's sound and picture; it is kept until shortly before it expires, and dropped
- * when playback reports it failed, so the plugin is asked for a different one.
+ * in its id spaces, and the next only when one says it cannot (unavailable, not found). A track no
+ * plugin plays by its own ids (a Spotify track) is then matched into each plugin that can find tracks,
+ * in the same order. One resolve serves a music video's sound and picture; it is kept until shortly
+ * before it expires, and dropped when playback reports it failed, so the plugin is asked for another.
  */
 @Singleton
 class PluginAudio
@@ -47,6 +50,7 @@ class PluginAudio
     constructor(
         private val host: PluginHost,
         private val registry: PluginRegistry,
+        private val matcher: PluginTrackMatcher,
     ) {
         private val resolved = ConcurrentHashMap<String, ResolvedAudio>()
         private val failures = ConcurrentHashMap<String, StreamFailure>()
@@ -59,37 +63,51 @@ class PluginAudio
         ): ResolvedAudio {
             val key = track.ref.providerId
             resolved[key]?.takeIf { it.validUntilMs > System.currentTimeMillis() && (picture == null || it.withPicture) }?.let { return it }
-            val candidates = candidates(track)
-            if (candidates.isEmpty()) {
+            val direct = candidates(track)
+            val matching = matchers(track) - direct.toSet()
+            if (direct.isEmpty() && matching.isEmpty()) {
                 throw PluginCallException("none", PluginError(PluginErrorCode.UNAVAILABLE, "No audio plugin plays ${track.title}"))
             }
             var last: PluginCallException? = null
-            for (plugin in candidates) {
-                val request =
-                    ResolveAudioRequest(
-                        track = track,
-                        quality = quality,
-                        video = picture != null,
-                        maxVideoHeight = picture?.maxHeight,
-                        videoCodecs = picture?.codecs.orEmpty(),
-                        failure = failures.remove(key),
-                    )
-                try {
-                    val stream = host.call(plugin.id, PluginOperations.resolveAudio, request)
-                    val lifetime = stream.expiresInMs ?: DEFAULT_LIFETIME_MS
-                    return ResolvedAudio(plugin.id, stream, System.currentTimeMillis() + lifetime - EXPIRY_MARGIN_MS, picture != null)
-                        .also { resolved[key] = it }
-                } catch (e: PluginCallException) {
-                    last = e
-                    if (e.error.code != PluginErrorCode.UNAVAILABLE && e.error.code != PluginErrorCode.NOT_FOUND) throw e
+            val attempts = direct.map { it to track } + matching.map { it to null }
+            for ((plugin, known) in attempts) {
+                var playable = known ?: matcher.match(track, plugin.id) ?: continue
+                for (attempt in 0..1) {
+                    val request =
+                        ResolveAudioRequest(
+                            track = playable,
+                            quality = quality,
+                            video = picture != null,
+                            maxVideoHeight = picture?.maxHeight,
+                            videoCodecs = picture?.codecs.orEmpty(),
+                            failure = failures.remove(key),
+                        )
+                    try {
+                        val stream = host.call(plugin.id, PluginOperations.resolveAudio, request)
+                        val lifetime = stream.expiresInMs ?: DEFAULT_LIFETIME_MS
+                        return ResolvedAudio(
+                            plugin.id,
+                            playable,
+                            stream,
+                            System.currentTimeMillis() + lifetime - EXPIRY_MARGIN_MS,
+                            picture != null,
+                        ).also { resolved[key] = it }
+                    } catch (e: PluginCallException) {
+                        last = e
+                        if (e.error.code != PluginErrorCode.UNAVAILABLE && e.error.code != PluginErrorCode.NOT_FOUND) throw e
+                        if (known != null) break
+                        matcher.invalidate(track, plugin.id)
+                        if (attempt != 0) break
+                        playable = matcher.match(track, plugin.id, excludedId = playable.ref.providerId) ?: break
+                    }
                 }
             }
-            throw last!!
+            throw last ?: PluginCallException("none", PluginError(PluginErrorCode.NOT_FOUND, "No audio plugin found ${track.title}"))
         }
 
         /** How the first audio plugin that would play [track] delivers its streams. */
         fun deliveryFor(track: TrackDescriptor): AudioDelivery =
-            candidates(track)
+            (candidates(track) + matchers(track))
                 .firstOrNull()
                 ?.manifest
                 ?.roles
@@ -121,6 +139,39 @@ class PluginAudio
                     track.ids.keys.any { it in spaces }
                 }
 
+        /** The listener's audio plugins, in their order, that can find tracks described by others. */
+        private fun matchers(track: TrackDescriptor) =
+            registry.state.value.selection.audio
+                .mapNotNull { registry.state.value.plugin(it) }
+                .filter {
+                    it.manifest.roles.audio
+                        ?.match == true && track.title.isNotBlank()
+                }
+
+        /** [pluginId]'s own track for [track]: the track itself when the plugin plays its ids, else its match. */
+        suspend fun playableIn(
+            track: TrackDescriptor,
+            pluginId: String,
+        ): TrackDescriptor? {
+            val plugin = registry.state.value.plugin(pluginId) ?: return null
+            val spaces =
+                plugin.manifest.roles.audio
+                    ?.idSpaces
+                    .orEmpty()
+            val own = track.ids.entries.firstOrNull { it.key in spaces }
+            if (own !=
+                null
+            ) {
+                return if (track.ref.providerId == own.value) track else track.copy(ref = track.ref.copy(providerId = own.value))
+            }
+            if (plugin.manifest.roles.audio
+                    ?.match != true
+            ) {
+                return null
+            }
+            return resolved[track.ref.providerId]?.takeIf { it.pluginId == pluginId }?.track ?: matcher.match(track, pluginId)
+        }
+
         fun forget(id: String) {
             resolved.remove(id)
         }
@@ -145,7 +196,7 @@ class PluginAudio
             host.call(
                 played.pluginId,
                 PluginOperations.reportListen,
-                ReportPlaybackRequest(track.ref, played.stream.trackingToken, playedMs, durationMs),
+                ReportPlaybackRequest(played.track.ref, played.stream.trackingToken, playedMs, durationMs),
             )
         }
     }

@@ -451,7 +451,9 @@
     <string name="tv_account_play_history_summary">Tracks you listen to for 30 seconds or more are reported to %1$s and count toward your listening there</string>
     <string name="tv_account_session_expired">Your sign-in expired. Sign in again to see your feeds.</string>
     <string name="tv_account_sign_in_title">Sign in with your phone</string>
-    <string name="tv_account_sign_in_instructions">Scan this code with a phone on the same network, then type your email and password on the phone. The phone also shows this page\'s buttons and links, so you can tap them there.</string>
+    <string name="tv_account_remote_view_label">Live sign-in page</string>
+    <string name="tv_account_remote_view_help">Tap and swipe the page, including verification challenges. Tap a text field on the page, then use the keyboard below to type.</string>
+    <string name="tv_account_sign_in_instructions">Scan this code with a phone on the same network. The phone shows the live sign-in page: tap and swipe it, type with the phone keyboard, and complete any verification challenge.</string>
     <string name="tv_account_sign_in_qr_description">QR code for signing in from your phone</string>
     <string name="tv_account_sign_in_no_network">This TV has no local network address. Connect it to Wi-Fi or Ethernet and try again.</string>
     <string name="tv_account_sign_in_unsupported">This TV\'s WebView cannot keep the sign-in separate from playback, so phone sign-in is unavailable.</string>

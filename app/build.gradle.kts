@@ -152,6 +152,7 @@ android {
         getByName("androidTest").assets.directories.add("$projectDir/schemas")
         // The fixture plugin, built by `npm run build` in plugins/fixture, for the plugin host tests.
         getByName("androidTest").assets.directories.add("$rootDir/plugins/fixture/build")
+        getByName("androidTest").assets.directories.add("$rootDir/plugins/spotify/build/android-test-assets")
     }
 
     compileOptions {

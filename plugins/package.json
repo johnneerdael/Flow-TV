@@ -7,7 +7,8 @@
     "cli",
     "fixture",
     "youtube-music",
-    "beatport"
+    "beatport",
+    "spotify"
   ],
   "engines": {
     "node": ">=22"

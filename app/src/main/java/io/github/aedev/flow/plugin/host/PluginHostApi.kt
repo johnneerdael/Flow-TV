@@ -28,6 +28,8 @@ import java.io.File
 import java.io.IOException
 import java.security.MessageDigest
 import java.util.Locale
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
 
 private const val MAX_SLEEP_MS = 60_000L
 private const val SECRETS_QUOTA = 256L * 1024
@@ -83,6 +85,18 @@ internal class PluginHostApi(
                         HashAlgorithm.SHA256 -> "SHA-256"
                     }
                 HashResult(MessageDigest.getInstance(algorithm).digest(request.text.toByteArray()).joinToString("") { "%02x".format(it) })
+            },
+            handler(HostOperations.hmac) { request ->
+                val algorithm =
+                    when (request.algorithm) {
+                        HashAlgorithm.SHA1 -> "HmacSHA1"
+                        HashAlgorithm.SHA256 -> "HmacSHA256"
+                    }
+                val key = request.keyHex.hexBytes() ?: throw HostCallException(PluginErrorCode.INTERNAL, "The HMAC key is not hex")
+                val message =
+                    request.messageHex.hexBytes() ?: throw HostCallException(PluginErrorCode.INTERNAL, "The HMAC message is not hex")
+                val mac = Mac.getInstance(algorithm).apply { init(SecretKeySpec(key, algorithm)) }
+                HashResult(mac.doFinal(message).toHexString())
             },
             handler(HostOperations.assetRead) { AssetText(asset(it.path).readText()) },
             handler(HostOperations.environment) { environment() },
@@ -176,3 +190,5 @@ internal class PluginHostApi(
         ): String = PluginJson.encodeToString(CallEnvelope.serializer(), CallEnvelope(error = PluginError(code, message)))
     }
 }
+
+private fun String.hexBytes(): ByteArray? = runCatching { hexToByteArray() }.getOrNull()

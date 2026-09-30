@@ -84,6 +84,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import nl.neerdael.milkbeat.catalog.EntityKind
 import nl.neerdael.milkbeat.catalog.EntityRef
+import nl.neerdael.milkbeat.catalog.TrackDescriptor
 import nl.neerdael.milkbeat.plugin.AudioDelivery
 import java.util.Locale
 import javax.inject.Inject
@@ -162,7 +163,7 @@ class Media3MusicService : MediaLibraryService() {
     // ── Endless radio session (desktop semantics: seeded once per queue, append-only) ──
     private var radioSeedId: String? = null
     private var radioContinuation: String? = null
-    private var radioSeed: EntityRef? = null
+    private var radioPage: RadioPage? = null
     private var radioTopUpJob: Job? = null
     private var radioAutoplayEnabled = true
     private var loudnessNormalizationEnabled = true
@@ -1235,7 +1236,7 @@ class Media3MusicService : MediaLibraryService() {
             if (context.explicit) currentId else queueIds.lastOrNull { !LocalMediaIds.isLocal(it) } ?: currentId
         radioSeedId = seedId
         radioContinuation = null
-        radioSeed = null
+        radioPage = null
         radioResumeWhenAppended = false
         explicitRadioRequest = context.explicit
         startRadio(seedId, collectionId.takeUnless { context.explicit })
@@ -1261,19 +1262,19 @@ class Media3MusicService : MediaLibraryService() {
                     // A collection continues with its own similar content, a song with its mix.
                     var result = collectionId?.let { mix(EntityRef(EntityKind.PLAYLIST, it)) }
                     if (result == null ||
-                        result.second.tracks.tracks
+                        result.tracks.tracks
                             .isEmpty()
                     ) {
-                        result = mix(EntityRef(EntityKind.TRACK, seedId))
+                        result = mix(EntityRef(EntityKind.TRACK, seedId), queuedDescriptor(seedId))
                     }
-                    val mapped = result?.second?.toRadioTracks(seedId).orEmpty()
-                    radioContinuation = result?.second?.tracks?.next
-                    radioSeed = result?.first
+                    val mapped = result?.toRadioTracks(seedId).orEmpty()
+                    radioContinuation = result?.tracks?.next
+                    radioPage = result
 
                     val station = withoutHiddenArtists(mapped)
                     Log.d(
                         TAG,
-                        "Radio seeded from ${collectionId ?: seedId} via ${result?.second?.pluginId}: " +
+                        "Radio seeded from ${collectionId ?: seedId} via ${result?.pluginId}: " +
                             "${station.size} tracks, continuation=${radioContinuation != null}, " +
                             "opening with ${station.take(3).joinToString { it.title }}",
                     )
@@ -1293,17 +1294,37 @@ class Media3MusicService : MediaLibraryService() {
             }
     }
 
-    /** A page of the radio seeded from [seed], from the plugins; null when none can build one. */
+    /** The first page of the radio seeded from [seed], from the plugins; null when none can build one. */
     private suspend fun mix(
         seed: EntityRef,
-        cursor: String? = null,
-    ): Pair<EntityRef, RadioPage>? =
+        seedTrack: TrackDescriptor? = null,
+    ): RadioPage? =
         try {
-            pluginRadio.page(seed, cursor)?.let { seed to it }
+            pluginRadio.page(seed, seedTrack)
         } catch (e: PluginCallException) {
             Log.w(TAG, "Radio from ${seed.providerId} unavailable: ${e.error.message}")
             null
         }
+
+    /** The next page of [previous]; null when its plugin has none to give. */
+    private suspend fun mixNext(
+        previous: RadioPage,
+        cursor: String,
+    ): RadioPage? =
+        try {
+            pluginRadio.next(previous, cursor)
+        } catch (e: PluginCallException) {
+            Log.w(TAG, "Radio from ${previous.seed.providerId} ended: ${e.error.message}")
+            null
+        }
+
+    /** How the queued or playing track [id] is described, so its radio can be seeded in another plugin. */
+    private fun queuedDescriptor(id: String): TrackDescriptor? {
+        val manager = io.github.aedev.flow.player.EnhancedMusicPlayerManager
+        return (listOfNotNull(manager.currentTrack.value) + manager.queue.value)
+            .firstOrNull { it.videoId == id }
+            ?.let(MusicVideoItems::descriptor)
+    }
 
     private fun RadioPage.toRadioTracks(seedId: String?): List<MusicTrack> =
         tracks.tracks
@@ -1371,11 +1392,11 @@ class Media3MusicService : MediaLibraryService() {
         radioTopUpJob =
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
-                    val seed = radioSeed
+                    val previous = radioPage
                     val continuation = radioContinuation
                     val result =
-                        if (seed != null && continuation != null) {
-                            mix(seed, continuation)
+                        if (previous != null && continuation != null) {
+                            mixNext(previous, continuation)
                         } else {
                             // The mix ran out: carry on with the mix of what is playing now, as
                             // YouTube Music does, rather than drifting from the far end of the pool.
@@ -1385,12 +1406,12 @@ class Media3MusicService : MediaLibraryService() {
                                     .firstOrNull { it != radioSeedId && !LocalMediaIds.isLocal(it) }
                                     ?: return@launch
                             radioSeedId = seedId
-                            mix(EntityRef(EntityKind.TRACK, seedId))
+                            mix(EntityRef(EntityKind.TRACK, seedId), queuedDescriptor(seedId))
                         } ?: return@launch
-                    radioContinuation = result.second.tracks.next
-                    radioSeed = result.first
+                    radioContinuation = result.tracks.next
+                    radioPage = result
 
-                    val station = withoutHiddenArtists(result.second.toRadioTracks(seedId = null))
+                    val station = withoutHiddenArtists(result.toRadioTracks(seedId = null))
                     Log.d(TAG, "Radio pool topped up with ${station.size} tracks, continuation=${radioContinuation != null}")
                     if (station.isNotEmpty()) {
                         manager.appendAutomixItems(station)
