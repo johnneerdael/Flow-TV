@@ -46,8 +46,8 @@
       "type": "webLogin",
       "id": "beatport",
       "label": "Sign in with Beatport",
-      "startUrl": "https://www.beatport.com/api/auth/signin?callbackUrl=https%3A%2F%2Fwww.beatport.com%2Faccount%2Fredirect-handler",
-      "successUrlPrefix": "https://www.beatport.com/account/redirect-handler",
+      "startUrl": "https://www.beatport.com/api/auth/signin",
+      "successUrlPrefix": "https://www.beatport.com/",
       "cookieUrl": "https://www.beatport.com/",
       "requiredCookies": [
         "__Secure-next-auth.session-token"
