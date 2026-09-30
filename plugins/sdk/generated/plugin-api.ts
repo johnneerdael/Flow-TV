@@ -29,7 +29,7 @@ export type PluginErrorCode =
   | 'INTERNAL';
 
 /**
- * Plugin API v1, generated from the plugin-api module. Do not edit.
+ * Plugin API v2, generated from the plugin-api module. Do not edit.
  */
 export interface MilkbeatPluginApi {
   manifest: PluginManifest;
@@ -257,6 +257,7 @@ export interface SignInMethodWebLogin {
   requiredCookies: string[];
   extractScript?: string | null;
   refreshUrl?: string | null;
+  pageScript?: string | null;
 }
 export interface Permissions {
   network?: string[];

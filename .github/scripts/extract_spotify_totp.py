@@ -14,7 +14,7 @@ and generates an RFC 6238 TOTP (SHA1, 30 s period, 6 digits) with the first
 entry of the list, sending its version as `totpVer`. The published secret is
 `key` Base32-encoded without padding, the same shape the community gist uses.
 
-Output: a JSON array `[{"v": <int>, "s": "<base32>"}, ...]` sorted by
+Output: a JSON array `[{"v": <int>, "s": "<base32>", "keyHex": "<hex>"}, ...]` sorted by
 ascending version, so the current (highest) version is the LAST entry.
 Consumers should pick the entry with the maximum `v`.
 
@@ -267,7 +267,10 @@ def main() -> int:
         print("latest secret did not validate; refusing to publish", file=sys.stderr)
         return 1
 
-    document = json.dumps([{"v": v, "s": secrets[v]} for v in versions], indent=2) + "\n"
+    document = json.dumps([
+        {"v": v, "s": secrets[v], "keyHex": base64.b32decode(secrets[v] + "=" * (-len(secrets[v]) % 8)).hex()}
+        for v in versions
+    ], indent=2) + "\n"
     if args.output:
         args.output.write_text(document, encoding="utf-8")
         print(f"wrote {len(versions)} versions to {args.output}", file=sys.stderr)

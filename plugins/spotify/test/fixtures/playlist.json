@@ -1,0 +1,924 @@
+{
+  "data": {
+    "playlistV2": {
+      "__typename": "Playlist",
+      "content": {
+        "__typename": "PlaylistItemsPage",
+        "items": [
+          {
+            "addedAt": {
+              "isoString": "2025-09-23T22:14:23.801Z"
+            },
+            "itemV2": {
+              "__typename": "TrackResponseWrapper",
+              "data": {
+                "__typename": "Track",
+                "albumOfTrack": {
+                  "artists": {
+                    "items": [
+                      {
+                        "profile": {
+                          "name": "Carl Cox"
+                        },
+                        "uri": "spotify:artist:19SmlbABtI4bXz864MLqOS"
+                      },
+                      {
+                        "profile": {
+                          "name": "Reinier Zonneveld"
+                        },
+                        "uri": "spotify:artist:21A7bhIL1m6CNZn8y57PIZ"
+                      },
+                      {
+                        "profile": {
+                          "name": "Christopher Coe"
+                        },
+                        "uri": "spotify:artist:3LLc5jMIE1UHX5eF2cN8rP"
+                      }
+                    ]
+                  },
+                  "coverArt": {
+                    "sources": [
+                      {
+                        "height": 300,
+                        "url": "https://i.scdn.co/image/ab67616d00001e02b30b19cd899c27d1109f7f11",
+                        "width": 300
+                      },
+                      {
+                        "height": 64,
+                        "url": "https://i.scdn.co/image/ab67616d00004851b30b19cd899c27d1109f7f11",
+                        "width": 64
+                      },
+                      {
+                        "height": 640,
+                        "url": "https://i.scdn.co/image/ab67616d0000b273b30b19cd899c27d1109f7f11",
+                        "width": 640
+                      }
+                    ]
+                  },
+                  "date": {
+                    "isoString": "2019-07-12T00:00:00Z",
+                    "precision": "DAY"
+                  },
+                  "name": "This Is Our Time",
+                  "uri": "spotify:album:68yo29Z5COyU5aAIj4NJjg"
+                },
+                "artists": {
+                  "items": [
+                    {
+                      "profile": {
+                        "name": "Carl Cox"
+                      },
+                      "uri": "spotify:artist:19SmlbABtI4bXz864MLqOS"
+                    },
+                    {
+                      "profile": {
+                        "name": "Reinier Zonneveld"
+                      },
+                      "uri": "spotify:artist:21A7bhIL1m6CNZn8y57PIZ"
+                    },
+                    {
+                      "profile": {
+                        "name": "Christopher Coe"
+                      },
+                      "uri": "spotify:artist:3LLc5jMIE1UHX5eF2cN8rP"
+                    }
+                  ]
+                },
+                "contentRating": {
+                  "label": "NONE"
+                },
+                "discNumber": 1,
+                "trackDuration": {
+                  "totalMilliseconds": 183281
+                },
+                "mediaType": "AUDIO",
+                "name": "This Is Our Time (Filth Mix)",
+                "playability": {
+                  "playable": true,
+                  "reason": "PLAYABLE"
+                },
+                "playcount": "4716710",
+                "trackNumber": 1,
+                "uri": "spotify:track:1QATL5HttB1ozL5nchqWDI"
+              }
+            },
+            "itemV3": {
+              "__typename": "EntityResponseWrapper",
+              "data": {
+                "__typename": "Entity",
+                "consumptionExperienceTrait": {
+                  "__typename": "ConsumptionExperienceTrait",
+                  "contentRatings": [],
+                  "duration": {
+                    "nanoSeconds": 0,
+                    "seconds": 183
+                  },
+                  "formats": [
+                    "FORMAT_AUDIO",
+                    "FORMAT_LOSSLESS"
+                  ]
+                },
+                "identityTrait": {
+                  "__typename": "IdentityTrait",
+                  "contentHierarchyParent": {
+                    "__typename": "Entity",
+                    "identityTrait": {
+                      "__typename": "IdentityTrait",
+                      "name": "This Is Our Time"
+                    },
+                    "publishingMetadataTrait": {
+                      "__typename": "PublishingMetadataTrait",
+                      "firstPublishedAt": {
+                        "isoString": "2019-07-12",
+                        "precision": "DAY"
+                      }
+                    },
+                    "uri": "spotify:album:68yo29Z5COyU5aAIj4NJjg"
+                  },
+                  "contributors": {
+                    "items": [
+                      {
+                        "name": "Carl Cox",
+                        "uri": "spotify:artist:19SmlbABtI4bXz864MLqOS"
+                      },
+                      {
+                        "name": "Reinier Zonneveld",
+                        "uri": "spotify:artist:21A7bhIL1m6CNZn8y57PIZ"
+                      },
+                      {
+                        "name": "Christopher Coe",
+                        "uri": "spotify:artist:3LLc5jMIE1UHX5eF2cN8rP"
+                      }
+                    ],
+                    "totalCount": 3
+                  },
+                  "description": "",
+                  "name": "This Is Our Time (Filth Mix)",
+                  "type": "Song"
+                },
+                "playability": {
+                  "playable": true,
+                  "reason": "PLAYABLE"
+                },
+                "uri": "spotify:track:1QATL5HttB1ozL5nchqWDI",
+                "visualIdentityTrait": {
+                  "__typename": "VisualIdentityTrait",
+                  "sixteenByNineCoverImage": null,
+                  "squareCoverImage": {
+                    "extractedColorSet": {
+                      "encoreBaseSetTextColor": {
+                        "alpha": 255,
+                        "blue": 187,
+                        "green": 187,
+                        "red": 187
+                      },
+                      "highContrast": {
+                        "backgroundBase": {
+                          "alpha": 255,
+                          "blue": 83,
+                          "green": 83,
+                          "red": 83
+                        },
+                        "backgroundTintedBase": {
+                          "alpha": 255,
+                          "blue": 51,
+                          "green": 51,
+                          "red": 51
+                        },
+                        "textBase": {
+                          "alpha": 255,
+                          "blue": 255,
+                          "green": 255,
+                          "red": 255
+                        },
+                        "textBrightAccent": {
+                          "alpha": 255,
+                          "blue": 255,
+                          "green": 255,
+                          "red": 255
+                        },
+                        "textSubdued": {
+                          "alpha": 255,
+                          "blue": 205,
+                          "green": 205,
+                          "red": 205
+                        }
+                      },
+                      "higherContrast": {
+                        "backgroundBase": {
+                          "alpha": 255,
+                          "blue": 53,
+                          "green": 53,
+                          "red": 53
+                        },
+                        "backgroundTintedBase": {
+                          "alpha": 255,
+                          "blue": 86,
+                          "green": 86,
+                          "red": 86
+                        },
+                        "textBase": {
+                          "alpha": 255,
+                          "blue": 255,
+                          "green": 255,
+                          "red": 255
+                        },
+                        "textBrightAccent": {
+                          "alpha": 255,
+                          "blue": 96,
+                          "green": 215,
+                          "red": 30
+                        },
+                        "textSubdued": {
+                          "alpha": 255,
+                          "blue": 205,
+                          "green": 205,
+                          "red": 205
+                        }
+                      },
+                      "minContrast": {
+                        "backgroundBase": {
+                          "alpha": 255,
+                          "blue": 83,
+                          "green": 83,
+                          "red": 83
+                        },
+                        "backgroundTintedBase": {
+                          "alpha": 255,
+                          "blue": 51,
+                          "green": 51,
+                          "red": 51
+                        },
+                        "textBase": {
+                          "alpha": 255,
+                          "blue": 255,
+                          "green": 255,
+                          "red": 255
+                        },
+                        "textBrightAccent": {
+                          "alpha": 255,
+                          "blue": 255,
+                          "green": 255,
+                          "red": 255
+                        },
+                        "textSubdued": {
+                          "alpha": 255,
+                          "blue": 255,
+                          "green": 255,
+                          "red": 255
+                        }
+                      }
+                    },
+                    "image": {
+                      "data": {
+                        "__typename": "ImageV2",
+                        "sources": [
+                          {
+                            "imageFormat": "WEBP",
+                            "maxHeight": 640,
+                            "maxWidth": 640,
+                            "url": "https://image-cdn-fa.spotifycdn.com/image/ab67616d000075a0b30b19cd899c27d1109f7f11"
+                          },
+                          {
+                            "imageFormat": "WEBP",
+                            "maxHeight": 64,
+                            "maxWidth": 64,
+                            "url": "https://image-cdn-fa.spotifycdn.com/image/ab67616d000090d5b30b19cd899c27d1109f7f11"
+                          },
+                          {
+                            "imageFormat": "WEBP",
+                            "maxHeight": 300,
+                            "maxWidth": 300,
+                            "url": "https://image-cdn-fa.spotifycdn.com/image/ab67616d0000ab87b30b19cd899c27d1109f7f11"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "addedAt": {
+              "isoString": "2025-09-23T22:14:23.801Z"
+            },
+            "itemV2": {
+              "__typename": "TrackResponseWrapper",
+              "data": {
+                "__typename": "Track",
+                "albumOfTrack": {
+                  "artists": {
+                    "items": [
+                      {
+                        "profile": {
+                          "name": "Sam Paganini"
+                        },
+                        "uri": "spotify:artist:50ZyjIaVHOy5Xt7FLJ7RZl"
+                      },
+                      {
+                        "profile": {
+                          "name": "Adam Beyer"
+                        },
+                        "uri": "spotify:artist:1btv9qmIpbp7q1ixCYNdHu"
+                      },
+                      {
+                        "profile": {
+                          "name": "Layton Giordani"
+                        },
+                        "uri": "spotify:artist:7mC3RkNNTV6p2j9w4F8Ip4"
+                      }
+                    ]
+                  },
+                  "coverArt": {
+                    "sources": [
+                      {
+                        "height": 300,
+                        "url": "https://i.scdn.co/image/ab67616d00001e02150df7e71d2128b040c815dc",
+                        "width": 300
+                      },
+                      {
+                        "height": 64,
+                        "url": "https://i.scdn.co/image/ab67616d00004851150df7e71d2128b040c815dc",
+                        "width": 64
+                      },
+                      {
+                        "height": 640,
+                        "url": "https://i.scdn.co/image/ab67616d0000b273150df7e71d2128b040c815dc",
+                        "width": 640
+                      }
+                    ]
+                  },
+                  "date": {
+                    "isoString": "2022-06-24T00:00:00Z",
+                    "precision": "DAY"
+                  },
+                  "name": "Rave (Remix)",
+                  "uri": "spotify:album:6PyxW7J95s2e5ZuzoZcG0H"
+                },
+                "artists": {
+                  "items": [
+                    {
+                      "profile": {
+                        "name": "Sam Paganini"
+                      },
+                      "uri": "spotify:artist:50ZyjIaVHOy5Xt7FLJ7RZl"
+                    },
+                    {
+                      "profile": {
+                        "name": "Adam Beyer"
+                      },
+                      "uri": "spotify:artist:1btv9qmIpbp7q1ixCYNdHu"
+                    },
+                    {
+                      "profile": {
+                        "name": "Layton Giordani"
+                      },
+                      "uri": "spotify:artist:7mC3RkNNTV6p2j9w4F8Ip4"
+                    }
+                  ]
+                },
+                "contentRating": {
+                  "label": "NONE"
+                },
+                "discNumber": 1,
+                "trackDuration": {
+                  "totalMilliseconds": 239083
+                },
+                "mediaType": "AUDIO",
+                "name": "Rave - Remix",
+                "playability": {
+                  "playable": true,
+                  "reason": "PLAYABLE"
+                },
+                "playcount": "20736314",
+                "trackNumber": 1,
+                "uri": "spotify:track:1xcxd5hIP1hkU3IOebJkuo"
+              }
+            },
+            "itemV3": {
+              "__typename": "EntityResponseWrapper",
+              "data": {
+                "__typename": "Entity",
+                "consumptionExperienceTrait": {
+                  "__typename": "ConsumptionExperienceTrait",
+                  "contentRatings": [],
+                  "duration": {
+                    "nanoSeconds": 0,
+                    "seconds": 239
+                  },
+                  "formats": [
+                    "FORMAT_AUDIO",
+                    "FORMAT_LOSSLESS"
+                  ]
+                },
+                "identityTrait": {
+                  "__typename": "IdentityTrait",
+                  "contentHierarchyParent": {
+                    "__typename": "Entity",
+                    "identityTrait": {
+                      "__typename": "IdentityTrait",
+                      "name": "Rave (Remix)"
+                    },
+                    "publishingMetadataTrait": {
+                      "__typename": "PublishingMetadataTrait",
+                      "firstPublishedAt": {
+                        "isoString": "2022-06-24",
+                        "precision": "DAY"
+                      }
+                    },
+                    "uri": "spotify:album:6PyxW7J95s2e5ZuzoZcG0H"
+                  },
+                  "contributors": {
+                    "items": [
+                      {
+                        "name": "Sam Paganini",
+                        "uri": "spotify:artist:50ZyjIaVHOy5Xt7FLJ7RZl"
+                      },
+                      {
+                        "name": "Adam Beyer",
+                        "uri": "spotify:artist:1btv9qmIpbp7q1ixCYNdHu"
+                      },
+                      {
+                        "name": "Layton Giordani",
+                        "uri": "spotify:artist:7mC3RkNNTV6p2j9w4F8Ip4"
+                      }
+                    ],
+                    "totalCount": 3
+                  },
+                  "description": "",
+                  "name": "Rave - Remix",
+                  "type": "Song"
+                },
+                "playability": {
+                  "playable": true,
+                  "reason": "PLAYABLE"
+                },
+                "uri": "spotify:track:1xcxd5hIP1hkU3IOebJkuo",
+                "visualIdentityTrait": {
+                  "__typename": "VisualIdentityTrait",
+                  "sixteenByNineCoverImage": null,
+                  "squareCoverImage": {
+                    "extractedColorSet": {
+                      "encoreBaseSetTextColor": {
+                        "alpha": 255,
+                        "blue": 224,
+                        "green": 224,
+                        "red": 224
+                      },
+                      "highContrast": {
+                        "backgroundBase": {
+                          "alpha": 255,
+                          "blue": 83,
+                          "green": 83,
+                          "red": 83
+                        },
+                        "backgroundTintedBase": {
+                          "alpha": 255,
+                          "blue": 51,
+                          "green": 51,
+                          "red": 51
+                        },
+                        "textBase": {
+                          "alpha": 255,
+                          "blue": 255,
+                          "green": 255,
+                          "red": 255
+                        },
+                        "textBrightAccent": {
+                          "alpha": 255,
+                          "blue": 255,
+                          "green": 255,
+                          "red": 255
+                        },
+                        "textSubdued": {
+                          "alpha": 255,
+                          "blue": 205,
+                          "green": 205,
+                          "red": 205
+                        }
+                      },
+                      "higherContrast": {
+                        "backgroundBase": {
+                          "alpha": 255,
+                          "blue": 53,
+                          "green": 53,
+                          "red": 53
+                        },
+                        "backgroundTintedBase": {
+                          "alpha": 255,
+                          "blue": 86,
+                          "green": 86,
+                          "red": 86
+                        },
+                        "textBase": {
+                          "alpha": 255,
+                          "blue": 255,
+                          "green": 255,
+                          "red": 255
+                        },
+                        "textBrightAccent": {
+                          "alpha": 255,
+                          "blue": 96,
+                          "green": 215,
+                          "red": 30
+                        },
+                        "textSubdued": {
+                          "alpha": 255,
+                          "blue": 205,
+                          "green": 205,
+                          "red": 205
+                        }
+                      },
+                      "minContrast": {
+                        "backgroundBase": {
+                          "alpha": 255,
+                          "blue": 153,
+                          "green": 153,
+                          "red": 153
+                        },
+                        "backgroundTintedBase": {
+                          "alpha": 255,
+                          "blue": 128,
+                          "green": 128,
+                          "red": 128
+                        },
+                        "textBase": {
+                          "alpha": 255,
+                          "blue": 255,
+                          "green": 255,
+                          "red": 255
+                        },
+                        "textBrightAccent": {
+                          "alpha": 255,
+                          "blue": 255,
+                          "green": 255,
+                          "red": 255
+                        },
+                        "textSubdued": {
+                          "alpha": 255,
+                          "blue": 255,
+                          "green": 255,
+                          "red": 255
+                        }
+                      }
+                    },
+                    "image": {
+                      "data": {
+                        "__typename": "ImageV2",
+                        "sources": [
+                          {
+                            "imageFormat": "WEBP",
+                            "maxHeight": 640,
+                            "maxWidth": 640,
+                            "url": "https://image-cdn-fa.spotifycdn.com/image/ab67616d000075a0150df7e71d2128b040c815dc"
+                          },
+                          {
+                            "imageFormat": "WEBP",
+                            "maxHeight": 64,
+                            "maxWidth": 64,
+                            "url": "https://image-cdn-fa.spotifycdn.com/image/ab67616d000090d5150df7e71d2128b040c815dc"
+                          },
+                          {
+                            "imageFormat": "WEBP",
+                            "maxHeight": 300,
+                            "maxWidth": 300,
+                            "url": "https://image-cdn-fa.spotifycdn.com/image/ab67616d0000ab87150df7e71d2128b040c815dc"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "addedAt": {
+              "isoString": "2025-09-23T22:14:23.801Z"
+            },
+            "itemV2": {
+              "__typename": "TrackResponseWrapper",
+              "data": {
+                "__typename": "Track",
+                "albumOfTrack": {
+                  "artists": {
+                    "items": [
+                      {
+                        "profile": {
+                          "name": "Deborah de Luca"
+                        },
+                        "uri": "spotify:artist:144HzhpLjcR9k37w5Ico9B"
+                      },
+                      {
+                        "profile": {
+                          "name": "Robert Miles"
+                        },
+                        "uri": "spotify:artist:2YVF0Ou5zIc4mpgtLIlGN0"
+                      }
+                    ]
+                  },
+                  "coverArt": {
+                    "sources": [
+                      {
+                        "height": 300,
+                        "url": "https://i.scdn.co/image/ab67616d00001e029aab7c7d945f5fb102177257",
+                        "width": 300
+                      },
+                      {
+                        "height": 64,
+                        "url": "https://i.scdn.co/image/ab67616d000048519aab7c7d945f5fb102177257",
+                        "width": 64
+                      },
+                      {
+                        "height": 640,
+                        "url": "https://i.scdn.co/image/ab67616d0000b2739aab7c7d945f5fb102177257",
+                        "width": 640
+                      }
+                    ]
+                  },
+                  "date": {
+                    "isoString": "2022-07-15T00:00:00Z",
+                    "precision": "DAY"
+                  },
+                  "name": "Children",
+                  "uri": "spotify:album:4pAD0l5icphM5TC1A4q8Yn"
+                },
+                "artists": {
+                  "items": [
+                    {
+                      "profile": {
+                        "name": "Deborah de Luca"
+                      },
+                      "uri": "spotify:artist:144HzhpLjcR9k37w5Ico9B"
+                    },
+                    {
+                      "profile": {
+                        "name": "Robert Miles"
+                      },
+                      "uri": "spotify:artist:2YVF0Ou5zIc4mpgtLIlGN0"
+                    }
+                  ]
+                },
+                "contentRating": {
+                  "label": "NONE"
+                },
+                "discNumber": 1,
+                "trackDuration": {
+                  "totalMilliseconds": 343111
+                },
+                "mediaType": "AUDIO",
+                "name": "Children - Extended Mix",
+                "playability": {
+                  "playable": true,
+                  "reason": "PLAYABLE"
+                },
+                "playcount": "2104821",
+                "trackNumber": 2,
+                "uri": "spotify:track:6n0QH2FVS1hTvfho6xYpuP"
+              }
+            },
+            "itemV3": {
+              "__typename": "EntityResponseWrapper",
+              "data": {
+                "__typename": "Entity",
+                "consumptionExperienceTrait": {
+                  "__typename": "ConsumptionExperienceTrait",
+                  "contentRatings": [],
+                  "duration": {
+                    "nanoSeconds": 0,
+                    "seconds": 343
+                  },
+                  "formats": [
+                    "FORMAT_AUDIO",
+                    "FORMAT_LOSSLESS"
+                  ]
+                },
+                "identityTrait": {
+                  "__typename": "IdentityTrait",
+                  "contentHierarchyParent": {
+                    "__typename": "Entity",
+                    "identityTrait": {
+                      "__typename": "IdentityTrait",
+                      "name": "Children"
+                    },
+                    "publishingMetadataTrait": {
+                      "__typename": "PublishingMetadataTrait",
+                      "firstPublishedAt": {
+                        "isoString": "2022-07-15",
+                        "precision": "DAY"
+                      }
+                    },
+                    "uri": "spotify:album:4pAD0l5icphM5TC1A4q8Yn"
+                  },
+                  "contributors": {
+                    "items": [
+                      {
+                        "name": "Deborah de Luca",
+                        "uri": "spotify:artist:144HzhpLjcR9k37w5Ico9B"
+                      },
+                      {
+                        "name": "Robert Miles",
+                        "uri": "spotify:artist:2YVF0Ou5zIc4mpgtLIlGN0"
+                      }
+                    ],
+                    "totalCount": 2
+                  },
+                  "description": "",
+                  "name": "Children - Extended Mix",
+                  "type": "Song"
+                },
+                "playability": {
+                  "playable": true,
+                  "reason": "PLAYABLE"
+                },
+                "uri": "spotify:track:6n0QH2FVS1hTvfho6xYpuP",
+                "visualIdentityTrait": {
+                  "__typename": "VisualIdentityTrait",
+                  "sixteenByNineCoverImage": null,
+                  "squareCoverImage": {
+                    "extractedColorSet": {
+                      "encoreBaseSetTextColor": {
+                        "alpha": 255,
+                        "blue": 218,
+                        "green": 188,
+                        "red": 168
+                      },
+                      "highContrast": {
+                        "backgroundBase": {
+                          "alpha": 255,
+                          "blue": 80,
+                          "green": 56,
+                          "red": 40
+                        },
+                        "backgroundTintedBase": {
+                          "alpha": 255,
+                          "blue": 114,
+                          "green": 89,
+                          "red": 71
+                        },
+                        "textBase": {
+                          "alpha": 255,
+                          "blue": 255,
+                          "green": 255,
+                          "red": 255
+                        },
+                        "textBrightAccent": {
+                          "alpha": 255,
+                          "blue": 255,
+                          "green": 255,
+                          "red": 255
+                        },
+                        "textSubdued": {
+                          "alpha": 255,
+                          "blue": 237,
+                          "green": 207,
+                          "red": 187
+                        }
+                      },
+                      "higherContrast": {
+                        "backgroundBase": {
+                          "alpha": 255,
+                          "blue": 78,
+                          "green": 54,
+                          "red": 38
+                        },
+                        "backgroundTintedBase": {
+                          "alpha": 255,
+                          "blue": 113,
+                          "green": 87,
+                          "red": 70
+                        },
+                        "textBase": {
+                          "alpha": 255,
+                          "blue": 255,
+                          "green": 255,
+                          "red": 255
+                        },
+                        "textBrightAccent": {
+                          "alpha": 255,
+                          "blue": 96,
+                          "green": 215,
+                          "red": 30
+                        },
+                        "textSubdued": {
+                          "alpha": 255,
+                          "blue": 237,
+                          "green": 207,
+                          "red": 187
+                        }
+                      },
+                      "minContrast": {
+                        "backgroundBase": {
+                          "alpha": 255,
+                          "blue": 80,
+                          "green": 56,
+                          "red": 40
+                        },
+                        "backgroundTintedBase": {
+                          "alpha": 255,
+                          "blue": 114,
+                          "green": 89,
+                          "red": 71
+                        },
+                        "textBase": {
+                          "alpha": 255,
+                          "blue": 255,
+                          "green": 255,
+                          "red": 255
+                        },
+                        "textBrightAccent": {
+                          "alpha": 255,
+                          "blue": 255,
+                          "green": 255,
+                          "red": 255
+                        },
+                        "textSubdued": {
+                          "alpha": 255,
+                          "blue": 255,
+                          "green": 255,
+                          "red": 255
+                        }
+                      }
+                    },
+                    "image": {
+                      "data": {
+                        "__typename": "ImageV2",
+                        "sources": [
+                          {
+                            "imageFormat": "WEBP",
+                            "maxHeight": 640,
+                            "maxWidth": 640,
+                            "url": "https://image-cdn-fa.spotifycdn.com/image/ab67616d000075a09aab7c7d945f5fb102177257"
+                          },
+                          {
+                            "imageFormat": "WEBP",
+                            "maxHeight": 64,
+                            "maxWidth": 64,
+                            "url": "https://image-cdn-fa.spotifycdn.com/image/ab67616d000090d59aab7c7d945f5fb102177257"
+                          },
+                          {
+                            "imageFormat": "WEBP",
+                            "maxHeight": 300,
+                            "maxWidth": 300,
+                            "url": "https://image-cdn-fa.spotifycdn.com/image/ab67616d0000ab879aab7c7d945f5fb102177257"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "pagingInfo": {
+          "limit": 50,
+          "offset": 0
+        },
+        "totalCount": 25
+      },
+      "description": "Learn to mix Techno with these tracks using DJ softwares and Spotify.",
+      "followers": 26503,
+      "format": "editorial",
+      "images": {
+        "items": [
+          {
+            "sources": [
+              {
+                "height": null,
+                "url": "https://i.scdn.co/image/ab67706f0000000222fa103f2258fe277eec3203",
+                "width": null
+              }
+            ]
+          }
+        ]
+      },
+      "name": "Techno Mixing 101",
+      "ownerV2": {
+        "data": {
+          "__typename": "User",
+          "avatar": {
+            "sources": [
+              {
+                "height": 64,
+                "url": "https://i.scdn.co/image/ab67757000003b8255c25988a6ac314394d3fbf5",
+                "width": 64
+              },
+              {
+                "height": 300,
+                "url": "https://i.scdn.co/image/ab6775700000ee8555c25988a6ac314394d3fbf5",
+                "width": 300
+              }
+            ]
+          },
+          "name": "Spotify",
+          "socialHandle": null,
+          "uri": "spotify:user:spotify",
+          "username": "spotify"
+        }
+      },
+      "uri": "spotify:playlist:37i9dQZF1DX28LbavzGUyw"
+    }
+  }
+}

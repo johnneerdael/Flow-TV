@@ -1,7 +1,7 @@
-name: Spotify TOTP secret
+name: Spotify provider data
 
 # Derives the Spotify web-player TOTP secrets from Spotify's own bundle and
-# publishes them as totp.json on the orphan branch `spotify-data`:
+# publishes them and current query hashes on the orphan branch `spotify-data`:
 #   https://raw.githubusercontent.com/johnneerdael/Milkbeat/spotify-data/totp.json
 # It never pushes to main, so build.yml (push: main only) is not triggered.
 
@@ -33,10 +33,13 @@ jobs:
           fetch-depth: 1
 
       - name: Test the derivation
-        run: python3 -m unittest discover -s .github/scripts -p 'test_extract_spotify_totp.py' -v
+        run: python3 -m unittest discover -s .github/scripts -p 'test_extract_spotify*.py' -v
 
       - name: Extract and validate
         run: python3 .github/scripts/extract_spotify_totp.py --output "$RUNNER_TEMP/totp.json"
+
+      - name: Extract query hashes
+        run: python3 .github/scripts/extract_spotify_hashes.py --output "$RUNNER_TEMP/hashes.json"
 
       - name: Publish to ${{ env.DATA_BRANCH }}
         run: |
@@ -62,13 +65,14 @@ jobs:
           git clean -ffdxq
 
           cp "$RUNNER_TEMP/totp.json" totp.json
-          git add totp.json
+          cp "$RUNNER_TEMP/hashes.json" hashes.json
+          git add totp.json hashes.json
           if git diff --cached --quiet; then
-            echo "totp.json unchanged; nothing to publish."
+            echo "Spotify data unchanged; nothing to publish."
             exit 0
           fi
 
           latest=$(python3 -c 'import json,sys; print(max(e["v"] for e in json.load(open(sys.argv[1]))))' totp.json)
-          git commit --quiet -m "chore(spotify): TOTP secret v$latest"
+          git commit --quiet -m "chore(spotify): provider data with TOTP v$latest"
           git push origin "HEAD:refs/heads/$DATA_BRANCH"
-          echo "Published totp.json (latest v$latest) to $DATA_BRANCH."
+          echo "Published Spotify data (latest TOTP v$latest) to $DATA_BRANCH."

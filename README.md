@@ -2,7 +2,7 @@
 
 <img src="docs/banner.jpg" alt="Milkbeat" width="720">
 
-**A YouTube Music player for Android TV, with MilkDrop visuals behind every track.**
+**A music player for Android TV, with content plugins and MilkDrop visuals behind every track.**
 
 <a href="https://github.com/johnneerdael/Milkbeat/releases/latest">
   <img src="https://img.shields.io/github/v/release/johnneerdael/Milkbeat?style=for-the-badge&color=8355FB&label=Latest%20build">
@@ -19,8 +19,8 @@
 
 ---
 
-Milkbeat turns your TV into a YouTube Music player. It opens on your YouTube Music home, with the
-same shelves in the same order as the YouTube Music app. Everything is built for the remote.
+Milkbeat turns your TV into a music player. Choose a plugin for your catalog and another for
+audio, with shelves and track pages built for the remote.
 
 Behind the music runs [projectM](https://github.com/projectM-visualizer/projectm), the open-source
 MilkDrop. It reacts to the track you are playing, and a music video can take its place whenever you like.
@@ -46,6 +46,24 @@ and tested on an Ugoos AM6 (Amlogic S922X, 32-bit) and an Ugoos AM9 Pro (64-bit,
 (`nl.neerdael.milkbeat`), so it installs next to MusicViz instead of over it. Sign in again in
 Milkbeat, then uninstall MusicViz. Downloader code `4718521` and the old `musicviz-universal.apk`
 link still work, and now install Milkbeat.
+
+## Choose your providers
+
+Add first-party `.mbplugin` packages from the release assets in Settings > Plugins,
+then choose the metadata provider and your audio providers:
+
+| Plugin | Metadata | Audio |
+| --- | --- | --- |
+| YouTube Music | Home, Search, artists, albums, playlists and your library | YouTube Music streams and matching |
+| Beatport | Catalog, genres, charts and your library | Full-length streams with a streaming subscription |
+| Spotify | Home, Search, artists, albums, playlists and your library | Use another audio provider |
+
+For Spotify, select **Spotify** for metadata and **YouTube Music** for audio.
+Sign in through the phone login to browse personalized Home and your library.
+Milkbeat matches Spotify tracks through the selected audio provider when you play.
+All plugin web sign-ins use the [streamed phone viewer](docs/phone-sign-in-remote-view.md):
+scan the TV QR code, then touch the real provider page and type on your phone.
+See the [Spotify plugin guide](plugins/spotify/README.md) for building and testing.
 
 ## Your YouTube Music home
 

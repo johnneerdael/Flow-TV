@@ -16,6 +16,20 @@ import org.junit.Test
 
 class PluginJsonTest {
     @Test
+    fun `a sign-in page setup script survives the manifest contract`() {
+        val source =
+            """
+            {
+                "type":"webLogin","id":"example","label":"Sign in","startUrl":"https://example.com/login",
+                "successUrlPrefix":"https://example.com/","cookieUrl":"https://example.com/","requiredCookies":["session"],
+                "pageScript":"document.documentElement.dataset.ready='yes'"
+            }
+            """.trimIndent()
+        val method = PluginJson.decodeFromString(SignInMethod.serializer(), source)
+        assertThat(PluginJson.encodeToString(SignInMethod.serializer(), method)).contains("pageScript")
+    }
+
+    @Test
     fun `a page travels with typed blocks and survives the round trip`() {
         val page =
             MetadataPage(

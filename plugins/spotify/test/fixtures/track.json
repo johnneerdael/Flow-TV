@@ -1,0 +1,75 @@
+{
+  "data": {
+    "trackUnion": {
+      "__typename": "Track",
+      "contentRating": {
+        "label": "NONE"
+      },
+      "duration": {
+        "totalMilliseconds": 142615
+      },
+      "name": "Prophecy",
+      "trackNumber": 1,
+      "uri": "spotify:track:7K4xmQ87a8CFPZSTaIB93z",
+      "albumOfTrack": {
+        "name": "Prophecy",
+        "uri": "spotify:album:0gNodTZAdNht0OpLirkGBW",
+        "date": {
+          "isoString": "2026-08-28T00:00:00Z",
+          "precision": "DAY",
+          "year": 2026
+        },
+        "coverArt": {
+          "extractedColors": {
+            "colorRaw": {
+              "hex": "#C0C0C0"
+            }
+          },
+          "sources": [
+            {
+              "height": 300,
+              "url": "https://i.scdn.co/image/ab67616d00001e0220ad6bfd2cc797f1746498f1",
+              "width": 300
+            },
+            {
+              "height": 64,
+              "url": "https://i.scdn.co/image/ab67616d0000485120ad6bfd2cc797f1746498f1",
+              "width": 64
+            },
+            {
+              "height": 640,
+              "url": "https://i.scdn.co/image/ab67616d0000b27320ad6bfd2cc797f1746498f1",
+              "width": 640
+            }
+          ]
+        }
+      },
+      "firstArtist": {
+        "items": [
+          {
+            "uri": "spotify:artist:4iBwchw0U0GZv5RfVYSMxN",
+            "profile": {
+              "name": "Anyma"
+            }
+          }
+        ]
+      },
+      "otherArtists": {
+        "items": [
+          {
+            "uri": "spotify:artist:2IelDQgKvM3U4P7HVVmaOX",
+            "profile": {
+              "name": "19:26"
+            }
+          },
+          {
+            "uri": "spotify:artist:7ICFbeWRkxZ9JppxYRhtBl",
+            "profile": {
+              "name": "Baset"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

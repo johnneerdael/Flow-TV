@@ -3,6 +3,9 @@
 import base64
 import sys
 import unittest
+import json
+import tempfile
+from unittest.mock import patch
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -57,6 +60,14 @@ class TotpTest(unittest.TestCase):
         self.assertEqual(extractor.totp(self.SEED, 59), "287082")
         self.assertEqual(extractor.totp(self.SEED, 1111111109), "081804")
         self.assertEqual(extractor.totp(self.SEED, 1234567890), "005924")
+
+    def test_published_secret_includes_the_raw_key_for_host_hmac(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'totp.json'
+            with patch.object(sys, 'argv', ['extractor', '--output', str(path)]), patch.object(extractor, 'find_secrets', return_value=({1: self.SEED}, 'fixture.js')), patch.object(extractor, 'validate', return_value=(True, 'fixture')):
+                self.assertEqual(extractor.main(), 0)
+            data = json.loads(path.read_text())
+            self.assertEqual(data[0].get('keyHex'), b'12345678901234567890'.hex())
 
 
 if __name__ == "__main__":

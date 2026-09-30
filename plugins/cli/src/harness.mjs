@@ -91,7 +91,7 @@ export function loadPlugin(pluginDir, options = {}) {
       return { loaded: true };
     },
     'assets.read': ({ path }) => ({ text: readFileSync(join(pluginDir, path), 'utf8') }),
-    'env.get': () => ({ apiVersion: 1, appVersion: 'harness', locale: 'en-US', region: 'US', deviceClass: 'tv', pluginVersion: manifest.version }),
+    'env.get': () => ({ apiVersion: 2, appVersion: 'harness', locale: 'en-US', region: 'US', deviceClass: 'tv', pluginVersion: manifest.version }),
     'log.write': ({ level, message }) => (log(level, message), {}),
     'settings.get': () => Object.entries(settings).map(([key, value]) => ({ key, value })),
     'time.sleep': ({ ms }) => new Promise((done) => setTimeout(() => done({}), Math.min(ms, 60000))),
