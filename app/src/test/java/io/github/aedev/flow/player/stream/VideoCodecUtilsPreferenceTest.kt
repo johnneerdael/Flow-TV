@@ -1,5 +1,7 @@
 package io.github.aedev.flow.player.stream
 
+import io.github.aedev.flow.plugin.playback.PluginVideoStreams
+import io.github.aedev.flow.plugin.playback.PluginVideoStreamsTest.Companion.video1080
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -89,5 +91,24 @@ class VideoCodecUtilsPreferenceTest {
     @Test
     fun `the priority list is normalised and deduplicated`() {
         assertEquals(listOf("av1", "vp9"), VideoCodecUtils.codecPriorityList(" AV1 , vp9 , av1 "))
+    }
+
+    @Test
+    fun `on Auto the codec with the tallest picture leads, so 4K is not held to H 264's ceiling`() {
+        val vp9At4k =
+            video1080.copy(
+                id = "313",
+                url = "https://rr1.invalid/videoplayback?itag=313",
+                mimeType = "video/webm",
+                codecs = "vp9",
+                width = 3840,
+                height = 2160,
+                qualityLabel = "2160p",
+            )
+        val streams = PluginVideoStreams.videoStreams(listOf(video1080, vp9At4k))
+
+        assertEquals("video/x-vnd.on2.vp9", VideoCodecUtils.preferredVideoMimeTypes("auto", streams).first())
+        assertEquals("video/avc", VideoCodecUtils.preferredVideoMimeTypes("h264", streams).first())
+        assertArrayEquals(defaultOrder, VideoCodecUtils.preferredVideoMimeTypes("auto", emptyList()))
     }
 }

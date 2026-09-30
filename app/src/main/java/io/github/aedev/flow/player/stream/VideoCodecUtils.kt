@@ -212,6 +212,26 @@ object VideoCodecUtils {
             "av1" to "video/av01",
         )
 
+    /**
+     * The video MIME types a player prefers for [streams]: the listener's codecs when they chose some;
+     * on Auto, the codec with the tallest picture first (VP9 where only it reaches 4K), so the TV
+     * shows the best the video offers rather than the most compatible codec's ceiling.
+     */
+    fun preferredVideoMimeTypes(
+        preferredCodecKey: String?,
+        streams: List<VideoStream>,
+    ): Array<String> {
+        if (codecPriorityList(preferredCodecKey).isNotEmpty() || streams.isEmpty()) return preferredVideoMimeTypes(preferredCodecKey)
+        val tallest =
+            streams
+                .groupBy(::codecKeyFromStream)
+                .mapValues { (_, group) -> group.maxOf(::qualityHeightFromStream) }
+                .entries
+                .sortedWith(compareByDescending<Map.Entry<String, Int>> { it.value }.thenBy { playbackCodecRank(it.key) })
+                .mapNotNull { MIME_TYPE_BY_CODEC_KEY[it.key] }
+        return (tallest + DEFAULT_VIDEO_MIME_TYPES.filterNot { it in tallest }).toTypedArray()
+    }
+
     /** The decoder MIME type of a codec key ("h264" → "video/avc"), or null for an unknown key. */
     fun mimeTypeForCodecKey(codecKey: String): String? = MIME_TYPE_BY_CODEC_KEY[codecKey]
 

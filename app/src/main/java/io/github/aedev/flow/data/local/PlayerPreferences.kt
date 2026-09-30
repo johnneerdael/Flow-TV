@@ -532,7 +532,7 @@ class PlayerPreferences(
     val defaultVideoCodec: Flow<VideoCodec> =
         context.playerPreferencesDataStore.data
             .map { preferences ->
-                VideoCodec.fromString(preferences[Keys.DEFAULT_VIDEO_CODEC] ?: VideoCodec.H264.label)
+                VideoCodec.fromString(preferences[Keys.DEFAULT_VIDEO_CODEC] ?: VideoCodec.AUTO.label)
             }
 
     suspend fun setDefaultVideoCodec(codec: VideoCodec) {

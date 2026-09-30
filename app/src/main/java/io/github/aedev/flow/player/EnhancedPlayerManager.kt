@@ -139,6 +139,9 @@ class EnhancedPlayerManager private constructor() {
      * quality change because each one rebuilds the selector parameters (#727).
      */
     private var preferredVideoCodecKey: String = "auto"
+
+    // The codec order for the current video's picture: the listener's choice, or its tallest codec on Auto.
+    private var videoMimeTypes: Array<String> = VideoCodecUtils.preferredVideoMimeTypes()
     private var lastLiveEdgeRecoveryMs = 0L
     private var preLivePlaybackSpeed: Float? = null
     private var pendingLiveDisplaySeekPositionMs: Long? = null
@@ -968,7 +971,10 @@ class EnhancedPlayerManager private constructor() {
             useLiveManifest &&
                 (!currentHlsUrl.isNullOrEmpty() || !currentDashManifestUrl.isNullOrEmpty())
         pendingLiveQualityHeight = if (isLiveStream) preferredLiveQualityHeight else 0
-        if (isLiveStream) applyLiveCodecPreference()
+        if (isLiveStream) {
+            videoMimeTypes = VideoCodecUtils.preferredVideoMimeTypes(preferredVideoCodecKey)
+            applyLiveCodecPreference()
+        }
         updateLivePlaybackMode(isLive = isLiveStream, forceLiveSpeedReset = true)
         pendingInitialLiveEdgeSeek = streamType == StreamType.LIVE_STREAM
         currentVideoId = videoId
@@ -2060,6 +2066,7 @@ class EnhancedPlayerManager private constructor() {
      * (no cap) when nothing was chosen. A cap left by the previous video never carries over.
      */
     private fun capQualityForNewVideo(chosen: VideoStream?) {
+        videoMimeTypes = VideoCodecUtils.preferredVideoMimeTypes(preferredVideoCodecKey, availableVideoStreams)
         applyLiveCodecPreference()
         switchLiveQuality(chosen?.let { QualityManager.normalizeQualityHeight(VideoCodecUtils.qualityHeightFromStream(it)) } ?: 0)
     }
@@ -2069,22 +2076,26 @@ class EnhancedPlayerManager private constructor() {
         selector.setParameters(
             selector
                 .buildUponParameters()
-                .setPreferredVideoMimeTypes(*VideoCodecUtils.preferredVideoMimeTypes(preferredVideoCodecKey))
+                .setPreferredVideoMimeTypes(*videoMimeTypes)
                 .build(),
         )
     }
 
+    /**
+     * Auto ([height] 0) is the best picture this TV shows: the highest representation within the display
+     * that the decoder supports, never lowered by a bandwidth estimate. A height caps it.
+     */
     private fun switchLiveQuality(height: Int): Boolean {
         val selector = trackSelector ?: return false
         val builder =
             selector
                 .buildUponParameters()
-                .setPreferredVideoMimeTypes(*VideoCodecUtils.preferredVideoMimeTypes(preferredVideoCodecKey))
+                .setPreferredVideoMimeTypes(*videoMimeTypes)
         if (height <= 0) {
             builder
                 .clearVideoSizeConstraints()
                 .setMaxVideoSize(PlayerConfig.MAX_VIDEO_WIDTH, PlayerConfig.MAX_VIDEO_HEIGHT)
-                .setForceHighestSupportedBitrate(false)
+                .setForceHighestSupportedBitrate(true)
         } else {
             builder
                 .setMinVideoSize(0, 0)

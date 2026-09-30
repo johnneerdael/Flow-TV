@@ -78,7 +78,6 @@ class PlayerFactory {
     fun createBandwidthMeter(context: Context): DefaultBandwidthMeter =
         DefaultBandwidthMeter
             .Builder(context)
-            .setInitialBitrateEstimate(PlayerConfig.INITIAL_BANDWIDTH_ESTIMATE)
             .setResetOnNetworkTypeChange(false)
             .build()
 
@@ -93,7 +92,8 @@ class PlayerFactory {
                     .setPreferredVideoMimeTypes(*PlayerConfig.PREFERRED_VIDEO_MIME_TYPES)
                     .setAllowVideoMixedMimeTypeAdaptiveness(false)
                     .setAllowMultipleAdaptiveSelections(true)
-                    .setForceHighestSupportedBitrate(false)
+                    // A TV shows the best picture its display and decoder allow; bandwidth never picks it.
+                    .setForceHighestSupportedBitrate(true)
                     .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)
                     .setViewportSizeToPhysicalDisplaySize(context, true)
                     .setMaxVideoSize(maxVideoWidth, maxVideoHeight)

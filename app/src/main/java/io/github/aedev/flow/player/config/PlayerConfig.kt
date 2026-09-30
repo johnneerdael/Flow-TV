@@ -56,9 +56,6 @@ object PlayerConfig {
 
     // ===== Bandwidth Thresholds =====
 
-    /** Initial bandwidth estimate in bits per second (5 Mbps) */
-    const val INITIAL_BANDWIDTH_ESTIMATE = 5_000_000L
-
     /** Bandwidth threshold for 4K quality (15 Mbps) */
     const val BANDWIDTH_4K = 25_000_000L
 
