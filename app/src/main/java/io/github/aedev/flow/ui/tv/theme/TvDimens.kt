@@ -30,6 +30,8 @@ data class TvDimens(
     val focusScale: Float = 1.08f,
     val focusBorderWidth: Dp = 2.5.dp,
     val sidePanelWidth: Dp = 400.dp,
+    val signInViewportWidth: Dp = 360.dp,
+    val signInViewportHeight: Dp = 720.dp,
 )
 
 val LocalTvDimens = staticCompositionLocalOf { TvDimens() }

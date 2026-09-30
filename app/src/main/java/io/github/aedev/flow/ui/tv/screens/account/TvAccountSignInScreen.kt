@@ -1,5 +1,6 @@
 package io.github.aedev.flow.ui.tv.screens.account
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,8 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.aedev.flow.R
 import io.github.aedev.flow.data.account.signin.PhoneInput
@@ -36,7 +39,6 @@ import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 import kotlinx.coroutines.delay
 
 private const val SIGNED_IN_DISMISS_MS = 1_500L
-private const val PAGE_ACTIONS_REFRESH_MS = 1_500L
 
 @Composable
 fun TvAccountSignInScreen(
@@ -45,6 +47,8 @@ fun TvAccountSignInScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val window = LocalActivity.current?.window
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
     val supported = remember { loginProfileSupported() }
     val method = viewModel.method
     val controller =
@@ -52,12 +56,26 @@ fun TvAccountSignInScreen(
             if (supported &&
                 method != null
             ) {
-                LoginWebViewController(context, viewModel::onPageTitle, method, viewModel::onCaptured)
+                LoginWebViewController(context, viewModel::onPageTitle, method, viewModel::onCaptured, window)
             } else {
                 null
             }
         }
-    DisposableEffect(controller) { onDispose { controller?.destroy() } }
+    DisposableEffect(controller, lifecycle) {
+        viewModel.frameProvider(controller?.let { { it.frame() } })
+        val observer =
+            LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_START) controller?.visible(true)
+                if (event == Lifecycle.Event.ON_STOP) controller?.visible(false)
+            }
+        lifecycle.addObserver(observer)
+        controller?.visible(lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED))
+        onDispose {
+            viewModel.frameProvider(null)
+            lifecycle.removeObserver(observer)
+            controller?.destroy()
+        }
+    }
     LaunchedEffect(state) { if (state == AccountSignInState.Starting) viewModel.start(supported) }
     LaunchedEffect(controller) {
         val login = controller ?: return@LaunchedEffect
@@ -66,19 +84,9 @@ fun TvAccountSignInScreen(
                 is PhoneInput.Text -> login.typeText(input.value, input.field)
                 is PhoneInput.Key -> login.pressKey(input.key)
                 is PhoneInput.Click -> login.clickAction(input.index)
+                is PhoneInput.Pointer -> login.pointer(input)
+                is PhoneInput.Frame -> Unit
             }
-            viewModel.onPageControls(login.pageActions(), login.pageFields())
-        }
-    }
-    // Google's sign-in is a single-page app with no navigation callback for its steps, so the page's
-    // buttons and fields are re-read on the phone's own polling cadence while it is waiting for this screen.
-    val waitingForPhone = state is AccountSignInState.Ready
-    LaunchedEffect(controller, waitingForPhone) {
-        val login = controller ?: return@LaunchedEffect
-        if (!waitingForPhone) return@LaunchedEffect
-        while (true) {
-            viewModel.onPageControls(login.pageActions(), login.pageFields())
-            delay(PAGE_ACTIONS_REFRESH_MS)
         }
     }
     LaunchedEffect(state) {
@@ -98,11 +106,14 @@ fun TvAccountSignInScreen(
                 shape = MaterialTheme.shapes.large,
                 color = MaterialTheme.colorScheme.surfaceContainerLowest,
             ) {
-                if (controller != null) AndroidView(factory = { controller.webView }, modifier = Modifier.fillMaxSize())
+                if (controller != null) LoginPhoneViewport(controller)
             }
             TvAccountSignInPanel(
                 state = state,
-                onRetry = viewModel::retry,
+                onRetry = {
+                    controller?.restart()
+                    viewModel.retry()
+                },
                 onCancel = onNavigateBack,
                 modifier = Modifier.weight(1f),
             )

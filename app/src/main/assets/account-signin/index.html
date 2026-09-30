@@ -20,13 +20,9 @@
     button.primary { background: var(--primary); color: var(--on-primary); font-weight: 600; }
     label { display: flex; gap: 8px; align-items: center; color: var(--muted); }
     body.done .controls { display: none; }
-    #actions { display: grid; gap: 8px; }
-    #actions:empty, h2:has(+ #actions:empty) { display: none; }
-    h2 { font-size: 16px; margin: 8px 0 0; }
-    #actions button { text-align: left; }
-    #fields { display: grid; gap: 8px; }
-    #fields:empty { display: none; }
-    body.has-fields #text { display: none; }
+    #page { display: block; width: auto; max-width: 100%; max-height: 65dvh; height: auto; margin: 0 auto; touch-action: none; border-radius: 12px; }
+    #page:not([src]) { display: none; }
+    .remote-view { display: grid; gap: 8px; margin-bottom: 16px; }
   </style>
 </head>
 <body>
@@ -35,20 +31,17 @@
     <p>TV is showing: <span id="step">…</span></p>
     <p id="status">Type here, then press Send. Use Enter to continue on the TV.</p>
     <div class="controls">
-      <div id="fields"></div>
+      <div class="remote-view">
+        <img id="page" alt="{{remote_view_label}}" draggable="false">
+        <p>{{remote_view_help}}</p>
+      </div>
       <input id="text" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Text to send to the TV">
       <label><input id="show" type="checkbox" style="width:auto"> Show text</label>
       <div class="row" style="margin-top:8px">
         <button id="send" class="primary">Send</button>
-        <button id="enter">Enter</button>
-        <button id="tab">Tab</button>
-      </div>
-      <div class="row" style="margin-top:8px">
         <button id="backspace">⌫</button>
-        <button id="sendEnter" class="primary" style="grid-column: span 2">Send + Enter</button>
+        <button id="enter">Enter</button>
       </div>
-      <h2>Buttons on the TV page</h2>
-      <div id="actions"></div>
     </div>
   </main>
   <script src="/noble-ciphers.js"></script>
