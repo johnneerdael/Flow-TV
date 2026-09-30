@@ -2,6 +2,7 @@
 // that prepares YouTube's player code off the playback path.
 import type { PluginDefinition } from '@milkbeat/plugin-sdk';
 import { mb } from '@milkbeat/plugin-sdk';
+import { matchAudio } from '../music/match';
 import { resolveAudio } from './audio';
 import { prewarmPoTokens } from './potoken/session';
 import { warmUpSolvers } from './solver';
@@ -11,6 +12,7 @@ import { tokenVisitor } from './visitor';
 
 export const audio: NonNullable<PluginDefinition['audio']> = {
   resolve: resolveAudio,
+  match: matchAudio,
   reportPlayback,
 };
 
