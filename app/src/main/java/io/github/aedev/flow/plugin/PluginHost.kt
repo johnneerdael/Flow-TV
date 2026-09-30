@@ -4,6 +4,7 @@ import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.aedev.flow.plugin.host.PluginBrowser
 import io.github.aedev.flow.plugin.host.PluginHostApi
+import io.github.aedev.flow.plugin.host.WebLoginRefresher
 import io.github.aedev.flow.plugin.registry.InstalledPlugin
 import io.github.aedev.flow.plugin.registry.PluginRegistry
 import io.github.aedev.flow.plugin.runtime.CodeCache
@@ -38,6 +39,7 @@ class PluginHost
         @ApplicationContext private val context: Context,
         private val registry: PluginRegistry,
         private val client: OkHttpClient,
+        private val webLogin: WebLoginRefresher,
     ) {
         private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         private val lock = Mutex()
@@ -94,6 +96,7 @@ class PluginHost
                     dataDirectory = File(context.filesDir, "plugin-data/${plugin.id}"),
                     client = client,
                     appLocale = Locale::getDefault,
+                    webLogin = webLogin,
                 )
             return PluginRuntime(
                 plugin = plugin,

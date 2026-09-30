@@ -177,6 +177,7 @@ object HostOperations {
     val browserClose = HostOperation("browser.close", BrowserSession.serializer(), Unit.serializer())
     val settings = HostOperation("settings.get", Unit.serializer(), ListSerializer(StorageEntry.serializer()))
     val sleep = HostOperation("time.sleep", SleepRequest.serializer(), Unit.serializer())
+    val signInRefresh = HostOperation("signIn.refresh", WebLoginRefreshRequest.serializer(), WebLoginResult.serializer())
 
     val all: List<HostOperation<*, *>> =
         listOf(
@@ -197,5 +198,6 @@ object HostOperations {
             browserClose,
             settings,
             sleep,
+            signInRefresh,
         )
 }

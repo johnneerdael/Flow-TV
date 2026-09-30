@@ -12,12 +12,18 @@ import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
 import io.github.aedev.flow.data.account.signin.PhoneKey
 import io.github.aedev.flow.data.account.signin.SignInCapture
+import io.github.aedev.flow.data.account.signin.extract
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import nl.neerdael.milkbeat.plugin.WebLoginMethod
 import nl.neerdael.milkbeat.plugin.WebLoginResult
 import kotlin.coroutines.resume
 
 internal const val LOGIN_PROFILE = "flow-account-signin"
+
+private const val EXTRACTION_TIMEOUT_MS = 15_000L
 
 internal fun loginProfileSupported(): Boolean = WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE)
 
@@ -37,6 +43,7 @@ internal class LoginWebViewController(
     val webView: WebView = WebView(context)
     private val cookies: CookieManager
     private var captured = false
+    private val scope = MainScope()
 
     init {
         WebViewCompat.setProfile(webView, LOGIN_PROFILE)
@@ -103,6 +110,7 @@ internal class LoginWebViewController(
     }
 
     fun destroy() {
+        scope.cancel()
         cookies.removeAllCookies(null)
         cookies.flush()
         webView.stopLoading()
@@ -113,8 +121,9 @@ internal class LoginWebViewController(
         val cookie = cookies.getCookie(method.cookieUrl)
         if (cookie == null || !SignInCapture.hasRequiredCookies(cookie, method)) return
         captured = true
-        webView.evaluateJavascript(SignInCapture.extractionScript(method)) { raw ->
-            onCaptured(WebLoginResult(method = method.id, cookies = cookie, extracted = SignInCapture.parseExtracted(raw)))
+        scope.launch {
+            val extracted = webView.extract(method, EXTRACTION_TIMEOUT_MS)
+            onCaptured(WebLoginResult(method = method.id, cookies = cookie, extracted = extracted))
             cookies.removeAllCookies(null)
             cookies.flush()
         }

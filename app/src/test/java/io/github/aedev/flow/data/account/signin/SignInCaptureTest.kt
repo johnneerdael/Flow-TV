@@ -35,8 +35,13 @@ class SignInCaptureTest {
     }
 
     @Test
-    fun `the extraction runs the plugin's script and unwraps the values`() {
-        assertThat(SignInCapture.extractionScript(method)).isEqualTo("JSON.stringify(({v: 'x'}))")
+    fun `the extraction runs the plugin's script, waits for a promise, and unwraps the values`() {
+        val script = SignInCapture.extractionScript(method)
+        assertThat(script).contains("return (({v: 'x'}));")
+        assertThat(script).contains("Promise.resolve()")
+        assertThat(SignInCapture.extractionSettled("null")).isFalse()
+        assertThat(SignInCapture.extractionSettled(null)).isFalse()
+        assertThat(SignInCapture.extractionSettled("\"{}\"")).isTrue()
         val raw = Json.encodeToString(String.serializer(), """{"visitorData":"Cgt","dataSyncId":"123||x","n":1}""")
         assertThat(SignInCapture.parseExtracted(raw)).containsExactly("visitorData", "Cgt", "dataSyncId", "123||x", "n", "1")
         assertThat(SignInCapture.parseExtracted("null")).isEmpty()

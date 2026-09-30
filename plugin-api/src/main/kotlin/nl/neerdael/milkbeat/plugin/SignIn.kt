@@ -14,7 +14,13 @@ sealed interface SignInMethod {
  * A sign-in the host runs in its own web view, driven from the listener's phone: it opens
  * [startUrl], waits until a page under [successUrlPrefix] has loaded with every cookie in
  * [requiredCookies] set for [cookieUrl], runs [extractScript] there (it must evaluate to a JSON object
- * of strings), then hands the result to the plugin as a [WebLoginResult] and forgets it.
+ * of strings, or a promise of one), then hands the result to the plugin as a [WebLoginResult] and
+ * forgets it.
+ *
+ * A site whose API tokens are short-lived and minted by its own pages sets [refreshUrl], a page on the
+ * same site as [cookieUrl]: the plugin then calls `signIn.refresh` with the cookies it keeps, and the
+ * host opens that page in a web view of its own holding only those cookies, runs [extractScript] again
+ * and answers with the fresh values and cookies. The host keeps nothing between calls.
  */
 @Serializable
 @SerialName("webLogin")
@@ -26,7 +32,15 @@ data class WebLoginMethod(
     val cookieUrl: String,
     val requiredCookies: List<String>,
     val extractScript: String? = null,
+    val refreshUrl: String? = null,
 ) : SignInMethod
+
+/** Runs [method]'s [WebLoginMethod.refreshUrl] again with the [cookies] the plugin was handed. */
+@Serializable
+data class WebLoginRefreshRequest(
+    val method: String,
+    val cookies: String,
+)
 
 @Serializable
 data class WebLoginResult(

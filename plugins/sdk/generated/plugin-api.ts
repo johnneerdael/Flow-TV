@@ -182,6 +182,10 @@ export interface MilkbeatPluginApi {
     'time.sleep': {
       request: SleepRequest;
     };
+    'signIn.refresh': {
+      request: WebLoginRefreshRequest;
+      response: WebLoginResult;
+    };
   };
   error: PluginError;
 }
@@ -241,6 +245,7 @@ export interface SignInMethodWebLogin {
   cookieUrl: string;
   requiredCookies: string[];
   extractScript?: string | null;
+  refreshUrl?: string | null;
 }
 export interface Permissions {
   network?: string[];
@@ -653,6 +658,10 @@ export interface BrowserResult {
 export interface SleepRequest {
   ms: number;
 }
+export interface WebLoginRefreshRequest {
+  method: string;
+  cookies: string;
+}
 export interface PluginError {
   code: PluginErrorCode;
   message: string;
@@ -678,5 +687,6 @@ export const HOST_OPERATIONS = [
   'browser.evaluate',
   'browser.close',
   'settings.get',
-  'time.sleep'
+  'time.sleep',
+  'signIn.refresh'
 ] as const;

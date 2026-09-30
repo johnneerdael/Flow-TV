@@ -9,6 +9,8 @@ import kotlinx.serialization.json.jsonPrimitive
 import nl.neerdael.milkbeat.plugin.WebLoginMethod
 
 internal object SignInCapture {
+    private const val RESULT_SLOT = "__mbSignInResult"
+
     /** Whether [url] is under the method's success prefix, and not a host that merely starts with it. */
     fun isSuccessPage(
         url: String?,
@@ -32,8 +34,22 @@ internal object SignInCapture {
         return cookie != null && method.requiredCookies.all { it in names }
     }
 
-    /** The plugin's extraction script, turned into JSON text the web view hands back as a string. */
-    fun extractionScript(method: WebLoginMethod): String = "JSON.stringify(${method.extractScript ?: "{}"})"
+    /**
+     * Starts the plugin's extraction script, which may evaluate to a promise; its settled value is left on
+     * the page as JSON text for [extractionResultScript] to collect, since `evaluateJavascript` cannot
+     * wait for a promise.
+     */
+    fun extractionScript(method: WebLoginMethod): String =
+        "(function(){window.$RESULT_SLOT=undefined;" +
+            "Promise.resolve().then(function(){return (${method.extractScript ?: "{}"});})" +
+            ".then(function(v){window.$RESULT_SLOT=JSON.stringify(v);}," +
+            "function(){window.$RESULT_SLOT='{}';});})();"
+
+    /** The extraction's JSON text once it has settled, else `null`. */
+    fun extractionResultScript(): String = "window.$RESULT_SLOT===undefined?null:window.$RESULT_SLOT"
+
+    /** Whether `evaluateJavascript` output of [extractionResultScript] means the extraction has settled. */
+    fun extractionSettled(raw: String?): Boolean = raw != null && raw != "null"
 
     /** The extracted values from `evaluateJavascript` output, which wraps the JSON text in a string. */
     fun parseExtracted(raw: String?): Map<String, String> {

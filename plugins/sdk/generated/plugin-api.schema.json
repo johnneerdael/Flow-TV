@@ -642,6 +642,22 @@
                         "request"
                     ],
                     "additionalProperties": false
+                },
+                "signIn.refresh": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.WebLoginRefreshRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.WebLoginResult"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
                 }
             },
             "required": [
@@ -661,7 +677,8 @@
                 "browser.evaluate",
                 "browser.close",
                 "settings.get",
-                "time.sleep"
+                "time.sleep",
+                "signIn.refresh"
             ],
             "additionalProperties": false
         },
@@ -3103,6 +3120,22 @@
             ],
             "title": "VideoSurface"
         },
+        "nl.neerdael.milkbeat.plugin.WebLoginRefreshRequest": {
+            "type": "object",
+            "required": [
+                "method",
+                "cookies"
+            ],
+            "properties": {
+                "method": {
+                    "type": "string"
+                },
+                "cookies": {
+                    "type": "string"
+                }
+            },
+            "title": "WebLoginRefreshRequest"
+        },
         "nl.neerdael.milkbeat.plugin.WebLoginResult": {
             "type": "object",
             "required": [
@@ -3194,6 +3227,12 @@
                     }
                 },
                 "extractScript": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "refreshUrl": {
                     "type": [
                         "string",
                         "null"

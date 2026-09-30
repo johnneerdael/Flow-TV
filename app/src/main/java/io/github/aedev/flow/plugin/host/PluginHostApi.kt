@@ -58,6 +58,7 @@ internal class PluginHostApi(
     dataDirectory: File,
     client: OkHttpClient,
     private val appLocale: () -> Locale,
+    private val webLogin: WebLoginRefresher? = null,
 ) {
     private val http = PluginHttp(client, plugin.grantedNetwork)
     private val storage = PluginStore(File(dataDirectory, "storage.json"), plugin.manifest.permissions.storage)
@@ -97,6 +98,9 @@ internal class PluginHostApi(
             },
             handler(HostOperations.settings) { settings.entries().map { (key, value) -> StorageEntry(key, value) } },
             handler(HostOperations.sleep) { delay(it.ms.coerceIn(0, MAX_SLEEP_MS)) },
+            handler(HostOperations.signInRefresh) { request ->
+                webLogin?.refresh(plugin, request) ?: throw HostCallException(PluginErrorCode.UNSUPPORTED, "Sign-in refresh is unavailable")
+            },
         )
 
     /** Runs host function [path] with [requestJson] and answers with its envelope; never throws. */
