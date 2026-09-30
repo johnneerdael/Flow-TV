@@ -3,6 +3,7 @@
 export type MetadataSurface = 'HOME' | 'SEARCH' | 'SUGGEST' | 'ENTITY' | 'TRACKS' | 'LIBRARY' | 'RADIO';
 export type EntityKind =
   'TRACK' | 'MUSIC_VIDEO' | 'ALBUM' | 'PLAYLIST' | 'ARTIST' | 'PROFILE' | 'MIX' | 'RADIO' | 'VIDEO' | 'CHANNEL';
+export type AudioDelivery = 'PROGRESSIVE' | 'HLS';
 export type VideoSurface = 'SEARCH' | 'SUGGEST' | 'CHANNEL' | 'PLAYLIST' | 'RELATED' | 'COMMENTS' | 'LIVE_CHAT';
 export type SignInMethod = SignInMethodWebLogin;
 export type SettingType = 'TOGGLE' | 'CHOICE' | 'TEXT';
@@ -229,6 +230,7 @@ export interface AudioRole {
   radio?: boolean;
   musicVideo?: boolean;
   reportPlayback?: boolean;
+  delivery?: AudioDelivery;
 }
 export interface VideoRole {
   idSpace: string;

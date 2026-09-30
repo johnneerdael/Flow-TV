@@ -4,24 +4,29 @@ import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
+import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.MergingMediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 
 /**
- * The music player's sources. A queue item goes to [default] as ever, except a music video, which
- * joins its picture to its sound. Both halves resolve through [dataSourceFactory] by cache key, so the
+ * The music player's sources. A queue item goes to [default] as ever, except a song whose audio plugin
+ * delivers HLS, which plays as a playlist, and a music video, which joins its picture to its sound. Both halves resolve through [dataSourceFactory] by cache key, so the
  * sound is exactly what the song alone would play, visualizer tap included.
  */
 @OptIn(UnstableApi::class)
 class MusicMediaSourceFactory(
     private val default: MediaSource.Factory,
     dataSourceFactory: DataSource.Factory,
+    private val deliversHls: (MediaItem) -> Boolean,
 ) : MediaSource.Factory by default {
     private val progressive = ProgressiveMediaSource.Factory(dataSourceFactory)
+    private val hls = HlsMediaSource.Factory(dataSourceFactory)
 
     override fun createMediaSource(mediaItem: MediaItem): MediaSource {
-        if (mediaItem.localConfiguration?.uri?.scheme != MusicVideoItems.SCHEME) return default.createMediaSource(mediaItem)
+        val scheme = mediaItem.localConfiguration?.uri?.scheme
+        if (scheme == MusicVideoItems.SONG_SCHEME && deliversHls(mediaItem)) return hls.createMediaSource(mediaItem)
+        if (scheme != MusicVideoItems.SCHEME) return default.createMediaSource(mediaItem)
         val videoId = mediaItem.mediaId
         val sound = progressive.createMediaSource(mediaItem)
         val picture =

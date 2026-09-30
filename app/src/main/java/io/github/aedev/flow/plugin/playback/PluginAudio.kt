@@ -4,6 +4,7 @@ import io.github.aedev.flow.plugin.PluginHost
 import io.github.aedev.flow.plugin.registry.PluginRegistry
 import io.github.aedev.flow.plugin.runtime.PluginCallException
 import nl.neerdael.milkbeat.catalog.TrackDescriptor
+import nl.neerdael.milkbeat.plugin.AudioDelivery
 import nl.neerdael.milkbeat.plugin.AudioQuality
 import nl.neerdael.milkbeat.plugin.AudioStream
 import nl.neerdael.milkbeat.plugin.PluginError
@@ -58,15 +59,7 @@ class PluginAudio
         ): ResolvedAudio {
             val key = track.ref.providerId
             resolved[key]?.takeIf { it.validUntilMs > System.currentTimeMillis() && (picture == null || it.withPicture) }?.let { return it }
-            val selection = registry.state.value.selection.audio
-            val candidates =
-                selection.mapNotNull { registry.state.value.plugin(it) }.filter { plugin ->
-                    val spaces =
-                        plugin.manifest.roles.audio
-                            ?.idSpaces
-                            .orEmpty()
-                    track.ids.keys.any { it in spaces }
-                }
+            val candidates = candidates(track)
             if (candidates.isEmpty()) {
                 throw PluginCallException("none", PluginError(PluginErrorCode.UNAVAILABLE, "No audio plugin plays ${track.title}"))
             }
@@ -94,6 +87,15 @@ class PluginAudio
             throw last!!
         }
 
+        /** How the first audio plugin that would play [track] delivers its streams. */
+        fun deliveryFor(track: TrackDescriptor): AudioDelivery =
+            candidates(track)
+                .firstOrNull()
+                ?.manifest
+                ?.roles
+                ?.audio
+                ?.delivery ?: AudioDelivery.PROGRESSIVE
+
         /** What was resolved for track [id], if anything still is: its loudness, tracking token and plugin. */
         fun current(id: String): ResolvedAudio? = resolved[id]
 
@@ -106,6 +108,18 @@ class PluginAudio
             resolved.remove(id)
             failures[id] = StreamFailure(url, status)
         }
+
+        /** The listener's audio plugins, in their order, that play one of [track]'s id spaces. */
+        private fun candidates(track: TrackDescriptor) =
+            registry.state.value.selection.audio
+                .mapNotNull { registry.state.value.plugin(it) }
+                .filter { plugin ->
+                    val spaces =
+                        plugin.manifest.roles.audio
+                            ?.idSpaces
+                            .orEmpty()
+                    track.ids.keys.any { it in spaces }
+                }
 
         fun forget(id: String) {
             resolved.remove(id)

@@ -75,7 +75,18 @@ data class AudioRole(
     val radio: Boolean = false,
     val musicVideo: Boolean = false,
     val reportPlayback: Boolean = false,
+    /** How the plugin's streams arrive, so the player picks the matching source before resolving one. */
+    val delivery: AudioDelivery = AudioDelivery.PROGRESSIVE,
 )
+
+@Serializable
+enum class AudioDelivery {
+    /** One file, read by byte range. */
+    PROGRESSIVE,
+
+    /** An HLS playlist, whose segments and keys are fetched from the playlist's own URLs. */
+    HLS,
+}
 
 @Serializable
 enum class VideoSurface {

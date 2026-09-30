@@ -203,6 +203,19 @@ class DownloadUtil
                 if (dataSpec.uri.scheme in setOf("file", "content", "android.resource")) {
                     return@Factory dataSpec
                 }
+                // An HLS playlist's segments and key come as the playlist's own URLs, already playable.
+                if (dataSpec.uri.scheme == "https" || dataSpec.uri.scheme == "http") return@Factory dataSpec
+                // An HLS playlist itself carries no cache key: it resolves afresh and is never kept under
+                // the track, since its signed URLs expire.
+                if (dataSpec.key == null) {
+                    val resolved = runBlocking(Dispatchers.IO) { resolveForPlayback(dataSpec.uri, picture = false) }
+                    Log.d(TAG, "[Player] Resolved playlist ${resolved.stream.cacheKey} via ${resolved.pluginId}")
+                    return@Factory dataSpec
+                        .buildUpon()
+                        .setUri(resolved.stream.url.toUri())
+                        .setHttpRequestHeaders(resolved.stream.headers)
+                        .build()
+                }
 
                 val mediaId = dataSpec.key ?: error("No media id (key) in dataSpec")
 

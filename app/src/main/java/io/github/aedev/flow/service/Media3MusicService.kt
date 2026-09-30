@@ -84,6 +84,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import nl.neerdael.milkbeat.catalog.EntityKind
 import nl.neerdael.milkbeat.catalog.EntityRef
+import nl.neerdael.milkbeat.plugin.AudioDelivery
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.math.min
@@ -358,7 +359,10 @@ class Media3MusicService : MediaLibraryService() {
 
     private fun initializePlayer() {
         val playerDataSourceFactory = downloadUtil.getPlayerDataSourceFactory()
-        val mediaSourceFactory = MusicMediaSourceFactory(DefaultMediaSourceFactory(playerDataSourceFactory), playerDataSourceFactory)
+        val mediaSourceFactory =
+            MusicMediaSourceFactory(DefaultMediaSourceFactory(playerDataSourceFactory), playerDataSourceFactory) { item ->
+                item.localConfiguration?.uri?.let { pluginAudio.deliveryFor(MusicVideoItems.descriptor(it)) == AudioDelivery.HLS } == true
+            }
 
         val renderersFactory =
             object : androidx.media3.exoplayer.DefaultRenderersFactory(this) {

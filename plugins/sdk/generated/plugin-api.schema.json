@@ -1716,6 +1716,13 @@
             },
             "title": "AssetText"
         },
+        "nl.neerdael.milkbeat.plugin.AudioDelivery": {
+            "enum": [
+                "PROGRESSIVE",
+                "HLS"
+            ],
+            "title": "AudioDelivery"
+        },
         "nl.neerdael.milkbeat.plugin.AudioQuality": {
             "enum": [
                 "AUTO",
@@ -1746,6 +1753,9 @@
                 },
                 "reportPlayback": {
                     "type": "boolean"
+                },
+                "delivery": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.AudioDelivery"
                 }
             },
             "title": "AudioRole"
