@@ -9,6 +9,7 @@ import dagger.hilt.components.SingletonComponent
 import io.github.aedev.flow.data.local.AppDatabase
 import io.github.aedev.flow.data.local.dao.NotificationDao
 import io.github.aedev.flow.data.local.dao.PlaylistDao
+import io.github.aedev.flow.data.local.dao.TrackMatchDao
 import io.github.aedev.flow.data.local.dao.VideoDao
 import javax.inject.Singleton
 
@@ -58,4 +59,7 @@ object DatabaseModule {
 
     @Provides
     fun provideMusicGraphDao(database: AppDatabase): io.github.aedev.flow.data.local.dao.MusicGraphDao = database.musicGraphDao()
+
+    @Provides
+    fun provideTrackMatchDao(database: AppDatabase): TrackMatchDao = database.trackMatchDao()
 }
