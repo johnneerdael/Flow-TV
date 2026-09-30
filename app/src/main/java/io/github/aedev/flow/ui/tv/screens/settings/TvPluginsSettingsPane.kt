@@ -290,8 +290,8 @@ private fun LazyListScope.detailItems(
             if (reportsPlays) {
                 item(key = "detail-play-history") {
                     TvToggleRow(
-                        label = stringResource(R.string.tv_account_play_history),
-                        supportingText = stringResource(R.string.tv_account_play_history_summary),
+                        label = stringResource(R.string.tv_account_play_history, plugin.manifest.name),
+                        supportingText = stringResource(R.string.tv_account_play_history_summary, plugin.manifest.name),
                         checked = playHistory,
                         onCheckedChange = onPlayHistoryChange,
                     )
