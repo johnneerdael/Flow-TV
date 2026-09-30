@@ -1,0 +1,332 @@
+{
+ "url": "/v4/catalog/tracks/?label_id=1328&order_by=-publish_date&page=1&per_page=100&preorder=false",
+ "status": 200,
+ "body": {
+  "results": [
+   {
+    "artists": [
+     {
+      "id": 406814,
+      "image": {
+       "id": 42641577,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/62e3866c-756e-4c95-931c-856d1f380bf8.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/62e3866c-756e-4c95-931c-856d1f380bf8.jpg"
+      },
+      "name": "Monolink"
+     },
+     {
+      "id": 486822,
+      "image": {
+       "id": 34240829,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/6cf2c7f5-55c7-4b8e-b3b7-d140c441a722.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/6cf2c7f5-55c7-4b8e-b3b7-d140c441a722.jpg"
+      },
+      "name": "CIOZ"
+     }
+    ],
+    "bpm": 120,
+    "catalog_number": "CRM362D",
+    "genre": {
+     "id": 93,
+     "name": "Organic House"
+    },
+    "id": 30464173,
+    "image": {
+     "id": 58555247,
+     "uri": "https://geo-media.beatport.com/image_size/1500x250/47043f1b-50c3-4d51-a8b6-9a7115d3ab8b.png",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/47043f1b-50c3-4d51-a8b6-9a7115d3ab8b.png"
+    },
+    "is_available_for_streaming": true,
+    "is_explicit": false,
+    "isrc": "GB7NR2636202",
+    "key": {
+     "camelot_number": 5,
+     "camelot_letter": "A",
+     "chord_type": {
+      "id": 1,
+      "name": "Minor"
+     },
+     "id": 5,
+     "is_sharp": false,
+     "is_flat": false,
+     "letter": "C",
+     "name": "C Minor"
+    },
+    "length_ms": 295735,
+    "mix_name": "Original Mix",
+    "name": "Don't Talk To Me",
+    "new_release_date": "2026-09-25",
+    "publish_date": "2026-09-25",
+    "release": {
+     "id": 7419400,
+     "name": "Don't Talk To Me",
+     "image": {
+      "id": 58555563,
+      "uri": "https://geo-media.beatport.com/image_size/1400x1400/acadd767-5306-4414-8058-1df83459922a.jpg",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/acadd767-5306-4414-8058-1df83459922a.jpg"
+     },
+     "label": {
+      "id": 1328,
+      "name": "Crosstown Rebels",
+      "image": {
+       "id": 12061405,
+       "uri": "https://geo-media.beatport.com/image_size/500x500/0f71f7db-2912-4557-a48e-46cb3faccfee.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/0f71f7db-2912-4557-a48e-46cb3faccfee.jpg"
+      }
+     }
+    },
+    "remixers": [],
+    "sub_genre": null
+   },
+   {
+    "artists": [
+     {
+      "id": 995064,
+      "image": {
+       "id": 54869696,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/84139c44-ab00-457e-b53b-cd78cc36b110.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/84139c44-ab00-457e-b53b-cd78cc36b110.jpg"
+      },
+      "name": "LAMPETEE"
+     },
+     {
+      "id": 1113490,
+      "image": {
+       "id": 42617413,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/5b21d367-60d9-4acb-bfec-2ba19acd1adf.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/5b21d367-60d9-4acb-bfec-2ba19acd1adf.jpg"
+      },
+      "name": "Osfur"
+     },
+     {
+      "id": 1213353,
+      "image": {
+       "id": 41448831,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/5d34bb74-8ca8-4045-b90f-6501e43bc000.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/5d34bb74-8ca8-4045-b90f-6501e43bc000.jpg"
+      },
+      "name": "UVITA"
+     }
+    ],
+    "bpm": 123,
+    "catalog_number": "CRM361D",
+    "genre": {
+     "id": 90,
+     "name": "Melodic House & Techno"
+    },
+    "id": 30340007,
+    "image": {
+     "id": 58274185,
+     "uri": "https://geo-media.beatport.com/image_size/1500x250/5f64b69e-54f6-461e-8c32-9d55bc5985e2.png",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/5f64b69e-54f6-461e-8c32-9d55bc5985e2.png"
+    },
+    "is_available_for_streaming": true,
+    "is_explicit": false,
+    "isrc": "GB7NR2636103",
+    "key": {
+     "camelot_number": 4,
+     "camelot_letter": "B",
+     "chord_type": {
+      "id": 2,
+      "name": "Major"
+     },
+     "id": 16,
+     "is_sharp": false,
+     "is_flat": true,
+     "letter": "A",
+     "name": "Ab Major"
+    },
+    "length_ms": 438473,
+    "mix_name": "Original Mix",
+    "name": "Self Control",
+    "new_release_date": "2026-09-18",
+    "publish_date": "2026-09-18",
+    "release": {
+     "id": 7382628,
+     "name": "Self Control",
+     "image": {
+      "id": 58274170,
+      "uri": "https://geo-media.beatport.com/image_size/1400x1400/9c8bf8b0-3943-4438-86e0-bd3b45481a0c.jpg",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/9c8bf8b0-3943-4438-86e0-bd3b45481a0c.jpg"
+     },
+     "label": {
+      "id": 1328,
+      "name": "Crosstown Rebels",
+      "image": {
+       "id": 12061405,
+       "uri": "https://geo-media.beatport.com/image_size/500x500/0f71f7db-2912-4557-a48e-46cb3faccfee.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/0f71f7db-2912-4557-a48e-46cb3faccfee.jpg"
+      }
+     }
+    },
+    "remixers": [],
+    "sub_genre": null
+   },
+   {
+    "artists": [
+     {
+      "id": 995064,
+      "image": {
+       "id": 54869696,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/84139c44-ab00-457e-b53b-cd78cc36b110.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/84139c44-ab00-457e-b53b-cd78cc36b110.jpg"
+      },
+      "name": "LAMPETEE"
+     },
+     {
+      "id": 1113490,
+      "image": {
+       "id": 42617413,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/5b21d367-60d9-4acb-bfec-2ba19acd1adf.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/5b21d367-60d9-4acb-bfec-2ba19acd1adf.jpg"
+      },
+      "name": "Osfur"
+     },
+     {
+      "id": 1213353,
+      "image": {
+       "id": 41448831,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/5d34bb74-8ca8-4045-b90f-6501e43bc000.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/5d34bb74-8ca8-4045-b90f-6501e43bc000.jpg"
+      },
+      "name": "UVITA"
+     }
+    ],
+    "bpm": 124,
+    "catalog_number": "CRM361D",
+    "genre": {
+     "id": 90,
+     "name": "Melodic House & Techno"
+    },
+    "id": 30340008,
+    "image": {
+     "id": 58274176,
+     "uri": "https://geo-media.beatport.com/image_size/1500x250/b4be3945-3723-4daf-b281-a6d5e9abe676.png",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/b4be3945-3723-4daf-b281-a6d5e9abe676.png"
+    },
+    "is_available_for_streaming": true,
+    "is_explicit": false,
+    "isrc": "GB7NR2636104",
+    "key": {
+     "camelot_number": 3,
+     "camelot_letter": "B",
+     "chord_type": {
+      "id": 2,
+      "name": "Major"
+     },
+     "id": 15,
+     "is_sharp": false,
+     "is_flat": true,
+     "letter": "D",
+     "name": "Db Major"
+    },
+    "length_ms": 379359,
+    "mix_name": "Original Mix",
+    "name": "Chema",
+    "new_release_date": "2026-09-18",
+    "publish_date": "2026-09-18",
+    "release": {
+     "id": 7382628,
+     "name": "Self Control",
+     "image": {
+      "id": 58274170,
+      "uri": "https://geo-media.beatport.com/image_size/1400x1400/9c8bf8b0-3943-4438-86e0-bd3b45481a0c.jpg",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/9c8bf8b0-3943-4438-86e0-bd3b45481a0c.jpg"
+     },
+     "label": {
+      "id": 1328,
+      "name": "Crosstown Rebels",
+      "image": {
+       "id": 12061405,
+       "uri": "https://geo-media.beatport.com/image_size/500x500/0f71f7db-2912-4557-a48e-46cb3faccfee.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/0f71f7db-2912-4557-a48e-46cb3faccfee.jpg"
+      }
+     }
+    },
+    "remixers": [],
+    "sub_genre": null
+   },
+   {
+    "artists": [
+     {
+      "id": 249577,
+      "image": {
+       "id": 38742746,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/30359f42-d034-4e2c-a387-df377866f9ef.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/30359f42-d034-4e2c-a387-df377866f9ef.jpg"
+      },
+      "name": "Rafael"
+     }
+    ],
+    "bpm": 124,
+    "catalog_number": "CRM354R",
+    "genre": {
+     "id": 112,
+     "name": "Indie Tech"
+    },
+    "id": 30257024,
+    "image": {
+     "id": 58066168,
+     "uri": "https://geo-media.beatport.com/image_size/1500x250/e0b8f1e8-6428-4bee-9450-64cf7d638149.png",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/e0b8f1e8-6428-4bee-9450-64cf7d638149.png"
+    },
+    "is_available_for_streaming": true,
+    "is_explicit": false,
+    "isrc": "GB7NR2635406",
+    "key": {
+     "camelot_number": 3,
+     "camelot_letter": "B",
+     "chord_type": {
+      "id": 2,
+      "name": "Major"
+     },
+     "id": 15,
+     "is_sharp": false,
+     "is_flat": true,
+     "letter": "D",
+     "name": "Db Major"
+    },
+    "length_ms": 418064,
+    "mix_name": "Luch Remix",
+    "name": "Gotta Be Cool",
+    "new_release_date": "2026-09-11",
+    "publish_date": "2026-09-11",
+    "release": {
+     "id": 7358311,
+     "name": "Gotta Be Cool (Luch Remix)",
+     "image": {
+      "id": 58067239,
+      "uri": "https://geo-media.beatport.com/image_size/1400x1400/16bdae71-f3d7-49e8-9a82-6218e26f830a.jpg",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/16bdae71-f3d7-49e8-9a82-6218e26f830a.jpg"
+     },
+     "label": {
+      "id": 1328,
+      "name": "Crosstown Rebels",
+      "image": {
+       "id": 12061405,
+       "uri": "https://geo-media.beatport.com/image_size/500x500/0f71f7db-2912-4557-a48e-46cb3faccfee.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/0f71f7db-2912-4557-a48e-46cb3faccfee.jpg"
+      }
+     }
+    },
+    "remixers": [
+     {
+      "id": 1019317,
+      "image": {
+       "id": 40948336,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/acc0f59f-a2ab-4573-a820-84232e23fd1f.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/acc0f59f-a2ab-4573-a820-84232e23fd1f.jpg"
+      },
+      "name": "LUCH"
+     }
+    ],
+    "sub_genre": null
+   }
+  ],
+  "next": "api.beatport.com/v4/catalog/tracks/?label_id=1328&order_by=-publish_date&preorder=false&page=2&per_page=100",
+  "previous": null,
+  "count": 1890,
+  "page": "1/19",
+  "per_page": 100
+ }
+}

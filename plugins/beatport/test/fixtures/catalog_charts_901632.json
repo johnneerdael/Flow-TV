@@ -1,0 +1,50 @@
+{
+ "url": "/v4/catalog/charts/901632/",
+ "status": 200,
+ "body": {
+  "add_date": "2026-09-04T02:46:34-06:00",
+  "description": null,
+  "id": 901632,
+  "image": {
+   "id": 58589169,
+   "uri": "https://geo-media.beatport.com/image_size/500x500/a65c4572-c5f4-465a-ab73-df2d9ab222c5.jpg",
+   "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/a65c4572-c5f4-465a-ab73-df2d9ab222c5.jpg"
+  },
+  "name": "Best New Melodic H&T: September 2026",
+  "person": {
+   "id": 36047,
+   "owner_image": "https://geo-media.beatport.com/image_size/500x500/1bc2960a-5511-40eb-95d4-d5dbedcebe51.jpg",
+   "owner_name": "Beatport",
+   "owner_slug": "beatport",
+   "owner_type": "djprofile"
+  },
+  "publish_date": "2026-09-04T02:46:34-06:00",
+  "track_count": 106,
+  "artist": {
+   "id": 45,
+   "name": "Beatport"
+  },
+  "genres": [
+   {
+    "id": 96,
+    "name": "Mainstage"
+   },
+   {
+    "id": 37,
+    "name": "Indie Dance"
+   },
+   {
+    "id": 112,
+    "name": "Indie Tech"
+   },
+   {
+    "id": 90,
+    "name": "Melodic House & Techno"
+   },
+   {
+    "id": 93,
+    "name": "Organic House"
+   }
+  ]
+ }
+}

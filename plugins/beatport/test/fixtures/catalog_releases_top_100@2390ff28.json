@@ -1,0 +1,264 @@
+{
+ "url": "/v4/catalog/releases/top/100/?per_page=100",
+ "status": 200,
+ "body": {
+  "next": null,
+  "previous": null,
+  "count": 100,
+  "page": "1/1",
+  "per_page": 100,
+  "results": [
+   {
+    "artists": [
+     {
+      "id": 55615,
+      "image": {
+       "id": 16385802,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/805c230d-c5dd-4c2c-8c87-e24933e773c6.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/805c230d-c5dd-4c2c-8c87-e24933e773c6.jpg"
+      },
+      "name": "Friction"
+     },
+     {
+      "id": 495969,
+      "image": {
+       "id": 26955588,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/ee6a3d25-1081-43a7-914b-a18302c2d135.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/ee6a3d25-1081-43a7-914b-a18302c2d135.jpg"
+      },
+      "name": "Bou"
+     },
+     {
+      "id": 294765,
+      "image": {
+       "id": 5539565,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/0dc61986-bccf-49d4-8fad-6b147ea8f327.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/0dc61986-bccf-49d4-8fad-6b147ea8f327.jpg"
+      },
+      "name": "Eksman"
+     },
+     {
+      "id": 378555,
+      "image": {
+       "id": 36714248,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/dced232d-9314-47ec-8b1c-dc2e6fc96701.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/dced232d-9314-47ec-8b1c-dc2e6fc96701.jpg"
+      },
+      "name": "Upgrade (UK)"
+     },
+     {
+      "id": 582244,
+      "image": {
+       "id": 40308894,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/e6e9c355-9b05-482b-829a-8ecfc8d3e01e.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/e6e9c355-9b05-482b-829a-8ecfc8d3e01e.jpg"
+      },
+      "name": "skantia"
+     },
+     {
+      "id": 133669,
+      "image": {
+       "id": 55378195,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/8a11a0f1-26c3-4322-86ab-bf4c70278604.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/8a11a0f1-26c3-4322-86ab-bf4c70278604.jpg"
+      },
+      "name": "Amplify"
+     },
+     {
+      "id": 277714,
+      "image": {
+       "id": 29347475,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/c3d77242-9b3d-4434-9eeb-805fdecf52bb.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/c3d77242-9b3d-4434-9eeb-805fdecf52bb.jpg"
+      },
+      "name": "Disrupta"
+     }
+    ],
+    "bpm_range": {
+     "min": 87,
+     "max": 88
+    },
+    "catalog_number": "GOS011",
+    "desc": null,
+    "id": 7452926,
+    "image": {
+     "id": 59229261,
+     "uri": "https://geo-media.beatport.com/image_size/1400x1400/cffcc01d-6ff3-4b5c-9091-dd4fe474824c.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/cffcc01d-6ff3-4b5c-9091-dd4fe474824c.jpg"
+    },
+    "is_explicit": false,
+    "label": {
+     "id": 79301,
+     "name": "Gossip",
+     "image": {
+      "id": 28415425,
+      "uri": "https://geo-media.beatport.com/image_size/500x500/19d7fc88-dd6b-4f6e-a122-9e2df1b2d39b.jpg",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/19d7fc88-dd6b-4f6e-a122-9e2df1b2d39b.jpg"
+     }
+    },
+    "name": "Wrong Crowd EP",
+    "new_release_date": "2026-09-25",
+    "publish_date": "2026-09-25",
+    "remixers": [],
+    "track_count": 5
+   },
+   {
+    "artists": [
+     {
+      "id": 18450,
+      "image": {
+       "id": 40017267,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/9da9160d-d958-42ef-a602-84d10f1654a2.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/9da9160d-d958-42ef-a602-84d10f1654a2.jpg"
+      },
+      "name": "Faithless"
+     }
+    ],
+    "bpm_range": {
+     "min": 133,
+     "max": 136
+    },
+    "catalog_number": "DCX017",
+    "desc": null,
+    "id": 7480503,
+    "image": {
+     "id": 58994153,
+     "uri": "https://geo-media.beatport.com/image_size/1400x1400/630b99fa-bdfe-4f0f-8ec7-285e0e065f97.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/630b99fa-bdfe-4f0f-8ec7-285e0e065f97.jpg"
+    },
+    "is_explicit": false,
+    "label": {
+     "id": 2027,
+     "name": "Drumcode",
+     "image": {
+      "id": 33119007,
+      "uri": "https://geo-media.beatport.com/image_size/500x500/0d86a4f2-f87e-44fd-baa4-833150584f17.jpg",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/0d86a4f2-f87e-44fd-baa4-833150584f17.jpg"
+     }
+    },
+    "name": "Faithless Reworks",
+    "new_release_date": "2026-09-25",
+    "publish_date": "2026-09-25",
+    "remixers": [
+     {
+      "id": 6824,
+      "image": {
+       "id": 33293983,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/088dd4b5-964d-4772-93bf-58408d98b588.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/088dd4b5-964d-4772-93bf-58408d98b588.jpg"
+      },
+      "name": "Adam Beyer"
+     },
+     {
+      "id": 1110630,
+      "image": {
+       "id": 39887446,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/7551acdc-4ac9-41de-b674-d48598d4552e.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/7551acdc-4ac9-41de-b674-d48598d4552e.jpg"
+      },
+      "name": "KASIA (ofc)"
+     }
+    ],
+    "track_count": 3
+   },
+   {
+    "artists": [
+     {
+      "id": 369654,
+      "image": {
+       "id": 25928130,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/e6d29f03-c7c0-489f-969f-da2ea1706ebb.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/e6d29f03-c7c0-489f-969f-da2ea1706ebb.jpg"
+      },
+      "name": "Theo Nasa"
+     },
+     {
+      "id": 519996,
+      "image": {
+       "id": 48890946,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/aa3f1a3a-b549-46eb-bb85-e5f180ea8863.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/aa3f1a3a-b549-46eb-bb85-e5f180ea8863.jpg"
+      },
+      "name": "Charlotte de Witte"
+     },
+     {
+      "id": 1311423,
+      "image": {
+       "id": 5539565,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/0dc61986-bccf-49d4-8fad-6b147ea8f327.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/0dc61986-bccf-49d4-8fad-6b147ea8f327.jpg"
+      },
+      "name": "XSALT"
+     }
+    ],
+    "bpm_range": {
+     "min": 140,
+     "max": 143
+    },
+    "catalog_number": "KNTXT034",
+    "desc": null,
+    "id": 7391899,
+    "image": {
+     "id": 58347696,
+     "uri": "https://geo-media.beatport.com/image_size/1400x1400/28c0d8c4-4573-4ce2-9881-534aba783ca5.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/28c0d8c4-4573-4ce2-9881-534aba783ca5.jpg"
+    },
+    "is_explicit": false,
+    "label": {
+     "id": 80918,
+     "name": "KNTXT",
+     "image": {
+      "id": 22667701,
+      "uri": "https://geo-media.beatport.com/image_size/500x500/ff89a8db-c53e-4a37-a74f-e0b6f083dc9b.jpg",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/ff89a8db-c53e-4a37-a74f-e0b6f083dc9b.jpg"
+     }
+    },
+    "name": "The Resistance EP",
+    "new_release_date": "2026-09-24",
+    "publish_date": "2026-09-24",
+    "remixers": [],
+    "track_count": 4
+   },
+   {
+    "artists": [
+     {
+      "id": 14824,
+      "image": {
+       "id": 341108,
+       "uri": "https://geo-media.beatport.com/image_size/590x405/f95ec466-9ef6-4e01-9f79-098c847f4337.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/f95ec466-9ef6-4e01-9f79-098c847f4337.jpg"
+      },
+      "name": "Break"
+     }
+    ],
+    "bpm_range": {
+     "min": 107,
+     "max": 119
+    },
+    "catalog_number": "SYMM076",
+    "desc": "Break returns with a double-header for the dance. Proper junglist club tools. No hype needed.",
+    "id": 7340243,
+    "image": {
+     "id": 57941808,
+     "uri": "https://geo-media.beatport.com/image_size/1400x1400/a9f5405b-e79c-4668-be20-431b50236b3d.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/a9f5405b-e79c-4668-be20-431b50236b3d.jpg"
+    },
+    "is_explicit": false,
+    "label": {
+     "id": 7216,
+     "name": "Symmetry Recordings",
+     "image": {
+      "id": 19915146,
+      "uri": "https://geo-media.beatport.com/image_size/500x500/caba7d5d-5580-4f75-9701-f4ac8ae75cac.jpg",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/caba7d5d-5580-4f75-9701-f4ac8ae75cac.jpg"
+     }
+    },
+    "name": "Get Low / All Junglists",
+    "new_release_date": "2026-09-18",
+    "publish_date": "2026-09-18",
+    "remixers": [],
+    "track_count": 2
+   }
+  ]
+ }
+}

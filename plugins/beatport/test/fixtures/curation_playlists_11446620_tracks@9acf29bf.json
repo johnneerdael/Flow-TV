@@ -1,0 +1,296 @@
+{
+ "url": "/v4/curation/playlists/11446620/tracks/?page=1&per_page=100",
+ "status": 200,
+ "body": {
+  "next": null,
+  "previous": null,
+  "count": 19,
+  "page": "1/1",
+  "per_page": 100,
+  "results": [
+   {
+    "id": 695617927,
+    "position": 1,
+    "track": {
+     "artists": [
+      {
+       "id": 939999,
+       "image": {
+        "id": 30900937,
+        "uri": "https://geo-media.beatport.com/image_size/590x404/3fd524a4-72bd-4519-94c4-bc0878e16fbc.jpg",
+        "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/3fd524a4-72bd-4519-94c4-bc0878e16fbc.jpg"
+       },
+       "name": "Xoro"
+      }
+     ],
+     "bpm": 127,
+     "catalog_number": "XREC017S1",
+     "genre": {
+      "id": 90,
+      "name": "Melodic House & Techno"
+     },
+     "id": 30544460,
+     "image": {
+      "id": 58759484,
+      "uri": "https://geo-media.beatport.com/image_size/1500x250/ae85f05e-2825-4d47-99d1-69fe20c46f00.png",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/ae85f05e-2825-4d47-99d1-69fe20c46f00.png"
+     },
+     "is_available_for_streaming": true,
+     "is_explicit": false,
+     "isrc": "NLF712605876",
+     "key": {
+      "camelot_number": 7,
+      "camelot_letter": "B",
+      "chord_type": {
+       "id": 2,
+       "name": "Major"
+      },
+      "id": 19,
+      "is_sharp": false,
+      "is_flat": false,
+      "letter": "F",
+      "name": "F Major"
+     },
+     "length_ms": 333067,
+     "mix_name": "Extended Mix",
+     "name": "Syncopated",
+     "new_release_date": "2026-09-25",
+     "publish_date": "2026-09-25",
+     "release": {
+      "id": 7443976,
+      "name": "Syncopated",
+      "image": {
+       "id": 58759483,
+       "uri": "https://geo-media.beatport.com/image_size/1400x1400/67df1a07-97db-4fdf-83d4-e67280dc7616.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/67df1a07-97db-4fdf-83d4-e67280dc7616.jpg"
+      },
+      "label": {
+       "id": 117694,
+       "name": "X Recordings",
+       "image": {
+        "id": 48008660,
+        "uri": "https://geo-media.beatport.com/image_size/500x500/12fa8171-71b8-451c-8ffe-1e0e4d15171b.jpg",
+        "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/12fa8171-71b8-451c-8ffe-1e0e4d15171b.jpg"
+       }
+      }
+     },
+     "remixers": [],
+     "sub_genre": null
+    }
+   },
+   {
+    "id": 695617928,
+    "position": 2,
+    "track": {
+     "artists": [
+      {
+       "id": 118660,
+       "image": {
+        "id": 19436512,
+        "uri": "https://geo-media.beatport.com/image_size/590x404/1672c067-3cfa-4c65-bd9f-a9b02b143e07.jpg",
+        "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/1672c067-3cfa-4c65-bd9f-a9b02b143e07.jpg"
+       },
+       "name": "Re.you"
+      }
+     ],
+     "bpm": 124,
+     "catalog_number": "MM113",
+     "genre": {
+      "id": 90,
+      "name": "Melodic House & Techno"
+     },
+     "id": 30464275,
+     "image": {
+      "id": 58555328,
+      "uri": "https://geo-media.beatport.com/image_size/1500x250/4c06643e-b12b-4080-8c90-891b18a75feb.png",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/4c06643e-b12b-4080-8c90-891b18a75feb.png"
+     },
+     "is_available_for_streaming": true,
+     "is_explicit": false,
+     "isrc": "GBKQU2698560",
+     "key": {
+      "camelot_number": 12,
+      "camelot_letter": "B",
+      "chord_type": {
+       "id": 2,
+       "name": "Major"
+      },
+      "id": 24,
+      "is_sharp": false,
+      "is_flat": false,
+      "letter": "E",
+      "name": "E Major"
+     },
+     "length_ms": 313184,
+     "mix_name": "Original Mix",
+     "name": "Time ",
+     "new_release_date": "2026-09-25",
+     "publish_date": "2026-09-25",
+     "release": {
+      "id": 7419440,
+      "name": "Time",
+      "image": {
+       "id": 58555122,
+       "uri": "https://geo-media.beatport.com/image_size/1400x1400/a23c5fb5-89fb-4205-a7ce-4197a6ae3385.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/a23c5fb5-89fb-4205-a7ce-4197a6ae3385.jpg"
+      },
+      "label": {
+       "id": 109099,
+       "name": "Magnifik Music",
+       "image": {
+        "id": 33060904,
+        "uri": "https://geo-media.beatport.com/image_size/500x500/e072a4bb-2eb1-44b3-b026-ad9f6db01c7f.jpg",
+        "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/e072a4bb-2eb1-44b3-b026-ad9f6db01c7f.jpg"
+       }
+      }
+     },
+     "remixers": [],
+     "sub_genre": {
+      "id": 267,
+      "name": "Melodic House"
+     }
+    }
+   },
+   {
+    "id": 695617930,
+    "position": 4,
+    "track": {
+     "artists": [
+      {
+       "id": 505006,
+       "image": {
+        "id": 15847275,
+        "uri": "https://geo-media.beatport.com/image_size/590x404/896f1cc6-9a24-4f56-aa71-cd8dfe1f8378.jpg",
+        "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/896f1cc6-9a24-4f56-aa71-cd8dfe1f8378.jpg"
+       },
+       "name": "Fec"
+      }
+     ],
+     "bpm": 124,
+     "catalog_number": "AXPT047",
+     "genre": {
+      "id": 90,
+      "name": "Melodic House & Techno"
+     },
+     "id": 30434435,
+     "image": {
+      "id": 58477779,
+      "uri": "https://geo-media.beatport.com/image_size/1500x250/ef00e45c-1e11-4cdf-8743-d3a46ce4a79f.png",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/ef00e45c-1e11-4cdf-8743-d3a46ce4a79f.png"
+     },
+     "is_available_for_streaming": true,
+     "is_explicit": false,
+     "isrc": "USUYG1833649",
+     "key": {
+      "camelot_number": 6,
+      "camelot_letter": "B",
+      "chord_type": {
+       "id": 2,
+       "name": "Major"
+      },
+      "id": 18,
+      "is_sharp": false,
+      "is_flat": true,
+      "letter": "B",
+      "name": "Bb Major"
+     },
+     "length_ms": 375483,
+     "mix_name": "Original Mix",
+     "name": "You Better ",
+     "new_release_date": "2026-09-18",
+     "publish_date": "2026-09-18",
+     "release": {
+      "id": 7409459,
+      "name": "I Always",
+      "image": {
+       "id": 58477757,
+       "uri": "https://geo-media.beatport.com/image_size/1400x1400/8a1fa536-4187-4c68-bea2-fcf4aceefe05.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/8a1fa536-4187-4c68-bea2-fcf4aceefe05.jpg"
+      },
+      "label": {
+       "id": 125790,
+       "name": "AXEPT",
+       "image": {
+        "id": 46516845,
+        "uri": "https://geo-media.beatport.com/image_size/500x500/46281a35-f94b-472e-a72b-ffd99aad2db3.jpg",
+        "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/46281a35-f94b-472e-a72b-ffd99aad2db3.jpg"
+       }
+      }
+     },
+     "remixers": [],
+     "sub_genre": null
+    }
+   },
+   {
+    "id": 695617931,
+    "position": 5,
+    "track": {
+     "artists": [
+      {
+       "id": 775294,
+       "image": {
+        "id": 58326227,
+        "uri": "https://geo-media.beatport.com/image_size/590x404/caff80cb-74bd-446a-a73c-3507f64a7f41.jpg",
+        "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/caff80cb-74bd-446a-a73c-3507f64a7f41.jpg"
+       },
+       "name": "Curol"
+      }
+     ],
+     "bpm": 126,
+     "catalog_number": "WGDIG086D",
+     "genre": {
+      "id": 90,
+      "name": "Melodic House & Techno"
+     },
+     "id": 30400183,
+     "image": {
+      "id": 58397321,
+      "uri": "https://geo-media.beatport.com/image_size/1500x250/d38fe1b3-1783-4c95-a0e2-fff0a31cda55.png",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/d38fe1b3-1783-4c95-a0e2-fff0a31cda55.png"
+     },
+     "is_available_for_streaming": true,
+     "is_explicit": false,
+     "isrc": "DEPX42600915",
+     "key": {
+      "camelot_number": 3,
+      "camelot_letter": "A",
+      "chord_type": {
+       "id": 1,
+       "name": "Minor"
+      },
+      "id": 3,
+      "is_sharp": false,
+      "is_flat": true,
+      "letter": "B",
+      "name": "Bb Minor"
+     },
+     "length_ms": 339047,
+     "mix_name": "Original Mix",
+     "name": "Unlock",
+     "new_release_date": "2026-09-18",
+     "publish_date": "2026-09-18",
+     "release": {
+      "id": 7398390,
+      "name": "Unlock EP",
+      "image": {
+       "id": 58397299,
+       "uri": "https://geo-media.beatport.com/image_size/1400x1400/5f7c479d-c566-4334-9b73-b3d7097c56fa.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/5f7c479d-c566-4334-9b73-b3d7097c56fa.jpg"
+      },
+      "label": {
+       "id": 13164,
+       "name": "Watergate Records",
+       "image": {
+        "id": 39425083,
+        "uri": "https://geo-media.beatport.com/image_size/500x500/4abe88e0-cf97-4843-9058-f20b2deb4f8e.jpg",
+        "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/4abe88e0-cf97-4843-9058-f20b2deb4f8e.jpg"
+       }
+      }
+     },
+     "remixers": [],
+     "sub_genre": null
+    }
+   }
+  ]
+ }
+}

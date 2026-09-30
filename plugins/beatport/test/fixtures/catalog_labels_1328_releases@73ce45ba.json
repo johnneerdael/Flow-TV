@@ -1,0 +1,218 @@
+{
+ "url": "/v4/catalog/labels/1328/releases/?page=1&per_page=20",
+ "status": 200,
+ "body": {
+  "results": [
+   {
+    "artists": [
+     {
+      "id": 20652,
+      "image": {
+       "id": 21427360,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/f54c6a18-f3e5-4ca8-9c84-8d7e499d1288.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/f54c6a18-f3e5-4ca8-9c84-8d7e499d1288.jpg"
+      },
+      "name": "Damian Lazarus"
+     },
+     {
+      "id": 47487,
+      "image": {
+       "id": 5539565,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/0dc61986-bccf-49d4-8fad-6b147ea8f327.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/0dc61986-bccf-49d4-8fad-6b147ea8f327.jpg"
+      },
+      "name": "Kenny Glasgow"
+     }
+    ],
+    "bpm_range": {
+     "min": 128,
+     "max": 128
+    },
+    "catalog_number": "CRM364D",
+    "desc": null,
+    "id": 7542603,
+    "image": {
+     "id": 59535390,
+     "uri": "https://geo-media.beatport.com/image_size/1400x1400/626d9403-18aa-4a98-8b5f-ecf18c2f0784.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/626d9403-18aa-4a98-8b5f-ecf18c2f0784.jpg"
+    },
+    "is_explicit": false,
+    "label": {
+     "id": 1328,
+     "name": "Crosstown Rebels",
+     "image": {
+      "id": 12061405,
+      "uri": "https://geo-media.beatport.com/image_size/500x500/0f71f7db-2912-4557-a48e-46cb3faccfee.jpg",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/0f71f7db-2912-4557-a48e-46cb3faccfee.jpg"
+     }
+    },
+    "name": "Where Do We Go?",
+    "new_release_date": "2026-10-23",
+    "publish_date": "2026-10-23",
+    "remixers": [],
+    "track_count": 1
+   },
+   {
+    "artists": [
+     {
+      "id": 922697,
+      "image": {
+       "id": 41359627,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/1ae3ae0b-4faf-4bf0-9378-82560d4edbbf.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/1ae3ae0b-4faf-4bf0-9378-82560d4edbbf.jpg"
+      },
+      "name": "Jamek Ortega"
+     },
+     {
+      "id": 1087490,
+      "image": {
+       "id": 45984772,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/257d7a55-f653-49cf-be1c-f1b8c4e9bc87.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/257d7a55-f653-49cf-be1c-f1b8c4e9bc87.jpg"
+      },
+      "name": "JUNO (DE)"
+     }
+    ],
+    "bpm_range": {
+     "min": 122,
+     "max": 123
+    },
+    "catalog_number": "CRM363D",
+    "desc": null,
+    "id": 7462218,
+    "image": {
+     "id": 58897053,
+     "uri": "https://geo-media.beatport.com/image_size/1400x1400/c6878b4b-3737-4a6a-99c2-8ce007ec0fa3.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/c6878b4b-3737-4a6a-99c2-8ce007ec0fa3.jpg"
+    },
+    "is_explicit": false,
+    "label": {
+     "id": 1328,
+     "name": "Crosstown Rebels",
+     "image": {
+      "id": 12061405,
+      "uri": "https://geo-media.beatport.com/image_size/500x500/0f71f7db-2912-4557-a48e-46cb3faccfee.jpg",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/0f71f7db-2912-4557-a48e-46cb3faccfee.jpg"
+     }
+    },
+    "name": "Deep Breath",
+    "new_release_date": "2026-10-09",
+    "publish_date": "2026-10-09",
+    "remixers": [],
+    "track_count": 2
+   },
+   {
+    "artists": [
+     {
+      "id": 406814,
+      "image": {
+       "id": 42641577,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/62e3866c-756e-4c95-931c-856d1f380bf8.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/62e3866c-756e-4c95-931c-856d1f380bf8.jpg"
+      },
+      "name": "Monolink"
+     },
+     {
+      "id": 486822,
+      "image": {
+       "id": 34240829,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/6cf2c7f5-55c7-4b8e-b3b7-d140c441a722.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/6cf2c7f5-55c7-4b8e-b3b7-d140c441a722.jpg"
+      },
+      "name": "CIOZ"
+     }
+    ],
+    "bpm_range": {
+     "min": 120,
+     "max": 120
+    },
+    "catalog_number": "CRM362D",
+    "desc": null,
+    "id": 7419400,
+    "image": {
+     "id": 58555563,
+     "uri": "https://geo-media.beatport.com/image_size/1400x1400/acadd767-5306-4414-8058-1df83459922a.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/acadd767-5306-4414-8058-1df83459922a.jpg"
+    },
+    "is_explicit": false,
+    "label": {
+     "id": 1328,
+     "name": "Crosstown Rebels",
+     "image": {
+      "id": 12061405,
+      "uri": "https://geo-media.beatport.com/image_size/500x500/0f71f7db-2912-4557-a48e-46cb3faccfee.jpg",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/0f71f7db-2912-4557-a48e-46cb3faccfee.jpg"
+     }
+    },
+    "name": "Don't Talk To Me",
+    "new_release_date": "2026-09-25",
+    "publish_date": "2026-09-25",
+    "remixers": [],
+    "track_count": 1
+   },
+   {
+    "artists": [
+     {
+      "id": 995064,
+      "image": {
+       "id": 54869696,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/84139c44-ab00-457e-b53b-cd78cc36b110.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/84139c44-ab00-457e-b53b-cd78cc36b110.jpg"
+      },
+      "name": "LAMPETEE"
+     },
+     {
+      "id": 1113490,
+      "image": {
+       "id": 42617413,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/5b21d367-60d9-4acb-bfec-2ba19acd1adf.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/5b21d367-60d9-4acb-bfec-2ba19acd1adf.jpg"
+      },
+      "name": "Osfur"
+     },
+     {
+      "id": 1213353,
+      "image": {
+       "id": 41448831,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/5d34bb74-8ca8-4045-b90f-6501e43bc000.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/5d34bb74-8ca8-4045-b90f-6501e43bc000.jpg"
+      },
+      "name": "UVITA"
+     }
+    ],
+    "bpm_range": {
+     "min": 123,
+     "max": 124
+    },
+    "catalog_number": "CRM361D",
+    "desc": null,
+    "id": 7382628,
+    "image": {
+     "id": 58274170,
+     "uri": "https://geo-media.beatport.com/image_size/1400x1400/9c8bf8b0-3943-4438-86e0-bd3b45481a0c.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/9c8bf8b0-3943-4438-86e0-bd3b45481a0c.jpg"
+    },
+    "is_explicit": false,
+    "label": {
+     "id": 1328,
+     "name": "Crosstown Rebels",
+     "image": {
+      "id": 12061405,
+      "uri": "https://geo-media.beatport.com/image_size/500x500/0f71f7db-2912-4557-a48e-46cb3faccfee.jpg",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/0f71f7db-2912-4557-a48e-46cb3faccfee.jpg"
+     }
+    },
+    "name": "Self Control",
+    "new_release_date": "2026-09-18",
+    "publish_date": "2026-09-18",
+    "remixers": [],
+    "track_count": 2
+   }
+  ],
+  "next": "api.beatport.com/v4/catalog/labels/1328/releases/?page=2&per_page=20",
+  "previous": null,
+  "count": 446,
+  "page": "1/23",
+  "per_page": 20
+ }
+}

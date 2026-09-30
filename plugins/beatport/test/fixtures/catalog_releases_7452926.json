@@ -1,0 +1,103 @@
+{
+ "url": "/v4/catalog/releases/7452926/",
+ "status": 200,
+ "body": {
+  "artists": [
+   {
+    "id": 55615,
+    "image": {
+     "id": 16385802,
+     "uri": "https://geo-media.beatport.com/image_size/590x404/805c230d-c5dd-4c2c-8c87-e24933e773c6.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/805c230d-c5dd-4c2c-8c87-e24933e773c6.jpg"
+    },
+    "name": "Friction"
+   },
+   {
+    "id": 495969,
+    "image": {
+     "id": 26955588,
+     "uri": "https://geo-media.beatport.com/image_size/590x404/ee6a3d25-1081-43a7-914b-a18302c2d135.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/ee6a3d25-1081-43a7-914b-a18302c2d135.jpg"
+    },
+    "name": "Bou"
+   },
+   {
+    "id": 294765,
+    "image": {
+     "id": 5539565,
+     "uri": "https://geo-media.beatport.com/image_size/590x404/0dc61986-bccf-49d4-8fad-6b147ea8f327.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/0dc61986-bccf-49d4-8fad-6b147ea8f327.jpg"
+    },
+    "name": "Eksman"
+   },
+   {
+    "id": 378555,
+    "image": {
+     "id": 36714248,
+     "uri": "https://geo-media.beatport.com/image_size/590x404/dced232d-9314-47ec-8b1c-dc2e6fc96701.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/dced232d-9314-47ec-8b1c-dc2e6fc96701.jpg"
+    },
+    "name": "Upgrade (UK)"
+   },
+   {
+    "id": 582244,
+    "image": {
+     "id": 40308894,
+     "uri": "https://geo-media.beatport.com/image_size/590x404/e6e9c355-9b05-482b-829a-8ecfc8d3e01e.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/e6e9c355-9b05-482b-829a-8ecfc8d3e01e.jpg"
+    },
+    "name": "skantia"
+   },
+   {
+    "id": 133669,
+    "image": {
+     "id": 55378195,
+     "uri": "https://geo-media.beatport.com/image_size/590x404/8a11a0f1-26c3-4322-86ab-bf4c70278604.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/8a11a0f1-26c3-4322-86ab-bf4c70278604.jpg"
+    },
+    "name": "Amplify"
+   },
+   {
+    "id": 277714,
+    "image": {
+     "id": 29347475,
+     "uri": "https://geo-media.beatport.com/image_size/590x404/c3d77242-9b3d-4434-9eeb-805fdecf52bb.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/c3d77242-9b3d-4434-9eeb-805fdecf52bb.jpg"
+    },
+    "name": "Disrupta"
+   }
+  ],
+  "bpm_range": {
+   "min": 87,
+   "max": 88
+  },
+  "catalog_number": "GOS011",
+  "desc": null,
+  "id": 7452926,
+  "image": {
+   "id": 59229261,
+   "uri": "https://geo-media.beatport.com/image_size/1400x1400/cffcc01d-6ff3-4b5c-9091-dd4fe474824c.jpg",
+   "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/cffcc01d-6ff3-4b5c-9091-dd4fe474824c.jpg"
+  },
+  "is_available_for_streaming": true,
+  "is_explicit": false,
+  "label": {
+   "id": 79301,
+   "name": "Gossip",
+   "image": {
+    "id": 28415425,
+    "uri": "https://geo-media.beatport.com/image_size/500x500/19d7fc88-dd6b-4f6e-a122-9e2df1b2d39b.jpg",
+    "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/19d7fc88-dd6b-4f6e-a122-9e2df1b2d39b.jpg"
+   }
+  },
+  "name": "Wrong Crowd EP",
+  "new_release_date": "2026-09-25",
+  "publish_date": "2026-09-25",
+  "remixers": [],
+  "track_count": 5,
+  "type": {
+   "id": 1,
+   "name": "Release"
+  }
+ }
+}

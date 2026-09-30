@@ -1,0 +1,393 @@
+{
+ "url": "/v4/catalog/search/?per_page=10&q=solomun",
+ "status": 200,
+ "body": {
+  "tracks": [
+   {
+    "artists": [
+     {
+      "id": 318565,
+      "image": {
+       "id": 42400096,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/d5912be6-f125-4ab6-a5e3-1804a3c2cf92.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/d5912be6-f125-4ab6-a5e3-1804a3c2cf92.jpg"
+      },
+      "name": "Weval"
+     }
+    ],
+    "bpm": 128,
+    "catalog_number": "TCLRDNL058FB",
+    "genre": {
+     "id": 90,
+     "name": "Melodic House & Techno"
+    },
+    "id": 17982118,
+    "image": {
+     "id": 35144149,
+     "uri": "https://geo-media.beatport.com/image_size/1500x250/746ed499-471c-40e7-a8c5-213930395a0c.png",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/746ed499-471c-40e7-a8c5-213930395a0c.png"
+    },
+    "is_available_for_streaming": true,
+    "is_explicit": false,
+    "isrc": "GBCFB2300611",
+    "key": {
+     "camelot_number": 10,
+     "camelot_letter": "B",
+     "chord_type": {
+      "id": 2,
+      "name": "Major"
+     },
+     "id": 22,
+     "is_sharp": false,
+     "is_flat": false,
+     "letter": "D",
+     "name": "D Major"
+    },
+    "length_ms": 408260,
+    "mix_name": "Extended Version",
+    "name": "Forever (Solomun Remix)",
+    "new_release_date": "2023-08-16",
+    "publish_date": "2023-08-16",
+    "release": {
+     "id": 4212608,
+     "name": "Forever (Solomun Remix) - Extended Version",
+     "image": {
+      "id": 35144124,
+      "uri": "https://geo-media.beatport.com/image_size/500x500/df80e42c-65c2-496d-a8a4-f753d65b3bad.jpg",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/df80e42c-65c2-496d-a8a4-f753d65b3bad.jpg"
+     },
+     "label": {
+      "id": 30281,
+      "name": "Technicolour",
+      "image": {
+       "id": 6530816,
+       "uri": "https://geo-media.beatport.com/image_size/500x500/c685f1d9-cc3a-4fe5-854d-7e23a7694570.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/c685f1d9-cc3a-4fe5-854d-7e23a7694570.jpg"
+      }
+     }
+    },
+    "remixers": [
+     {
+      "id": 25648,
+      "image": {
+       "id": 41708447,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/9a145449-fb90-4d6b-8668-abac15422920.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/9a145449-fb90-4d6b-8668-abac15422920.jpg"
+      },
+      "name": "Solomun"
+     }
+    ],
+    "sub_genre": {
+     "id": 267,
+     "name": "Melodic House"
+    }
+   }
+  ],
+  "order": [
+   "artists",
+   "tracks",
+   "releases",
+   "labels",
+   "playlists"
+  ],
+  "artists": [
+   {
+    "id": 25648,
+    "image": {
+     "id": 41708447,
+     "uri": "https://geo-media.beatport.com/image_size/590x404/9a145449-fb90-4d6b-8668-abac15422920.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/9a145449-fb90-4d6b-8668-abac15422920.jpg"
+    },
+    "name": "Solomun",
+    "dj_association": 94938
+   },
+   {
+    "id": 2448427,
+    "image": {
+     "id": 5539565,
+     "uri": "https://geo-media.beatport.com/image_size/590x404/0dc61986-bccf-49d4-8fad-6b147ea8f327.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/0dc61986-bccf-49d4-8fad-6b147ea8f327.jpg"
+    },
+    "name": "Ivan Solomun",
+    "dj_association": null
+   },
+   {
+    "id": 783727,
+    "image": {
+     "id": 5539565,
+     "uri": "https://geo-media.beatport.com/image_size/590x404/0dc61986-bccf-49d4-8fad-6b147ea8f327.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/0dc61986-bccf-49d4-8fad-6b147ea8f327.jpg"
+    },
+    "name": "Luke Solomun",
+    "dj_association": null
+   },
+   {
+    "id": 278771,
+    "image": {
+     "id": 5539565,
+     "uri": "https://geo-media.beatport.com/image_size/590x404/0dc61986-bccf-49d4-8fad-6b147ea8f327.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/0dc61986-bccf-49d4-8fad-6b147ea8f327.jpg"
+    },
+    "name": "Mladen Solomun",
+    "dj_association": null
+   }
+  ],
+  "releases": [
+   {
+    "artists": [
+     {
+      "id": 25648,
+      "image": {
+       "id": 41708447,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/9a145449-fb90-4d6b-8668-abac15422920.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/9a145449-fb90-4d6b-8668-abac15422920.jpg"
+      },
+      "name": "Solomun"
+     }
+    ],
+    "bpm_range": {
+     "min": 118,
+     "max": 124
+    },
+    "catalog_number": "DIYNAMIC079",
+    "desc": "\"Not knowing when the dawn will come I open every door.\"\n- Emily Dickinson\n\nThe time has come for Diynamic label boss Solomun to serve up another of his trend setting, season defining EPs. \n\nThis latest one is called 'Zora', features three new tracks (which are all titled with Serbo-Croat words) and is sure to become another massive hit for him, and many other DJs, this summer. Of course, the Croatian tastemaker has recently set out for another busy schedule of his own headline events at Pacha and Destino as well as many other places around Europe during the hottest months of the year. \n\nThings kick off with title track 'Zora', which means dawn of the day and is deliciously deep and sensuously slow burning track with lots of trademark melodies and colourful synths as well as a huge, sweeping bassline that will really get floors moving. \n\nThen comes 'Fantazija' which means fantasy, with its big rubbery kick drums and jittery percussive patterns. Its full of slow release tension, skewed bass and trippy synths that all work to hypnotise listeners as they ride up and down the scale. \n\nLast but not least, 'Nada' means hope and features a gritty guitar riff riding above rolling drums and is the sort of string house anthem that will sound perfect on the White Isle this season. Tender little synth motifs dance around the edges of the track adding a real sense of emotion, and once it drops you glide along on the sunset groove without a care in the world. \n\nRight now Solomun and his label are on top of the world, and this release, which is full of new ideas at the same time as remaining true to the labels singular sound, just confirms that once more.",
+    "id": 1575658,
+    "image": {
+     "id": 11960734,
+     "uri": "https://geo-media.beatport.com/image_size/1400x1400/7bea9a18-e2d3-4345-a122-4d1cb30c52f7.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/7bea9a18-e2d3-4345-a122-4d1cb30c52f7.jpg"
+    },
+    "is_explicit": false,
+    "label": {
+     "id": 3612,
+     "name": "Diynamic",
+     "image": {
+      "id": 28325463,
+      "uri": "https://geo-media.beatport.com/image_size/500x500/f9b12b7e-e32c-47c6-ac3a-6c4e8c4703ff.jpg",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/f9b12b7e-e32c-47c6-ac3a-6c4e8c4703ff.jpg"
+     }
+    },
+    "name": "Solomun - Zora EP",
+    "new_release_date": "2015-07-31",
+    "publish_date": "2015-07-31",
+    "remixers": [],
+    "track_count": 3
+   },
+   {
+    "artists": [
+     {
+      "id": 25648,
+      "image": {
+       "id": 41708447,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/9a145449-fb90-4d6b-8668-abac15422920.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/9a145449-fb90-4d6b-8668-abac15422920.jpg"
+      },
+      "name": "Solomun"
+     },
+     {
+      "id": 121799,
+      "image": {
+       "id": 38865224,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/a3bfb507-ea8c-4847-88ea-dd005f483ef8.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/a3bfb507-ea8c-4847-88ea-dd005f483ef8.jpg"
+      },
+      "name": "Nina Kraviz"
+     }
+    ],
+    "bpm_range": {
+     "min": 132,
+     "max": 132
+    },
+    "catalog_number": "NK001R1",
+    "desc": null,
+    "id": 3482583,
+    "image": {
+     "id": 37883085,
+     "uri": "https://geo-media.beatport.com/image_size/1400x1400/542f5f70-014a-427a-991d-0fa08b7061ba.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/542f5f70-014a-427a-991d-0fa08b7061ba.jpg"
+    },
+    "is_explicit": false,
+    "label": {
+     "id": 97318,
+     "name": "Nina Kraviz Music",
+     "image": {
+      "id": 28870992,
+      "uri": "https://geo-media.beatport.com/image_size/500x500/0be4def7-c939-459a-b8cf-38c28f5dd68e.jpg",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/0be4def7-c939-459a-b8cf-38c28f5dd68e.jpg"
+     }
+    },
+    "name": "Skyscrapers (Solomun Remix)",
+    "new_release_date": "2021-08-27",
+    "publish_date": "2021-08-27",
+    "remixers": [
+     {
+      "id": 25648,
+      "image": {
+       "id": 41708447,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/9a145449-fb90-4d6b-8668-abac15422920.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/9a145449-fb90-4d6b-8668-abac15422920.jpg"
+      },
+      "name": "Solomun"
+     }
+    ],
+    "track_count": 1
+   },
+   {
+    "artists": [
+     {
+      "id": 25648,
+      "image": {
+       "id": 41708447,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/9a145449-fb90-4d6b-8668-abac15422920.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/9a145449-fb90-4d6b-8668-abac15422920.jpg"
+      },
+      "name": "Solomun"
+     },
+     {
+      "id": 342430,
+      "image": {
+       "id": 9527682,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/189554ab-c446-47ad-97f8-939ab63004ee.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/189554ab-c446-47ad-97f8-939ab63004ee.jpg"
+      },
+      "name": "London Grammar"
+     }
+    ],
+    "bpm_range": {
+     "min": 130,
+     "max": 130
+    },
+    "catalog_number": "G0100052721461",
+    "desc": null,
+    "id": 4536106,
+    "image": {
+     "id": 38941247,
+     "uri": "https://geo-media.beatport.com/image_size/1400x1400/bdcee481-bdf8-4796-be4a-69b94423e173.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/bdcee481-bdf8-4796-be4a-69b94423e173.jpg"
+    },
+    "is_explicit": false,
+    "label": {
+     "id": 59027,
+     "name": "Ministry of Sound Recordings",
+     "image": {
+      "id": 31610349,
+      "uri": "https://geo-media.beatport.com/image_size/500x500/49527c28-5b58-4971-83c1-6ac5e19dbd75.jpg",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/49527c28-5b58-4971-83c1-6ac5e19dbd75.jpg"
+     }
+    },
+    "name": "House (Solomun Extended Remix)",
+    "new_release_date": "2024-05-03",
+    "publish_date": "2024-05-03",
+    "remixers": [
+     {
+      "id": 25648,
+      "image": {
+       "id": 41708447,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/9a145449-fb90-4d6b-8668-abac15422920.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/9a145449-fb90-4d6b-8668-abac15422920.jpg"
+      },
+      "name": "Solomun"
+     }
+    ],
+    "track_count": 1
+   },
+   {
+    "artists": [
+     {
+      "id": 177032,
+      "image": {
+       "id": 5539565,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/0dc61986-bccf-49d4-8fad-6b147ea8f327.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/0dc61986-bccf-49d4-8fad-6b147ea8f327.jpg"
+      },
+      "name": "Muse"
+     }
+    ],
+    "bpm_range": {
+     "min": 134,
+     "max": 134
+    },
+    "catalog_number": "5054197645679",
+    "desc": null,
+    "id": 6247664,
+    "image": {
+     "id": 55010606,
+     "uri": "https://geo-media.beatport.com/image_size/1400x1400/4cb94ed1-43f5-4baf-8bce-98989b5e8a90.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/4cb94ed1-43f5-4baf-8bce-98989b5e8a90.jpg"
+    },
+    "is_explicit": false,
+    "label": {
+     "id": 78825,
+     "name": "Warner Records",
+     "image": {
+      "id": 29664592,
+      "uri": "https://geo-media.beatport.com/image_size/500x500/1ef83aab-9bf0-44dd-8af9-90028d571813.jpg",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/1ef83aab-9bf0-44dd-8af9-90028d571813.jpg"
+     }
+    },
+    "name": "Euphoria (Solomun Remix)",
+    "new_release_date": "2022-08-26",
+    "publish_date": "2023-05-19",
+    "remixers": [
+     {
+      "id": 25648,
+      "image": {
+       "id": 41708447,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/9a145449-fb90-4d6b-8668-abac15422920.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/9a145449-fb90-4d6b-8668-abac15422920.jpg"
+      },
+      "name": "Solomun"
+     }
+    ],
+    "track_count": 2
+   }
+  ],
+  "charts": [],
+  "labels": [
+   {
+    "id": 280045,
+    "image": {
+     "id": 5539566,
+     "uri": "https://geo-media.beatport.com/image_size/500x500/cda9862c-cf92-4d13-ac65-7e9277181f51.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/cda9862c-cf92-4d13-ac65-7e9277181f51.jpg"
+    },
+    "is_available_for_streaming": true,
+    "name": "Fani Solomun"
+   }
+  ],
+  "playlists": [
+   {
+    "id": 487002,
+    "name": "Solomun",
+    "created_date": "2021-09-10T10:30:08-06:00",
+    "updated_date": "2022-06-25T08:28:18-06:00",
+    "type": 2,
+    "is_public": false
+   },
+   {
+    "id": 490189,
+    "name": "Solomun",
+    "created_date": "2021-09-12T13:38:31-06:00",
+    "updated_date": "2021-09-12T13:46:56-06:00",
+    "type": 2,
+    "is_public": false
+   },
+   {
+    "id": 490308,
+    "name": "Solomun",
+    "created_date": "2021-09-12T15:20:37-06:00",
+    "updated_date": "2021-09-12T15:20:37-06:00",
+    "type": 2,
+    "is_public": false
+   },
+   {
+    "id": 2076821,
+    "name": "Solomun",
+    "created_date": "2023-05-29T10:51:36-06:00",
+    "updated_date": "2023-05-29T10:52:06-06:00",
+    "type": 2,
+    "is_public": true
+   }
+  ]
+ }
+}

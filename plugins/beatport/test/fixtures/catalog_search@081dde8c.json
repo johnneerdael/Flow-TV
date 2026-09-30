@@ -1,0 +1,13 @@
+{
+ "url": "/v4/catalog/search/?genre_id=95,102,89,98,100,85,91,101,9,103,104,39,12,110,16,63,1,18,94,3,81,8,2,105,5,37,112,97,106,111,96,90,14,50,93,107,15,13,108,109,11,6,92,7,99,38,86&page=1&per_page=10&q=solomun&type=playlists",
+ "status": 200,
+ "body": {
+  "order": [],
+  "playlists": [],
+  "next": null,
+  "previous": null,
+  "count": 0,
+  "page": "1/1",
+  "per_page": 10
+ }
+}

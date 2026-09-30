@@ -1,0 +1,36 @@
+{
+ "url": "/v4/my/beatport/labels/",
+ "status": 200,
+ "body": [
+  {
+   "id": 392067,
+   "name": "Generation Rebrand B.V., under exclusive license to Interscope Records",
+   "count": 1,
+   "image": {
+    "id": 5539566,
+    "uri": "https://geo-media.beatport.com/image_size/500x500/cda9862c-cf92-4d13-ac65-7e9277181f51.jpg",
+    "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/cda9862c-cf92-4d13-ac65-7e9277181f51.jpg"
+   }
+  },
+  {
+   "id": 392384,
+   "name": "Lost Property",
+   "count": 1,
+   "image": {
+    "id": 5539566,
+    "uri": "https://geo-media.beatport.com/image_size/500x500/cda9862c-cf92-4d13-ac65-7e9277181f51.jpg",
+    "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/cda9862c-cf92-4d13-ac65-7e9277181f51.jpg"
+   }
+  },
+  {
+   "id": 151265,
+   "name": "Staff Only",
+   "count": 1,
+   "image": {
+    "id": 44826822,
+    "uri": "https://geo-media.beatport.com/image_size/500x500/3aa74176-8098-48a2-b100-459a381f6d88.jpg",
+    "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/3aa74176-8098-48a2-b100-459a381f6d88.jpg"
+   }
+  }
+ ]
+}

@@ -1,0 +1,317 @@
+{
+ "url": "/v4/catalog/genres/90/top/100/?hype=true&per_page=100",
+ "status": 200,
+ "body": {
+  "next": "api.beatport.com/v4/catalog/genres/90/top/100/?per_page=100&hype=true&page=2",
+  "previous": null,
+  "count": 100,
+  "page": "1",
+  "per_page": 100,
+  "results": [
+   {
+    "artists": [
+     {
+      "id": 53165,
+      "image": {
+       "id": 45149159,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/8339eae6-3f1c-4946-a35e-8854301b948c.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/8339eae6-3f1c-4946-a35e-8854301b948c.jpg"
+      },
+      "name": "Eran Hersh"
+     },
+     {
+      "id": 113162,
+      "image": {
+       "id": 42791381,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/d98b25a7-2ed2-43e1-abed-579f1e1118e9.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/d98b25a7-2ed2-43e1-abed-579f1e1118e9.jpg"
+      },
+      "name": "DJ Freespirit"
+     },
+     {
+      "id": 1312685,
+      "image": {
+       "id": 42711530,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/c7ed8957-35c5-4a1e-9683-bb62904a409b.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/c7ed8957-35c5-4a1e-9683-bb62904a409b.jpg"
+      },
+      "name": "Ben Bracha"
+     }
+    ],
+    "bpm": 124,
+    "catalog_number": "CPR046",
+    "genre": {
+     "id": 90,
+     "name": "Melodic House & Techno"
+    },
+    "id": 30242428,
+    "image": {
+     "id": 58035508,
+     "uri": "https://geo-media.beatport.com/image_size/1500x250/c6d1d1b2-3a78-4ca3-8167-29ea1d9a18bc.png",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/c6d1d1b2-3a78-4ca3-8167-29ea1d9a18bc.png"
+    },
+    "is_available_for_streaming": true,
+    "is_explicit": false,
+    "isrc": "US83Z2655321",
+    "key": {
+     "camelot_number": 8,
+     "camelot_letter": "B",
+     "chord_type": {
+      "id": 2,
+      "name": "Major"
+     },
+     "id": 20,
+     "is_sharp": false,
+     "is_flat": false,
+     "letter": "C",
+     "name": "C Major"
+    },
+    "length_ms": 313548,
+    "mix_name": "Extended Mix",
+    "name": "Glow",
+    "new_release_date": "2026-09-18",
+    "publish_date": "2026-09-18",
+    "release": {
+     "id": 7354124,
+     "name": "Glow",
+     "image": {
+      "id": 58035506,
+      "uri": "https://geo-media.beatport.com/image_size/1400x1400/ec02e309-c605-4885-9274-983bde265c7c.jpg",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/ec02e309-c605-4885-9274-983bde265c7c.jpg"
+     },
+     "label": {
+      "id": 117994,
+      "name": "Cavo Paradiso Records",
+      "image": {
+       "id": 36790775,
+       "uri": "https://geo-media.beatport.com/image_size/500x500/351fbd5b-9107-483b-9506-9f4ae6732ac1.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/351fbd5b-9107-483b-9506-9f4ae6732ac1.jpg"
+      }
+     }
+    },
+    "remixers": [],
+    "sub_genre": null
+   },
+   {
+    "artists": [
+     {
+      "id": 1070373,
+      "image": {
+       "id": 47669477,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/24f4c619-07f1-4a7c-9ed6-edf0d1f82f0e.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/24f4c619-07f1-4a7c-9ed6-edf0d1f82f0e.jpg"
+      },
+      "name": "HotLap"
+     }
+    ],
+    "bpm": 122,
+    "catalog_number": "G010005766338W",
+    "genre": {
+     "id": 90,
+     "name": "Melodic House & Techno"
+    },
+    "id": 27808889,
+    "image": {
+     "id": 50474415,
+     "uri": "https://geo-media.beatport.com/image_size/1500x250/06f1e0f0-65ab-435a-b7a4-43f6d88fdf07.png",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/06f1e0f0-65ab-435a-b7a4-43f6d88fdf07.png"
+    },
+    "is_available_for_streaming": true,
+    "is_explicit": false,
+    "isrc": "DK4YA2600221",
+    "key": {
+     "camelot_number": 12,
+     "camelot_letter": "B",
+     "chord_type": {
+      "id": 2,
+      "name": "Major"
+     },
+     "id": 24,
+     "is_sharp": false,
+     "is_flat": false,
+     "letter": "E",
+     "name": "E Major"
+    },
+    "length_ms": 348443,
+    "mix_name": "Extended Mix",
+    "name": "Recall",
+    "new_release_date": "2026-04-10",
+    "publish_date": "2026-04-10",
+    "release": {
+     "id": 6584946,
+     "name": "Recall (Extended Mix)",
+     "image": {
+      "id": 50474329,
+      "uri": "https://geo-media.beatport.com/image_size/1400x1400/c549dc28-c3a9-4bf2-bbd7-2d1d71d61876.jpg",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/c549dc28-c3a9-4bf2-bbd7-2d1d71d61876.jpg"
+     },
+     "label": {
+      "id": 91798,
+      "name": "One Seven Music",
+      "image": {
+       "id": 27154761,
+       "uri": "https://geo-media.beatport.com/image_size/500x500/eb9ae9ef-b2a2-4c08-8c5c-63da5dde5318.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/eb9ae9ef-b2a2-4c08-8c5c-63da5dde5318.jpg"
+      }
+     }
+    },
+    "remixers": [],
+    "sub_genre": null
+   },
+   {
+    "artists": [
+     {
+      "id": 1972,
+      "image": {
+       "id": 47188473,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/11569f19-f5c2-467a-ab0b-873c341bb5ce.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/11569f19-f5c2-467a-ab0b-873c341bb5ce.jpg"
+      },
+      "name": "Roland Clark"
+     },
+     {
+      "id": 170735,
+      "image": {
+       "id": 36041991,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/647269e6-1b46-4755-b83a-d23d5e028507.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/647269e6-1b46-4755-b83a-d23d5e028507.jpg"
+      },
+      "name": "Upercent"
+     }
+    ],
+    "bpm": 122,
+    "catalog_number": "ELS087",
+    "genre": {
+     "id": 90,
+     "name": "Melodic House & Techno"
+    },
+    "id": 30395126,
+    "image": {
+     "id": 58387227,
+     "uri": "https://geo-media.beatport.com/image_size/1500x250/21281a03-c393-4229-b501-e174ab723610.png",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/21281a03-c393-4229-b501-e174ab723610.png"
+    },
+    "is_available_for_streaming": true,
+    "is_explicit": false,
+    "isrc": "GBKQU2689079",
+    "key": {
+     "camelot_number": 6,
+     "camelot_letter": "A",
+     "chord_type": {
+      "id": 1,
+      "name": "Minor"
+     },
+     "id": 6,
+     "is_sharp": false,
+     "is_flat": false,
+     "letter": "G",
+     "name": "G Minor"
+    },
+    "length_ms": 350171,
+    "mix_name": "Super Flu Remix",
+    "name": "Get It Together",
+    "new_release_date": "2026-09-18",
+    "publish_date": "2026-09-18",
+    "release": {
+     "id": 7396897,
+     "name": "Get It Together (Super Flu Remix)",
+     "image": {
+      "id": 58387223,
+      "uri": "https://geo-media.beatport.com/image_size/1400x1400/767947cf-4fc1-471a-914e-cd9442b0f13f.jpg",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/767947cf-4fc1-471a-914e-cd9442b0f13f.jpg"
+     },
+     "label": {
+      "id": 60530,
+      "name": "Eleatics Records",
+      "image": {
+       "id": 15043120,
+       "uri": "https://geo-media.beatport.com/image_size/500x500/bcd1558a-9284-42c5-9951-e77a320bf846.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/bcd1558a-9284-42c5-9951-e77a320bf846.jpg"
+      }
+     }
+    },
+    "remixers": [
+     {
+      "id": 17319,
+      "image": {
+       "id": 36398711,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/e8ff287a-4e43-4107-8b1a-897b0bc2b466.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/e8ff287a-4e43-4107-8b1a-897b0bc2b466.jpg"
+      },
+      "name": "Super Flu"
+     }
+    ],
+    "sub_genre": {
+     "id": 267,
+     "name": "Melodic House"
+    }
+   },
+   {
+    "artists": [
+     {
+      "id": 2461313,
+      "image": {
+       "id": 59550201,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/f000c2b3-6367-4a3e-ad54-2fc336219926.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/f000c2b3-6367-4a3e-ad54-2fc336219926.jpg"
+      },
+      "name": "KAYIR"
+     }
+    ],
+    "bpm": 132,
+    "catalog_number": "ROW323",
+    "genre": {
+     "id": 90,
+     "name": "Melodic House & Techno"
+    },
+    "id": 30480118,
+    "image": {
+     "id": 58602377,
+     "uri": "https://geo-media.beatport.com/image_size/1500x250/14318039-e1fc-4921-93a6-419f0fef1476.png",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/14318039-e1fc-4921-93a6-419f0fef1476.png"
+    },
+    "is_available_for_streaming": true,
+    "is_explicit": false,
+    "isrc": "US83Z2660384",
+    "key": {
+     "camelot_number": 10,
+     "camelot_letter": "A",
+     "chord_type": {
+      "id": 1,
+      "name": "Minor"
+     },
+     "id": 10,
+     "is_sharp": false,
+     "is_flat": false,
+     "letter": "B",
+     "name": "B Minor"
+    },
+    "length_ms": 207386,
+    "mix_name": "Original Mix",
+    "name": "Beryllium",
+    "new_release_date": "2026-09-25",
+    "publish_date": "2026-09-25",
+    "release": {
+     "id": 7424654,
+     "name": "Beryllium",
+     "image": {
+      "id": 58602351,
+      "uri": "https://geo-media.beatport.com/image_size/1400x1400/ec074d4e-896f-44dd-a3ed-c961f18f6945.jpg",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/ec074d4e-896f-44dd-a3ed-c961f18f6945.jpg"
+     },
+     "label": {
+      "id": 123125,
+      "name": "Row Records",
+      "image": {
+       "id": 41977175,
+       "uri": "https://geo-media.beatport.com/image_size/500x500/91976e4d-deaa-4e42-b0c9-ba812425019b.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/91976e4d-deaa-4e42-b0c9-ba812425019b.jpg"
+      }
+     }
+    },
+    "remixers": [],
+    "sub_genre": null
+   }
+  ]
+ }
+}

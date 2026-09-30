@@ -1,0 +1,132 @@
+{
+ "url": "/v4/catalog/search/?page=1&per_page=10&q=solomun&type=charts",
+ "status": 200,
+ "body": {
+  "charts": [
+   {
+    "add_date": "2008-04-24T04:51:05-06:00",
+    "id": 7422,
+    "image": {
+     "id": 5245821,
+     "uri": "https://geo-media.beatport.com/image_size/500x500/ab2d1d04-233d-4b08-8234-9782b34dcab8.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/ab2d1d04-233d-4b08-8234-9782b34dcab8.jpg"
+    },
+    "name": "Solomun, Beatport Chart",
+    "person": null,
+    "publish_date": "2008-04-24T04:51:05-06:00",
+    "track_count": 8,
+    "artist": null,
+    "genres": [
+     {
+      "id": 11,
+      "name": "Tech House"
+     },
+     {
+      "id": 12,
+      "name": "Deep House"
+     },
+     {
+      "id": 6,
+      "name": "Techno (Peak Time / Driving)"
+     }
+    ]
+   },
+   {
+    "add_date": "2008-06-19T09:41:13-06:00",
+    "id": 8723,
+    "image": {
+     "id": 5245821,
+     "uri": "https://geo-media.beatport.com/image_size/500x500/ab2d1d04-233d-4b08-8234-9782b34dcab8.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/ab2d1d04-233d-4b08-8234-9782b34dcab8.jpg"
+    },
+    "name": "Solomun, JuneI Chart",
+    "person": null,
+    "publish_date": "2008-06-19T09:41:13-06:00",
+    "track_count": 6,
+    "artist": null,
+    "genres": [
+     {
+      "id": 90,
+      "name": "Melodic House & Techno"
+     },
+     {
+      "id": 11,
+      "name": "Tech House"
+     },
+     {
+      "id": 12,
+      "name": "Deep House"
+     },
+     {
+      "id": 5,
+      "name": "House"
+     }
+    ]
+   },
+   {
+    "add_date": "2008-08-29T02:46:04-06:00",
+    "id": 10413,
+    "image": {
+     "id": 5245821,
+     "uri": "https://geo-media.beatport.com/image_size/500x500/ab2d1d04-233d-4b08-8234-9782b34dcab8.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/ab2d1d04-233d-4b08-8234-9782b34dcab8.jpg"
+    },
+    "name": "Solomun Beatport Chart",
+    "person": null,
+    "publish_date": "2008-08-29T02:46:04-06:00",
+    "track_count": 8,
+    "artist": null,
+    "genres": [
+     {
+      "id": 11,
+      "name": "Tech House"
+     },
+     {
+      "id": 12,
+      "name": "Deep House"
+     },
+     {
+      "id": 6,
+      "name": "Techno (Peak Time / Driving)"
+     }
+    ]
+   },
+   {
+    "add_date": "2008-10-28T07:03:20-06:00",
+    "id": 11895,
+    "image": {
+     "id": 5245821,
+     "uri": "https://geo-media.beatport.com/image_size/500x500/ab2d1d04-233d-4b08-8234-9782b34dcab8.jpg",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/ab2d1d04-233d-4b08-8234-9782b34dcab8.jpg"
+    },
+    "name": "Solomun Beatport Chart",
+    "person": null,
+    "publish_date": "2008-10-28T07:03:20-06:00",
+    "track_count": 7,
+    "artist": null,
+    "genres": [
+     {
+      "id": 90,
+      "name": "Melodic House & Techno"
+     },
+     {
+      "id": 11,
+      "name": "Tech House"
+     },
+     {
+      "id": 12,
+      "name": "Deep House"
+     }
+    ]
+   }
+  ],
+  "order": [
+   "charts"
+  ],
+  "next": "api.beatport.com/v4/catalog/search/?q=solomun&type=charts&page=2&per_page=10",
+  "previous": null,
+  "count": 87,
+  "page": "1/9",
+  "per_page": 10
+ }
+}

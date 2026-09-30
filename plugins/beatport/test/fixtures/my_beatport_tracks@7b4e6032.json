@@ -1,0 +1,335 @@
+{
+ "url": "/v4/my/beatport/tracks/?order_by=-release_date,release_id&page=2&per_page=100&preorder=false",
+ "status": 200,
+ "body": {
+  "count": 144,
+  "next": null,
+  "previous": null,
+  "page": "2/2",
+  "per_page": 4,
+  "results": [
+   {
+    "artists": [
+     {
+      "id": 519542,
+      "image": {
+       "id": 5539565,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/0dc61986-bccf-49d4-8fad-6b147ea8f327.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/0dc61986-bccf-49d4-8fad-6b147ea8f327.jpg"
+      },
+      "name": "Celia Babini"
+     },
+     {
+      "id": 1143632,
+      "image": {
+       "id": 48990678,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/bd075f4c-c825-4f01-83c4-f7e9921e6db7.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/bd075f4c-c825-4f01-83c4-f7e9921e6db7.jpg"
+      },
+      "name": "Brunello"
+     }
+    ],
+    "bpm": 125,
+    "catalog_number": "MCIRC0016B",
+    "genre": {
+     "id": 90,
+     "name": "Melodic House & Techno"
+    },
+    "id": 29856138,
+    "image": {
+     "id": 57135945,
+     "uri": "https://geo-media.beatport.com/image_size/1500x250/46249be2-a0b5-446c-a082-cef93323ba73.png",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/46249be2-a0b5-446c-a082-cef93323ba73.png"
+    },
+    "is_available_for_streaming": true,
+    "is_explicit": false,
+    "isrc": "CA5KR2665198",
+    "key": {
+     "camelot_number": 6,
+     "camelot_letter": "A",
+     "chord_type": {
+      "id": 1,
+      "name": "Minor"
+     },
+     "id": 6,
+     "is_sharp": false,
+     "is_flat": false,
+     "letter": "G",
+     "name": "G Minor"
+    },
+    "length_ms": 433920,
+    "mix_name": "Original Mix",
+    "name": "The 11th Hour",
+    "new_release_date": "2026-07-24",
+    "publish_date": "2026-07-24",
+    "release": {
+     "id": 7237634,
+     "name": "The 11th Hour",
+     "image": {
+      "id": 57135911,
+      "uri": "https://geo-media.beatport.com/image_size/1400x1400/aa52eef0-5711-49ef-933b-782bceb056a5.jpg",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/aa52eef0-5711-49ef-933b-782bceb056a5.jpg"
+     },
+     "label": {
+      "id": 114747,
+      "name": "Mellow Circus Records",
+      "image": {
+       "id": 35013275,
+       "uri": "https://geo-media.beatport.com/image_size/500x500/daea13a7-255d-4c04-9ec0-4a724b3c3b5e.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/daea13a7-255d-4c04-9ec0-4a724b3c3b5e.jpg"
+      }
+     }
+    },
+    "remixers": [],
+    "sub_genre": null
+   },
+   {
+    "artists": [
+     {
+      "id": 1070373,
+      "image": {
+       "id": 47669477,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/24f4c619-07f1-4a7c-9ed6-edf0d1f82f0e.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/24f4c619-07f1-4a7c-9ed6-edf0d1f82f0e.jpg"
+      },
+      "name": "HotLap"
+     },
+     {
+      "id": 1158539,
+      "image": {
+       "id": 55431641,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/3ffbeb28-d64d-480a-9c89-338c999241a7.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/3ffbeb28-d64d-480a-9c89-338c999241a7.jpg"
+      },
+      "name": "Yanick"
+     }
+    ],
+    "bpm": 124,
+    "catalog_number": "MM112",
+    "genre": {
+     "id": 90,
+     "name": "Melodic House & Techno"
+    },
+    "id": 30464273,
+    "image": {
+     "id": 58555551,
+     "uri": "https://geo-media.beatport.com/image_size/1500x250/20cd7b79-b7ef-49ae-adf5-1d671c345622.png",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/20cd7b79-b7ef-49ae-adf5-1d671c345622.png"
+    },
+    "is_available_for_streaming": true,
+    "is_explicit": false,
+    "isrc": "GBKQU2698553",
+    "key": {
+     "camelot_number": 5,
+     "camelot_letter": "B",
+     "chord_type": {
+      "id": 2,
+      "name": "Major"
+     },
+     "id": 17,
+     "is_sharp": false,
+     "is_flat": true,
+     "letter": "E",
+     "name": "Eb Major"
+    },
+    "length_ms": 327096,
+    "mix_name": "Original Mix",
+    "name": "Warehouse ",
+    "new_release_date": "2026-09-18",
+    "publish_date": "2026-09-18",
+    "release": {
+     "id": 7419438,
+     "name": "Warehouse",
+     "image": {
+      "id": 58555496,
+      "uri": "https://geo-media.beatport.com/image_size/1400x1400/830c03ef-4639-4657-a064-e3d73898788d.jpg",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/830c03ef-4639-4657-a064-e3d73898788d.jpg"
+     },
+     "label": {
+      "id": 109099,
+      "name": "Magnifik Music",
+      "image": {
+       "id": 33060904,
+       "uri": "https://geo-media.beatport.com/image_size/500x500/e072a4bb-2eb1-44b3-b026-ad9f6db01c7f.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/e072a4bb-2eb1-44b3-b026-ad9f6db01c7f.jpg"
+      }
+     }
+    },
+    "remixers": [],
+    "sub_genre": {
+     "id": 267,
+     "name": "Melodic House"
+    }
+   },
+   {
+    "artists": [
+     {
+      "id": 6824,
+      "image": {
+       "id": 33293983,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/088dd4b5-964d-4772-93bf-58408d98b588.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/088dd4b5-964d-4772-93bf-58408d98b588.jpg"
+      },
+      "name": "Adam Beyer"
+     },
+     {
+      "id": 8642,
+      "image": {
+       "id": 47543048,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/15949528-e803-44a8-97af-ff7279e5b875.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/15949528-e803-44a8-97af-ff7279e5b875.jpg"
+      },
+      "name": "Argy"
+     },
+     {
+      "id": 227568,
+      "image": {
+       "id": 55747423,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/3010dedc-2bce-41d3-af03-544487385c7c.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/3010dedc-2bce-41d3-af03-544487385c7c.jpg"
+      },
+      "name": "Alok"
+     }
+    ],
+    "bpm": 132,
+    "catalog_number": "1200214911386",
+    "genre": {
+     "id": 90,
+     "name": "Melodic House & Techno"
+    },
+    "id": 30299867,
+    "image": {
+     "id": 58175443,
+     "uri": "https://geo-media.beatport.com/image_size/1500x250/945ea2a2-deb3-4b90-9909-d9a7d75510e7.png",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/945ea2a2-deb3-4b90-9909-d9a7d75510e7.png"
+    },
+    "is_available_for_streaming": true,
+    "is_explicit": false,
+    "isrc": "BCCNG2600088",
+    "key": {
+     "camelot_number": 7,
+     "camelot_letter": "A",
+     "chord_type": {
+      "id": 1,
+      "name": "Minor"
+     },
+     "id": 7,
+     "is_sharp": false,
+     "is_flat": false,
+     "letter": "D",
+     "name": "D Minor"
+    },
+    "length_ms": 241818,
+    "mix_name": "Extended Mix",
+    "name": "Keep Up",
+    "new_release_date": "2026-09-04",
+    "publish_date": "2026-09-04",
+    "release": {
+     "id": 7371179,
+     "name": "Keep Up (Extended Mix)",
+     "image": {
+      "id": 58896652,
+      "uri": "https://geo-media.beatport.com/image_size/1400x1400/02fca7b8-7422-4ec5-9939-a567c06bbe76.jpg",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/02fca7b8-7422-4ec5-9939-a567c06bbe76.jpg"
+     },
+     "label": {
+      "id": 385522,
+      "name": "RAVE THE WORLD",
+      "image": {
+       "id": 58070573,
+       "uri": "https://geo-media.beatport.com/image_size/500x500/229b7bac-0a65-43f0-b77d-c58792cc10bb.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/229b7bac-0a65-43f0-b77d-c58792cc10bb.jpg"
+      }
+     }
+    },
+    "remixers": [],
+    "sub_genre": null
+   },
+   {
+    "artists": [
+     {
+      "id": 2059,
+      "image": {
+       "id": 19942722,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/4d2f6a6f-5c61-4ecd-ba8d-5e7bfc74363e.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/4d2f6a6f-5c61-4ecd-ba8d-5e7bfc74363e.jpg"
+      },
+      "name": "Âme"
+     },
+     {
+      "id": 555894,
+      "image": {
+       "id": 5539565,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/0dc61986-bccf-49d4-8fad-6b147ea8f327.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/0dc61986-bccf-49d4-8fad-6b147ea8f327.jpg"
+      },
+      "name": "RY X"
+     }
+    ],
+    "bpm": 126,
+    "catalog_number": "IVLP16S4R",
+    "genre": {
+     "id": 90,
+     "name": "Melodic House & Techno"
+    },
+    "id": 30114650,
+    "image": {
+     "id": 57771081,
+     "uri": "https://geo-media.beatport.com/image_size/1500x250/80f79d4d-d97e-42d9-9f19-44a59122ebec.png",
+     "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/80f79d4d-d97e-42d9-9f19-44a59122ebec.png"
+    },
+    "is_available_for_streaming": true,
+    "is_explicit": false,
+    "isrc": "DEEC31810704",
+    "key": {
+     "camelot_number": 7,
+     "camelot_letter": "A",
+     "chord_type": {
+      "id": 1,
+      "name": "Minor"
+     },
+     "id": 7,
+     "is_sharp": false,
+     "is_flat": false,
+     "letter": "D",
+     "name": "D Minor"
+    },
+    "length_ms": 336289,
+    "mix_name": "Ivory Remix",
+    "name": "Love Is The Dance",
+    "new_release_date": "2026-09-04",
+    "publish_date": "2026-09-04",
+    "release": {
+     "id": 7315567,
+     "name": "Love Is The Dance (Ivory Remix)",
+     "image": {
+      "id": 57771071,
+      "uri": "https://geo-media.beatport.com/image_size/1400x1400/3c3cbd26-50cd-4a1b-8ac7-7a1b047b4085.jpg",
+      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/3c3cbd26-50cd-4a1b-8ac7-7a1b047b4085.jpg"
+     },
+     "label": {
+      "id": 3315,
+      "name": "Innervisions",
+      "image": {
+       "id": 47146689,
+       "uri": "https://geo-media.beatport.com/image_size/500x500/7d0f1822-b2b3-4904-b375-c6324adb179b.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/7d0f1822-b2b3-4904-b375-c6324adb179b.jpg"
+      }
+     }
+    },
+    "remixers": [
+     {
+      "id": 626203,
+      "image": {
+       "id": 21769687,
+       "uri": "https://geo-media.beatport.com/image_size/590x404/fb15e9a2-b4c0-40ec-b071-8075e3335b49.jpg",
+       "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/fb15e9a2-b4c0-40ec-b071-8075e3335b49.jpg"
+      },
+      "name": "Ivory (IT)"
+     }
+    ],
+    "sub_genre": null
+   }
+  ]
+ }
+}

@@ -1,0 +1,48 @@
+{
+ "url": "/v4/catalog/search/?genre_id=95,102,89,98,100,85,91,101,9,103,104,39,12,110,16,63,1,18,94,3,81,8,2,105,5,37,112,97,106,111,96,90,14,50,93,107,15,13,108,109,11,6,92,7,99,38,86&page=1&per_page=50&q=shortlist&type=playlists",
+ "status": 200,
+ "body": {
+  "playlists": [
+   {
+    "id": 6319889,
+    "name": "The Progressive Shortlist: December 2025",
+    "created_date": "2025-12-22T20:10:36-07:00",
+    "updated_date": "2026-01-19T08:26:48-07:00",
+    "type": 1,
+    "is_public": false
+   },
+   {
+    "id": 6510849,
+    "name": "The Ambient Shortlist: January 2026",
+    "created_date": "2026-01-28T05:11:04-07:00",
+    "updated_date": "2026-01-28T05:12:06-07:00",
+    "type": 1,
+    "is_public": false
+   },
+   {
+    "id": 6510700,
+    "name": "The Electronica Shortlist: January 2026",
+    "created_date": "2026-01-28T04:49:03-07:00",
+    "updated_date": "2026-01-28T05:06:16-07:00",
+    "type": 1,
+    "is_public": false
+   },
+   {
+    "id": 6511493,
+    "name": "The Mainstage Shortlist: January 2026",
+    "created_date": "2026-01-28T07:50:25-07:00",
+    "updated_date": "2026-01-28T07:50:25-07:00",
+    "type": 1,
+    "is_public": false
+   }
+  ],
+  "order": [
+   "playlists"
+  ],
+  "next": "api.beatport.com/v4/catalog/search/?q=shortlist&type=playlists&page=2&per_page=50&genre_id=95%2C102%2C89%2C98%2C100%2C85%2C91%2C101%2C9%2C103%2C104%2C39%2C12%2C110%2C16%2C63%2C1%2C18%2C94%2C3%2C81%2C8%2C2%2C105%2C5%2C37%2C112%2C97%2C106%2C111%2C96%2C90%2C14%2C50%2C93%2C107%2C15%2C13%2C108%2C109%2C11%2C6%2C92%2C7%2C99%2C38%2C86",
+  "previous": null,
+  "count": 170,
+  "page": "1/4",
+  "per_page": 50
+ }
+}

@@ -1,0 +1,100 @@
+{
+ "url": "/v4/my/playlists/?page=1&per_page=50",
+ "status": 200,
+ "body": {
+  "count": 60,
+  "next": "next",
+  "previous": null,
+  "page": "1/2",
+  "per_page": 3,
+  "results": [
+   {
+    "id": 900001,
+    "name": "Playlist A",
+    "created_date": "2026-01-01T00:00:00-07:00",
+    "updated_date": "2026-01-01T00:00:00-07:00",
+    "track_count": 4,
+    "type": {
+     "id": 2,
+     "name": "user"
+    },
+    "length_ms": 1500000,
+    "bpm_range": [
+     120,
+     128
+    ],
+    "genres": [
+     "House"
+    ],
+    "keys": [],
+    "release_images": [
+     "https://geo-media.beatport.com/image_size/1400x1400/cb7314f3-e0e0-46aa-96d8-ae9086c45c1a.jpg",
+     "https://geo-media.beatport.com/image_size/1400x1400/7cd6cda2-acb1-4b42-a275-8ed2013918cd.jpg",
+     "https://geo-media.beatport.com/image_size/1400x1400/a6938e62-e90f-43a7-ab16-1f7ddaf61e43.jpg",
+     "https://geo-media.beatport.com/image_size/1400x1400/c80784de-aeb2-4ee5-8d45-e1552aa4a188.jpg"
+    ],
+    "is_public": false,
+    "is_owner": true,
+    "followers": 0
+   },
+   {
+    "id": 900002,
+    "name": "Playlist B",
+    "created_date": "2026-01-01T00:00:00-07:00",
+    "updated_date": "2026-01-01T00:00:00-07:00",
+    "track_count": 4,
+    "type": {
+     "id": 2,
+     "name": "user"
+    },
+    "length_ms": 1500000,
+    "bpm_range": [
+     120,
+     128
+    ],
+    "genres": [
+     "House"
+    ],
+    "keys": [],
+    "release_images": [
+     "https://geo-media.beatport.com/image_size/1400x1400/cb7314f3-e0e0-46aa-96d8-ae9086c45c1a.jpg",
+     "https://geo-media.beatport.com/image_size/1400x1400/7cd6cda2-acb1-4b42-a275-8ed2013918cd.jpg",
+     "https://geo-media.beatport.com/image_size/1400x1400/a6938e62-e90f-43a7-ab16-1f7ddaf61e43.jpg",
+     "https://geo-media.beatport.com/image_size/1400x1400/c80784de-aeb2-4ee5-8d45-e1552aa4a188.jpg"
+    ],
+    "is_public": false,
+    "is_owner": true,
+    "followers": 0
+   },
+   {
+    "id": 900003,
+    "name": "Playlist C",
+    "created_date": "2026-01-01T00:00:00-07:00",
+    "updated_date": "2026-01-01T00:00:00-07:00",
+    "track_count": 4,
+    "type": {
+     "id": 2,
+     "name": "user"
+    },
+    "length_ms": 1500000,
+    "bpm_range": [
+     120,
+     128
+    ],
+    "genres": [
+     "House"
+    ],
+    "keys": [],
+    "release_images": [
+     "https://geo-media.beatport.com/image_size/1400x1400/cb7314f3-e0e0-46aa-96d8-ae9086c45c1a.jpg",
+     "https://geo-media.beatport.com/image_size/1400x1400/7cd6cda2-acb1-4b42-a275-8ed2013918cd.jpg",
+     "https://geo-media.beatport.com/image_size/1400x1400/a6938e62-e90f-43a7-ab16-1f7ddaf61e43.jpg",
+     "https://geo-media.beatport.com/image_size/1400x1400/c80784de-aeb2-4ee5-8d45-e1552aa4a188.jpg"
+    ],
+    "is_public": false,
+    "is_owner": true,
+    "followers": 0
+   }
+  ]
+ }
+}

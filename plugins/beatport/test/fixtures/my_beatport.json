@@ -1,0 +1,18 @@
+{
+ "url": "/v4/my/beatport/",
+ "status": 200,
+ "body": {
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "page": "1/1",
+  "per_page": 5000,
+  "results": {
+   "performer": [
+    25648
+   ],
+   "label": [],
+   "playlist": []
+  }
+ }
+}

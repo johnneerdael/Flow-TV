@@ -1,0 +1,36 @@
+{
+ "url": "/v4/my/beatport/artists/",
+ "status": 200,
+ "body": [
+  {
+   "id": 1072157,
+   "name": "Mau P",
+   "count": 1,
+   "image": {
+    "id": 48054927,
+    "uri": "https://geo-media.beatport.com/image_size/590x404/49ede3b3-ca6b-429d-8f8a-fafadbfe34fe.jpg",
+    "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/49ede3b3-ca6b-429d-8f8a-fafadbfe34fe.jpg"
+   }
+  },
+  {
+   "id": 1128862,
+   "name": "L.P. Rhythm",
+   "count": 1,
+   "image": {
+    "id": 35792070,
+    "uri": "https://geo-media.beatport.com/image_size/590x404/4bad6bd0-8eaa-4075-ab09-ae309d554fff.jpg",
+    "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/4bad6bd0-8eaa-4075-ab09-ae309d554fff.jpg"
+   }
+  },
+  {
+   "id": 537125,
+   "name": "Beave",
+   "count": 1,
+   "image": {
+    "id": 58441046,
+    "uri": "https://geo-media.beatport.com/image_size/590x404/384798bb-10ae-4628-adf4-cad4191fd0ed.jpg",
+    "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/384798bb-10ae-4628-adf4-cad4191fd0ed.jpg"
+   }
+  }
+ ]
+}
