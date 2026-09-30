@@ -42,10 +42,31 @@ class PluginVideoTest {
     init {
         every { limits.maxHeight } returns 2160
         every { limits.codecs("auto") } returns listOf("vp9", "h264")
+        every { limits.hdr } returns true
         every { preferences.videoCodecPriority } returns flowOf("auto")
         every { preferences.preferredAudioLanguage } returns flowOf("de")
         every { preferences.preferredSubtitleLanguage } returns flowOf("nl")
         coEvery { provider.resolve(capture(requests)) } returns Result.success(playback().copy(expiresInMs = 6 * 3_600_000L))
+    }
+
+    @Test
+    fun `an SDR display gets the SDR pictures, unless the video has only HDR ones`() {
+        val hdr = PluginVideoStreamsTest.video1080.copy(id = "337", hdr = true)
+        val mixed = playback(formats = listOf(hdr, PluginVideoStreamsTest.video1080, PluginVideoStreamsTest.audioOriginal))
+        val onlyHdr = playback(formats = listOf(hdr, PluginVideoStreamsTest.audioOriginal))
+
+        assertThat(withoutUnshownHdr(mixed, displayHdr = false).formats.map { it.id }).doesNotContain("337")
+        assertThat(withoutUnshownHdr(mixed, displayHdr = true).formats).isEqualTo(mixed.formats)
+        assertThat(withoutUnshownHdr(onlyHdr, displayHdr = false).formats).isEqualTo(onlyHdr.formats)
+    }
+
+    @Test
+    fun `a kept answer hands back only what is left of its opening delay`() {
+        val delayed = playback().copy(availableInMs = 5_000L)
+
+        assertThat(delayed.agedBy(2_000L).availableInMs).isEqualTo(3_000L)
+        assertThat(delayed.agedBy(6_000L).availableInMs).isNull()
+        assertThat(playback().agedBy(6_000L).availableInMs).isNull()
     }
 
     @Test

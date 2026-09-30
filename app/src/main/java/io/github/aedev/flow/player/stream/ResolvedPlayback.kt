@@ -7,7 +7,6 @@ import io.github.aedev.flow.plugin.playback.PlayableVideo
 /** Everything [PluginPlaybackResolver] needs that the player screen owns. */
 data class PlaybackResolutionRequest(
     val videoId: String,
-    val isWifi: Boolean,
     val resumePositionOverrideMs: Long?,
     val allowShorts: Boolean,
     /** Creators the viewer has blocked; their videos never enter the related list. */

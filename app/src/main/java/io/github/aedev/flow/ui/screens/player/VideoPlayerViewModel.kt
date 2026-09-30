@@ -25,7 +25,6 @@ import io.github.aedev.flow.player.state.EnhancedPlayerState
 import io.github.aedev.flow.player.stream.PluginPlaybackResolver
 import io.github.aedev.flow.plugin.playback.PluginVideo
 import io.github.aedev.flow.ui.screens.player.state.*
-import io.github.aedev.flow.utils.NetworkState
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
@@ -134,7 +133,7 @@ class VideoPlayerViewModel
                     playerManager.lastStreamHttpFailure
                         ?.let { (url, status) -> pluginVideo.failed(videoId, url, status) }
                         ?: pluginVideo.forget(videoId)
-                    loadVideoInfo(videoId, isWifi = detectIsWifi(), forceRefresh = true, resumePositionOverrideMs = resumePositionMs)
+                    loadVideoInfo(videoId, forceRefresh = true, resumePositionOverrideMs = resumePositionMs)
                 },
             )
 
@@ -199,7 +198,6 @@ class VideoPlayerViewModel
          * Detect whether the device is currently on Wi-Fi.
          * Used to select the correct quality preference (Wi-Fi vs cellular).
          */
-        private fun detectIsWifi(): Boolean = NetworkState.isOnWifi(context)
 
         @Volatile
         private var shortsContentEnabled: Boolean = true
@@ -320,10 +318,9 @@ class VideoPlayerViewModel
         /** Resolves [videoId] through the video plugin; see [PlayerSessionController.loadVideoInfo]. */
         fun loadVideoInfo(
             videoId: String,
-            isWifi: Boolean = true,
             forceRefresh: Boolean = false,
             resumePositionOverrideMs: Long? = null,
-        ) = session.loadVideoInfo(videoId, isWifi, forceRefresh, resumePositionOverrideMs)
+        ) = session.loadVideoInfo(videoId, forceRefresh, resumePositionOverrideMs)
 
         fun switchQuality(quality: VideoQuality) = settings.switchQuality(quality)
 

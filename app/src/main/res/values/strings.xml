@@ -466,8 +466,7 @@
     <string name="tv_account_recently_played">Recently played</string>
     <string name="tv_account_liked_music">Liked music</string>
     <string name="tv_account_playlists">Your playlists</string>
-    <string name="tv_settings_wifi_quality">Default quality (Wi‑Fi)</string>
-    <string name="tv_settings_cellular_quality">Default quality (cellular)</string>
+    <string name="tv_settings_default_quality">Default quality</string>
     <string name="tv_settings_codec">Preferred codec</string>
     <!-- Localization follow-up (#738) -->
     <string name="crash_title">Milkbeat closed unexpectedly</string>

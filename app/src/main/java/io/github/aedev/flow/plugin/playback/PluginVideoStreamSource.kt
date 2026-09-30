@@ -1,15 +1,12 @@
 package io.github.aedev.flow.plugin.playback
 
-import android.content.Context
 import android.os.SystemClock
 import android.util.Log
-import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.player.VideoStreamSource
 import io.github.aedev.flow.player.stream.ResolvedStreamData
 import io.github.aedev.flow.player.stream.ServicePlaybackStreamSelector
-import io.github.aedev.flow.utils.NetworkState
 import kotlinx.coroutines.flow.first
 import nl.neerdael.milkbeat.plugin.VideoKind
 import org.schabi.newpipe.extractor.stream.StreamType
@@ -21,7 +18,6 @@ import javax.inject.Singleton
 class PluginVideoStreamSource
     @Inject
     constructor(
-        @ApplicationContext private val context: Context,
         private val pluginVideo: PluginVideo,
         private val preferences: PlayerPreferences,
     ) : VideoStreamSource {
@@ -33,8 +29,7 @@ class PluginVideoStreamSource
                 }
             if (playback.kind == VideoKind.UPCOMING) return null
             val playable = PluginVideoStreams.playable(playback, video, SystemClock.elapsedRealtime())
-            val quality =
-                if (NetworkState.isOnWifi(context)) preferences.defaultQualityWifi.first() else preferences.defaultQualityCellular.first()
+            val quality = preferences.defaultQuality.first()
             val codec = preferences.videoCodecPriority.first()
             val (videoStream, audioStream) =
                 ServicePlaybackStreamSelector.selectStreams(

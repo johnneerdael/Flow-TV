@@ -122,7 +122,6 @@ internal class VideoPlayerViewModelHarness(
         every { EnhancedMusicPlayerManager.clearCurrentTrack() } just Runs
 
         mockkObject(NetworkState)
-        every { NetworkState.isOnWifi(any()) } returns false
         every { NetworkState.isOnline(any()) } returns true
 
         mockkObject(PlayerDiagnostics)
@@ -141,8 +140,7 @@ internal class VideoPlayerViewModelHarness(
         every { playerPreferences.miniPlayerContinueWatchingEnabled } returns continueWatchingEnabled
         every { playerPreferences.autoplayEnabled } returns autoplayEnabled
         every { playerPreferences.upcomingVideoReminderIds } returns flowOf(emptySet())
-        every { playerPreferences.defaultQualityWifi } returns flowOf(VideoQuality.AUTO)
-        every { playerPreferences.defaultQualityCellular } returns flowOf(VideoQuality.AUTO)
+        every { playerPreferences.defaultQuality } returns flowOf(VideoQuality.AUTO)
         every { playerPreferences.preferredAudioLanguage } returns flowOf("original")
         every { playerPreferences.preferredSubtitleLanguage } returns flowOf(CaptionTrackResolver.NO_PREFERRED_LANGUAGE)
         every { playerPreferences.videoCodecPriority } returns flowOf("auto")

@@ -2,6 +2,7 @@ package io.github.aedev.flow.plugin.playback
 
 import android.content.Context
 import android.hardware.display.DisplayManager
+import android.os.SystemClock
 import android.view.Display
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.aedev.flow.data.local.PlayerPreferences
@@ -18,6 +19,7 @@ import nl.neerdael.milkbeat.catalog.EntityKind
 import nl.neerdael.milkbeat.catalog.EntityRef
 import nl.neerdael.milkbeat.catalog.LiveChatBatch
 import nl.neerdael.milkbeat.catalog.LiveChatRequest
+import nl.neerdael.milkbeat.plugin.FormatType
 import nl.neerdael.milkbeat.plugin.ReportPlaybackRequest
 import nl.neerdael.milkbeat.plugin.ResolveVideoRequest
 import nl.neerdael.milkbeat.plugin.StreamFailure
@@ -42,6 +44,16 @@ class VideoDecodeLimits
         val maxHeight: Int by lazy {
             val mode = context.getSystemService(DisplayManager::class.java)?.getDisplay(Display.DEFAULT_DISPLAY)?.mode
             mode?.let { minOf(it.physicalWidth, it.physicalHeight) }?.takeIf { it > 0 } ?: FALLBACK_MAX_HEIGHT
+        }
+
+        /** Whether the display shows HDR; an SDR display gets SDR formats, which HDR ones would wash out on. */
+        val hdr: Boolean by lazy {
+            context
+                .getSystemService(DisplayManager::class.java)
+                ?.getDisplay(Display.DEFAULT_DISPLAY)
+                ?.hdrCapabilities
+                ?.supportedHdrTypes
+                ?.isNotEmpty() == true
         }
 
         /** Codec keys the device decodes in hardware, in the listener's order of preference. */
@@ -69,6 +81,20 @@ internal fun videoRequest(
 
 internal fun videoRef(videoId: String): EntityRef = EntityRef(EntityKind.VIDEO, videoId)
 
+/** [playback] for a display without HDR: its HDR pictures left out, unless it has no other. Pure. */
+internal fun withoutUnshownHdr(
+    playback: VideoPlayback,
+    displayHdr: Boolean,
+): VideoPlayback {
+    if (displayHdr || playback.formats.none { it.hdr }) return playback
+    val sdr = playback.formats.filterNot { it.type == FormatType.VIDEO && it.hdr }
+    return if (sdr.any { it.type == FormatType.VIDEO }) playback.copy(formats = sdr) else playback
+}
+
+/** A kept answer as it stands [elapsedMs] after it arrived: only what is left of its opening delay. */
+internal fun VideoPlayback.agedBy(elapsedMs: Long): VideoPlayback =
+    availableInMs?.let { copy(availableInMs = (it - elapsedMs).takeIf { left -> left > 0 }) } ?: this
+
 /**
  * Plays videos through the listener's video plugin. A resolve is kept until shortly before its URLs
  * expire, so the player's own queue advance, the screen that follows it and a retry share one call;
@@ -86,6 +112,7 @@ class PluginVideo
         private class Resolved(
             val playback: VideoPlayback,
             val validUntilMs: Long,
+            val receivedAtElapsedMs: Long,
         )
 
         private val resolved = ConcurrentHashMap<String, Resolved>()
@@ -97,9 +124,7 @@ class PluginVideo
         suspend fun resolve(videoId: String): Result<VideoPlayback> =
             locks.getOrPut(videoId) { Mutex() }.withLock {
                 resolved[videoId]?.takeIf { it.validUntilMs > System.currentTimeMillis() }?.let {
-                    return@withLock Result.success(
-                        it.playback,
-                    )
+                    return@withLock Result.success(it.playback.agedBy(SystemClock.elapsedRealtime() - it.receivedAtElapsedMs))
                 }
                 val request =
                     videoRequest(
@@ -110,11 +135,12 @@ class PluginVideo
                         captionLanguage = preferences.preferredSubtitleLanguage.first(),
                         failure = failures.remove(videoId),
                     )
-                provider.resolve(request).onSuccess { playback ->
+                provider.resolve(request).map { withoutUnshownHdr(it, limits.hdr) }.onSuccess { playback ->
                     playback.trackingToken?.let { trackingTokens[videoId] = it }
                     if (playback.kind != VideoKind.UPCOMING) {
                         val lifetime = playback.expiresInMs ?: DEFAULT_LIFETIME_MS
-                        resolved[videoId] = Resolved(playback, System.currentTimeMillis() + lifetime - EXPIRY_MARGIN_MS)
+                        resolved[videoId] =
+                            Resolved(playback, System.currentTimeMillis() + lifetime - EXPIRY_MARGIN_MS, SystemClock.elapsedRealtime())
                     }
                 }
             }

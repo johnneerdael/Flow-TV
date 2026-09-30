@@ -16,7 +16,6 @@ import io.github.aedev.flow.plugin.playback.PlayableVideo
 import io.github.aedev.flow.ui.screens.player.state.VideoPlayerUiState
 import io.github.aedev.flow.ui.screens.player.state.applyLiveStreams
 import io.github.aedev.flow.ui.screens.player.state.applyVodStreams
-import io.github.aedev.flow.utils.NetworkState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -83,12 +82,7 @@ internal class PluginPlaybackApplier(
         autoplay: Boolean,
     ) {
         val playable = step.playable
-        val quality =
-            if (NetworkState.isOnWifi(context)) {
-                playerPreferences.defaultQualityWifi.first()
-            } else {
-                playerPreferences.defaultQualityCellular.first()
-            }
+        val quality = playerPreferences.defaultQuality.first()
         val codec = playerPreferences.videoCodecPriority.first()
         val (videoStream, audioStream) =
             ServicePlaybackStreamSelector.selectStreams(

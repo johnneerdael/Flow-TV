@@ -116,6 +116,18 @@ class VideoPlaybackResolver(
             }
         }
 
+        // Several video streams play as one adaptive manifest: Media3 picks and switches the picture,
+        // and a chosen quality is only a cap on its track selector.
+        if (!isLiveStream && videoStreams.size > 1 && dashManifestUrl.isNullOrEmpty()) {
+            val manifest = AdaptiveDashManifest.build(videoStreams, audioStream, durationSeconds)
+            if (manifest != null) {
+                Log.d(TAG, "Adaptive DASH: ${videoStreams.size} video representations, audio=${audioStream != null}")
+                val first = videoStreams.first().content
+                return MediaSourceBuilder.buildDashSource(dashDataSourceFactory, manifest, Uri.parse(first), playbackItem(first).build())
+            }
+            Log.w(TAG, "No adaptive manifest for these formats; playing a single stream")
+        }
+
         // If only 1 video stream is passed, the user selected a specific quality
         // In this case, DON'T use YouTube's DASH URL (which has all qualities) - use the specific stream
         val useSpecificStream = videoStreams.size == 1

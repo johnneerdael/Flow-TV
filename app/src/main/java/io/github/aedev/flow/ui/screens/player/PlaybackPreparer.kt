@@ -8,7 +8,6 @@ import io.github.aedev.flow.data.video.OfflineSubtitleStore
 import io.github.aedev.flow.player.EnhancedPlayerManager
 import io.github.aedev.flow.player.PlaybackResumePolicy
 import io.github.aedev.flow.player.StreamRequestHeaders
-import io.github.aedev.flow.utils.NetworkState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -187,15 +186,7 @@ internal class PlaybackPreparer(
         }
     }
 
-    private suspend fun preferredDefaultQualityHeight(): Int {
-        val quality =
-            if (NetworkState.isOnWifi(context)) {
-                playerPreferences.defaultQualityWifi.first()
-            } else {
-                playerPreferences.defaultQualityCellular.first()
-            }
-        return quality.height
-    }
+    private suspend fun preferredDefaultQualityHeight(): Int = playerPreferences.defaultQuality.first().height
 
     private companion object {
         const val TAG = "PlaybackPreparer"

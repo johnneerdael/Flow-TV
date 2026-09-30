@@ -6,12 +6,10 @@ import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.data.local.VideoQuality
 import io.github.aedev.flow.data.video.OfflineSubtitleStore
 import io.github.aedev.flow.player.EnhancedPlayerManager
-import io.github.aedev.flow.utils.NetworkState
 import io.mockk.coEvery
 import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.unmockkAll
 import io.mockk.verify
 import io.mockk.verifyOrder
@@ -46,8 +44,6 @@ class PlaybackPreparerTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
-        mockkObject(NetworkState)
-        every { NetworkState.isOnWifi(any()) } returns true
 
         every { playerManager.isPreparedForPlayback(any()) } returns false
         every { playerManager.isReachedByQueueAdvance(any()) } returns false
@@ -55,8 +51,7 @@ class PlaybackPreparerTest {
         every { playerPreferences.playbackSpeed } returns flowOf(1f)
         every { playerPreferences.autoplayEnabled } returns flowOf(true)
         every { playerPreferences.videoCodecPriority } returns flowOf("auto")
-        every { playerPreferences.defaultQualityWifi } returns flowOf(VideoQuality.Q_1080P)
-        every { playerPreferences.defaultQualityCellular } returns flowOf(VideoQuality.Q_480P)
+        every { playerPreferences.defaultQuality } returns flowOf(VideoQuality.Q_1080P)
         coEvery { offlineSubtitleStore.load(any()) } returns emptyList()
 
         preparer = PlaybackPreparer(context, playerManager, playerPreferences, offlineSubtitleStore)

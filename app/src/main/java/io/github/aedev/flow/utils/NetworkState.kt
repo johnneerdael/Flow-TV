@@ -23,15 +23,6 @@ internal fun NetworkCapabilities?.hasInternet(): Boolean =
  * [NetworkConnectivityObserver] answers the reactive version of the same questions.
  */
 object NetworkState {
-    /**
-     * Whether the active transport is wifi.
-     *
-     * Returns `false` when connectivity cannot be read. The player copies of this check used to
-     * assume wifi in that case, which only differs when there is no active network at all — i.e.
-     * when nothing is going to stream anyway — so the data-conservative answer wins.
-     */
-    fun isOnWifi(context: Context): Boolean = capabilities(context)?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
-
     /** Whether the active network can actually reach the internet. */
     fun isOnline(context: Context): Boolean = capabilities(context).hasInternet()
 

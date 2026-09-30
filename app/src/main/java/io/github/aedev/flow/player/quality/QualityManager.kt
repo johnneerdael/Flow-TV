@@ -330,7 +330,8 @@ class QualityManager(
      * Called periodically when playback is smooth.
      */
     fun checkAdaptiveQualityUpgrade(currentPosition: Long) {
-        if (!isAdaptiveQualityEnabled || getWorkingStreams().isEmpty()) return
+        // A DASH source adapts in Media3's track selection; pinning a size here would fight it.
+        if (!isAdaptiveQualityEnabled || isDashSource || getWorkingStreams().isEmpty()) return
 
         val currentHeight = currentVideoStream?.let(::qualityHeight) ?: return
         val estimatedBandwidth = bandwidthMeter?.bitrateEstimate ?: return
@@ -364,7 +365,7 @@ class QualityManager(
         forceCheck: Boolean,
         currentPosition: Long,
     ) {
-        if (!isAdaptiveQualityEnabled || getWorkingStreams().isEmpty()) return
+        if (!isAdaptiveQualityEnabled || isDashSource || getWorkingStreams().isEmpty()) return
 
         val currentHeight = currentVideoStream?.let(::qualityHeight) ?: return
         val estimatedBandwidth = bandwidthMeter?.bitrateEstimate ?: 1_000_000L

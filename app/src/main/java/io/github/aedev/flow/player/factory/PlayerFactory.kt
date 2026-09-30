@@ -28,6 +28,8 @@ import kotlinx.coroutines.runBlocking
 class PlayerFactory {
     companion object {
         private const val TAG = "PlayerFactory"
+        private const val LOW_RAM_MAX_WIDTH = 1920
+        private const val LOW_RAM_MAX_HEIGHT = 1080
     }
 
     private class CachedPrefs(
@@ -83,7 +85,7 @@ class PlayerFactory {
     fun createTrackSelector(context: Context): DefaultTrackSelector {
         val trackSelectionFactory = AdaptiveTrackSelection.Factory()
         val prefs = ensurePrefs(context)
-        val (maxVideoWidth, maxVideoHeight) = maxVideoSizeForHeap(context)
+        val (maxVideoWidth, maxVideoHeight) = maxVideoSize(context)
 
         return DefaultTrackSelector(context, trackSelectionFactory).apply {
             val builder =
@@ -119,14 +121,17 @@ class PlayerFactory {
         )
     }
 
-    private fun maxVideoSizeForHeap(context: Context): Pair<Int, Int> {
+    /**
+     * Decoded frames live in the decoder's own buffers, not the Java heap, so the heap class says
+     * nothing about 4K; the viewport (the physical display) and the decoders' own capabilities bound
+     * the picture. Only a device that declares itself low-RAM is held to 1080p.
+     */
+    private fun maxVideoSize(context: Context): Pair<Int, Int> {
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
-        val memoryClassMb = activityManager?.memoryClass ?: 256
-        val isLowMemoryDevice = activityManager?.isLowRamDevice == true || memoryClassMb <= 256
-        return when {
-            isLowMemoryDevice -> 1920 to 1080
-            memoryClassMb <= 384 -> 2560 to 1440
-            else -> PlayerConfig.MAX_VIDEO_WIDTH to PlayerConfig.MAX_VIDEO_HEIGHT
+        return if (activityManager?.isLowRamDevice == true) {
+            LOW_RAM_MAX_WIDTH to LOW_RAM_MAX_HEIGHT
+        } else {
+            PlayerConfig.MAX_VIDEO_WIDTH to PlayerConfig.MAX_VIDEO_HEIGHT
         }
     }
 

@@ -43,8 +43,8 @@ class PlayerPreferences(
     private val context: Context = context.applicationContext
 
     private object Keys {
-        val DEFAULT_QUALITY_WIFI = stringPreferencesKey("default_quality_wifi")
-        val DEFAULT_QUALITY_CELLULAR = stringPreferencesKey("default_quality_cellular")
+        // Stored under the old Wi-Fi key, so a quality chosen before stays chosen.
+        val DEFAULT_QUALITY = stringPreferencesKey("default_quality_wifi")
         val DEFAULT_VIDEO_CODEC = stringPreferencesKey("default_video_codec")
         val FALLBACK_VIDEO_CODEC = stringPreferencesKey("fallback_video_codec")
         val BACKGROUND_PLAY_ENABLED = booleanPreferencesKey("background_play_enabled")
@@ -513,28 +513,19 @@ class PlayerPreferences(
                 preferences[Keys.MUSIC_LOUDNESS_NORMALIZATION_ENABLED] ?: true
             }
 
-    // Quality preferences
-    val defaultQualityWifi: Flow<VideoQuality> =
+    /**
+     * The quality videos start in. Auto adapts to the connection up to the display; a height caps it.
+     * The network type never lowers it.
+     */
+    val defaultQuality: Flow<VideoQuality> =
         context.playerPreferencesDataStore.data
             .map { preferences ->
-                VideoQuality.fromString(preferences[Keys.DEFAULT_QUALITY_WIFI] ?: "1080p")
+                VideoQuality.fromString(preferences[Keys.DEFAULT_QUALITY] ?: VideoQuality.AUTO.label)
             }
 
-    val defaultQualityCellular: Flow<VideoQuality> =
-        context.playerPreferencesDataStore.data
-            .map { preferences ->
-                VideoQuality.fromString(preferences[Keys.DEFAULT_QUALITY_CELLULAR] ?: "480p")
-            }
-
-    suspend fun setDefaultQualityWifi(quality: VideoQuality) {
+    suspend fun setDefaultQuality(quality: VideoQuality) {
         context.playerPreferencesDataStore.edit { preferences ->
-            preferences[Keys.DEFAULT_QUALITY_WIFI] = quality.label
-        }
-    }
-
-    suspend fun setDefaultQualityCellular(quality: VideoQuality) {
-        context.playerPreferencesDataStore.edit { preferences ->
-            preferences[Keys.DEFAULT_QUALITY_CELLULAR] = quality.label
+            preferences[Keys.DEFAULT_QUALITY] = quality.label
         }
     }
 

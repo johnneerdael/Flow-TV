@@ -126,6 +126,10 @@ class EnhancedPlayerManager private constructor() {
 
     private var pendingLiveQualityHeight: Int = 0
 
+    // A live stream, or a video with several streams (one adaptive manifest): Media3 picks the picture
+    // from the tracks, and a chosen quality is a cap on the track selector rather than a new source.
+    private var qualityFromTracks = false
+
     /**
      * The codec the user asked for, kept for the live path.
      *
@@ -822,7 +826,7 @@ class EnhancedPlayerManager private constructor() {
 
                 override fun onTracksChanged(tracks: Tracks) {
                     applySubtitleTrackSelection()
-                    if (currentIsLiveStream) updateLiveQualityOptions(tracks)
+                    if (qualityFromTracks) updateLiveQualityOptions(tracks)
                 }
             },
         )
@@ -983,10 +987,14 @@ class EnhancedPlayerManager private constructor() {
         // Update quality manager with available streams
         qualityManager?.setAvailableStreams(availableVideoStreams)
         qualityManager?.preferredCodecKey = preferredVideoCodec
-        qualityManager?.isDashSource = !currentDashManifestUrl.isNullOrEmpty()
+        qualityFromTracks = isLiveStream || (localFilePath == null && availableVideoStreams.size > 1)
+        qualityManager?.isDashSource = !currentDashManifestUrl.isNullOrEmpty() || qualityFromTracks
 
         // Quality selection: respect user preference
-        if (videoStream != null) {
+        if (qualityFromTracks && !isLiveStream) {
+            currentVideoStream = videoStream
+            qualityManager?.setCurrentStream(videoStream)
+        } else if (videoStream != null) {
             currentVideoStream = videoStream
             qualityManager?.setCurrentStream(currentVideoStream)
             qualityManager?.setManualMode(VideoCodecUtils.qualityHeightFromStream(videoStream))
@@ -1028,6 +1036,7 @@ class EnhancedPlayerManager private constructor() {
                 liveDurationMs = liveDurationMs,
             )
 
+        if (qualityFromTracks && !isLiveStream) capQualityForNewVideo(videoStream)
         val resumePos = startPosition.takeIf { it > 0L }
         when {
             localFilePath != null -> loadMediaInternal(null, audioStream, localFilePath = localFilePath, preservePosition = resumePos)
@@ -1227,7 +1236,7 @@ class EnhancedPlayerManager private constructor() {
                 requestHeaders = currentRequestHeaders,
             ) ?: false
         if (result) {
-            qualityManager?.isDashSource = !currentDashManifestUrl.isNullOrEmpty()
+            qualityManager?.isDashSource = !currentDashManifestUrl.isNullOrEmpty() || qualityFromTracks
         }
         return result
     }
@@ -1717,9 +1726,10 @@ class EnhancedPlayerManager private constructor() {
         qualityManager?.resetForNewVideo()
         qualityManager?.setAvailableStreams(availableVideoStreams)
         qualityManager?.preferredCodecKey = data.preferredCodec
-        qualityManager?.isDashSource = !currentDashManifestUrl.isNullOrEmpty()
+        qualityFromTracks = availableVideoStreams.size > 1
+        qualityManager?.isDashSource = !currentDashManifestUrl.isNullOrEmpty() || qualityFromTracks
         qualityManager?.setCurrentStream(currentVideoStream)
-        if (data.videoStream != null) {
+        if (!qualityFromTracks && data.videoStream != null) {
             qualityManager?.setManualMode(VideoCodecUtils.qualityHeightFromStream(data.videoStream))
         }
 
@@ -1777,6 +1787,7 @@ class EnhancedPlayerManager private constructor() {
                 isAtLiveEdge = false,
                 liveDurationMs = 0L,
             )
+        if (qualityFromTracks) capQualityForNewVideo(data.videoStream)
         updateQueueState()
 
         player?.let { p ->
@@ -1989,7 +2000,7 @@ class EnhancedPlayerManager private constructor() {
     // ===== Quality & Audio Management =====
 
     fun switchQualityByHeight(height: Int) =
-        if (currentIsLiveStream) {
+        if (qualityFromTracks) {
             switchLiveQuality(height)
         } else {
             qualityManager?.switchQualityByHeight(height, player?.currentPosition ?: 0L)
@@ -1998,7 +2009,7 @@ class EnhancedPlayerManager private constructor() {
     fun switchQuality(height: Int) = switchQualityByHeight(height)
 
     fun switchQuality(option: QualityOption): Boolean? {
-        if (currentIsLiveStream) return switchLiveQuality(option.height)
+        if (qualityFromTracks) return switchLiveQuality(option.height)
         return qualityManager?.switchQuality(option, player?.currentPosition ?: 0L)
     }
 
@@ -2042,6 +2053,15 @@ class EnhancedPlayerManager private constructor() {
             Log.d(TAG, "Applying default live quality: ${target}p")
             switchLiveQuality(target)
         }
+    }
+
+    /**
+     * A new adaptive video starts from the listener's choice: [chosen]'s height as a cap, or Auto
+     * (no cap) when nothing was chosen. A cap left by the previous video never carries over.
+     */
+    private fun capQualityForNewVideo(chosen: VideoStream?) {
+        applyLiveCodecPreference()
+        switchLiveQuality(chosen?.let { QualityManager.normalizeQualityHeight(VideoCodecUtils.qualityHeightFromStream(it)) } ?: 0)
     }
 
     private fun applyLiveCodecPreference() {

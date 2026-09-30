@@ -24,7 +24,6 @@ import io.github.aedev.flow.ui.screens.player.state.loadSkipReason
 import io.github.aedev.flow.ui.screens.player.state.shouldReopenInsteadOfPlaying
 import io.github.aedev.flow.ui.screens.player.state.startLocalPlaybackOf
 import io.github.aedev.flow.ui.screens.player.state.startPlaybackOf
-import io.github.aedev.flow.utils.NetworkState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -64,8 +63,6 @@ internal class PlayerSessionController(
     private val _canGoPrevious = MutableStateFlow(false)
     val canGoPrevious: StateFlow<Boolean> = _canGoPrevious.asStateFlow()
 
-    private fun isWifi(): Boolean = NetworkState.isOnWifi(context)
-
     /** The player moved to a video the screen does not hold, such as a queue advance: load it. */
     fun followPlayer(playerState: EnhancedPlayerState) {
         val videoId = uiState.value.foreignVideoIdNeedingLoad(playerState) ?: return
@@ -74,7 +71,7 @@ internal class PlayerSessionController(
             presence.armNotificationFor(currentVideo)
             watchSessions.saveHistoryEntry(currentVideo)
         }
-        loadVideoInfo(videoId, isWifi = isWifi(), forceRefresh = true)
+        loadVideoInfo(videoId, forceRefresh = true)
     }
 
     fun syncWithCurrentPlayerVideo(video: Video) {
@@ -89,7 +86,7 @@ internal class PlayerSessionController(
         }
 
         uiState.update { it.resetForVideo(video) }
-        loadVideoInfo(video.id, isWifi = isWifi(), forceRefresh = true)
+        loadVideoInfo(video.id, forceRefresh = true)
     }
 
     /** Shows [video]'s metadata at once and starts loading its streams. */
@@ -110,7 +107,7 @@ internal class PlayerSessionController(
         if (upcomingPremiere.applyCountdown(video)) {
             return
         }
-        loadVideoInfo(video.id, isWifi = isWifi(), forceRefresh = true)
+        loadVideoInfo(video.id, forceRefresh = true)
     }
 
     fun playLocalVideo(
@@ -187,7 +184,7 @@ internal class PlayerSessionController(
         playerManager.clearCurrentVideo()
         pluginVideo.forget(video.id)
         uiState.update { it.copy(error = null, errorHint = null, isLoading = true) }
-        loadVideoInfo(video.id, isWifi = isWifi(), forceRefresh = true)
+        loadVideoInfo(video.id, forceRefresh = true)
     }
 
     fun ensurePlaybackPrepared(videoId: String) {
@@ -224,7 +221,7 @@ internal class PlayerSessionController(
         if (upcomingPremiere.applyCountdown(startVideo, preserveQueueTitle = title)) {
             return
         }
-        loadVideoInfo(startVideo.id, isWifi = isWifi(), forceRefresh = true)
+        loadVideoInfo(startVideo.id, forceRefresh = true)
     }
 
     fun playNext() {
@@ -263,7 +260,6 @@ internal class PlayerSessionController(
      */
     fun loadVideoInfo(
         videoId: String,
-        isWifi: Boolean,
         forceRefresh: Boolean,
         resumePositionOverrideMs: Long? = null,
     ) {
@@ -296,7 +292,6 @@ internal class PlayerSessionController(
         val request =
             PlaybackResolutionRequest(
                 videoId = videoId,
-                isWifi = isWifi,
                 resumePositionOverrideMs = resumePositionOverrideMs,
                 allowShorts = shortsEnabled(),
                 blockedChannelIds = blockedChannelIds(),

@@ -92,34 +92,22 @@ fun TvQualitySettingsPane(
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
-    val wifiQuality by playerPreferences.defaultQualityWifi.collectAsStateWithLifecycle(initialValue = VideoQuality.AUTO)
-    val cellularQuality by playerPreferences.defaultQualityCellular.collectAsStateWithLifecycle(initialValue = VideoQuality.AUTO)
+    val defaultQuality by playerPreferences.defaultQuality.collectAsStateWithLifecycle(initialValue = VideoQuality.AUTO)
     val codec by playerPreferences.defaultVideoCodec.collectAsStateWithLifecycle(initialValue = VideoCodec.AUTO)
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        item(key = "wifi-header") {
-            TvSectionHeader(title = stringResource(R.string.tv_settings_wifi_quality))
+        item(key = "quality-header") {
+            TvSectionHeader(title = stringResource(R.string.tv_settings_default_quality))
         }
-        items(count = VideoQuality.entries.size, key = { "wifi:${VideoQuality.entries[it].name}" }) { index ->
+        items(count = VideoQuality.entries.size, key = { "quality:${VideoQuality.entries[it].name}" }) { index ->
             val quality = VideoQuality.entries[index]
             TvSelectionRow(
                 label = quality.label,
-                selected = quality == wifiQuality,
-                onClick = { scope.launch { playerPreferences.setDefaultQualityWifi(quality) } },
-            )
-        }
-        item(key = "cellular-header") {
-            TvSectionHeader(title = stringResource(R.string.tv_settings_cellular_quality))
-        }
-        items(count = VideoQuality.entries.size, key = { "cell:${VideoQuality.entries[it].name}" }) { index ->
-            val quality = VideoQuality.entries[index]
-            TvSelectionRow(
-                label = quality.label,
-                selected = quality == cellularQuality,
-                onClick = { scope.launch { playerPreferences.setDefaultQualityCellular(quality) } },
+                selected = quality == defaultQuality,
+                onClick = { scope.launch { playerPreferences.setDefaultQuality(quality) } },
             )
         }
         item(key = "codec-header") {

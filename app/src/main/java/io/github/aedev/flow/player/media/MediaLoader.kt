@@ -288,15 +288,14 @@ class MediaLoader(
                         mediaMetadata = mediaMetadata,
                     )
 
+                // Several streams load adaptively whatever was chosen; the player caps the chosen height.
                 val selectedStreams =
                     if (audioOnly) {
                         emptyList()
-                    } else if (videoStream != null) {
-                        listOf(videoStream)
-                    } else if (!dashManifestUrl.isNullOrEmpty() && availableVideoStreams.size > 1) {
+                    } else if (availableVideoStreams.size > 1) {
                         availableVideoStreams
                     } else {
-                        listOfNotNull(currentVideoStream ?: availableVideoStreams.firstOrNull())
+                        listOfNotNull(videoStream ?: currentVideoStream ?: availableVideoStreams.firstOrNull())
                     }
                 Log.d(
                     TAG,
