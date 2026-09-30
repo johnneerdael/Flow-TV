@@ -19,7 +19,7 @@ function detailOf(owner: Owner, id: string): Promise<OwnerDetail> {
   return owner === 'genre' ? genre(id) : owner === 'artist' ? artist(id) : label(id);
 }
 
-async function genreFeatured(id: string): Promise<MetadataPage> {
+export async function genreFeatured(id: string): Promise<MetadataPage> {
   const [detail, modules, newCharts, releases, top, hypeTop, playlists] = await settled([
     genre(id),
     genreModules(id),

@@ -92,7 +92,7 @@ describe('label', async () => {
   const page = await call('metadata.entity', { entity: ref('PROFILE', `label:${IDS.label}`) });
 
   test('its releases, then its top ten, with Play all its Top 100', () => {
-    assert.equal(header(page).style, 'COVER');
+    assert.equal(header(page).style, 'PORTRAIT');
     assert.deepEqual(header(page).tracks, ref('PLAYLIST', `top:label:${IDS.label}`));
     assert.deepEqual(collections(page).map((shelf) => shelf.id), ['latest-releases', 'top-10']);
   });
@@ -126,6 +126,7 @@ describe('genre', async () => {
       ],
     );
     assert.deepEqual(page.filters.options.map((option) => option.id), ['featured', 'tracks', 'releases', 'charts', 'playlists']);
+    assert.equal(header(page).style, 'PORTRAIT');
   });
 
   test('its curated playlists are the ones filed under the genre', () => {

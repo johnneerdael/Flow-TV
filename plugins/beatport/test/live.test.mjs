@@ -17,12 +17,12 @@ describe('live Beatport', { skip: !LIVE && 'set LIVE=1 to run against Beatport' 
     ({ call } = loadPlugin(PLUGIN_DIR, { secrets: { session: JSON.stringify(session) } }));
   });
 
-  test('home: the Top 100s, new charts, genres and the listener’s own shelves', async () => {
+  test('home: genre chips, the Top 100s, new charts and the listener’s own shelves', async () => {
     const home = await call('metadata.home', {});
     const ids = collections(home).map((shelf) => shelf.id);
-    for (const id of ['top-tracks', 'top-releases', 'new-charts', 'genres']) assert.ok(ids.includes(id), `${id} in ${ids}`);
+    for (const id of ['top-tracks', 'top-releases', 'new-charts']) assert.ok(ids.includes(id), `${id} in ${ids}`);
     assert.equal(block(home, 'top-tracks').items.length, 20);
-    assert.ok(block(home, 'genres').items.length >= 40);
+    assert.ok(home.filters.options.length >= 40);
   });
 
   test('search: several kinds, and a filter that pages on without repeating', async () => {

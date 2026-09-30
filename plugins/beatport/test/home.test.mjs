@@ -16,7 +16,6 @@ describe('home', async () => {
         ['top-tracks', 'Beatport Top 100', 'PLAYLIST:top:all'],
         ['top-releases', 'Top 100 Releases', 'MIX:top:releases'],
         ['new-charts', 'New Charts', 'MIX:charts:new'],
-        ['genres', 'Genres', null],
         ['my-playlists', 'Your Playlists', 'MIX:my:playlists'],
         ['followed-artists', 'Followed Artists', 'MIX:my:artists'],
       ],
@@ -39,9 +38,25 @@ describe('home', async () => {
 
     assert.ok(block(page, 'top-releases').items.every((item) => item.entity.kind === 'ALBUM' && item.view === 'COVER_CARD'));
     assert.ok(block(page, 'new-charts').items.every((item) => item.entity.kind === 'PLAYLIST' && item.entity.providerId.startsWith('chart:')));
-    const genres = block(page, 'genres').items;
-    assert.equal(genres.length, 47);
-    assert.ok(genres.every((item) => item.entity.kind === 'MIX' && /^genre:\d+$/.test(item.entity.providerId)));
+  });
+
+  test('the genres are chips across the top, one per genre, in Beatport’s order', () => {
+    const recordedGenres = recorded(`${API}/v4/catalog/genres/?per_page=100`).results;
+    assert.deepEqual(
+      page.filters.options,
+      recordedGenres.map((genre) => ({ id: `genre:${genre.id}`, label: genre.name })),
+    );
+  });
+
+  test('a genre chip shows that genre’s featured shelves in place, keeping the chips', async () => {
+    const chip = page.filters.options.find((option) => option.id === 'genre:90');
+    const genreHome = await call('metadata.home', { filterId: chip.id });
+    const genrePage = await call('metadata.entity', { entity: { kind: 'MIX', providerId: 'genre:90' } });
+    assert.equal(genreHome.id, page.id);
+    assert.deepEqual(genreHome.filters, page.filters);
+    assert.ok(genreHome.blocks.every((b) => b.type === 'collection'));
+    assert.deepEqual(genreHome.blocks.map((b) => b.id), collections(genrePage).map((b) => b.id));
+    await assert.rejects(call('metadata.home', { filterId: 'mood:chill' }), { code: 'NOT_FOUND' });
   });
 
   test('the picks are mapped from their own schema', () => {
@@ -62,7 +77,7 @@ describe('home', async () => {
     const refused = offlinePlugin({ routes: [[pathIs('/catalog/v1/recommendations/user/'), { status: 401, body: { message: 'Invalid or expired token' } }]] });
     const home = await refused.call('metadata.home', {});
     assert.equal(collections(home)[0].id, 'top-tracks');
-    assert.equal(collections(home).length, 6);
+    assert.equal(collections(home).length, 5);
   });
 
   test('a lapsed sign-in fails the whole page, and marks the session expired', async () => {

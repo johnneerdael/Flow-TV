@@ -33,7 +33,7 @@ export function ownerHeader(owner: Owner, detail: OwnerDetail, followed?: boolea
     const subGenres = (genre.sub_genres ?? []).map((sub) => sub.name).filter(isPresent);
     return {
       ...common,
-      style: 'COVER',
+      style: 'PORTRAIT',
       details: [genre.category?.name, subGenres.length > 0 ? subGenres.join(', ') : undefined].filter(isPresent),
       tracks: refs.top('genre', detail.id),
     };
@@ -41,7 +41,7 @@ export function ownerHeader(owner: Owner, detail: OwnerDetail, followed?: boolea
   const person = detail as Artist | Label;
   return {
     ...common,
-    style: owner === 'artist' ? 'PORTRAIT' : 'COVER',
+    style: 'PORTRAIT',
     artwork: artwork(person.image, LARGE),
     details: followed ? ['Following on Beatport'] : [],
     description: person.bio?.trim() || undefined,

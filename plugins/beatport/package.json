@@ -1,6 +1,6 @@
 {
   "name": "@milkbeat/beatport",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "description": "Beatport for Milkbeat: home, search, release, artist, label, genre, chart and playlist pages, and the listener's library.",
