@@ -40,20 +40,30 @@ class PluginTrackMatcher
         suspend fun match(
             track: TrackDescriptor,
             pluginId: String,
+            excludedId: String? = null,
         ): TrackDescriptor? {
             val fingerprint = fingerprint(track)
-            cached(fingerprint, pluginId)?.let { return it.candidate }
-            val key = "$pluginId|$fingerprint"
+            cached(fingerprint, pluginId)?.let {
+                if (excludedId == null || it.candidate?.ref?.providerId != excludedId) return it.candidate
+            }
+            val key = "$pluginId|$fingerprint|${excludedId.orEmpty()}"
             val mine = CompletableDeferred<TrackDescriptor?>()
             inFlight.putIfAbsent(key, mine)?.let { return it.await() }
             try {
-                return lookup(track, fingerprint, pluginId).also(mine::complete)
+                return lookup(track, fingerprint, pluginId, excludedId).also(mine::complete)
             } catch (e: Throwable) {
                 mine.completeExceptionally(e)
                 throw e
             } finally {
                 inFlight.remove(key, mine)
             }
+        }
+
+        suspend fun invalidate(
+            track: TrackDescriptor,
+            pluginId: String,
+        ) {
+            matches.delete(fingerprint(track), pluginId)
         }
 
         private class Cached(
@@ -79,6 +89,7 @@ class PluginTrackMatcher
             track: TrackDescriptor,
             fingerprint: String,
             pluginId: String,
+            excludedId: String?,
         ): TrackDescriptor? {
             val candidates =
                 try {
@@ -88,11 +99,12 @@ class PluginTrackMatcher
                     Log.w(TAG, "$pluginId could not search for ${track.title}: ${e.error.message}")
                     return null
                 }
-            val best = TrackMatchScore.best(track, candidates)
+            val best = TrackMatchScore.best(track, candidates.filter { it.ref.providerId != excludedId })
             Log.d(
                 TAG,
                 "${track.title}: ${candidates.size} candidates from $pluginId, best ${best?.score?.let { "%.2f".format(it) } ?: "none"}",
             )
+            if (best == null && excludedId != null) return null
             matches.upsert(
                 TrackMatchEntity(
                     fingerprint = fingerprint,
@@ -108,7 +120,7 @@ class PluginTrackMatcher
         companion object {
             /** A track's identity across plugins: its ISRC when it has one, else every id it carries. */
             internal fun fingerprint(track: TrackDescriptor): String =
-                track.ids["isrc"]?.let { "isrc:${it.uppercase()}" }
+                track.ids["isrc"]?.takeIf { it.isNotBlank() }?.let { "isrc:${it.uppercase()}" }
                     ?: track.ids.entries
                         .sortedBy { it.key }
                         .joinToString(",") { "${it.key}:${it.value}" }

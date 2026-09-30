@@ -27,7 +27,7 @@ internal object TrackMatchScore {
     private val brackets = Regex("\\[.*?]")
     private val remaster = Regex("\\(.*?remaster.*?\\)", RegexOption.IGNORE_CASE)
     private val remix = Regex("\\(.*?remix.*?\\)", RegexOption.IGNORE_CASE)
-    private val nonAlphanumeric = Regex("[^a-z0-9\\s]")
+    private val nonAlphanumeric = Regex("[^\\p{L}\\p{N}\\s]")
     private val spaces = Regex("\\s+")
     private val variantMarkers =
         Regex(
@@ -60,7 +60,7 @@ internal object TrackMatchScore {
         candidate: TrackDescriptor,
     ): Double {
         val isrc = track.ids[ISRC]
-        if (isrc != null && isrc.equals(candidate.ids[ISRC], ignoreCase = true)) return CERTAIN
+        if (!isrc.isNullOrBlank() && isrc.equals(candidate.ids[ISRC], ignoreCase = true)) return CERTAIN
         val title = similarity(normalize(track.title), normalize(candidate.title))
         val artist =
             similarity(
@@ -97,6 +97,7 @@ internal object TrackMatchScore {
         a: String,
         b: String,
     ): Double {
+        if (a.isBlank() || b.isBlank()) return 0.0
         if (a == b) return CERTAIN
         val bigramsA = bigrams(a)
         val bigramsB = bigrams(b)

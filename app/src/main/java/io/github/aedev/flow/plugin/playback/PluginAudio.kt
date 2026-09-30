@@ -71,29 +71,35 @@ class PluginAudio
             var last: PluginCallException? = null
             val attempts = direct.map { it to track } + matching.map { it to null }
             for ((plugin, known) in attempts) {
-                val playable = known ?: matcher.match(track, plugin.id) ?: continue
-                val request =
-                    ResolveAudioRequest(
-                        track = playable,
-                        quality = quality,
-                        video = picture != null,
-                        maxVideoHeight = picture?.maxHeight,
-                        videoCodecs = picture?.codecs.orEmpty(),
-                        failure = failures.remove(key),
-                    )
-                try {
-                    val stream = host.call(plugin.id, PluginOperations.resolveAudio, request)
-                    val lifetime = stream.expiresInMs ?: DEFAULT_LIFETIME_MS
-                    return ResolvedAudio(
-                        plugin.id,
-                        playable,
-                        stream,
-                        System.currentTimeMillis() + lifetime - EXPIRY_MARGIN_MS,
-                        picture != null,
-                    ).also { resolved[key] = it }
-                } catch (e: PluginCallException) {
-                    last = e
-                    if (e.error.code != PluginErrorCode.UNAVAILABLE && e.error.code != PluginErrorCode.NOT_FOUND) throw e
+                var playable = known ?: matcher.match(track, plugin.id) ?: continue
+                for (attempt in 0..1) {
+                    val request =
+                        ResolveAudioRequest(
+                            track = playable,
+                            quality = quality,
+                            video = picture != null,
+                            maxVideoHeight = picture?.maxHeight,
+                            videoCodecs = picture?.codecs.orEmpty(),
+                            failure = failures.remove(key),
+                        )
+                    try {
+                        val stream = host.call(plugin.id, PluginOperations.resolveAudio, request)
+                        val lifetime = stream.expiresInMs ?: DEFAULT_LIFETIME_MS
+                        return ResolvedAudio(
+                            plugin.id,
+                            playable,
+                            stream,
+                            System.currentTimeMillis() + lifetime - EXPIRY_MARGIN_MS,
+                            picture != null,
+                        ).also { resolved[key] = it }
+                    } catch (e: PluginCallException) {
+                        last = e
+                        if (e.error.code != PluginErrorCode.UNAVAILABLE && e.error.code != PluginErrorCode.NOT_FOUND) throw e
+                        if (known != null) break
+                        matcher.invalidate(track, plugin.id)
+                        if (attempt != 0) break
+                        playable = matcher.match(track, plugin.id, excludedId = playable.ref.providerId) ?: break
+                    }
                 }
             }
             throw last ?: PluginCallException("none", PluginError(PluginErrorCode.NOT_FOUND, "No audio plugin found ${track.title}"))

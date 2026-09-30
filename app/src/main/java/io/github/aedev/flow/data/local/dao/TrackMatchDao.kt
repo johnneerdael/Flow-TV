@@ -13,6 +13,12 @@ interface TrackMatchDao {
         pluginId: String,
     ): TrackMatchEntity?
 
+    @Query("DELETE FROM track_matches WHERE fingerprint = :fingerprint AND pluginId = :pluginId")
+    suspend fun delete(
+        fingerprint: String,
+        pluginId: String,
+    )
+
     @Upsert
     suspend fun upsert(match: TrackMatchEntity)
 

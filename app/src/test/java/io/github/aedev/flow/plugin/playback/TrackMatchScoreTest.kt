@@ -22,6 +22,24 @@ class TrackMatchScoreTest {
         ids = ids,
     )
 
+    @Test
+    fun `non Latin titles and artists remain distinct`() {
+        val original = track("夜に駆ける", "ヨアソビ", 240)
+        val unrelated = track("紅蓮華", "リサ", 240)
+        assertThat(TrackMatchScore.normalize(original.title)).isEqualTo(original.title)
+        assertThat(TrackMatchScore.score(original, original)).isEqualTo(1.0)
+        assertThat(TrackMatchScore.best(original, listOf(unrelated, original))?.candidate).isSameInstanceAs(original)
+        assertThat(TrackMatchScore.best(original, listOf(unrelated))).isNull()
+    }
+
+    @Test
+    fun `missing text and blank ISRC do not establish a match`() {
+        val original = track("", "", 240, mapOf("isrc" to ""))
+        val candidate = track("", "", 240, mapOf("isrc" to ""))
+        assertThat(TrackMatchScore.similarity("", "")).isEqualTo(0.0)
+        assertThat(TrackMatchScore.best(original, listOf(candidate))).isNull()
+    }
+
     private val spotify = track("Sky and Sand", "Paul Kalkbrenner", 238, mapOf("spotify" to "4uLU"))
 
     @Test
