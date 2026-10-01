@@ -209,6 +209,11 @@ composeCompiler {
     }
 }
 
+// Robolectric supplies the JVM Conscrypt artifact; Android's duplicate classes load Android-only JNI.
+configurations.matching { it.name.endsWith("UnitTestRuntimeClasspath") }.configureEach {
+    exclude(group = "org.conscrypt", module = "conscrypt-android")
+}
+
 dependencies {
     implementation(project(":projectm-core"))
     implementation(project(":plugin-api"))
