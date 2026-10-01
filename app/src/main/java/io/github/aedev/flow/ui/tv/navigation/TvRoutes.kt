@@ -10,6 +10,7 @@ import nl.neerdael.milkbeat.catalog.EntityRef
 
 /** Detail routes layered over the top-level [TvDestination] tabs. */
 object TvRoutes {
+    const val MUSIC_FOLDERS_SETTINGS = "musicFoldersSettings"
     const val CHANNEL_ARG = TvChannelViewModel.CHANNEL_ARG
     const val CHANNEL = "channel?ref={$CHANNEL_ARG}"
 

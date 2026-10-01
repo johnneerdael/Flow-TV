@@ -51,17 +51,19 @@ import io.github.aedev.flow.ui.tv.screens.account.TvAccountLibrarySection
 import io.github.aedev.flow.ui.tv.screens.account.TvAccountLibraryViewModel
 import io.github.aedev.flow.ui.tv.screens.account.TvAccountStatus
 import io.github.aedev.flow.ui.tv.screens.account.TvPluginAccountViewModel
+import io.github.aedev.flow.ui.tv.screens.folders.TvMusicFoldersContent
+import io.github.aedev.flow.ui.tv.screens.library.TvLibraryMixedContent
+import io.github.aedev.flow.ui.tv.screens.library.TvLibraryPlaylists
 import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 import io.github.aedev.flow.ui.tv.toTvMusicTrack
 import io.github.aedev.flow.ui.tv.toTvVideo
 import io.github.aedev.flow.ui.tv.tvWatchProgress
 import nl.neerdael.milkbeat.catalog.EntityRef
 
-private const val LIBRARY_GRID_COLUMNS = 3
-
 private enum class TvLibrarySection(
     @StringRes val titleRes: Int,
 ) {
+    FOLDERS(R.string.music_folders_library),
     HISTORY(R.string.tv_library_history),
     LIKES(R.string.tv_library_likes),
     WATCH_LATER(R.string.tv_library_watch_later),
@@ -84,6 +86,7 @@ fun TvLibraryScreen(
     onPlayMix: (MusicTrack) -> Unit = {},
     onPlayCollection: (MusicTrack, List<MusicTrack>, String, String?) -> Unit = { _, _, _, _ -> },
     onOpenCatalog: (EntityRef) -> Unit = {},
+    onConfigureFolders: () -> Unit = {},
     accountViewModel: TvPluginAccountViewModel = hiltViewModel(),
     accountLibrary: TvAccountLibraryViewModel = hiltViewModel(),
 ) {
@@ -185,6 +188,10 @@ fun TvLibraryScreen(
                 )
             } else {
                 when (selectedSection) {
+                    TvLibrarySection.FOLDERS -> {
+                        TvMusicFoldersContent(onPlayTrack = onPlayTrack, onConfigure = onConfigureFolders)
+                    }
+
                     TvLibrarySection.HISTORY -> {
                         TvLibraryMixedContent(
                             musicTracks = history.filter { it.isMusic }.map { it.toTvMusicTrack() },
@@ -243,148 +250,6 @@ fun TvLibraryScreen(
                             onOpenPlaylist = onOpenPlaylist,
                             onOpenMusicCollection = onOpenMusicCollection,
                         )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun TvLibraryMixedContent(
-    musicTracks: List<MusicTrack>,
-    musicSource: String,
-    videos: List<Pair<Video, Float?>>,
-    onVideoClick: (Video) -> Unit,
-    onPlayTrack: (MusicTrack, List<MusicTrack>, String) -> Unit,
-) {
-    val dimens = LocalTvDimens.current
-    if (musicTracks.isEmpty() && videos.isEmpty()) {
-        TvMessageState(
-            title = stringResource(R.string.tv_library_empty),
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = dimens.overscanHorizontal),
-        )
-        return
-    }
-    ProvideTvColumnPivot {
-        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-            val cardWidth =
-                (
-                    maxWidth - dimens.overscanHorizontal * 2 -
-                        dimens.itemSpacing * (LIBRARY_GRID_COLUMNS - 1)
-                ) / LIBRARY_GRID_COLUMNS
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(dimens.itemSpacing),
-                contentPadding = PaddingValues(bottom = dimens.overscanVertical),
-            ) {
-                if (musicTracks.isNotEmpty()) {
-                    item(key = "library-music") {
-                        TvMediaRow(
-                            items = musicTracks,
-                            key = MusicTrack::videoId,
-                            title = stringResource(R.string.nav_music),
-                        ) { track ->
-                            TvMusicCard(
-                                track = track,
-                                onClick = { onPlayTrack(track, musicTracks, musicSource) },
-                            )
-                        }
-                    }
-                }
-                items(
-                    items = videos.chunked(LIBRARY_GRID_COLUMNS),
-                    key = { rowItems -> rowItems.first().first.id },
-                ) { rowItems ->
-                    Row(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = dimens.overscanHorizontal),
-                        horizontalArrangement = Arrangement.spacedBy(dimens.itemSpacing),
-                    ) {
-                        rowItems.forEach { (video, progress) ->
-                            TvVideoCard(
-                                video = video,
-                                onClick = { onVideoClick(video) },
-                                watchProgress = progress,
-                                modifier = Modifier.width(cardWidth),
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun TvLibraryPlaylists(
-    videoPlaylists: List<Playlist>,
-    musicPlaylists: List<PlaylistInfo>,
-    onOpenPlaylist: (String) -> Unit,
-    onOpenMusicCollection: (String) -> Unit,
-) {
-    val dimens = LocalTvDimens.current
-    if (videoPlaylists.isEmpty() && musicPlaylists.isEmpty()) {
-        TvMessageState(
-            title = stringResource(R.string.tv_library_empty),
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = dimens.overscanHorizontal),
-        )
-        return
-    }
-    ProvideTvColumnPivot {
-        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-            val cardWidth =
-                (
-                    maxWidth - dimens.overscanHorizontal * 2 -
-                        dimens.itemSpacing * (LIBRARY_GRID_COLUMNS - 1)
-                ) / LIBRARY_GRID_COLUMNS
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(dimens.itemSpacing),
-                contentPadding = PaddingValues(bottom = dimens.overscanVertical),
-            ) {
-                if (musicPlaylists.isNotEmpty()) {
-                    item(key = "music-playlists") {
-                        TvMediaRow(
-                            items = musicPlaylists,
-                            key = { it.id },
-                            title = stringResource(R.string.nav_music),
-                        ) { info ->
-                            TvMusicCollectionCard(
-                                title = info.name,
-                                subtitle = stringResource(R.string.tracks_count_template, info.videoCount),
-                                thumbnailUrl = info.thumbnailUrl,
-                                onClick = { onOpenMusicCollection(info.id) },
-                            )
-                        }
-                    }
-                }
-                items(
-                    items = videoPlaylists.chunked(LIBRARY_GRID_COLUMNS),
-                    key = { rowItems -> rowItems.first().id },
-                ) { rowItems ->
-                    Row(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = dimens.overscanHorizontal),
-                        horizontalArrangement = Arrangement.spacedBy(dimens.itemSpacing),
-                    ) {
-                        rowItems.forEach { playlist ->
-                            TvPlaylistCard(
-                                playlist = playlist,
-                                onClick = { onOpenPlaylist(playlist.id) },
-                                modifier = Modifier.width(cardWidth),
-                            )
-                        }
                     }
                 }
             }

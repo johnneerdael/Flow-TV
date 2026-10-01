@@ -14,6 +14,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.github.aedev.flow.BuildConfig
+import io.github.aedev.flow.data.folders.FolderArtworkFetcher
+import io.github.aedev.flow.data.folders.MusicFolderMetadata
 import io.github.aedev.flow.data.localmedia.MediaStoreThumbnailFetcher
 import okhttp3.OkHttpClient
 import okio.Path.Companion.toOkioPath
@@ -24,9 +26,10 @@ import javax.inject.Singleton
 object AppModule {
     @Provides
     @Singleton
-    fun provideImageLoader(
+    internal fun provideImageLoader(
         @ApplicationContext context: Context,
         okHttpClient: OkHttpClient,
+        folderMetadata: MusicFolderMetadata,
     ): ImageLoader =
         ImageLoader
             .Builder(context)
@@ -34,6 +37,7 @@ object AppModule {
                 add(OkHttpNetworkFetcherFactory(callFactory = { okHttpClient }))
                 add(VideoFrameDecoder.Factory())
                 add(MediaStoreThumbnailFetcher.Factory(context))
+                add(FolderArtworkFetcher.Factory(folderMetadata))
             }.memoryCache {
                 MemoryCache
                     .Builder()

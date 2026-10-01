@@ -24,6 +24,7 @@ import io.github.aedev.flow.di.DownloadCache
 import io.github.aedev.flow.di.PlayerCache
 import io.github.aedev.flow.network.AppProxyManager
 import io.github.aedev.flow.player.MusicVideoItems
+import io.github.aedev.flow.player.datasource.MusicFolderDataSourceFactory
 import io.github.aedev.flow.player.datasource.PluginMusicDataSourceFactory
 import io.github.aedev.flow.player.datasource.bindCachedMusicRendition
 import io.github.aedev.flow.player.datasource.hasCompleteMusicDownload
@@ -63,6 +64,7 @@ class DownloadUtil
         @PlayerCache private val playerCache: SimpleCache,
         private val playerPreferences: PlayerPreferences,
         private val pluginAudio: PluginAudio,
+        private val musicFolders: MusicFolderDataSourceFactory,
     ) {
         companion object {
             private const val TAG = "DownloadUtil"
@@ -297,7 +299,7 @@ class DownloadUtil
                 }
             }
             return PluginMusicDataSourceFactory(
-                delegate = resolvingFactory(),
+                delegate = musicFolders.wrap(resolvingFactory()),
                 resolve = { uri, picture ->
                     val id = MusicVideoItems.descriptor(uri).ref.providerId
                     val cached =

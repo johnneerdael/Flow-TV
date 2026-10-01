@@ -218,6 +218,7 @@ dependencies {
     implementation(project(":projectm-core"))
     implementation(project(":plugin-api"))
     implementation(libs.quickjs.kt)
+    implementation(libs.smbj)
     // --- Core Android ---
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
@@ -326,6 +327,7 @@ dependencies {
 
     // Room migration tests (device-sync schema 20→23)
     androidTestImplementation(libs.androidx.room.testing)
+    androidTestImplementation(libs.androidx.uiautomator)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
