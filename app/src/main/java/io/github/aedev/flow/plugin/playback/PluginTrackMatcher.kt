@@ -85,7 +85,8 @@ class PluginTrackMatcher
         suspend fun matchForIndexing(
             track: TrackDescriptor,
             pluginId: String,
-        ): TrackDescriptor? = find(track, pluginId, null)
+            excludedId: String? = null,
+        ): TrackDescriptor? = find(track, pluginId, excludedId)
 
         suspend fun invalidate(
             track: TrackDescriptor,

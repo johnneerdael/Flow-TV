@@ -137,7 +137,7 @@ class PlaylistPreloadRunnerTest {
             runner.run("spotify", "listener", listOf("youtube", "beatport")) { }
             coEvery { host.call("beatport", PluginOperations.resolveAudio, any()) } returns
                 AudioStream("https://fixture/audio.m3u8", "b", "aac", "application/x-mpegURL")
-            val audio = PluginAudio(host, registry, matcher)
+            val audio = PluginAudio(host, registry, matcher, accounts)
             assertThat(audio.resolve(b, null).pluginId).isEqualTo("beatport")
             runner.run("spotify", "listener", listOf("youtube", "beatport")) { }
             coVerify(exactly = 3) { host.call("youtube", PluginOperations.matchAudio, any()) }

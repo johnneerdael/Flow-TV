@@ -1,8 +1,11 @@
 package io.github.aedev.flow.plugin.playback
 
 import io.github.aedev.flow.plugin.PluginHost
+import io.github.aedev.flow.plugin.catalog.PluginAccounts
 import io.github.aedev.flow.plugin.registry.PluginRegistry
 import io.github.aedev.flow.plugin.runtime.PluginCallException
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import nl.neerdael.milkbeat.catalog.TrackDescriptor
 import nl.neerdael.milkbeat.plugin.AudioDelivery
 import nl.neerdael.milkbeat.plugin.AudioQuality
@@ -14,11 +17,14 @@ import nl.neerdael.milkbeat.plugin.ReportPlaybackRequest
 import nl.neerdael.milkbeat.plugin.ResolveAudioRequest
 import nl.neerdael.milkbeat.plugin.StreamFailure
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
 import javax.inject.Singleton
 
 private const val EXPIRY_MARGIN_MS = 60_000L
 private const val DEFAULT_LIFETIME_MS = 5 * 60 * 60_000L
+
+internal class AudioCatalogMiss : Exception()
 
 /** A stream an audio plugin handed out, with the plugin and when to ask again. */
 class ResolvedAudio(
@@ -31,6 +37,7 @@ class ResolvedAudio(
     val withPicture: Boolean,
     internal val providerOrder: List<String> = emptyList(),
     internal val request: ResolveAudioRequest? = null,
+    internal val preparationContext: Any? = null,
 )
 
 /** What the picture of a music video is resolved against: what this TV decodes, best first. */
@@ -52,8 +59,16 @@ class PluginAudio
         private val host: PluginHost,
         private val registry: PluginRegistry,
         private val matcher: PluginTrackMatcher,
+        private val accounts: PluginAccounts,
     ) {
         private val resolved = ConcurrentHashMap<String, ResolvedAudio>()
+        private val cacheGeneration = AtomicLong()
+
+        private fun streamContext(): Any = registry.state.value to accounts.accounts.value
+
+        internal fun preparationVersion(): Any = streamContext() to cacheGeneration.get()
+
+        private val resolutionLocks = ConcurrentHashMap<String, Mutex>()
         private val failures = ConcurrentHashMap<String, StreamFailure>()
 
         /** The stream for [track], resolving it unless a still-valid one covers what is asked. */
@@ -61,20 +76,51 @@ class PluginAudio
             track: TrackDescriptor,
             picture: PictureLimits?,
             quality: AudioQuality = AudioQuality.AUTO,
+        ): ResolvedAudio = resolveLocked(track, picture, quality, strict = false)
+
+        suspend fun prepare(
+            track: TrackDescriptor,
+            picture: PictureLimits?,
+            quality: AudioQuality = AudioQuality.AUTO,
+        ): ResolvedAudio = resolveLocked(track, picture, quality, strict = true)
+
+        private suspend fun resolveLocked(
+            track: TrackDescriptor,
+            picture: PictureLimits?,
+            quality: AudioQuality,
+            strict: Boolean,
+        ): ResolvedAudio =
+            resolutionLocks.getOrPut(track.ref.providerId) { Mutex() }.withLock {
+                resolveStream(track, picture, quality, strict)
+            }
+
+        private suspend fun resolveStream(
+            track: TrackDescriptor,
+            picture: PictureLimits?,
+            quality: AudioQuality,
+            strict: Boolean,
         ): ResolvedAudio {
+            val context = streamContext()
+            val version = context to cacheGeneration.get()
             val key = track.ref.providerId
             val attempts = audioProviderAttempts(registry.state.value, track, withPicture = picture != null)
             val order = attempts.map { "${it.plugin.id}:${it.plugin.manifest.versionCode}" }
             resolved[key]
                 ?.takeIf {
-                    it.providerOrder == order && it.validUntilMs > System.currentTimeMillis() && (picture == null || it.withPicture)
+                    it.preparationContext == context && it.providerOrder == order && it.validUntilMs > System.currentTimeMillis() &&
+                        it.request?.quality == quality && (
+                            picture == null || (
+                                it.withPicture &&
+                                    it.request.maxVideoHeight == picture.maxHeight && it.request.videoCodecs == picture.codecs
+                            )
+                        )
                 }?.let { return it }
             if (attempts.isEmpty()) {
                 throw PluginCallException("none", PluginError(PluginErrorCode.UNAVAILABLE, "No audio plugin plays ${track.title}"))
             }
             var last: PluginCallException? = null
             for ((plugin, known) in attempts) {
-                var playable = known ?: matcher.match(track, plugin.id) ?: continue
+                var playable = known ?: match(track, plugin.id, strict) ?: continue
                 for (attempt in 0..1) {
                     val request =
                         ResolveAudioRequest(
@@ -102,19 +148,37 @@ class PluginAudio
                             picture != null,
                             order,
                             request,
-                        ).also { resolved[key] = it }
+                            context,
+                        ).also {
+                            synchronized(resolved) { if (version == preparationVersion()) resolved[key] = it }
+                        }
                     } catch (e: PluginCallException) {
                         last = e
                         if (e.error.code != PluginErrorCode.UNAVAILABLE && e.error.code != PluginErrorCode.NOT_FOUND) throw e
                         if (known != null) break
                         matcher.invalidate(track, plugin.id)
                         if (attempt != 0) break
-                        playable = matcher.match(track, plugin.id, excludedId = playable.ref.providerId) ?: break
+                        playable = match(track, plugin.id, strict, excludedId = playable.ref.providerId) ?: break
                     }
                 }
             }
+            if (strict && last?.error?.code == PluginErrorCode.NOT_FOUND) {
+                throw PluginCallException(
+                    last.pluginId,
+                    PluginError(PluginErrorCode.UNAVAILABLE, "A matched recording could not be prepared"),
+                )
+            }
+            if (strict && last == null) throw AudioCatalogMiss()
             throw last ?: PluginCallException("none", PluginError(PluginErrorCode.NOT_FOUND, "No audio plugin found ${track.title}"))
         }
+
+        private suspend fun match(
+            track: TrackDescriptor,
+            pluginId: String,
+            strict: Boolean,
+            excludedId: String? = null,
+        ): TrackDescriptor? =
+            if (strict) matcher.matchForIndexing(track, pluginId, excludedId) else matcher.match(track, pluginId, excludedId)
 
         suspend fun refreshBound(audio: ResolvedAudio): ResolvedAudio {
             val request = audio.request ?: ResolveAudioRequest(audio.track, video = audio.withPicture)
@@ -139,6 +203,7 @@ class PluginAudio
                 audio.withPicture,
                 audio.providerOrder,
                 request,
+                audio.preparationContext,
             )
         }
 
@@ -181,11 +246,17 @@ class PluginAudio
         }
 
         fun forget(id: String) {
-            resolved.remove(id)
+            synchronized(resolved) {
+                cacheGeneration.incrementAndGet()
+                resolved.remove(id)
+            }
         }
 
         fun forgetAll() {
-            resolved.clear()
+            synchronized(resolved) {
+                cacheGeneration.incrementAndGet()
+                resolved.clear()
+            }
         }
 
         /** Reports a listen to the plugin that played it, when it reports listens and the listener allows it. */
