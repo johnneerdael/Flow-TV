@@ -42,6 +42,7 @@ import io.github.aedev.flow.ui.tv.catalog.isTrackTable
 import io.github.aedev.flow.ui.tv.components.TvLoadingState
 import io.github.aedev.flow.ui.tv.components.TvMessageState
 import io.github.aedev.flow.ui.tv.focus.ProvideTvColumnPivot
+import io.github.aedev.flow.ui.tv.focus.tvAcceleratedDpad
 import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 import kotlinx.coroutines.launch
 import nl.neerdael.milkbeat.catalog.CollectionBlock
@@ -144,7 +145,7 @@ private fun CoverPage(
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
             state = listState,
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().tvAcceleratedDpad(),
             contentPadding = PaddingValues(top = dimens.overscanVertical, bottom = dimens.overscanVertical),
         ) {
             catalogBlocks(body, actions, horizontalPadding = dimens.overscanHorizontal, tables = tables)

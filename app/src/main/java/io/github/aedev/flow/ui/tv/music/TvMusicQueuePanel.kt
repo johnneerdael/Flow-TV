@@ -18,6 +18,7 @@ import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.player.EnhancedMusicPlayerManager
 import io.github.aedev.flow.ui.tv.components.TvMusicTrackRow
 import io.github.aedev.flow.ui.tv.components.TvSidePanel
+import io.github.aedev.flow.ui.tv.focus.tvAcceleratedDpad
 import io.github.aedev.flow.ui.tv.focus.tvInitialFocus
 
 private const val QUEUE_PANEL_ALPHA = 0.5f
@@ -52,7 +53,7 @@ fun BoxScope.TvMusicQueuePanel(
             return@TvSidePanel
         }
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().tvInitialFocus().tvAcceleratedDpad(),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             itemsIndexed(queue, key = { index, item -> "queue:$index:${item.videoId}" }) { index, item ->
@@ -61,7 +62,6 @@ fun BoxScope.TvMusicQueuePanel(
                     selected = index == currentIndex,
                     onClick = { manager.playFromQueue(index) },
                     containerAlpha = QUEUE_ROW_ALPHA,
-                    modifier = if (index == 0) Modifier.tvInitialFocus() else Modifier,
                 )
             }
             if (automix.isNotEmpty()) {
