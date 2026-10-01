@@ -12,10 +12,12 @@ plugins {
 }
 
 // Releases are major.minor from gradle.properties plus a patch number CI counts up on every
-// published build (0 for local builds). The version code grows with every release, minor bumps
+// published build (the configured minimum patch for local builds). The version code grows with every release, minor bumps
 // included, as long as a minor line stays under 1000 patches.
 val milkbeatMajorMinor = providers.gradleProperty("milkbeatVersion").get()
-val milkbeatPatch = providers.gradleProperty("milkbeatPatch").orNull?.toInt() ?: 0
+val milkbeatPatch =
+    providers.gradleProperty("milkbeatPatch").orNull?.toInt()
+        ?: providers.gradleProperty("milkbeatMinimumPatch").orNull?.toInt() ?: 0
 val (milkbeatMajor, milkbeatMinor) = milkbeatMajorMinor.split('.').map(String::toInt)
 
 android {
