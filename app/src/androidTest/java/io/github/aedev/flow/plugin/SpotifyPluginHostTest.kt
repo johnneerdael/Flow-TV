@@ -16,6 +16,7 @@ import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.aedev.flow.data.local.AppDatabase
+import io.github.aedev.flow.plugin.catalog.PluginAccounts
 import io.github.aedev.flow.plugin.catalog.toMusicTrack
 import io.github.aedev.flow.plugin.host.WebLoginRefresher
 import io.github.aedev.flow.plugin.install.PluginInstaller
@@ -140,7 +141,7 @@ class SpotifyPluginHostTest {
                             PluginOperations.tracks,
                             TracksRequest(EntityRef(EntityKind.ALBUM, "spotify:album:0gNodTZAdNht0OpLirkGBW")),
                         )
-                    val audio = PluginAudio(host, registry, PluginTrackMatcher(host, database.trackMatchDao()))
+                    val audio = PluginAudio(host, registry, PluginTrackMatcher(host, database.trackMatchDao()), PluginAccounts(host))
                     val resolved = audio.resolve(tracks.tracks.first(), null)
                     assertEquals("Prophecy", resolved.track.title)
                     assertEquals(youtube.id, resolved.pluginId)

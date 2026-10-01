@@ -30,7 +30,9 @@ import io.github.aedev.flow.player.datasource.hasCompleteMusicDownload
 import io.github.aedev.flow.player.stream.VideoCodecUtils
 import io.github.aedev.flow.plugin.playback.PictureLimits
 import io.github.aedev.flow.plugin.playback.PluginAudio
+import io.github.aedev.flow.plugin.playback.QueuePreparationResult
 import io.github.aedev.flow.plugin.playback.ResolvedAudio
+import io.github.aedev.flow.plugin.playback.prepareQueue
 import io.github.aedev.flow.service.ExoDownloadService
 import io.github.aedev.flow.utils.MusicVideoFormats
 import kotlinx.coroutines.CoroutineScope
@@ -322,12 +324,13 @@ class DownloadUtil
          * Resolves the stream of the queue item at [uri] ahead of time, as playback would, so the next
          * track starts without waiting for its plugin.
          */
-        suspend fun prefetch(uri: Uri) {
+        suspend fun prefetch(uri: Uri): QueuePreparationResult {
             val descriptor = MusicVideoItems.descriptor(uri)
-            val id = descriptor.ref.providerId
-            if (songUrlCache[id]?.validUntilMs?.let { it > System.currentTimeMillis() } == true) return
-            if (runCatching { completeDownload(id) }.getOrDefault(false)) return
-            resolveForPlayback(uri, picture = uri.scheme == MusicVideoItems.SCHEME)
+            if (runCatching { completeDownload(descriptor.ref.providerId) }.getOrDefault(false)) return QueuePreparationResult.Ready
+            val picture = uri.scheme == MusicVideoItems.SCHEME
+            val limits = if (picture) PictureLimits(maxVideoHeight, pictureCodecs(playerPreferences.videoCodecPriority.first())) else null
+            val quality = AudioQuality.valueOf(playerPreferences.musicAudioQuality.first().name)
+            return pluginAudio.prepareQueue(descriptor, limits, quality)
         }
 
         private suspend fun resolveForPlayback(

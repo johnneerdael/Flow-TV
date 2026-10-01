@@ -20,6 +20,7 @@ import io.github.aedev.flow.data.local.QueuePersistence
 import io.github.aedev.flow.data.local.VisualizerPreferences
 import io.github.aedev.flow.data.localmedia.LocalMediaIds
 import io.github.aedev.flow.data.music.model.MusicTrack
+import io.github.aedev.flow.plugin.playback.QueuePreparationResult
 import io.github.aedev.flow.service.Media3MusicService
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -67,16 +68,16 @@ object EnhancedMusicPlayerManager {
     @Volatile
     var pendingRadioPlaylistId: String? = null
 
-    private val _radioLoading = MutableStateFlow(false)
+    internal val radioLoadingState = MutableStateFlow(false)
 
     /** True while the service is seeding or topping up the station, for the queue sheet's spinner. */
-    val radioLoading: StateFlow<Boolean> = _radioLoading.asStateFlow()
+    val radioLoading: StateFlow<Boolean> = radioLoadingState.asStateFlow()
 
     fun setRadioLoading(loading: Boolean) {
-        _radioLoading.value = loading
+        radioLoadingState.value = loading
     }
 
-    private var appContext: Context? = null
+    internal var appContext: Context? = null
 
     private var controllerFuture: ListenableFuture<MediaController>? = null
     private var isInitialized = false
@@ -84,13 +85,13 @@ object EnhancedMusicPlayerManager {
         CoroutineExceptionHandler { _, throwable ->
             Log.e("EnhancedMusicPlayer", "Error in player scope: ${throwable.message}", throwable)
         }
-    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob() + exceptionHandler)
+    internal val scope = CoroutineScope(Dispatchers.Main + SupervisorJob() + exceptionHandler)
 
     private var retryCount = 0
     private var positionUpdateJob: kotlinx.coroutines.Job? = null
 
     // Persistence
-    private var queuePersistence: QueuePersistence? = null
+    internal var queuePersistence: QueuePersistence? = null
     private var audioSettingsPersistence: AudioSettingsPersistence? = null
 
     // Audio Settings State
@@ -98,11 +99,11 @@ object EnhancedMusicPlayerManager {
     val playbackSpeed: StateFlow<Float> = _playbackSpeed.asStateFlow()
 
     // Player state flows
-    private val _playerState = MutableStateFlow(MusicPlayerState())
-    val playerState: StateFlow<MusicPlayerState> = _playerState.asStateFlow()
+    internal val playbackState = MutableStateFlow(MusicPlayerState())
+    val playerState: StateFlow<MusicPlayerState> = playbackState.asStateFlow()
 
-    private val _currentPosition = MutableStateFlow(0L)
-    val currentPosition: StateFlow<Long> = _currentPosition.asStateFlow()
+    internal val currentPositionState = MutableStateFlow(0L)
+    val currentPosition: StateFlow<Long> = currentPositionState.asStateFlow()
 
     /**
      * Number of consumers that need sub-second progress — in practice only the expanded music
@@ -123,84 +124,75 @@ object EnhancedMusicPlayerManager {
         object RequestToggleLike : PlayerEvent()
     }
 
-    private val _playerEvents = MutableSharedFlow<PlayerEvent>()
-    val playerEvents: SharedFlow<PlayerEvent> = _playerEvents.asSharedFlow()
+    internal val eventFlow = MutableSharedFlow<PlayerEvent>()
+    val playerEvents: SharedFlow<PlayerEvent> = eventFlow.asSharedFlow()
 
     private val _playbackWarnings = MutableSharedFlow<String>(extraBufferCapacity = 1)
     val playbackWarnings: SharedFlow<String> = _playbackWarnings.asSharedFlow()
 
     // Queue
-    private val _queue = MutableStateFlow<List<MusicTrack>>(emptyList())
-    val queue: StateFlow<List<MusicTrack>> = _queue.asStateFlow()
+    internal val queueState = MutableStateFlow<List<MusicTrack>>(emptyList())
+    val queue: StateFlow<List<MusicTrack>> = queueState.asStateFlow()
 
-    private val _automixItems = MutableStateFlow<List<MusicTrack>>(emptyList())
-    val automixItems: StateFlow<List<MusicTrack>> = _automixItems.asStateFlow()
+    internal val automixState = MutableStateFlow<List<MusicTrack>>(emptyList())
+    val automixItems: StateFlow<List<MusicTrack>> = automixState.asStateFlow()
 
-    private val _currentQueueIndex = MutableStateFlow(0)
-    val currentQueueIndex: StateFlow<Int> = _currentQueueIndex.asStateFlow()
+    internal val currentQueueIndexState = MutableStateFlow(0)
+    val currentQueueIndex: StateFlow<Int> = currentQueueIndexState.asStateFlow()
 
-    private val _currentTrack = MutableStateFlow<MusicTrack?>(null)
-    val currentTrack: StateFlow<MusicTrack?> = _currentTrack.asStateFlow()
+    internal val currentTrackState = MutableStateFlow<MusicTrack?>(null)
+    val currentTrack: StateFlow<MusicTrack?> = currentTrackState.asStateFlow()
 
-    private val _shuffleEnabled = MutableStateFlow(false)
-    val shuffleEnabled: StateFlow<Boolean> = _shuffleEnabled.asStateFlow()
+    internal val shuffleEnabledState = MutableStateFlow(false)
+    val shuffleEnabled: StateFlow<Boolean> = shuffleEnabledState.asStateFlow()
 
     // Whether a music video shows its picture: the setting decides, and the player's Video button
     // overrides it for the session, so each video track starts the way the last one was left.
     @Volatile
-    private var showVideo = false
+    internal var showVideo = false
 
     // Queue items that stream (not device files or downloads), and which of them carry a picture; a
     // track whose picture failed plays as its song for the rest of the session.
-    private val streamItemIds =
+    internal val streamItemIds =
         java.util.concurrent.ConcurrentHashMap
             .newKeySet<String>()
-    private val videoItemIds =
+    internal val videoItemIds =
         java.util.concurrent.ConcurrentHashMap
             .newKeySet<String>()
-    private val videoUnavailableIds =
+    internal val videoUnavailableIds =
         java.util.concurrent.ConcurrentHashMap
             .newKeySet<String>()
 
     // Surfaces on screen that show the picture; with none, the picture track is off so nothing is
     // decoded or downloaded that nobody sees (collapsed now-playing, background, screen off).
-    private var videoSurfaces = 0
+    internal var videoSurfaces = 0
 
-    private val _videoShown = MutableStateFlow(false)
+    internal val videoShownState = MutableStateFlow(false)
 
     /** Whether the playing track's picture is shown rather than the visualizer. */
-    val videoShown: StateFlow<Boolean> = _videoShown.asStateFlow()
+    val videoShown: StateFlow<Boolean> = videoShownState.asStateFlow()
 
-    private val _repeatMode = MutableStateFlow(RepeatMode.OFF)
-    val repeatMode: StateFlow<RepeatMode> = _repeatMode.asStateFlow()
+    internal val repeatModeState = MutableStateFlow(RepeatMode.OFF)
+    val repeatMode: StateFlow<RepeatMode> = repeatModeState.asStateFlow()
 
-    private val _playingFrom = MutableStateFlow("Flow Music")
-    val playingFrom: StateFlow<String> = _playingFrom.asStateFlow()
+    internal val playingFromState = MutableStateFlow("Flow Music")
+    val playingFrom: StateFlow<String> = playingFromState.asStateFlow()
 
     private val _isLiked = MutableStateFlow(false)
     val isLiked: StateFlow<Boolean> = _isLiked.asStateFlow()
 
     /** Resolves a queue item's stream ahead of playback; set by the music service while it runs. */
     @Volatile
-    var prefetcher: (suspend (Uri) -> Unit)? = null
-    private var pendingPlayNextMediaId: String? = null
-    private var pendingPlayNextMediaIndex: Int = MusicQueuePlanner.INDEX_UNSET
-
-    // Resolving the next track while this one plays keeps the gap between them short.
-    private fun prefetchNextTrack() {
-        val queue = _queue.value
-        val idx = currentPlaybackQueueIndex()
-        val nextTrack = queue.getOrNull(idx + 1)?.takeIf { idx != -1 && !LocalMediaIds.isLocal(it.videoId) } ?: return
-        val prefetch = prefetcher ?: return
-        scope.launch(Dispatchers.IO) {
-            try {
-                prefetch(streamUri(nextTrack))
-                Log.d("EnhancedMusicPlayer", "Pre-fetched stream for next track: ${nextTrack.title}")
-            } catch (e: Exception) {
-                Log.w("EnhancedMusicPlayer", "Failed to pre-fetch next track: ${e.message}")
-            }
+    var prefetcher: (suspend (Uri) -> QueuePreparationResult)? = null
+        set(value) {
+            field = value
+            queuePreparer.schedule()
         }
-    }
+    private val queuePreparer by lazy { createQueuePreparer() }
+    internal var pendingPlayNextMediaId: String? = null
+    internal var pendingPlayNextMediaIndex: Int = MusicQueuePlanner.INDEX_UNSET
+
+    internal fun prefetchNextTrack() = queuePreparer.schedule()
 
     fun initialize(context: Context) {
         if (isInitialized) return
@@ -229,22 +221,22 @@ object EnhancedMusicPlayerManager {
                     }
 
                     queuePersistence?.startAutoSave {
-                        val currentQ = _queue.value
+                        val currentQ = queueState.value
                         if (currentQ.isNotEmpty()) {
                             QueuePersistence.QueueState(
                                 queue = currentQ,
-                                currentIndex = _currentQueueIndex.value,
-                                currentPosition = _currentPosition.value, // Use StateFlow, not player directly
-                                currentTrackId = _currentTrack.value?.videoId,
-                                shuffleEnabled = _shuffleEnabled.value,
+                                currentIndex = currentQueueIndexState.value,
+                                currentPosition = currentPositionState.value, // Use StateFlow, not player directly
+                                currentTrackId = currentTrackState.value?.videoId,
+                                shuffleEnabled = shuffleEnabledState.value,
                                 repeatMode =
-                                    when (_repeatMode.value) {
+                                    when (repeatModeState.value) {
                                         RepeatMode.OFF -> 0
                                         RepeatMode.ALL -> 1
                                         RepeatMode.ONE -> 2
                                     },
                                 savedAt = System.currentTimeMillis(),
-                                automix = _automixItems.value,
+                                automix = automixState.value,
                             )
                         } else {
                             null
@@ -265,6 +257,21 @@ object EnhancedMusicPlayerManager {
         applyVideoMode(controller)
         controller.addListener(
             object : Player.Listener {
+                override fun onEvents(
+                    player: Player,
+                    events: Player.Events,
+                ) {
+                    if (events.containsAny(
+                            Player.EVENT_TIMELINE_CHANGED,
+                            Player.EVENT_MEDIA_ITEM_TRANSITION,
+                            Player.EVENT_IS_PLAYING_CHANGED,
+                            Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED,
+                        )
+                    ) {
+                        queuePreparer.schedule()
+                    }
+                }
+
                 override fun onPlaybackStateChanged(playbackState: Int) {
                     updatePlayerState()
                     if (playbackState == Player.STATE_ENDED) {
@@ -293,14 +300,14 @@ object EnhancedMusicPlayerManager {
                         isAutomaticTransition ||
                         reason == Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT
                     ) {
-                        _currentPosition.value = 0L
-                        _playerState.value = _playerState.value.copy(position = 0L)
+                        currentPositionState.value = 0L
+                        playbackState.value = playbackState.value.copy(position = 0L)
                     }
                     prefetchNextTrack()
                 }
 
                 override fun onRepeatModeChanged(repeatMode: Int) {
-                    _repeatMode.value =
+                    repeatModeState.value =
                         when (repeatMode) {
                             Player.REPEAT_MODE_ONE -> RepeatMode.ONE
                             Player.REPEAT_MODE_ALL -> RepeatMode.ALL
@@ -320,108 +327,6 @@ object EnhancedMusicPlayerManager {
         )
     }
 
-    private fun syncCurrentTrackFromMediaItem(
-        controller: Player,
-        mediaItem: MediaItem,
-    ) {
-        val trackId = mediaItem.mediaId
-        val currentQ = _queue.value
-        val queueIndex =
-            MusicQueuePlanner.currentQueueIndex(
-                queueIds = currentQ.map { it.videoId },
-                playerIndex = controller.currentMediaItemIndex,
-                currentTrackId = trackId,
-            )
-        val track = currentQ.getOrNull(queueIndex) ?: currentQ.find { it.videoId == trackId }
-        if (track != null) {
-            val resolvedIndex =
-                if (queueIndex != MusicQueuePlanner.INDEX_UNSET) {
-                    queueIndex
-                } else {
-                    currentQ.indexOf(track)
-                }
-            _currentTrack.value = track
-            _currentQueueIndex.value = resolvedIndex.coerceAtLeast(0)
-        }
-        if (
-            pendingPlayNextMediaId == trackId &&
-            (
-                pendingPlayNextMediaIndex == MusicQueuePlanner.INDEX_UNSET ||
-                    pendingPlayNextMediaIndex == controller.currentMediaItemIndex
-            )
-        ) {
-            clearPendingPlayNext()
-        }
-    }
-
-    private fun enforcePendingPlayNext(
-        controller: Player,
-        mediaItem: MediaItem,
-        isAutomaticTransition: Boolean,
-    ): Boolean {
-        val expectedMediaId = pendingPlayNextMediaId
-        val actualMediaId = mediaItem.mediaId
-        if (!MusicQueuePlanner.shouldForcePendingPlayNext(
-                isAutomaticTransition = isAutomaticTransition,
-                pendingMediaId = expectedMediaId,
-                pendingPlayerIndex = pendingPlayNextMediaIndex,
-                actualMediaId = actualMediaId,
-                actualPlayerIndex = controller.currentMediaItemIndex,
-            )
-        ) {
-            return false
-        }
-
-        val targetIndex =
-            findPlayerMediaItemIndex(
-                controller = controller,
-                mediaId = expectedMediaId ?: return false,
-                preferredIndex = pendingPlayNextMediaIndex,
-            )
-        if (targetIndex == MusicQueuePlanner.INDEX_UNSET) {
-            Log.w("EnhancedMusicPlayer", "Pending play-next item $expectedMediaId is missing from player queue")
-            clearPendingPlayNext()
-            return false
-        }
-
-        Log.w(
-            "EnhancedMusicPlayer",
-            "Auto transition landed on $actualMediaId; forcing queued play-next item $expectedMediaId",
-        )
-        controller.seekTo(targetIndex, 0L)
-        controller.play()
-        return true
-    }
-
-    private fun findPlayerMediaItemIndex(
-        controller: Player,
-        mediaId: String,
-        preferredIndex: Int = MusicQueuePlanner.INDEX_UNSET,
-    ): Int {
-        if (
-            preferredIndex in 0 until controller.mediaItemCount &&
-            controller.getMediaItemAt(preferredIndex).mediaId == mediaId
-        ) {
-            return preferredIndex
-        }
-
-        for (index in 0 until controller.mediaItemCount) {
-            if (controller.getMediaItemAt(index).mediaId == mediaId) {
-                return index
-            }
-        }
-        return MusicQueuePlanner.INDEX_UNSET
-    }
-
-    private fun currentPlaybackQueueIndex(): Int {
-        val queue = _queue.value
-        return MusicQueuePlanner.currentQueueIndex(
-            queueIds = queue.map { it.videoId },
-            playerIndex = player?.currentMediaItemIndex ?: MusicQueuePlanner.INDEX_UNSET,
-            currentTrackId = _currentTrack.value?.videoId,
-        )
-    }
-
     /**
      * Where [track] plays from: a device file from its MediaStore URI; anything else from its
      * descriptor, which the audio plugins resolve, with the picture too for a music video that shows one.
@@ -430,41 +335,7 @@ object EnhancedMusicPlayerManager {
         LocalMediaIds.audioUri(track.videoId)
             ?: MusicVideoItems.uri(track, withPicture = carriesPicture(track))
 
-    private fun carriesPicture(track: MusicTrack): Boolean = showVideo && track.isVideoSong && track.videoId !in videoUnavailableIds
-
-    private fun buildMediaItem(
-        track: MusicTrack,
-        uri: Uri = streamUri(track),
-        useCacheKey: Boolean = !LocalMediaIds.isLocal(track.videoId),
-    ): MediaItem {
-        val builder =
-            MediaItem
-                .Builder()
-                .setUri(uri)
-                .setMediaId(track.videoId)
-                .setMediaMetadata(
-                    MediaMetadata
-                        .Builder()
-                        .setTitle(track.title)
-                        .setArtist(track.artist)
-                        .setArtworkUri(Uri.parse(track.highResThumbnailUrl))
-                        .build(),
-                )
-
-        if (useCacheKey) {
-            builder.setCustomCacheKey(track.videoId)
-        }
-        if (uri.scheme == MusicVideoItems.SCHEME || uri.scheme == MusicVideoItems.SONG_SCHEME) {
-            streamItemIds += track.videoId
-            if (uri.scheme == MusicVideoItems.SCHEME) videoItemIds += track.videoId else videoItemIds -= track.videoId
-        } else {
-            streamItemIds -= track.videoId
-            videoItemIds -= track.videoId
-        }
-
-        return builder
-            .build()
-    }
+    internal fun carriesPicture(track: MusicTrack): Boolean = showVideo && track.isVideoSong && track.videoId !in videoUnavailableIds
 
     fun toggleVideoMode() = setVideoMode(!showVideo)
 
@@ -473,55 +344,17 @@ object EnhancedMusicPlayerManager {
      * plays on; showing gives it back, reloading the track once if it started as a song. Queued tracks
      * are rebuilt either way, so a hidden picture is never fetched.
      */
-    fun setVideoMode(show: Boolean) {
-        if (show == showVideo) return
-        showVideo = show
-        Log.d("EnhancedMusicPlayer", "Music video pictures ${if (show) "shown" else "hidden"}")
-        val controller = player ?: return
-        val playing = controller.currentMediaItemIndex
-        val position = controller.currentPosition
-        val tracks = _queue.value.associateBy { it.videoId }
-        for (index in (if (show) playing else playing + 1) until controller.mediaItemCount) {
-            val track = tracks[controller.getMediaItemAt(index).mediaId]?.takeIf { it.isVideoSong } ?: continue
-            if (track.videoId !in streamItemIds || (track.videoId in videoItemIds) == carriesPicture(track)) continue
-            controller.replaceMediaItem(index, buildMediaItem(track))
-            if (index == playing) controller.seekTo(index, position)
-        }
-        applyVideoMode(controller)
-    }
+    fun setVideoMode(show: Boolean) = performSetVideoMode(show)
 
     /** A surface showing the picture is on screen; the picture track plays only while one is. */
-    fun acquireVideoSurface() {
-        videoSurfaces++
-        player?.let(::applyVideoMode)
-    }
+    fun acquireVideoSurface() = performAcquireVideoSurface()
 
-    fun releaseVideoSurface() {
-        videoSurfaces = (videoSurfaces - 1).coerceAtLeast(0)
-        player?.let(::applyVideoMode)
-    }
+    fun releaseVideoSurface() = performReleaseVideoSurface()
 
     /** The service found no playable picture for [videoId]; it plays as its song from now on. */
-    fun onVideoUnavailable(videoId: String) {
-        videoUnavailableIds += videoId
-        videoItemIds -= videoId
-        player?.let(::applyVideoMode)
-    }
+    fun onVideoUnavailable(videoId: String) = performOnVideoUnavailable(videoId)
 
-    private fun applyVideoMode(controller: Player) {
-        val currentId = _currentTrack.value?.videoId
-        _videoShown.value = showVideo && currentId != null && currentId in videoItemIds
-        val play = _videoShown.value && videoSurfaces > 0
-        val disabled = androidx.media3.common.C.TRACK_TYPE_VIDEO in controller.trackSelectionParameters.disabledTrackTypes
-        if (disabled != play) return
-        controller.trackSelectionParameters =
-            controller.trackSelectionParameters
-                .buildUpon()
-                .setTrackTypeDisabled(androidx.media3.common.C.TRACK_TYPE_VIDEO, !play)
-                .build()
-    }
-
-    private fun clearPendingPlayNext() {
+    internal fun clearPendingPlayNext() {
         pendingPlayNextMediaId = null
         pendingPlayNextMediaIndex = MusicQueuePlanner.INDEX_UNSET
     }
@@ -532,11 +365,11 @@ object EnhancedMusicPlayerManager {
                 retryCount = 0
             }
 
-            _playerState.value =
-                _playerState.value.copy(
+            playbackState.value =
+                playbackState.value.copy(
                     isPlaying = p.isPlaying,
                     isBuffering = p.playbackState == Player.STATE_BUFFERING,
-                    duration = if (p.duration > 0) p.duration else _playerState.value.duration,
+                    duration = if (p.duration > 0) p.duration else playbackState.value.duration,
                     position = p.currentPosition,
                 )
         }
@@ -550,15 +383,15 @@ object EnhancedMusicPlayerManager {
                     val p = player
                     if (p != null && p.isPlaying) {
                         val position = p.currentPosition
-                        _currentPosition.value = position
+                        currentPositionState.value = position
 
                         // Coarsened deliberately. Every consumer of playerState renders seconds, but a
                         // copy here emits a whole new MusicPlayerState to the mini player and the
                         // playback service, so it must not follow the fast tick.
-                        val state = _playerState.value
+                        val state = playbackState.value
                         val duration = if (p.duration > 0) p.duration else state.duration
                         if (position / 1000L != state.position / 1000L || duration != state.duration) {
-                            _playerState.value = state.copy(position = position, duration = duration)
+                            playbackState.value = state.copy(position = position, duration = duration)
                         }
 
                         kotlinx.coroutines.delay(
@@ -569,7 +402,7 @@ object EnhancedMusicPlayerManager {
                             },
                         )
                     } else {
-                        withTimeoutOrNull(5000) { _playerState.first { it.isPlaying } }
+                        withTimeoutOrNull(5000) { playbackState.first { it.isPlaying } }
                     }
                 }
             }
@@ -580,21 +413,7 @@ object EnhancedMusicPlayerManager {
     fun setPendingTrack(
         track: MusicTrack,
         sourceName: String? = null,
-    ) {
-        clearPendingPlayNext()
-        player?.stop()
-        player?.clearMediaItems()
-
-        _currentTrack.value = track
-        sourceName?.let { _playingFrom.value = it }
-        _playerState.value =
-            _playerState.value.copy(
-                isPlaying = false,
-                isBuffering = false,
-                isPreparing = true,
-                position = 0,
-            )
-    }
+    ) = performSetPendingTrack(track, sourceName)
 
     fun showPlaybackWarning(message: String) {
         _playbackWarnings.tryEmit(message)
@@ -607,9 +426,7 @@ object EnhancedMusicPlayerManager {
         queue: List<MusicTrack> = emptyList(),
         startIndex: Int = -1,
         sourceName: String? = null,
-    ) {
-        playTrack(track, audioStream.content, queue, startIndex, sourceName = sourceName)
-    }
+    ) = performPlayTrack(track, audioStream, durationSeconds, queue, startIndex, sourceName)
 
     fun playTrack(
         track: MusicTrack,
@@ -619,268 +436,36 @@ object EnhancedMusicPlayerManager {
         startPositionMs: Long = 0,
         sourceName: String? = null,
         localUriOverrides: Map<String, Uri> = emptyMap(),
-    ) {
-        player?.stop()
-        player?.clearMediaItems()
-        clearPendingPlayNext()
-
-        _playerState.value = _playerState.value.copy(isPreparing = false)
-
-        val activeQueue = if (queue.isNotEmpty()) queue else listOf(track)
-        _queue.value = activeQueue
-        _currentTrack.value = track
-        sourceName?.let { _playingFrom.value = it }
-
-        val mediaItems =
-            activeQueue.map { t ->
-                val localUri = localUriOverrides[t.videoId]
-                val uri =
-                    localUri ?: if (t.videoId == track.videoId && audioUrl.isNotEmpty() && !audioUrl.startsWith("music://")) {
-                        Uri.parse(audioUrl)
-                    } else {
-                        streamUri(t)
-                    }
-
-                buildMediaItem(t, uri, useCacheKey = localUri == null && !LocalMediaIds.isLocal(t.videoId))
-            }
-
-        val startIdx = if (startIndex >= 0) startIndex else activeQueue.indexOfFirst { it.videoId == track.videoId }.coerceAtLeast(0)
-
-        player?.setMediaItems(mediaItems, startIdx, startPositionMs)
-        player?.prepare()
-        player?.play()
-
-        prefetchNextTrack()
-    }
+    ) = performPlayTrack(track, audioUrl, queue, startIndex, startPositionMs, sourceName, localUriOverrides)
 
     /**
      * Physically rearranges the queue: the playing track is pinned to the top and everything else
      * is randomized. Applied as individual player moves so playback never restarts or rebuffers.
      */
-    fun shuffleQueue() {
-        scope.launch {
-            val currentQ = _queue.value
-            if (currentQ.size < 2) return@launch
-            val currentIdx =
-                currentPlaybackQueueIndex().takeIf { it in currentQ.indices }
-                    ?: _currentQueueIndex.value.coerceIn(0, currentQ.size - 1)
-            val target =
-                buildList {
-                    add(currentQ[currentIdx])
-                    addAll(currentQ.filterIndexed { index, _ -> index != currentIdx }.shuffled())
-                }
-            _queue.value = target
-            clearPendingPlayNext()
-            player?.let { p ->
-                if (p.mediaItemCount == target.size) {
-                    target.forEachIndexed { targetIdx, track ->
-                        var fromIdx = -1
-                        for (i in targetIdx until p.mediaItemCount) {
-                            if (p.getMediaItemAt(i).mediaId == track.videoId) {
-                                fromIdx = i
-                                break
-                            }
-                        }
-                        if (fromIdx > targetIdx) {
-                            p.moveMediaItem(fromIdx, targetIdx)
-                        }
-                    }
-                }
-            }
-            triggerQueueSave()
-        }
-    }
+    fun shuffleQueue() = performShuffleQueue()
 
-    fun updateAutomixItems(items: List<MusicTrack>) {
-        _automixItems.value =
-            MusicRadioPlanner.seedPool(
-                candidates = items,
-                currentId = _currentTrack.value?.videoId,
-                queueIds = _queue.value.mapTo(HashSet()) { it.videoId },
-            )
-        triggerQueueSave()
-    }
+    fun updateAutomixItems(items: List<MusicTrack>) = performUpdateAutomixItems(items)
 
     /** Radio top-up path: grows the suggestion pool without disturbing what's already in it. */
-    fun appendAutomixItems(items: List<MusicTrack>) {
-        if (items.isEmpty()) return
-        val existing = _automixItems.value
-        val grown =
-            MusicRadioPlanner.growPool(
-                existing = existing,
-                incoming = items,
-                currentId = _currentTrack.value?.videoId,
-                queueIds = _queue.value.mapTo(HashSet()) { it.videoId },
-            )
-        if (grown === existing) return
-        _automixItems.value = grown
-        triggerQueueSave()
-    }
+    fun appendAutomixItems(items: List<MusicTrack>) = performAppendAutomixItems(items)
 
-    fun removeAutomixItem(videoId: String) {
-        val updated = _automixItems.value.filterNot { it.videoId == videoId }
-        if (updated.size != _automixItems.value.size) {
-            _automixItems.value = updated
-            triggerQueueSave()
-        }
-    }
-
-    private fun triggerQueueSave() {
-        val currentQ = _queue.value
-        if (currentQ.isNotEmpty()) {
-            queuePersistence?.saveQueueDebounced(
-                queue = currentQ,
-                currentIndex = _currentQueueIndex.value,
-                currentPosition = _currentPosition.value, // Use StateFlow for thread safety
-                currentTrackId = _currentTrack.value?.videoId,
-                shuffleEnabled = _shuffleEnabled.value,
-                repeatMode =
-                    when (_repeatMode.value) {
-                        RepeatMode.OFF -> 0
-                        RepeatMode.ALL -> 1
-                        RepeatMode.ONE -> 2
-                    },
-                automix = _automixItems.value,
-            )
-        }
-    }
+    fun removeAutomixItem(videoId: String) = performRemoveAutomixItem(videoId)
 
     /**
      * Restore queue from persistent storage
      */
-    private suspend fun restoreSavedQueue() {
-        try {
-            val savedState = queuePersistence?.restoreQueue() ?: return
 
-            if (savedState.queue.isEmpty()) return
+    fun togglePlayPause() = performTogglePlayPause()
 
-            if ((player?.mediaItemCount ?: 0) > 0) return
+    fun playNext(track: MusicTrack) = performPlayNext(track)
 
-            Log.d("EnhancedMusicPlayer", "Restoring saved queue: ${savedState.queue.size} tracks")
+    fun addToQueue(track: MusicTrack) = performAddToQueue(track)
 
-            _queue.value = savedState.queue
-            _currentQueueIndex.value = savedState.currentIndex.coerceIn(0, savedState.queue.size - 1)
-            _shuffleEnabled.value = savedState.shuffleEnabled
-            _repeatMode.value =
-                when (savedState.repeatMode) {
-                    1 -> RepeatMode.ALL
-                    2 -> RepeatMode.ONE
-                    else -> RepeatMode.OFF
-                }
-            _automixItems.value = savedState.automix
+    fun playNext() = performPlayNext()
 
-            val currentTrack =
-                savedState.currentTrackId?.let { id ->
-                    savedState.queue.find { it.videoId == id }
-                } ?: savedState.queue.getOrNull(savedState.currentIndex)
+    fun playPrevious() = performPlayPrevious()
 
-            currentTrack?.let {
-                _currentTrack.value = it
-                if (it.duration > 0) {
-                    _playerState.value = _playerState.value.copy(duration = it.duration * 1000L)
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("EnhancedMusicPlayer", "Failed to restore queue", e)
-        }
-    }
-
-    fun togglePlayPause() {
-        scope.launch {
-            player?.let { p ->
-                if (p.mediaItemCount == 0 && _currentTrack.value != null) {
-                    _currentTrack.value?.let { track ->
-                        _playerEvents.emit(PlayerEvent.RequestPlayTrack(track))
-                    }
-                } else if (p.isPlaying) {
-                    p.pause()
-                } else {
-                    p.play()
-                }
-            }
-        }
-    }
-
-    fun playNext(track: MusicTrack) {
-        val currentQ = _queue.value.toMutableList()
-        val insertIdx =
-            MusicQueuePlanner.playNextInsertionIndex(
-                queueIds = currentQ.map { it.videoId },
-                playerIndex = player?.currentMediaItemIndex ?: MusicQueuePlanner.INDEX_UNSET,
-                currentTrackId = _currentTrack.value?.videoId,
-            )
-
-        currentQ.add(insertIdx, track)
-        _queue.value = currentQ
-        pendingPlayNextMediaId = track.videoId
-        pendingPlayNextMediaIndex = insertIdx
-
-        player?.let { p ->
-            val playerInsertIdx =
-                when {
-                    p.currentMediaItemIndex in 0 until p.mediaItemCount -> p.currentMediaItemIndex + 1
-                    else -> insertIdx
-                }.coerceIn(0, p.mediaItemCount)
-
-            if (playerInsertIdx <= p.mediaItemCount) {
-                p.addMediaItem(playerInsertIdx, buildMediaItem(track))
-                pendingPlayNextMediaIndex = playerInsertIdx
-            }
-        }
-
-        triggerQueueSave()
-    }
-
-    fun addToQueue(track: MusicTrack) {
-        val currentQ = _queue.value.toMutableList()
-        currentQ.add(track)
-        _queue.value = currentQ
-
-        player?.let { p ->
-            p.addMediaItem(buildMediaItem(track))
-        }
-
-        triggerQueueSave()
-    }
-
-    fun playNext() {
-        val queue = _queue.value
-        val idx = currentPlaybackQueueIndex()
-
-        if (idx != -1 && idx < queue.size - 1) {
-            val nextTrack = queue[idx + 1]
-            setPendingTrack(nextTrack)
-            scope.launch { _playerEvents.emit(PlayerEvent.RequestPlayTrack(nextTrack)) }
-        }
-    }
-
-    fun playPrevious() {
-        scope.launch {
-            val queue = _queue.value
-            val idx = currentPlaybackQueueIndex()
-
-            if ((player?.currentPosition ?: 0) > 3000) {
-                player?.seekTo(0)
-                return@launch
-            }
-
-            if (idx > 0) {
-                val prevTrack = queue[idx - 1]
-                setPendingTrack(prevTrack)
-                _playerEvents.emit(PlayerEvent.RequestPlayTrack(prevTrack))
-            }
-        }
-    }
-
-    fun playFromQueue(index: Int) {
-        val queue = _queue.value
-        if (index in queue.indices) {
-            clearPendingPlayNext()
-            val track = queue[index]
-            setPendingTrack(track)
-            scope.launch { _playerEvents.emit(PlayerEvent.RequestPlayTrack(track)) }
-        }
-    }
+    fun playFromQueue(index: Int) = performPlayFromQueue(index)
 
     /**
      * Shuffle is app-owned state, not ExoPlayer's shuffle mode: enabling it physically
@@ -888,9 +473,9 @@ object EnhancedMusicPlayerManager {
      */
     fun toggleShuffle() {
         scope.launch {
-            val enabling = !_shuffleEnabled.value
+            val enabling = !shuffleEnabledState.value
             player?.shuffleModeEnabled = false
-            _shuffleEnabled.value = enabling
+            shuffleEnabledState.value = enabling
             if (enabling) shuffleQueue()
         }
     }
@@ -911,11 +496,11 @@ object EnhancedMusicPlayerManager {
 
     fun seekTo(position: Long) {
         scope.launch {
-            val duration = player?.duration?.takeIf { it > 0 } ?: _playerState.value.duration.takeIf { it > 0 }
+            val duration = player?.duration?.takeIf { it > 0 } ?: playbackState.value.duration.takeIf { it > 0 }
             val target = duration?.let { position.coerceIn(0L, it) } ?: position.coerceAtLeast(0L)
 
-            _currentPosition.value = target
-            _playerState.value = _playerState.value.copy(position = target)
+            currentPositionState.value = target
+            playbackState.value = playbackState.value.copy(position = target)
             player?.seekTo(target)
         }
     }
@@ -923,15 +508,15 @@ object EnhancedMusicPlayerManager {
     fun getCurrentPosition(): Long =
         try {
             if (player?.isPlaying == true) {
-                player?.currentPosition ?: _currentPosition.value
+                player?.currentPosition ?: currentPositionState.value
             } else {
-                _currentPosition.value
+                currentPositionState.value
             }
         } catch (e: Exception) {
-            _currentPosition.value
+            currentPositionState.value
         }
 
-    fun getDuration(): Long = _playerState.value.duration
+    fun getDuration(): Long = playbackState.value.duration
 
     fun toggleLike() {
         _isLiked.value = !_isLiked.value
@@ -943,7 +528,7 @@ object EnhancedMusicPlayerManager {
     }
 
     fun emitToggleLikeEvent() {
-        scope.launch { _playerEvents.emit(PlayerEvent.RequestToggleLike) }
+        scope.launch { eventFlow.emit(PlayerEvent.RequestToggleLike) }
     }
 
     fun play() {
@@ -957,14 +542,14 @@ object EnhancedMusicPlayerManager {
     fun stop() {
         scope.launch {
             player?.stop()
-            _playerState.value =
-                _playerState.value.copy(
+            playbackState.value =
+                playbackState.value.copy(
                     isPlaying = false,
                     isBuffering = false,
                     isPreparing = false,
                     position = 0L,
                 )
-            _currentPosition.value = 0L
+            currentPositionState.value = 0L
         }
     }
 
@@ -995,90 +580,17 @@ object EnhancedMusicPlayerManager {
         }
     }
 
-    fun isPlaying(): Boolean = _playerState.value.isPlaying
+    fun isPlaying(): Boolean = playbackState.value.isPlaying
 
-    fun clearCurrentTrack() {
-        scope.launch {
-            player?.pause()
-            player?.stop()
-            player?.clearMediaItems()
-            _currentTrack.value = null
-            _queue.value = emptyList()
-            _automixItems.value = emptyList()
-            playContextGenre = null
-            pendingRadioSeedId = null
-            pendingRadioPlaylistId = null
-            _radioLoading.value = false
-            _currentQueueIndex.value = 0
-            clearPendingPlayNext()
-            _currentPosition.value = 0L
-            _playingFrom.value = "Flow Music"
-            _playerState.value = MusicPlayerState()
-            appContext?.let { context ->
-                context.stopService(Intent(context, Media3MusicService::class.java))
-            }
-        }
-    }
+    fun clearCurrentTrack() = performClearCurrentTrack()
 
-    fun removeMediaItem(index: Int) {
-        scope.launch {
-            val currentQ = _queue.value.toMutableList()
-            if (index in currentQ.indices) {
-                currentQ.removeAt(index)
-                _queue.value = currentQ
-                when {
-                    pendingPlayNextMediaIndex == index -> clearPendingPlayNext()
-                    pendingPlayNextMediaIndex > index -> pendingPlayNextMediaIndex--
-                }
-
-                player?.let { p ->
-                    if (index < p.mediaItemCount) {
-                        p.removeMediaItem(index)
-                    }
-                }
-                triggerQueueSave()
-            }
-        }
-    }
+    fun removeMediaItem(index: Int) = performRemoveMediaItem(index)
 
     fun moveMediaItem(
         fromIndex: Int,
         toIndex: Int,
-    ) {
-        scope.launch {
-            val currentQ = _queue.value.toMutableList()
-            if (fromIndex in currentQ.indices && toIndex in currentQ.indices) {
-                val item = currentQ.removeAt(fromIndex)
-                currentQ.add(toIndex, item)
-                _queue.value = currentQ
-                clearPendingPlayNext()
-
-                player?.let { p ->
-                    if (fromIndex < p.mediaItemCount && toIndex < p.mediaItemCount) {
-                        p.moveMediaItem(fromIndex, toIndex)
-                    }
-                }
-                triggerQueueSave()
-            }
-        }
-    }
+    ) = performMoveMediaItem(fromIndex, toIndex)
 }
-
-data class MusicPlayerState(
-    val isPlaying: Boolean = false,
-    val isBuffering: Boolean = false,
-    val isPreparing: Boolean = false,
-    val isReady: Boolean = false,
-    val playWhenReady: Boolean = false,
-    val duration: Long = 0,
-    val position: Long = 0,
-)
 
 private const val PRECISE_POSITION_INTERVAL_MS = 250L
 private const val COARSE_POSITION_INTERVAL_MS = 1_000L
-
-enum class RepeatMode {
-    OFF,
-    ALL,
-    ONE,
-}
