@@ -2,7 +2,10 @@ package io.github.aedev.flow.ui.tv.focus
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -13,10 +16,17 @@ import androidx.compose.ui.focus.focusRequester
  * actually changes. A structural key prevents recompositions from stealing focus back.
  */
 @Composable
-fun Modifier.tvInitialFocus(vararg keys: Any?): Modifier {
+fun Modifier.tvInitialFocus(
+    vararg keys: Any?,
+    onFirstComposition: Boolean = true,
+): Modifier {
     val requester = remember { FocusRequester() }
     val requestKeys = keys.toList()
+    var firstComposition by remember { mutableStateOf(true) }
     LaunchedEffect(requestKeys) {
+        val skip = firstComposition && !onFirstComposition
+        firstComposition = false
+        if (skip) return@LaunchedEffect
         withFrameNanos { }
         runCatching { requester.requestFocus() }
     }

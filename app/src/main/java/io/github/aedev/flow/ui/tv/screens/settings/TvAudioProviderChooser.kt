@@ -1,5 +1,6 @@
 package io.github.aedev.flow.ui.tv.screens.settings
 
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,7 +10,16 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.github.aedev.flow.R
@@ -36,7 +46,24 @@ internal fun LazyListScope.audioProviderChooserItems(
     }
     items(ordered, key = { "audio-order-${it.id}" }) { plugin ->
         val index = ordered.indexOfFirst { it.id == plugin.id }
-        Column(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        val rowFocus = remember { FocusRequester() }
+        var moveDirection by remember { mutableStateOf<Int?>(null) }
+        LaunchedEffect(index) {
+            val direction = moveDirection
+            if ((direction == -1 && index == 0) || (direction == 1 && index == ordered.lastIndex)) {
+                withFrameNanos { }
+                rowFocus.requestFocus()
+            }
+            moveDirection = null
+        }
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+                .focusRequester(rowFocus)
+                .focusGroup(),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             Text(
                 stringResource(R.string.tv_plugins_audio_priority_item, index + 1, plugin.manifest.name),
                 style = MaterialTheme.typography.titleMedium,
@@ -47,6 +74,7 @@ internal fun LazyListScope.audioProviderChooserItems(
                     0
                 ) {
                     TvButton(stringResource(R.string.tv_plugins_move_earlier), {
+                        moveDirection = -1
                         onSelect { current ->
                             current.moveAudio(plugin.id, -1)
                         }
@@ -55,7 +83,12 @@ internal fun LazyListScope.audioProviderChooserItems(
                 if (index <
                     ordered.lastIndex
                 ) {
-                    TvButton(stringResource(R.string.tv_plugins_move_later), { onSelect { current -> current.moveAudio(plugin.id, 1) } })
+                    TvButton(stringResource(R.string.tv_plugins_move_later), {
+                        moveDirection = 1
+                        onSelect { current ->
+                            current.moveAudio(plugin.id, 1)
+                        }
+                    })
                 }
             }
         }

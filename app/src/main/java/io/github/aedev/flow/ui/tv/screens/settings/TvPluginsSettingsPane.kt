@@ -1,5 +1,6 @@
 package io.github.aedev.flow.ui.tv.screens.settings
 
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,6 +43,7 @@ import io.github.aedev.flow.ui.tv.components.TvSectionHeader
 import io.github.aedev.flow.ui.tv.components.TvSelectionRow
 import io.github.aedev.flow.ui.tv.components.TvToggleRow
 import io.github.aedev.flow.ui.tv.focus.ProvideTvColumnPivot
+import io.github.aedev.flow.ui.tv.focus.tvInitialFocus
 import nl.neerdael.milkbeat.catalog.ProviderAccount
 import nl.neerdael.milkbeat.plugin.MetadataSurface
 import nl.neerdael.milkbeat.plugin.PluginManifest
@@ -74,7 +76,18 @@ fun TvPluginsSettingsPane(
     }
 
     ProvideTvColumnPivot {
-        LazyColumn(modifier = modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        LazyColumn(
+            modifier =
+                modifier
+                    .fillMaxSize()
+                    .tvInitialFocus(
+                        choosing,
+                        openPlugin,
+                        consent?.pending,
+                        onFirstComposition = false,
+                    ).focusGroup(),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             val plugin = state.plugins.firstOrNull { it.id == openPlugin }
             val role = choosing
             when {

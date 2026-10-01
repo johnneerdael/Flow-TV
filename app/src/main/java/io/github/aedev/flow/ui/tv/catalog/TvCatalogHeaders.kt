@@ -5,9 +5,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
@@ -81,18 +84,27 @@ internal fun TvCatalogCoverPane(
 ) {
     val dimens = LocalTvDimens.current
     Column(
-        modifier = modifier.width(dimens.coverPaneWidth),
+        modifier = modifier.width(dimens.coverPaneWidth).fillMaxHeight(),
         verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        header.attribution?.let { attribution ->
+        header.attribution?.takeIf { it.entity?.kind == EntityKind.ARTIST }?.let { attribution ->
             TvAttribution(attribution, onOpen)
         }
-        Surface(shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surfaceContainer) {
+        Surface(
+            modifier = Modifier.weight(1f, fill = false),
+            shape = MaterialTheme.shapes.large,
+            color = MaterialTheme.colorScheme.surfaceContainer,
+        ) {
             AsyncImage(
                 model = header.artwork?.url,
                 contentDescription = header.title,
-                modifier = Modifier.size(dimens.coverArtSize),
+                modifier =
+                    Modifier
+                        .sizeIn(
+                            maxWidth = dimens.coverArtSize,
+                            maxHeight = dimens.coverArtSize,
+                        ).aspectRatio(1f, matchHeightConstraintsFirst = true),
                 contentScale = ContentScale.Crop,
             )
         }
