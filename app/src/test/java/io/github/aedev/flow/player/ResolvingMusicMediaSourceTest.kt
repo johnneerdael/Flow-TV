@@ -1,5 +1,6 @@
 package io.github.aedev.flow.player
 
+import android.app.Application
 import android.os.Looper
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Timeline
@@ -25,7 +26,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [28])
+@Config(sdk = [28], application = Application::class)
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 class ResolvingMusicMediaSourceTest {
     private val item = MediaItem.fromUri("music://fixture")

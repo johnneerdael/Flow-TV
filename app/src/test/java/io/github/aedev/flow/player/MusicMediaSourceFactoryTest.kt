@@ -1,5 +1,6 @@
 package io.github.aedev.flow.player
 
+import android.app.Application
 import android.net.Uri
 import androidx.media3.common.MediaItem
 import androidx.media3.datasource.DataSource
@@ -19,7 +20,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [28])
+@Config(sdk = [28], application = Application::class)
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 class MusicMediaSourceFactoryTest {
     private val factory = MusicMediaSourceFactory(mockk<MediaSource.Factory>(), mockk<DataSource.Factory>()) { false }

@@ -1,5 +1,6 @@
 package io.github.aedev.flow.utils
 
+import android.app.Application
 import android.content.Context
 import android.webkit.WebView
 import androidx.test.core.app.ApplicationProvider
@@ -18,7 +19,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [28])
+@Config(sdk = [28], application = Application::class)
 @OptIn(ExperimentalCoroutinesApi::class)
 class WebViewStreamerTest {
     private class RecordingWebView(
