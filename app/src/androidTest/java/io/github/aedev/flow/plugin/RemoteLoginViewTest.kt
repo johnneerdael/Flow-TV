@@ -6,13 +6,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.aedev.flow.data.account.signin.PhoneInput
 import io.github.aedev.flow.data.account.signin.PhonePointerAction
-import io.github.aedev.flow.ui.tv.screens.account.LoginPhoneViewport
+import io.github.aedev.flow.ui.components.shared.FlowWebViewStream
 import io.github.aedev.flow.ui.tv.screens.account.LoginWebViewController
+import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 import io.github.aedev.flow.ui.tv.theme.TvTheme
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -62,7 +64,8 @@ class RemoteLoginViewTest {
                         androidx.compose.runtime.remember {
                             LoginWebViewController(context, {}, method, {}, activity.window).also { controller = it }
                         }
-                    LoginPhoneViewport(login)
+                    val dimensions = LocalTvDimens.current
+                    FlowWebViewStream(login.stream, DpSize(dimensions.signInViewportWidth, dimensions.signInViewportHeight))
                 }
             }
         }

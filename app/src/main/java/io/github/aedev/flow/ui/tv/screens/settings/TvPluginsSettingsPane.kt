@@ -43,6 +43,7 @@ import io.github.aedev.flow.ui.tv.components.TvSelectionRow
 import io.github.aedev.flow.ui.tv.components.TvToggleRow
 import io.github.aedev.flow.ui.tv.focus.ProvideTvColumnPivot
 import nl.neerdael.milkbeat.catalog.ProviderAccount
+import nl.neerdael.milkbeat.plugin.MetadataSurface
 import nl.neerdael.milkbeat.plugin.PluginManifest
 
 private enum class ProviderRole { MUSIC, AUDIO, VIDEO }
@@ -55,6 +56,7 @@ private enum class ProviderRole { MUSIC, AUDIO, VIDEO }
 fun TvPluginsSettingsPane(
     onSignIn: (pluginId: String, methodId: String) -> Unit,
     modifier: Modifier = Modifier,
+    homeRevision: Int = 0,
     viewModel: TvPluginsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -63,6 +65,13 @@ fun TvPluginsSettingsPane(
     var choosing by rememberSaveable { mutableStateOf<ProviderRole?>(null) }
     var url by rememberSaveable { mutableStateOf("") }
     val consent = state.adding as? AddPluginState.Consent
+    LaunchedEffect(homeRevision) {
+        if (viewModel.consumeHomeRequest(homeRevision)) {
+            openPlugin = null
+            choosing = null
+            url = ""
+        }
+    }
 
     ProvideTvColumnPivot {
         LazyColumn(modifier = modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -74,13 +83,30 @@ fun TvPluginsSettingsPane(
                 }
 
                 role != null -> {
-                    chooserItems(role, state.plugins, state.selection) { selection ->
-                        viewModel.select(selection)
-                        choosing = null
-                    }
+                    chooserItems(
+                        role,
+                        state.plugins,
+                        state.selection,
+                        onSelect = { selection ->
+                            viewModel.select(selection)
+                            if (role != ProviderRole.AUDIO) choosing = null
+                        },
+                        onDone = { choosing = null },
+                        onAudioChange = viewModel::mutateSelection,
+                    )
                 }
 
                 plugin != null -> {
+                    if (state.accounts[plugin.id] is ProviderAccount.SignedIn &&
+                        setOf(MetadataSurface.LIBRARY, MetadataSurface.TRACKS).all {
+                            it in
+                                plugin.manifest.roles.metadata
+                                    ?.surfaces
+                                    .orEmpty()
+                        }
+                    ) {
+                        item(key = "preload-${plugin.id}") { TvPlaylistPreloadItem(plugin, viewModel.preloadJobs) }
+                    }
                     detailItems(
                         plugin = plugin,
                         account = state.accounts[plugin.id],
@@ -230,9 +256,17 @@ private fun LazyListScope.chooserItems(
     plugins: List<InstalledPlugin>,
     selection: ProviderSelection,
     onSelect: (ProviderSelection) -> Unit,
+    onDone: () -> Unit,
+    onAudioChange: ((ProviderSelection) -> ProviderSelection) -> Unit,
 ) {
-    item(key = "chooser-title") { TvSectionHeader(stringResource(role.label())) }
+    item(key = "chooser-title") {
+        TvSectionHeader(stringResource(if (role == ProviderRole.AUDIO) R.string.tv_plugins_audio_priority else role.label()))
+    }
     val eligible = plugins.filter { role.offeredBy(it.manifest) }
+    if (role == ProviderRole.AUDIO) {
+        audioProviderChooserItems(eligible, selection, onAudioChange, onDone)
+        return
+    }
     if (role != ProviderRole.AUDIO) {
         item(key = "chooser-none") {
             TvSelectionRow(
@@ -322,7 +356,7 @@ private fun StatusText(
 @Composable
 private fun rolesLabel(manifest: PluginManifest): String =
     listOfNotNull(
-        manifest.roles.metadata?.let { stringResource(R.string.tv_plugins_role_music) },
+        manifest.roles.metadata?.let { stringResource(R.string.tv_plugins_role_metadata) },
         manifest.roles.audio?.let { stringResource(R.string.tv_plugins_role_audio) },
         manifest.roles.video?.let { stringResource(R.string.tv_plugins_role_video) },
     ).joinToString(", ")
@@ -340,7 +374,7 @@ private fun providerNames(
 
 private fun ProviderRole.label(): Int =
     when (this) {
-        ProviderRole.MUSIC -> R.string.tv_plugins_music
+        ProviderRole.MUSIC -> R.string.tv_plugins_metadata
         ProviderRole.AUDIO -> R.string.tv_plugins_audio
         ProviderRole.VIDEO -> R.string.tv_plugins_video
     }
@@ -359,13 +393,10 @@ private fun ProviderRole.current(selection: ProviderSelection): List<String> =
         ProviderRole.VIDEO -> listOfNotNull(selection.video)
     }
 
-// Audio is an ordered list: picking a plugin moves it to the front, where it is tried first.
 private fun ProviderRole.with(
     selection: ProviderSelection,
     pluginId: String?,
-): ProviderSelection =
-    when (this) {
-        ProviderRole.MUSIC -> selection.copy(metadata = pluginId)
-        ProviderRole.VIDEO -> selection.copy(video = pluginId)
-        ProviderRole.AUDIO -> selection.copy(audio = listOfNotNull(pluginId) + (selection.audio - setOfNotNull(pluginId)))
-    }
+): ProviderSelection {
+    check(this != ProviderRole.AUDIO)
+    return if (this == ProviderRole.MUSIC) selection.copy(metadata = pluginId) else selection.copy(video = pluginId)
+}

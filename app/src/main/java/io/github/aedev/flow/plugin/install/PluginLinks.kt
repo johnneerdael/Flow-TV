@@ -24,10 +24,9 @@ class PluginLinks
         fun offer(uri: Uri?): Boolean {
             if (uri?.scheme != "milkbeat" || uri.host != "add-plugin") return false
             // Debug builds also take plain http, so a plugin can be served from a dev machine on the LAN.
-            val url =
-                uri.getQueryParameter("url")?.takeIf { it.startsWith("https://") || (BuildConfig.DEBUG && it.startsWith("http://")) }
-                    ?: return false
-            _pending.value = url
+            val url = uri.getQueryParameter("url")?.let(::pluginUrl) ?: return false
+            if (url.scheme != "https" && !BuildConfig.DEBUG) return false
+            _pending.value = url.toString()
             return true
         }
 

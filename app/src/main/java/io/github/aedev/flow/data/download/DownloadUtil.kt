@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.Display
 import androidx.core.net.toUri
 import androidx.media3.database.DatabaseProvider
+import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.ResolvingDataSource
@@ -23,6 +24,9 @@ import io.github.aedev.flow.di.DownloadCache
 import io.github.aedev.flow.di.PlayerCache
 import io.github.aedev.flow.network.AppProxyManager
 import io.github.aedev.flow.player.MusicVideoItems
+import io.github.aedev.flow.player.datasource.PluginMusicDataSourceFactory
+import io.github.aedev.flow.player.datasource.bindCachedMusicRendition
+import io.github.aedev.flow.player.datasource.hasCompleteMusicDownload
 import io.github.aedev.flow.player.stream.VideoCodecUtils
 import io.github.aedev.flow.plugin.playback.PictureLimits
 import io.github.aedev.flow.plugin.playback.PluginAudio
@@ -37,6 +41,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import nl.neerdael.milkbeat.plugin.AudioQuality
 import okhttp3.OkHttpClient
 import java.io.IOException
@@ -74,9 +80,6 @@ class DownloadUtil
         )
 
         private val songUrlCache = java.util.concurrent.ConcurrentHashMap<String, PlayableUrl>()
-
-        // The rendition cached bytes belong to; a different one must not be spliced onto them.
-        private val cachedRenditions = java.util.concurrent.ConcurrentHashMap<String, String>()
 
         /** Music videos play no taller than the display, and at most at [MusicVideoFormats.MAX_HEIGHT]. */
         private val maxVideoHeight: Int by lazy {
@@ -199,68 +202,121 @@ class DownloadUtil
                 downloadCacheFactory
                     .setUpstreamDataSourceFactory(playerCacheFactory)
 
-            return ResolvingDataSource.Factory(cachedDataSourceFactory) { dataSpec ->
-                if (dataSpec.uri.scheme in setOf("file", "content", "android.resource")) {
-                    return@Factory dataSpec
-                }
-                // An HLS playlist's segments and key come as the playlist's own URLs, already playable.
-                if (dataSpec.uri.scheme == "https" || dataSpec.uri.scheme == "http") return@Factory dataSpec
-                // An HLS playlist itself carries no cache key: it resolves afresh and is never kept under
-                // the track, since its signed URLs expire.
-                if (dataSpec.key == null) {
-                    val resolved = runBlocking(Dispatchers.IO) { resolveForPlayback(dataSpec.uri, picture = false) }
-                    Log.d(TAG, "[Player] Resolved playlist ${resolved.stream.cacheKey} via ${resolved.pluginId}")
-                    return@Factory dataSpec
-                        .buildUpon()
-                        .setUri(resolved.stream.url.toUri())
-                        .setHttpRequestHeaders(resolved.stream.headers)
-                        .build()
-                }
+            fun resolvingFactory(binding: ResolvedAudio? = null): DataSource.Factory {
+                val renewal = Mutex()
+                var bound = binding
 
-                val mediaId = dataSpec.key ?: error("No media id (key) in dataSpec")
-
-                try {
-                    if (downloadCache.isCached(mediaId, dataSpec.position, maxOf(dataSpec.length, 1))) {
-                        Log.d(TAG, "[Player] Serving from downloadCache: $mediaId")
+                fun resolve(
+                    uri: Uri,
+                    picture: Boolean,
+                ): ResolvedAudio =
+                    runBlocking(Dispatchers.IO) {
+                        renewal.withLock {
+                            val previous = bound
+                            if (previous == null) {
+                                resolveForPlayback(uri, picture)
+                            } else if (previous.validUntilMs > System.currentTimeMillis()) {
+                                previous
+                            } else {
+                                pluginAudio.refreshBound(previous).also { bound = it }
+                            }
+                        }
+                    }
+                val playbackCache = if (binding == null) cachedDataSourceFactory else playerCacheFactory
+                return ResolvingDataSource.Factory(playbackCache) { dataSpec ->
+                    if (dataSpec.uri.scheme in setOf("file", "content", "android.resource")) {
                         return@Factory dataSpec
                     }
-                } catch (e: Exception) {
-                    Log.w(TAG, "[Player] downloadCache check error for $mediaId", e)
+                    // An HLS playlist's segments and key come as the playlist's own URLs, already playable.
+                    if (dataSpec.uri.scheme == "https" || dataSpec.uri.scheme == "http") return@Factory dataSpec
+                    // An HLS playlist itself carries no cache key: it resolves afresh and is never kept under
+                    // the track, since its signed URLs expire.
+                    if (dataSpec.key == null) {
+                        val resolved = resolve(dataSpec.uri, picture = false)
+                        Log.d(TAG, "[Player] Resolved playlist ${resolved.stream.cacheKey} via ${resolved.pluginId}")
+                        return@Factory dataSpec
+                            .buildUpon()
+                            .setUri(resolved.stream.url.toUri())
+                            .setHttpRequestHeaders(resolved.stream.headers)
+                            .build()
+                    }
+
+                    val mediaId = dataSpec.key ?: error("No media id (key) in dataSpec")
+                    binding?.let { snapshot ->
+                        val video = MusicVideoItems.videoIdOfVideoKey(mediaId) != null
+                        val formatId = if (video) snapshot.stream.video?.id else snapshot.stream.renditionId
+                        val token = "${snapshot.pluginId}:${snapshot.stream.cacheKey}:$formatId"
+                        bindCachedMusicRendition(playerCache, mediaId, token)
+                    }
+
                     try {
-                        downloadCache.removeResource(mediaId)
-                    } catch (_: Exception) {
+                        if (binding == null && downloadCache.isCached(mediaId, dataSpec.position, maxOf(dataSpec.length, 1))) {
+                            Log.d(TAG, "[Player] Serving from downloadCache: $mediaId")
+                            return@Factory dataSpec
+                        }
+                    } catch (e: Exception) {
+                        Log.w(TAG, "[Player] downloadCache check error for $mediaId", e)
+                        try {
+                            downloadCache.removeResource(mediaId)
+                        } catch (_: Exception) {
+                        }
                     }
-                }
 
-                try {
-                    if (playerCache.isCached(mediaId, dataSpec.position, CHUNK_LENGTH)) {
-                        Log.d(TAG, "[Player] Serving from playerCache: $mediaId")
-                        return@Factory dataSpec
+                    try {
+                        if (playerCache.isCached(mediaId, dataSpec.position, CHUNK_LENGTH)) {
+                            Log.d(TAG, "[Player] Serving from playerCache: $mediaId")
+                            return@Factory dataSpec
+                        }
+                    } catch (e: Exception) {
+                        Log.w(TAG, "[Player] playerCache check error for $mediaId", e)
                     }
-                } catch (e: Exception) {
-                    Log.w(TAG, "[Player] playerCache check error for $mediaId", e)
-                }
 
-                songUrlCache[mediaId]?.takeIf { it.validUntilMs > System.currentTimeMillis() }?.let { cached ->
-                    Log.d(TAG, "[Player] Using cached URL for $mediaId")
-                    return@Factory buildPlaybackDataSpec(dataSpec, cached.url, cached.headers, chunkLengthFor(mediaId, dataSpec.position))
-                }
+                    songUrlCache[mediaId]?.takeIf { binding == null && it.validUntilMs > System.currentTimeMillis() }?.let { cached ->
+                        Log.d(TAG, "[Player] Using cached URL for $mediaId")
+                        return@Factory buildPlaybackDataSpec(
+                            dataSpec,
+                            cached.url,
+                            cached.headers,
+                            chunkLengthFor(mediaId, dataSpec.position),
+                        )
+                    }
 
-                val picture = MusicVideoItems.videoIdOfVideoKey(mediaId) != null
-                val resolved = runBlocking(Dispatchers.IO) { resolveForPlayback(dataSpec.uri, picture) }
-                val stream = resolved.stream
-                val format = if (picture) stream.video ?: error("${stream.cacheKey} has no picture") else null
-                val url = format?.url ?: stream.url
-                val headers = stream.headers + format?.headers.orEmpty()
-                val rendition = format?.id ?: stream.renditionId
-                if (cachedRenditions.put(mediaId, rendition).let { it != null && it != rendition }) {
-                    runCatching { playerCache.removeResource(mediaId) }
+                    val picture = MusicVideoItems.videoIdOfVideoKey(mediaId) != null
+                    val resolved = resolve(dataSpec.uri, picture)
+                    val stream = resolved.stream
+                    val format = if (picture) stream.video ?: error("${stream.cacheKey} has no picture") else null
+                    val url = format?.url ?: stream.url
+                    val headers = stream.headers + format?.headers.orEmpty()
+                    val rendition = "${resolved.pluginId}:${stream.cacheKey}:${format?.id ?: stream.renditionId}"
+                    bindCachedMusicRendition(playerCache, mediaId, rendition)
+                    songUrlCache[mediaId] = PlayableUrl(url, headers, resolved.validUntilMs)
+                    Log.d(TAG, "[Player] Resolved $mediaId via ${resolved.pluginId}")
+                    buildPlaybackDataSpec(dataSpec, url, headers, chunkLengthFor(mediaId, dataSpec.position))
                 }
-                songUrlCache[mediaId] = PlayableUrl(url, headers, resolved.validUntilMs)
-                Log.d(TAG, "[Player] Resolved $mediaId via ${resolved.pluginId}")
-                buildPlaybackDataSpec(dataSpec, url, headers, chunkLengthFor(mediaId, dataSpec.position))
             }
+            return PluginMusicDataSourceFactory(
+                delegate = resolvingFactory(),
+                resolve = { uri, picture ->
+                    val id = MusicVideoItems.descriptor(uri).ref.providerId
+                    val cached =
+                        runCatching {
+                            completeDownload(id) && (!picture || completeDownload(MusicVideoItems.videoKey(id)))
+                        }.getOrDefault(false)
+                    if (cached) null else resolveForPlayback(uri, picture)
+                },
+                bind = { audio -> resolvingFactory(audio) },
+            )
         }
+
+        private fun completeDownload(id: String): Boolean =
+            hasCompleteMusicDownload(
+                downloadCache,
+                id,
+                downloadManager.downloadIndex
+                    .getDownload(id)
+                    ?.takeIf { it.state == Download.STATE_COMPLETED }
+                    ?.contentLength ?: -1L,
+            )
 
         /**
          * Resolves the stream of the queue item at [uri] ahead of time, as playback would, so the next
@@ -270,7 +326,7 @@ class DownloadUtil
             val descriptor = MusicVideoItems.descriptor(uri)
             val id = descriptor.ref.providerId
             if (songUrlCache[id]?.validUntilMs?.let { it > System.currentTimeMillis() } == true) return
-            if (runCatching { downloadCache.isCached(id, 0, CHUNK_LENGTH) }.getOrDefault(false)) return
+            if (runCatching { completeDownload(id) }.getOrDefault(false)) return
             resolveForPlayback(uri, picture = uri.scheme == MusicVideoItems.SCHEME)
         }
 

@@ -15,6 +15,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -54,6 +55,7 @@ fun TvSettingsScreen(
     val context = LocalContext.current
     val playerPreferences = remember { PlayerPreferences(context.applicationContext) }
     var selectedCategory by rememberSaveable { mutableStateOf(initialCategory) }
+    var pluginHomeRevision by rememberSaveable { mutableIntStateOf(0) }
     val categoryFocus = remember { TvSettingsCategory.entries.associateWith { FocusRequester() } }
     val dimens = LocalTvDimens.current
 
@@ -86,13 +88,17 @@ fun TvSettingsScreen(
                         selected = category == selectedCategory,
                         focusRequester = categoryFocus.getValue(category),
                         onSelect = { selectedCategory = category },
+                        onActivate = {
+                            selectedCategory = category
+                            if (category == TvSettingsCategory.PLUGINS) pluginHomeRevision++
+                        },
                     )
                 }
             }
 
             androidx.compose.foundation.layout.Box(modifier = Modifier.weight(1f)) {
                 when (selectedCategory) {
-                    TvSettingsCategory.PLUGINS -> TvPluginsSettingsPane(onSignIn = onOpenPluginSignIn)
+                    TvSettingsCategory.PLUGINS -> TvPluginsSettingsPane(onSignIn = onOpenPluginSignIn, homeRevision = pluginHomeRevision)
                     TvSettingsCategory.PLAYBACK -> TvPlaybackSettingsPane(playerPreferences)
                     TvSettingsCategory.VISUALIZATIONS -> TvVisualizerSettingsPane()
                     TvSettingsCategory.QUALITY -> TvQualitySettingsPane(playerPreferences)
@@ -111,11 +117,12 @@ private fun TvSettingsCategoryItem(
     selected: Boolean,
     focusRequester: FocusRequester,
     onSelect: () -> Unit,
+    onActivate: () -> Unit,
 ) {
     var focused by remember { mutableStateOf(false) }
 
     Surface(
-        onClick = onSelect,
+        onClick = onActivate,
         modifier =
             Modifier.focusRequester(focusRequester).onFocusChanged { state ->
                 focused = state.isFocused

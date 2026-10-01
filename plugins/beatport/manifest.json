@@ -2,12 +2,12 @@
   "format": 1,
   "api": {
     "min": 1,
-    "target": 1
+    "target": 2
   },
   "id": "nl.neerdael.beatport",
   "name": "Beatport",
-  "version": "0.1.1",
-  "versionCode": 2,
+  "version": "0.1.2",
+  "versionCode": 3,
   "description": "Beatport: stream full-length tracks with your Beatport streaming subscription, and browse the Top 100s, genres with their charts, picks and curated playlists, release, artist and label pages, and your playlists and followed artists and labels.",
   "author": {
     "name": "Milkbeat",
@@ -38,6 +38,7 @@
         "beatport"
       ],
       "reportPlayback": true,
+      "match": true,
       "delivery": "HLS"
     }
   },

@@ -46,14 +46,15 @@ class PluginInstaller
         private val registry: PluginRegistry,
     ) {
         suspend fun fetch(url: String): PendingInstall {
-            val bytes = download(url)
+            val sourceUrl = pluginUrl(url)?.toString() ?: throw PluginInstallException("$url is not a web address")
+            val bytes = download(sourceUrl)
             val pack =
                 try {
                     PluginPackageReader.read(bytes.inputStream())
                 } catch (e: PluginPackageException) {
                     throw PluginInstallException(e.message ?: "Not a valid plugin", e)
                 }
-            return check(pack, url)
+            return check(pack, sourceUrl)
         }
 
         fun check(

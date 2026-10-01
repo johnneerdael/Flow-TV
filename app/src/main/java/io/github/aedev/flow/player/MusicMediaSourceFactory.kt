@@ -8,6 +8,9 @@ import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.MergingMediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
+import io.github.aedev.flow.player.datasource.PluginMusicDataSourceFactory
+import io.github.aedev.flow.player.resolver.ResolvingMusicMediaSource
+import io.github.aedev.flow.plugin.playback.ResolvedAudio
 
 /**
  * The music player's sources. A queue item goes to [default] as ever, except a song whose audio plugin
@@ -20,15 +23,48 @@ class MusicMediaSourceFactory(
     dataSourceFactory: DataSource.Factory,
     private val deliversHls: (MediaItem) -> Boolean,
 ) : MediaSource.Factory by default {
+    private val dataSourceFallback = dataSourceFactory
+    private val resolver = dataSourceFactory as? PluginMusicDataSourceFactory
     private val progressive = ProgressiveMediaSource.Factory(dataSourceFactory)
     private val hls = HlsMediaSource.Factory(dataSourceFactory)
 
     override fun createMediaSource(mediaItem: MediaItem): MediaSource {
         val scheme = mediaItem.localConfiguration?.uri?.scheme
+        val resolving = resolver
+        if (resolving != null && scheme in setOf(MusicVideoItems.SONG_SCHEME, MusicVideoItems.SCHEME)) {
+            return ResolvingMusicMediaSource(mediaItem) {
+                val audio = resolving.resolve(mediaItem.localConfiguration!!.uri, scheme == MusicVideoItems.SCHEME)
+                val sourceFactory = audio?.let(resolving.bind) ?: dataSourceFallback
+                resolvedSource(mediaItem, audio, sourceFactory)
+            }
+        }
         if (scheme == MusicVideoItems.SONG_SCHEME && deliversHls(mediaItem)) return hls.createMediaSource(mediaItem)
         if (scheme != MusicVideoItems.SCHEME) return default.createMediaSource(mediaItem)
+        return resolvedSource(mediaItem, null)
+    }
+
+    internal fun resolvedSource(
+        mediaItem: MediaItem,
+        audio: ResolvedAudio?,
+        sourceFactory: DataSource.Factory = dataSourceFallback,
+    ): MediaSource {
+        val progressive = ProgressiveMediaSource.Factory(sourceFactory)
+        val hls = HlsMediaSource.Factory(sourceFactory)
+        val withPicture = mediaItem.localConfiguration?.uri?.scheme == MusicVideoItems.SCHEME
+        val sound =
+            if (audio
+                    ?.stream
+                    ?.mimeType
+                    ?.substringBefore(';')
+                    ?.lowercase() in
+                setOf("application/x-mpegurl", "application/vnd.apple.mpegurl")
+            ) {
+                hls.createMediaSource(mediaItem)
+            } else {
+                progressive.createMediaSource(mediaItem)
+            }
+        if (!withPicture) return sound
         val videoId = mediaItem.mediaId
-        val sound = progressive.createMediaSource(mediaItem)
         val picture =
             progressive.createMediaSource(
                 MediaItem

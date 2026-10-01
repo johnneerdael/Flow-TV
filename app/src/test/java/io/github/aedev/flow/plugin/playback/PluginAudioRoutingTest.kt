@@ -18,6 +18,7 @@ import nl.neerdael.milkbeat.catalog.EntityRef
 import nl.neerdael.milkbeat.catalog.RadioRequest
 import nl.neerdael.milkbeat.catalog.TrackList
 import nl.neerdael.milkbeat.plugin.ApiRange
+import nl.neerdael.milkbeat.plugin.AudioDelivery
 import nl.neerdael.milkbeat.plugin.AudioMatches
 import nl.neerdael.milkbeat.plugin.AudioRole
 import nl.neerdael.milkbeat.plugin.AudioStream
@@ -103,6 +104,47 @@ class PluginAudioRoutingTest {
             }
             coEvery { host.call("youtube", PluginOperations.resolveAudio, any()) } returns stream
             assertThat(audio.resolve(original, null).track).isEqualTo(candidate)
+        }
+
+    @Test
+    fun `the preferred matching provider runs before a lower priority direct id`() =
+        runTest {
+            val beatport =
+                plugin.copy(
+                    manifest =
+                        plugin.manifest.copy(
+                            id = "beatport",
+                            roles = Roles(audio = AudioRole(setOf("beatport"), match = true, delivery = AudioDelivery.HLS)),
+                        ),
+                )
+            every { registry.state } returns
+                MutableStateFlow(
+                    PluginRegistryState(listOf(plugin, beatport), ProviderSelection(audio = listOf("youtube", "beatport"))),
+                )
+            coEvery { host.call("youtube", PluginOperations.matchAudio, any()) } returns AudioMatches(listOf(candidate))
+            coEvery { host.call("beatport", PluginOperations.resolveAudio, any()) } returns stream
+            val described = original.copy(ids = original.ids + ("beatport" to "123"))
+            assertThat(audio.resolve(described, null).pluginId).isEqualTo("youtube")
+            coVerify(exactly = 0) { host.call("beatport", PluginOperations.resolveAudio, any()) }
+        }
+
+    @Test
+    fun `changing provider priority does not reuse the previous providers stream`() =
+        runTest {
+            val beatport =
+                plugin.copy(
+                    manifest = plugin.manifest.copy(id = "beatport", roles = Roles(audio = AudioRole(setOf("beatport"), match = true))),
+                )
+            val selected =
+                MutableStateFlow(PluginRegistryState(listOf(plugin, beatport), ProviderSelection(audio = listOf("youtube", "beatport"))))
+            every { registry.state } returns selected
+            coEvery { host.call("youtube", PluginOperations.matchAudio, any()) } returns AudioMatches(listOf(candidate))
+            coEvery { host.call("beatport", PluginOperations.matchAudio, any()) } returns
+                AudioMatches(listOf(matchTrack("123", "beatport")))
+            coEvery { host.call("beatport", PluginOperations.resolveAudio, any()) } returns stream
+            assertThat(audio.resolve(original, null).pluginId).isEqualTo("youtube")
+            selected.value = selected.value.copy(selection = ProviderSelection(audio = listOf("beatport", "youtube")))
+            assertThat(audio.resolve(original, null).pluginId).isEqualTo("beatport")
         }
 
     @Test
