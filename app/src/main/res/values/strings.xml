@@ -346,7 +346,7 @@
     <string name="tv_search_empty">Search for songs, artists, albums or videos</string>
     <string name="tv_search_no_results">No videos found</string>
     <string name="tv_search_no_music_results">No music found</string>
-    <string name="tv_search_no_music_plugin">No music plugin is chosen</string>
+    <string name="tv_search_no_music_plugin">No metadata plugin is chosen</string>
     <string name="tv_search_no_video_plugin">No video plugin is chosen</string>
     <string name="tv_search_no_plugin_message">Choose one in Settings, Plugins to search here.</string>
     <string name="tv_library_history">History</string>
@@ -406,6 +406,7 @@
     <string name="tv_plugins_providers">Where content comes from</string>
     <string name="tv_plugins_music">Music</string>
     <string name="tv_plugins_metadata">Metadata</string>
+    <string name="tv_account_library_overview">Your library</string>
     <string name="tv_plugins_audio">Audio</string>
     <string name="tv_plugins_audio_priority">Audio provider priority</string>
     <string name="tv_plugins_audio_priority_summary">Search from top to bottom. If a provider cannot find or play a track, try the next one.</string>

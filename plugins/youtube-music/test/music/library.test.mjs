@@ -96,6 +96,7 @@ describe('library', () => {
   test('opens on liked music, recent listens and saved playlists, read as the account', async () => {
     const { call, calls } = offlinePlugin(routes, { secrets: SIGNED_IN });
     const page = await call('metadata.library', {});
+    assert.deepEqual(page.filters?.options.map((option) => option.id), ['watchHistory', 'history', 'liked', 'playlists']);
     assert.deepEqual(blocks(page).map((block) => [block.id, block.header.title, block.layout]), [
       ['liked', 'Liked Music', 'MULTI_COLUMN_LIST'],
       ['history', 'Recently played', 'MULTI_COLUMN_LIST'],

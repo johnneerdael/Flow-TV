@@ -1,6 +1,8 @@
 package io.github.aedev.flow.ui.tv.screens.account
 
 import com.google.common.truth.Truth.assertThat
+import nl.neerdael.milkbeat.catalog.FilterControl
+import nl.neerdael.milkbeat.catalog.FilterOption
 import org.junit.Test
 
 class TvLibrarySectionStateTest {
@@ -21,5 +23,17 @@ class TvLibrarySectionStateTest {
     @Test
     fun `a read in progress is not started twice`() {
         assertThat(TvLibrarySectionState(isLoading = true).needsLoad("b", nowMs = 0, freshForMs = 0)).isFalse()
+    }
+
+    @Test
+    fun `Spotify sections keep provider labels and omit YouTube only sections`() {
+        val tabs = libraryTabs(FilterControl(listOf(FilterOption("playlists", "Playlists"), FilterOption("liked", "Liked Songs"))))
+        assertThat(tabs.map { it.section })
+            .containsExactly(
+                TvAccountLibrarySection.OVERVIEW,
+                TvAccountLibrarySection.PLAYLISTS,
+                TvAccountLibrarySection.LIKED_MUSIC,
+            ).inOrder()
+        assertThat(tabs.last().label).isEqualTo("Liked Songs")
     }
 }
