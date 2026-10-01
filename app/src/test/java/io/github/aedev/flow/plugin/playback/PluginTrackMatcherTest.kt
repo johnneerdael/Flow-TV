@@ -83,7 +83,10 @@ class PluginTrackMatcherTest {
     fun `concurrent callers share a lookup and cancellation permits retry`() =
         runTest {
             val blocked = CompletableDeferred<AudioMatches>()
-            coEvery { host.call("youtube", PluginOperations.matchAudio, any()) } coAnswers { blocked.await() }
+            var lookups = 0
+            coEvery { host.call("youtube", PluginOperations.matchAudio, any()) } coAnswers {
+                if (lookups++ == 0) blocked.await() else AudioMatches(listOf(candidate))
+            }
             val owner = launch { matcher.match(original, "youtube") }
             runCurrent()
             val waiter = launch { matcher.match(original, "youtube") }
@@ -91,14 +94,25 @@ class PluginTrackMatcherTest {
             coVerify(exactly = 1) { host.call("youtube", PluginOperations.matchAudio, any()) }
             owner.cancel()
             runCurrent()
-            assertThat(waiter.isCancelled).isTrue()
-            assertThat(dao.row).isNull()
+            assertThat(waiter.isCancelled).isFalse()
+            assertThat(waiter.isCompleted).isTrue()
+            assertThat(dao.row?.candidate).isNotNull()
             coEvery { host.call("youtube", PluginOperations.matchAudio, any()) } returns AudioMatches(listOf(candidate))
             val first = async { matcher.match(original, "youtube") }
             val second = async { matcher.match(original, "youtube") }
             assertThat(first.await()).isEqualTo(candidate)
             assertThat(second.await()).isEqualTo(candidate)
             coVerify(exactly = 2) { host.call("youtube", PluginOperations.matchAudio, any()) }
+        }
+
+    @Test
+    fun `indexing distinguishes a failed search from a catalog miss`() =
+        runTest {
+            coEvery { host.call("youtube", PluginOperations.matchAudio, any()) } throws
+                PluginCallException("youtube", PluginError(PluginErrorCode.NETWORK, "offline"))
+            val outcome = runCatching { matcher.matchForIndexing(original, "youtube") }
+            assertThat(outcome.exceptionOrNull()).isInstanceOf(PluginCallException::class.java)
+            assertThat(dao.row).isNull()
         }
 
     @Test

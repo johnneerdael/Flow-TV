@@ -111,6 +111,11 @@ class PluginRegistry
 
         suspend fun select(selection: ProviderSelection) = mutex.withLock { update { it.copy(selection = selection) } }
 
+        suspend fun updateSelection(change: (ProviderSelection) -> ProviderSelection) =
+            mutex.withLock {
+                update { current -> current.copy(selection = change(current.selection)) }
+            }
+
         // A new plugin fills a role nobody fills yet, so the first install works without a trip to Settings.
         private fun withDefaults(
             selection: ProviderSelection,

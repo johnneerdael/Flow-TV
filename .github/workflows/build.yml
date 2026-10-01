@@ -48,6 +48,13 @@ jobs:
           line=$(sed -n 's/^milkbeatVersion=//p' gradle.properties)
           last=$(git tag --list "v$line.*" | sed "s/^v$line\.//" | grep -E '^[0-9]+$' | sort -n | tail -1 || true)
           patch=$(( ${last:--1} + 1 ))
+          minimum=$(sed -n 's/^milkbeatMinimumPatch=//p' gradle.properties)
+          minimum=${minimum:-0}
+          if ! [[ "$minimum" =~ ^[0-9]+$ ]]; then
+            echo "::error::milkbeatMinimumPatch must be a non-negative integer"
+            exit 1
+          fi
+          if (( patch < minimum )); then patch=$minimum; fi
           echo "version=$line.$patch" >> "$GITHUB_OUTPUT"
           echo "ORG_GRADLE_PROJECT_milkbeatPatch=$patch" >> "$GITHUB_ENV"
           echo "Building Milkbeat $line.$patch"

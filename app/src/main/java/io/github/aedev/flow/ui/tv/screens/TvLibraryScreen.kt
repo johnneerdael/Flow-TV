@@ -111,9 +111,20 @@ fun TvLibraryScreen(
     val accountStatus by accountViewModel.status.collectAsStateWithLifecycle()
     val signedIn = accountStatus is TvAccountStatus.SignedIn
     var selectedAccountSection by rememberSaveable { mutableStateOf<TvAccountLibrarySection?>(null) }
+    var accountOwner by rememberSaveable { mutableStateOf<String?>(null) }
+    val accountIdentity by accountLibrary.accountIdentity.collectAsStateWithLifecycle(initialValue = "")
+    val accountTabs by accountLibrary.tabs.collectAsStateWithLifecycle()
     LaunchedEffect(accountViewModel) { accountViewModel.refresh() }
-    LaunchedEffect(signedIn) {
-        selectedAccountSection = if (signedIn) selectedAccountSection ?: TvAccountLibrarySection.entries.first() else null
+    LaunchedEffect(signedIn, accountIdentity) {
+        if (accountIdentity.isNotEmpty()) accountLibrary.accountChanged(accountIdentity)
+        if (signedIn && accountIdentity.isNotEmpty()) {
+            if (accountOwner != accountIdentity || selectedAccountSection == null) selectedAccountSection = TvAccountLibrarySection.OVERVIEW
+            accountOwner = accountIdentity
+            accountLibrary.open(TvAccountLibrarySection.OVERVIEW)
+        } else {
+            selectedAccountSection = null
+            accountOwner = null
+        }
     }
 
     TvScreenScaffold(
@@ -134,9 +145,10 @@ fun TvLibraryScreen(
                 contentPadding = PaddingValues(horizontal = dimens.overscanHorizontal),
             ) {
                 if (signedIn) {
-                    items(TvAccountLibrarySection.entries, key = { "account-${it.name}" }) { section ->
+                    items(accountTabs, key = { "account-${it.section.name}" }) { tab ->
+                        val section = tab.section
                         TvFilterChip(
-                            label = stringResource(section.titleRes),
+                            label = tab.label ?: stringResource(section.titleRes),
                             selected = selectedAccountSection == section,
                             onClick = { selectedAccountSection = section },
                         )
@@ -154,7 +166,10 @@ fun TvLibraryScreen(
                 }
             }
 
-            val accountSection = selectedAccountSection
+            val accountSection =
+                selectedAccountSection?.takeIf { section ->
+                    signedIn && accountOwner == accountIdentity && accountTabs.any { it.section == section }
+                }
             if (accountSection != null) {
                 TvAccountLibraryContent(
                     section = accountSection,

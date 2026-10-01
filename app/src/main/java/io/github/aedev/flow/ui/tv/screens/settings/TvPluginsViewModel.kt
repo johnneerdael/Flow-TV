@@ -1,5 +1,6 @@
 package io.github.aedev.flow.ui.tv.screens.settings
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -9,10 +10,12 @@ import io.github.aedev.flow.plugin.install.PendingInstall
 import io.github.aedev.flow.plugin.install.PluginInstallException
 import io.github.aedev.flow.plugin.install.PluginInstaller
 import io.github.aedev.flow.plugin.install.PluginLinks
+import io.github.aedev.flow.plugin.preload.PlaylistPreloadJobs
 import io.github.aedev.flow.plugin.registry.InstalledPlugin
 import io.github.aedev.flow.plugin.registry.PluginRegistry
 import io.github.aedev.flow.plugin.registry.ProviderSelection
 import io.github.aedev.flow.plugin.runtime.PluginCallException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -55,8 +58,11 @@ class TvPluginsViewModel
         private val accounts: PluginAccounts,
         private val playHistory: AccountPlayHistory,
         links: PluginLinks,
+        val preloadJobs: PlaylistPreloadJobs,
+        private val savedState: SavedStateHandle,
     ) : ViewModel() {
         private val adding = MutableStateFlow<AddPluginState>(AddPluginState.Idle)
+        private var fetchJob: Job? = null
 
         val state: StateFlow<TvPluginsState> =
             combine(registry.state, accounts.accounts, adding) { registryState, known, add ->
@@ -81,15 +87,17 @@ class TvPluginsViewModel
             links?.consume()
             val trimmed = url.trim()
             if (trimmed.isEmpty()) return
+            fetchJob?.cancel()
             adding.value = AddPluginState.Fetching
-            viewModelScope.launch {
-                adding.value =
-                    try {
-                        AddPluginState.Consent(installer.fetch(trimmed))
-                    } catch (e: PluginInstallException) {
-                        AddPluginState.Failed(e.message ?: "Could not get the plugin")
-                    }
-            }
+            fetchJob =
+                viewModelScope.launch {
+                    adding.value =
+                        try {
+                            AddPluginState.Consent(installer.fetch(trimmed))
+                        } catch (e: PluginInstallException) {
+                            AddPluginState.Failed(e.message ?: "Could not get the plugin")
+                        }
+                }
         }
 
         fun install() {
@@ -107,6 +115,8 @@ class TvPluginsViewModel
         }
 
         fun cancelAdd() {
+            fetchJob?.cancel()
+            fetchJob = null
             adding.value = AddPluginState.Idle
         }
 
@@ -116,6 +126,17 @@ class TvPluginsViewModel
 
         fun select(selection: ProviderSelection) {
             viewModelScope.launch { registry.select(selection) }
+        }
+
+        fun mutateSelection(change: (ProviderSelection) -> ProviderSelection) {
+            viewModelScope.launch { registry.updateSelection(change) }
+        }
+
+        fun consumeHomeRequest(revision: Int): Boolean {
+            if (revision == 0 || savedState.get<Int>("plugin-home-revision") == revision) return false
+            savedState["plugin-home-revision"] = revision
+            cancelAdd()
+            return true
         }
 
         /** Whether listens and views are added to the signed-in account's history, for plugins that report them. */

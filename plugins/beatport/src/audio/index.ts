@@ -4,6 +4,7 @@
 import type { AudioStream, PluginDefinition, ReportPlaybackRequest, ResolveAudioRequest } from '@milkbeat/plugin-sdk';
 import { fail, mb } from '@milkbeat/plugin-sdk';
 import { get, post } from '../api/client';
+import { matchAudio } from './match';
 
 const QUALITY = '128k.aac.m3u8';
 const DEVICE_KEY = 'device';
@@ -75,4 +76,4 @@ async function reportPlayback(request: ReportPlaybackRequest): Promise<void> {
   });
 }
 
-export const audio: NonNullable<PluginDefinition['audio']> = { resolve, reportPlayback };
+export const audio: NonNullable<PluginDefinition['audio']> = { resolve, match: matchAudio, reportPlayback };

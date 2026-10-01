@@ -2,11 +2,9 @@ package io.github.aedev.flow.ui.tv.screens.account
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Rect
 import android.view.KeyEvent
+import android.view.MotionEvent
 import android.view.Window
-import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethodManager
 import android.webkit.CookieManager
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -17,8 +15,10 @@ import io.github.aedev.flow.data.account.signin.PhoneField
 import io.github.aedev.flow.data.account.signin.PhoneFrame
 import io.github.aedev.flow.data.account.signin.PhoneInput
 import io.github.aedev.flow.data.account.signin.PhoneKey
+import io.github.aedev.flow.data.account.signin.PhonePointerAction
 import io.github.aedev.flow.data.account.signin.SignInCapture
 import io.github.aedev.flow.data.account.signin.extract
+import io.github.aedev.flow.utils.WebViewStreamer
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -51,24 +51,22 @@ internal class LoginWebViewController(
     private val cookies: CookieManager
     private var captured = false
     private val scope = MainScope()
-    private val remote = window?.let { LoginRemoteView(webView, it) }
+    val stream = WebViewStreamer(webView, window)
 
-    suspend fun frame(): PhoneFrame? = remote?.frame()
-
-    fun viewportBounds(bounds: Rect) {
-        remote?.viewportBounds = bounds
-    }
+    suspend fun frame(): PhoneFrame? = stream.frame()?.let { PhoneFrame(it.width, it.height, it.jpeg) }
 
     fun pointer(input: PhoneInput.Pointer) {
-        webView.requestFocus()
-        remote?.pointer(input)
-        hideKeyboard()
+        val action =
+            when (input.action) {
+                PhonePointerAction.DOWN -> MotionEvent.ACTION_DOWN
+                PhonePointerAction.MOVE -> MotionEvent.ACTION_MOVE
+                PhonePointerAction.UP -> MotionEvent.ACTION_UP
+                PhonePointerAction.CANCEL -> MotionEvent.ACTION_CANCEL
+            }
+        stream.pointer(action, input.x, input.y)
     }
 
-    fun visible(visible: Boolean) {
-        remote?.visible = visible
-        if (visible) webView.onResume() else webView.onPause()
-    }
+    fun visible(visible: Boolean) = stream.visible(visible)
 
     init {
         WebViewCompat.setProfile(webView, LOGIN_PROFILE)
@@ -108,13 +106,9 @@ internal class LoginWebViewController(
         text: String,
         field: Int?,
     ) {
-        webView.requestFocus()
-        if (field == null && webView.onCreateInputConnection(EditorInfo())?.commitText(text, 1) == true) {
-            hideKeyboard()
-            return
-        }
+        if (!stream.acceptsInput) return
+        if (field == null && stream.typeText(text)) return
         evaluate(SignInCapture.insertTextScript(text, field))
-        hideKeyboard()
     }
 
     suspend fun pageActions(): List<String> = SignInCapture.parsePageActions(evaluateForResult(SignInCapture.pageActionsScript()))
@@ -135,23 +129,13 @@ internal class LoginWebViewController(
         }
 
     suspend fun pressKey(key: PhoneKey) {
-        webView.requestFocus()
         val code =
             when (key) {
                 PhoneKey.ENTER -> KeyEvent.KEYCODE_ENTER
                 PhoneKey.TAB -> KeyEvent.KEYCODE_TAB
                 PhoneKey.BACKSPACE -> KeyEvent.KEYCODE_DEL
             }
-        webView.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, code))
-        webView.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, code))
-        hideKeyboard()
-    }
-
-    // Typing happens on the phone; the TV's on-screen keyboard would only cover the sign-in page.
-    private fun hideKeyboard() {
-        webView.context
-            .getSystemService(InputMethodManager::class.java)
-            ?.hideSoftInputFromWindow(webView.windowToken, 0)
+        stream.pressKey(code)
     }
 
     fun restart() {
@@ -163,6 +147,7 @@ internal class LoginWebViewController(
 
     fun destroy() {
         scope.cancel()
+        stream.close()
         cookies.removeAllCookies(null)
         cookies.flush()
         webView.stopLoading()

@@ -5,12 +5,14 @@ import io.github.aedev.flow.plugin.catalog.PluginMetadataProvider
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import nl.neerdael.milkbeat.catalog.CollectionBlock
@@ -32,9 +34,11 @@ class TvAccountLibraryViewModelTest {
     private val dispatcher = StandardTestDispatcher()
     private val account = MutableStateFlow<ProviderAccount>(ProviderAccount.SignedIn("first"))
     private val requests = mutableListOf<LibraryRequest>()
+    private var sourceId = "first-provider"
     private val provider =
         mockk<PluginMetadataProvider> {
             every { account } returns this@TvAccountLibraryViewModelTest.account
+            every { id } answers { sourceId }
             coEvery { call(PluginOperations.library, any()) } answers {
                 val request = secondArg<LibraryRequest>()
                 requests += request
@@ -126,5 +130,55 @@ class TvAccountLibraryViewModelTest {
             advanceUntilIdle()
 
             assertThat(requests).isEmpty()
+        }
+
+    @Test
+    fun `the initial section requests the provider overview`() =
+        runTest(dispatcher) {
+            val vm = TvAccountLibraryViewModel(provider)
+            vm.open(TvAccountLibrarySection.entries.first())
+            advanceUntilIdle()
+            assertThat(requests).contains(LibraryRequest())
+        }
+
+    @Test
+    fun `another provider with the same account key does not reuse the old section`() =
+        runTest(dispatcher) {
+            val vm = TvAccountLibraryViewModel(provider)
+            vm.open(TvAccountLibrarySection.PLAYLISTS)
+            advanceUntilIdle()
+            sourceId = "second-provider"
+            vm.open(TvAccountLibrarySection.PLAYLISTS)
+            advanceUntilIdle()
+            assertThat(requests).hasSize(4)
+        }
+
+    @Test
+    fun `a discarded page after sign out does not block the same account from loading again`() =
+        runTest(dispatcher) {
+            val pending = CompletableDeferred<MetadataPage>()
+            var calls = 0
+            coEvery { provider.call(PluginOperations.library, any()) } coAnswers {
+                calls++
+                Result.success(if (calls == 1) pending.await() else MetadataPage("liked", listOf(tracks("fresh"))))
+            }
+            val vm = TvAccountLibraryViewModel(provider)
+            vm.accountChanged("$sourceId:first")
+            vm.open(TvAccountLibrarySection.LIKED_MUSIC)
+            runCurrent()
+            account.value = ProviderAccount.Anonymous
+            pending.complete(MetadataPage("liked", listOf(tracks("old"))))
+            advanceUntilIdle()
+            assertThat(vm.sections.value[TvAccountLibrarySection.LIKED_MUSIC]).isNull()
+            account.value = ProviderAccount.SignedIn("first")
+            vm.accountChanged("$sourceId:first")
+            vm.open(TvAccountLibrarySection.LIKED_MUSIC)
+            advanceUntilIdle()
+            assertThat(calls).isEqualTo(2)
+            assertThat(
+                vm.sections.value
+                    .getValue(TvAccountLibrarySection.LIKED_MUSIC)
+                    .isLoading,
+            ).isFalse()
         }
 }

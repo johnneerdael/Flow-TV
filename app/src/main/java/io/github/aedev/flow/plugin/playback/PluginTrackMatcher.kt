@@ -5,7 +5,10 @@ import io.github.aedev.flow.data.local.dao.TrackMatchDao
 import io.github.aedev.flow.data.local.entity.TrackMatchEntity
 import io.github.aedev.flow.plugin.PluginHost
 import io.github.aedev.flow.plugin.runtime.PluginCallException
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import nl.neerdael.milkbeat.catalog.TrackDescriptor
 import nl.neerdael.milkbeat.plugin.MatchAudioRequest
 import nl.neerdael.milkbeat.plugin.PluginJson
@@ -41,6 +44,18 @@ class PluginTrackMatcher
             track: TrackDescriptor,
             pluginId: String,
             excludedId: String? = null,
+        ): TrackDescriptor? =
+            try {
+                find(track, pluginId, excludedId)
+            } catch (e: PluginCallException) {
+                Log.w(TAG, "$pluginId could not search for ${track.title}: ${e.error.message}")
+                null
+            }
+
+        private suspend fun find(
+            track: TrackDescriptor,
+            pluginId: String,
+            excludedId: String?,
         ): TrackDescriptor? {
             val fingerprint = fingerprint(track)
             cached(fingerprint, pluginId)?.let {
@@ -48,7 +63,15 @@ class PluginTrackMatcher
             }
             val key = "$pluginId|$fingerprint|${excludedId.orEmpty()}"
             val mine = CompletableDeferred<TrackDescriptor?>()
-            inFlight.putIfAbsent(key, mine)?.let { return it.await() }
+            inFlight.putIfAbsent(key, mine)?.let { owner ->
+                try {
+                    return owner.await()
+                } catch (e: CancellationException) {
+                    currentCoroutineContext().ensureActive()
+                    inFlight.remove(key, owner)
+                    return find(track, pluginId, excludedId)
+                }
+            }
             try {
                 return lookup(track, fingerprint, pluginId, excludedId).also(mine::complete)
             } catch (e: Throwable) {
@@ -58,6 +81,11 @@ class PluginTrackMatcher
                 inFlight.remove(key, mine)
             }
         }
+
+        suspend fun matchForIndexing(
+            track: TrackDescriptor,
+            pluginId: String,
+        ): TrackDescriptor? = find(track, pluginId, null)
 
         suspend fun invalidate(
             track: TrackDescriptor,
@@ -91,14 +119,7 @@ class PluginTrackMatcher
             pluginId: String,
             excludedId: String?,
         ): TrackDescriptor? {
-            val candidates =
-                try {
-                    host.call(pluginId, PluginOperations.matchAudio, MatchAudioRequest(track)).candidates
-                } catch (e: PluginCallException) {
-                    // A failed search says nothing about the track, so nothing is kept.
-                    Log.w(TAG, "$pluginId could not search for ${track.title}: ${e.error.message}")
-                    return null
-                }
+            val candidates = host.call(pluginId, PluginOperations.matchAudio, MatchAudioRequest(track)).candidates
             val best = TrackMatchScore.best(track, candidates.filter { it.ref.providerId != excludedId })
             Log.d(
                 TAG,

@@ -16,6 +16,12 @@ export const LIKED_MUSIC_PLAYLIST_ID = 'LM';
 const HISTORY_BROWSE_ID = 'FEmusic_history';
 const PLAYLISTS_BROWSE_ID = 'FEmusic_liked_playlists';
 const LIKED = { kind: 'PLAYLIST', providerId: LIKED_MUSIC_PLAYLIST_ID } as const;
+const FILTERS = [
+  { id: 'watchHistory', label: 'YouTube history' },
+  { id: 'history', label: 'Recently played' },
+  { id: 'liked', label: 'Liked music' },
+  { id: 'playlists', label: 'Your playlists' },
+];
 
 const pageId = (section: string) => `youtube-music/library/${section}`;
 const firstSections = (response: Json): Json[] =>
@@ -90,7 +96,7 @@ export function overviewPage(liked?: Json, history?: Json, playlists?: Json): Me
   return { id: pageId('overview'), blocks: uniqueBlocks(blocks) };
 }
 
-export async function library(request: LibraryRequest): Promise<MetadataPage> {
+async function libraryPage(request: LibraryRequest): Promise<MetadataPage> {
   if (!(await signedIn())) fail('SIGN_IN_REQUIRED', 'The library needs a signed-in account');
   const { section, cursor } = request;
   switch (section ?? null) {
@@ -117,4 +123,8 @@ export async function library(request: LibraryRequest): Promise<MetadataPage> {
     default:
       return fail('NOT_FOUND', `No library section ${section}`);
   }
+}
+
+export async function library(request: LibraryRequest): Promise<MetadataPage> {
+  return { ...await libraryPage(request), filters: { options: FILTERS } };
 }
