@@ -6,8 +6,10 @@ import io.github.aedev.flow.plugin.playback.PluginTrackMatcher
 import io.github.aedev.flow.plugin.playback.audioProviderAttempts
 import io.github.aedev.flow.plugin.registry.PluginRegistry
 import io.github.aedev.flow.plugin.runtime.PluginCallException
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.withContext
 import nl.neerdael.milkbeat.catalog.CollectionBlock
 import nl.neerdael.milkbeat.catalog.EntityKind
 import nl.neerdael.milkbeat.catalog.EntityRef
@@ -34,7 +36,11 @@ class PlaylistPreloadRunner
             audioIds: List<String>,
             onProgress: suspend (PlaylistPreloadProgress) -> Unit,
         ): PlaylistPreloadProgress {
-            if (accounts.accounts.value[metadataId] == null) accounts.refresh(metadataId)
+            currentCoroutineContext().ensureActive()
+            if (accounts.accounts.value[metadataId] == null) {
+                withContext(NonCancellable) { accounts.refresh(metadataId) }
+                currentCoroutineContext().ensureActive()
+            }
             val initial = registry.state.value
             val source = initial.plugin(metadataId) ?: throw PlaylistPreloadException(PlaylistPreloadFailure.PLUGIN_CHANGED)
             val surfaces =
@@ -81,7 +87,10 @@ class PlaylistPreloadRunner
             try {
                 do {
                     validate()
-                    val page = host.call(metadataId, PluginOperations.library, LibraryRequest(cursor = libraryCursor))
+                    val page =
+                        withContext(NonCancellable) {
+                            host.call(metadataId, PluginOperations.library, LibraryRequest(cursor = libraryCursor))
+                        }
                     validate()
                     page.blocks.filterIsInstance<CollectionBlock>().flatMap { it.items }.forEach { item ->
                         if (item.entity.kind == EntityKind.PLAYLIST) collections += item.entity
@@ -100,7 +109,10 @@ class PlaylistPreloadRunner
                     var trackCursor: String? = null
                     do {
                         validate()
-                        val page = host.call(metadataId, PluginOperations.tracks, TracksRequest(collection, trackCursor))
+                        val page =
+                            withContext(NonCancellable) {
+                                host.call(metadataId, PluginOperations.tracks, TracksRequest(collection, trackCursor))
+                            }
                         validate()
                         for (track in page.tracks) {
                             validate()
@@ -123,6 +135,7 @@ class PlaylistPreloadRunner
                     emit()
                 }
             } catch (e: PluginCallException) {
+                currentCoroutineContext().ensureActive()
                 if (e.pluginId == metadataId && e.error.code == PluginErrorCode.SIGN_IN_EXPIRED) {
                     if ((accounts.accounts.value[metadataId] as? ProviderAccount.SignedIn)?.key != accountKey) {
                         throw PlaylistPreloadException(PlaylistPreloadFailure.ACCOUNT_CHANGED)
@@ -146,7 +159,9 @@ class PlaylistPreloadRunner
                 if (attempt.direct != null) return true
                 val candidate =
                     try {
-                        matcher.matchForIndexing(track, attempt.plugin.id)
+                        // Interrupting QuickJS can leave a rejected host promise for its next evaluation.
+                        // Finish this bounded request; validation then stops a cancelled indexing job.
+                        withContext(NonCancellable) { matcher.matchForIndexing(track, attempt.plugin.id) }
                     } catch (e: PluginCallException) {
                         validate()
                         if (e.error.code !in

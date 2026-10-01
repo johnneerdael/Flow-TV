@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.SystemClock
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
 import androidx.work.Data
@@ -70,6 +71,7 @@ class PlaylistPreloadWorker(
         } catch (e: PlaylistPreloadException) {
             Result.failure(workDataOf(PRELOAD_ERROR to e.reason.name))
         } catch (e: PluginCallException) {
+            Log.w("PlaylistPreloadWorker", "Indexing failed via ${e.pluginId} (${e.error.code}): ${e.error.message}")
             if (e.error.code in setOf(PluginErrorCode.NETWORK, PluginErrorCode.RATE_LIMITED, PluginErrorCode.TIMEOUT) &&
                 runAttemptCount < 3
             ) {

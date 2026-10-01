@@ -16,7 +16,13 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import nl.neerdael.milkbeat.catalog.ArtistCredit
 import nl.neerdael.milkbeat.catalog.CollectionBlock
@@ -44,6 +50,7 @@ import nl.neerdael.milkbeat.plugin.PluginOperations
 import nl.neerdael.milkbeat.plugin.Roles
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class PlaylistPreloadRunnerTest {
     private val host = mockk<PluginHost>()
     private val registry = mockk<PluginRegistry>()
@@ -199,6 +206,52 @@ class PlaylistPreloadRunnerTest {
             val error = runCatching { runner.run("spotify", "listener", listOf("youtube", "beatport")) { } }.exceptionOrNull()
             assertThat((error as PluginCallException).error.code).isEqualTo(PluginErrorCode.NETWORK)
             coVerify(exactly = 0) { host.call("beatport", PluginOperations.matchAudio, any()) }
+        }
+
+    @Test
+    fun `cancellation finishes the active match keeps its cache and starts no other query`() =
+        runTest {
+            val release = CompletableDeferred<Unit>()
+            val started = CompletableDeferred<Unit>()
+            coEvery { host.call("youtube", PluginOperations.matchAudio, any()) } coAnswers {
+                started.complete(Unit)
+                release.await()
+                currentCoroutineContext().ensureActive()
+                AudioMatches(listOf(a.copy(ref = EntityRef(EntityKind.TRACK, "yt-a"), ids = mapOf("youtube" to "yt-a"))))
+            }
+            val job = launch { runner.run("spotify", "listener", listOf("youtube", "beatport")) { } }
+            runCurrent()
+            started.await()
+            job.cancel()
+            runCurrent()
+            assertThat(job.isCompleted).isFalse()
+            release.complete(Unit)
+            job.join()
+            assertThat(matches.find(PluginTrackMatcher.fingerprint(a), "youtube")?.candidate).isNotNull()
+            coVerify(exactly = 1) { host.call("youtube", PluginOperations.matchAudio, any()) }
+            coVerify(exactly = 0) { host.call("beatport", PluginOperations.matchAudio, any()) }
+        }
+
+    @Test
+    fun `cancelling a metadata request finishes it without fetching its tracks`() =
+        runTest {
+            val release = CompletableDeferred<Unit>()
+            val started = CompletableDeferred<Unit>()
+            coEvery { host.call("spotify", PluginOperations.library, LibraryRequest()) } coAnswers {
+                started.complete(Unit)
+                release.await()
+                currentCoroutineContext().ensureActive()
+                page(first)
+            }
+            val job = launch { runner.run("spotify", "listener", listOf("youtube", "beatport")) { } }
+            runCurrent()
+            started.await()
+            job.cancel()
+            runCurrent()
+            assertThat(job.isCompleted).isFalse()
+            release.complete(Unit)
+            job.join()
+            coVerify(exactly = 0) { host.call("spotify", PluginOperations.tracks, any()) }
         }
 
     private fun track(id: String) =
