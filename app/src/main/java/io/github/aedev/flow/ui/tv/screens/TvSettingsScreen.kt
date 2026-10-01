@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.ui.tv.components.TvScreenScaffold
 import io.github.aedev.flow.ui.tv.focus.tvInitialFocus
+import io.github.aedev.flow.ui.tv.screens.folders.TvMusicFoldersSettingsPane
 import io.github.aedev.flow.ui.tv.screens.settings.TvAboutSettingsPane
 import io.github.aedev.flow.ui.tv.screens.settings.TvContentSettingsPane
 import io.github.aedev.flow.ui.tv.screens.settings.TvFlowEngineSettingsPane
@@ -52,6 +53,7 @@ fun TvSettingsScreen(
     modifier: Modifier = Modifier,
     onOpenPluginSignIn: (pluginId: String, methodId: String) -> Unit = { _, _ -> },
     initialCategory: TvSettingsCategory = TvSettingsCategory.PLUGINS,
+    initiallyFocusPane: Boolean = false,
 ) {
     val context = LocalContext.current
     val playerPreferences = remember { PlayerPreferences(context.applicationContext) }
@@ -100,10 +102,11 @@ fun TvSettingsScreen(
             }
 
             androidx.compose.foundation.layout.Box(
-                modifier = Modifier.weight(1f).tvInitialFocus(paneFocusRequests, onFirstComposition = false).focusGroup(),
+                modifier = Modifier.weight(1f).tvInitialFocus(paneFocusRequests, onFirstComposition = initiallyFocusPane).focusGroup(),
             ) {
                 when (selectedCategory) {
                     TvSettingsCategory.PLUGINS -> TvPluginsSettingsPane(onSignIn = onOpenPluginSignIn, homeRevision = pluginHomeRevision)
+                    TvSettingsCategory.MUSIC_FOLDERS -> TvMusicFoldersSettingsPane()
                     TvSettingsCategory.PLAYBACK -> TvPlaybackSettingsPane(playerPreferences)
                     TvSettingsCategory.VISUALIZATIONS -> TvVisualizerSettingsPane()
                     TvSettingsCategory.QUALITY -> TvQualitySettingsPane(playerPreferences)

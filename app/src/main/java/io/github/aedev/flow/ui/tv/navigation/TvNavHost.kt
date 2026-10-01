@@ -24,6 +24,7 @@ import io.github.aedev.flow.ui.tv.screens.account.TvAccountSignInScreen
 import io.github.aedev.flow.ui.tv.screens.channel.TvChannelScreen
 import io.github.aedev.flow.ui.tv.screens.playlist.TvPlaylistDetailScreen
 import io.github.aedev.flow.ui.tv.screens.search.TvSearchScreen
+import io.github.aedev.flow.ui.tv.screens.settings.TvSettingsCategory
 import nl.neerdael.milkbeat.catalog.EntityRef
 
 /** Top-level TV navigation graph plus detail routes (channel, …). */
@@ -100,10 +101,19 @@ fun TvNavHost(
                 onVideoClick = onPlayVideo,
                 onOpenPlaylist = { navController.navigate(TvRoutes.playlist(it)) },
                 onPlayTrack = onPlayTrack,
+                onConfigureFolders = { navController.navigate(TvRoutes.MUSIC_FOLDERS_SETTINGS) },
                 onOpenMusicCollection = { navController.navigate(TvRoutes.musicCollection(it)) },
                 onPlayMix = onPlayMix,
                 onPlayCollection = onPlayCollection,
                 onOpenCatalog = openCatalog,
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
+        composable(TvRoutes.MUSIC_FOLDERS_SETTINGS) {
+            TvSettingsScreen(
+                initialCategory = TvSettingsCategory.MUSIC_FOLDERS,
+                initiallyFocusPane = true,
+                onOpenPluginSignIn = { plugin, method -> navController.navigate(TvRoutes.pluginSignIn(plugin, method)) },
                 modifier = Modifier.fillMaxSize(),
             )
         }

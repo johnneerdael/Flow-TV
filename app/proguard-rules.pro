@@ -68,3 +68,28 @@
 -dontwarn javax.annotation.**
 -dontwarn org.slf4j.**
 -dontwarn java.beans.**
+
+## SMBJ dispatches connection lifecycle events through annotated methods at runtime.
+-keepclassmembers class com.hierynomus.** {
+    @net.engio.mbassy.listener.Handler <methods>;
+}
+
+-keep class net.engio.mbassy.dispatch.ReflectiveHandlerInvocation {
+    public <init>(net.engio.mbassy.subscription.SubscriptionContext);
+}
+
+
+## SMBJ uses NTLM on Android; its optional JVM GSS and MBassador EL paths are unused.
+-dontwarn org.ietf.jgss.GSSContext
+-dontwarn org.ietf.jgss.GSSCredential
+-dontwarn org.ietf.jgss.GSSException
+-dontwarn org.ietf.jgss.GSSManager
+-dontwarn org.ietf.jgss.GSSName
+-dontwarn org.ietf.jgss.Oid
+-dontwarn javax.el.BeanELResolver
+-dontwarn javax.el.ELContext
+-dontwarn javax.el.ELResolver
+-dontwarn javax.el.ExpressionFactory
+-dontwarn javax.el.FunctionMapper
+-dontwarn javax.el.ValueExpression
+-dontwarn javax.el.VariableMapper

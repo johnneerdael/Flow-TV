@@ -43,8 +43,10 @@ androidxTestRunner = "1.7.0"
 quickjsKt = "1.0.15"
 schemaKenerator = "2.7.2"
 rhino = "1.8.1"
+smbj = "0.15.0"
 
 [libraries]
+smbj = { group = "com.hierynomus", name = "smbj", version.ref = "smbj" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "core-splashscreen" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }

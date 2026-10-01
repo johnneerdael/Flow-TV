@@ -27,12 +27,14 @@ fun TvButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
+    enabled: Boolean = true,
 ) {
     val focusState = rememberTvFocusState()
     val focused = focusState.isFocused
 
     Surface(
         onClick = onClick,
+        enabled = enabled,
         modifier = modifier.tvFocusScale(focusState),
         shape = CircleShape,
         color =

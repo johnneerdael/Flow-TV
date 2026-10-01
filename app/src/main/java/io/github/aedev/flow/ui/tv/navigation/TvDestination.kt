@@ -27,6 +27,13 @@ enum class TvDestination(
         /** The tab the app opens on and Back converges to. */
         val start: TvDestination = MUSIC
 
-        fun fromRoute(route: String?): TvDestination = entries.firstOrNull { it.route == route } ?: start
+        fun fromRoute(route: String?): TvDestination =
+            if (route ==
+                TvRoutes.MUSIC_FOLDERS_SETTINGS
+            ) {
+                SETTINGS
+            } else {
+                entries.firstOrNull { it.route == route } ?: start
+            }
     }
 }

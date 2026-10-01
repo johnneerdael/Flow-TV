@@ -9,12 +9,14 @@ import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.TextObfuscationMode
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedSecureTextField
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -62,6 +64,8 @@ fun TvSearchField(
     leadingIcon: ImageVector = Icons.Outlined.Search,
     keyboardType: KeyboardType = KeyboardType.Text,
     imeAction: ImeAction = ImeAction.Search,
+    secure: Boolean = false,
+    label: String? = null,
 ) {
     val keyboard = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
@@ -112,41 +116,76 @@ fun TvSearchField(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        OutlinedTextField(
-            state = state,
-            modifier =
-                Modifier
-                    .weight(1f)
-                    .focusRequester(fieldFocus)
-                    .onPreviewKeyEvent { event ->
-                        val keyCode = event.nativeKeyEvent.keyCode
-                        if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER || keyCode == KeyEvent.KEYCODE_ENTER) {
-                            if (event.type == KeyEventType.KeyUp) typing = true
-                            return@onPreviewKeyEvent true
-                        }
-                        val selection = state.selection
-                        val leave =
-                            when (keyCode) {
-                                KeyEvent.KEYCODE_DPAD_DOWN -> FocusDirection.Down
-                                KeyEvent.KEYCODE_DPAD_UP -> FocusDirection.Up
-                                KeyEvent.KEYCODE_DPAD_LEFT -> FocusDirection.Left.takeIf { selection.start == 0 }
-                                KeyEvent.KEYCODE_DPAD_RIGHT -> FocusDirection.Right.takeIf { selection.end == state.text.length }
-                                else -> null
-                            } ?: return@onPreviewKeyEvent false
-                        if (event.type == KeyEventType.KeyDown) focusManager.moveFocus(leave)
-                        true
+        val fieldModifier =
+            Modifier
+                .weight(1f)
+                .focusRequester(fieldFocus)
+                .onPreviewKeyEvent { event ->
+                    val keyCode = event.nativeKeyEvent.keyCode
+                    if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER || keyCode == KeyEvent.KEYCODE_ENTER) {
+                        if (event.type == KeyEventType.KeyUp) typing = true
+                        return@onPreviewKeyEvent true
+                    }
+                    val selection = state.selection
+                    val leave =
+                        when (keyCode) {
+                            KeyEvent.KEYCODE_DPAD_DOWN -> FocusDirection.Down
+                            KeyEvent.KEYCODE_DPAD_UP -> FocusDirection.Up
+                            KeyEvent.KEYCODE_DPAD_LEFT -> FocusDirection.Left.takeIf { selection.start == 0 }
+                            KeyEvent.KEYCODE_DPAD_RIGHT -> FocusDirection.Right.takeIf { selection.end == state.text.length }
+                            else -> null
+                        } ?: return@onPreviewKeyEvent false
+                    if (event.type == KeyEventType.KeyDown) focusManager.moveFocus(leave)
+                    true
+                }
+        if (secure) {
+            OutlinedSecureTextField(
+                state = state,
+                modifier = fieldModifier,
+                placeholder = { Text(placeholder) },
+                label =
+                    if (label == null) {
+                        null
+                    } else {
+                        { Text(label) }
                     },
-            placeholder = { Text(placeholder) },
-            leadingIcon = { Icon(leadingIcon, contentDescription = null) },
-            lineLimits = TextFieldLineLimits.SingleLine,
-            shape = MaterialTheme.shapes.extraLarge,
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction, showKeyboardOnFocus = typing),
-            onKeyboardAction = {
-                keyboard?.hide()
-                typing = false
-                onSearch()
-            },
-        )
+                leadingIcon = { Icon(leadingIcon, contentDescription = null) },
+                textObfuscationMode = TextObfuscationMode.Hidden,
+                shape = MaterialTheme.shapes.extraLarge,
+                keyboardOptions =
+                    KeyboardOptions(
+                        keyboardType = KeyboardType.Password,
+                        imeAction = imeAction,
+                        showKeyboardOnFocus = typing,
+                    ),
+                onKeyboardAction = {
+                    keyboard?.hide()
+                    typing = false
+                    onSearch()
+                },
+            )
+        } else {
+            OutlinedTextField(
+                state = state,
+                modifier = fieldModifier,
+                placeholder = { Text(placeholder) },
+                label =
+                    if (label == null) {
+                        null
+                    } else {
+                        { Text(label) }
+                    },
+                leadingIcon = { Icon(leadingIcon, contentDescription = null) },
+                lineLimits = TextFieldLineLimits.SingleLine,
+                shape = MaterialTheme.shapes.extraLarge,
+                keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction, showKeyboardOnFocus = typing),
+                onKeyboardAction = {
+                    keyboard?.hide()
+                    typing = false
+                    onSearch()
+                },
+            )
+        }
         if (onVoice != null) {
             TvIconButton(
                 icon = Icons.Outlined.Mic,

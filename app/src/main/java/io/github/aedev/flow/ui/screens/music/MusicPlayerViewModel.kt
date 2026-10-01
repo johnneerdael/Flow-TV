@@ -9,6 +9,7 @@ import androidx.media3.common.Player
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.aedev.flow.R
+import io.github.aedev.flow.data.folders.FolderAudioRef
 import io.github.aedev.flow.data.local.LikedVideosRepository
 import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.data.local.ViewHistory
@@ -20,6 +21,7 @@ import io.github.aedev.flow.data.music.model.MUSIC_GENRE_SOURCE_PREFIX
 import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.data.recommendation.music.MusicBrainEngine
 import io.github.aedev.flow.player.EnhancedMusicPlayerManager
+import io.github.aedev.flow.player.MusicFolderPlaybackMetadata
 import io.github.aedev.flow.utils.PerformanceDispatcher
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,6 +44,7 @@ class MusicPlayerViewModel
         private val likedVideosRepository: LikedVideosRepository,
         private val viewHistory: ViewHistory,
         private val musicBrain: MusicBrainEngine,
+        private val folderMetadata: MusicFolderPlaybackMetadata,
     ) : ViewModel() {
         private val _uiState = MutableStateFlow(MusicPlayerUiState())
         val uiState: StateFlow<MusicPlayerUiState> = _uiState.asStateFlow()
@@ -57,6 +60,9 @@ class MusicPlayerViewModel
         private val lyricsHelper = LyricsHelper(context)
         private val playerPreferences = PlayerPreferences(context)
 
+        private var metadataJob: kotlinx.coroutines.Job? = null
+        private var metadataKey: String? = null
+        private var observedTrackId: String? = null
         private var isInitialized = false
         private var loadTrackJob: kotlinx.coroutines.Job? = null
         private var pendingSeekPosition: Long? = null
@@ -128,25 +134,42 @@ class MusicPlayerViewModel
 
             viewModelScope.launch {
                 EnhancedMusicPlayerManager.currentTrack.collect { track ->
-                    _uiState.update {
-                        it.copy(
-                            currentTrack = track,
-                            lyrics = null,
-                            syncedLyrics = emptyList(),
-                            // Fix: Reset duration and position to prevent showing previous track's info
-                            duration = if (track != null) track.duration * 1000L else 0L,
-                        )
-                    }
-                    _currentPositionMs.value = 0L
-                    track?.let {
-                        if (!isLocalMediaId(it.videoId)) {
-                            checkIfFavorite(it.videoId)
-                            fetchLyrics(it.videoId, it.artist, it.title, it.duration, it.album)
-                        } else {
-                            favoriteJob?.cancel()
-                            _uiState.update { state -> state.copy(isLiked = false) }
-                            EnhancedMusicPlayerManager.setLiked(false)
+                    val changed = observedTrackId != track?.videoId
+                    observedTrackId = track?.videoId
+                    if (changed) {
+                        _uiState.update {
+                            it.copy(
+                                currentTrack = track,
+                                lyrics = null,
+                                syncedLyrics = emptyList(),
+                                duration =
+                                    (track?.duration ?: 0) * 1000L,
+                            )
                         }
+                        _currentPositionMs.value = 0L
+                        track?.let {
+                            if (!isLocalMediaId(it.videoId)) {
+                                checkIfFavorite(it.videoId)
+                                fetchLyrics(it.videoId, it.artist, it.title, it.duration, it.album)
+                            } else {
+                                favoriteJob?.cancel()
+                                _uiState.update { state -> state.copy(isLiked = false) }
+                                EnhancedMusicPlayerManager.setLiked(false)
+                            }
+                        }
+                    } else {
+                        _uiState.update { it.copy(currentTrack = track) }
+                    }
+                    val key =
+                        track
+                            ?.thumbnailUrl
+                            ?.let { FolderAudioRef.fromUri(Uri.parse(it)) }
+                            ?.uri()
+                            ?.toString()
+                    if (metadataKey != key) {
+                        metadataKey = key
+                        metadataJob?.cancel()
+                        if (key != null) metadataJob = viewModelScope.launch { folderMetadata.enrichCurrent(track) }
                     }
                 }
             }
