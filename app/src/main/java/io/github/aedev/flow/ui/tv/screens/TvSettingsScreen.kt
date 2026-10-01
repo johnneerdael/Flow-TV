@@ -32,6 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.ui.tv.components.TvScreenScaffold
+import io.github.aedev.flow.ui.tv.focus.tvInitialFocus
 import io.github.aedev.flow.ui.tv.screens.settings.TvAboutSettingsPane
 import io.github.aedev.flow.ui.tv.screens.settings.TvContentSettingsPane
 import io.github.aedev.flow.ui.tv.screens.settings.TvFlowEngineSettingsPane
@@ -55,6 +56,7 @@ fun TvSettingsScreen(
     val context = LocalContext.current
     val playerPreferences = remember { PlayerPreferences(context.applicationContext) }
     var selectedCategory by rememberSaveable { mutableStateOf(initialCategory) }
+    var paneFocusRequests by remember { mutableIntStateOf(0) }
     var pluginHomeRevision by rememberSaveable { mutableIntStateOf(0) }
     val categoryFocus = remember { TvSettingsCategory.entries.associateWith { FocusRequester() } }
     val dimens = LocalTvDimens.current
@@ -90,13 +92,16 @@ fun TvSettingsScreen(
                         onSelect = { selectedCategory = category },
                         onActivate = {
                             selectedCategory = category
+                            paneFocusRequests++
                             if (category == TvSettingsCategory.PLUGINS) pluginHomeRevision++
                         },
                     )
                 }
             }
 
-            androidx.compose.foundation.layout.Box(modifier = Modifier.weight(1f)) {
+            androidx.compose.foundation.layout.Box(
+                modifier = Modifier.weight(1f).tvInitialFocus(paneFocusRequests, onFirstComposition = false).focusGroup(),
+            ) {
                 when (selectedCategory) {
                     TvSettingsCategory.PLUGINS -> TvPluginsSettingsPane(onSignIn = onOpenPluginSignIn, homeRevision = pluginHomeRevision)
                     TvSettingsCategory.PLAYBACK -> TvPlaybackSettingsPane(playerPreferences)

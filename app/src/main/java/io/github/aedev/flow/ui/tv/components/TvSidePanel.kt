@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.github.aedev.flow.R
+import io.github.aedev.flow.ui.tv.focus.tvInitialFocus
 import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -118,6 +119,7 @@ fun BoxScope.TvSidePanel(
                     Modifier
                         .weight(1f)
                         .focusRequester(firstFocusRequester)
+                        .tvInitialFocus(title)
                         .focusGroup(),
                 ) {
                     Column(content = content)
