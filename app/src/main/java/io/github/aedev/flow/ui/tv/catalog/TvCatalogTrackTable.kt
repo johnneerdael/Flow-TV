@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
@@ -37,6 +38,9 @@ internal fun LazyListScope.catalogTrackTable(
     endPadding: Dp,
     firstRowFocus: FocusRequester? = null,
     onShowAllFilter: ((String) -> Unit)? = null,
+    playingTrackId: String? = null,
+    playingTrackFocus: FocusRequester? = null,
+    paneFocus: FocusRequester? = null,
 ) {
     // A column most rows leave empty is noise; YouTube names the album only on some playlist tracks.
     val showAlbum = collection.items.count { it.album != null } * 2 >= collection.items.size
@@ -54,11 +58,19 @@ internal fun LazyListScope.catalogTrackTable(
     }
     // Row keys carry the table's id: two tables of one page may list the same track.
     itemsIndexed(collection.items, key = { _, item -> "${collection.id}/${item.id}" }) { index, item ->
+        val rowModifier =
+            (if (index == 0 && firstRowFocus != null) padding.focusRequester(firstRowFocus) else padding)
+                .focusProperties { left = paneFocus ?: FocusRequester.Default }
         TvCatalogTrackRow(
             item = item,
             showAlbum = showAlbum,
             onClick = { onItemClick(item) },
-            modifier = if (index == 0 && firstRowFocus != null) padding.focusRequester(firstRowFocus) else padding,
+            modifier =
+                if (playingTrackFocus != null && item.track?.ref?.providerId == playingTrackId) {
+                    rowModifier.focusRequester(playingTrackFocus)
+                } else {
+                    rowModifier
+                },
         )
     }
 }

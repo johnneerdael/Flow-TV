@@ -1,6 +1,7 @@
 package io.github.aedev.flow.ui.tv.screens
 
 import android.view.KeyEvent
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +13,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -31,6 +33,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.aedev.flow.R
 import io.github.aedev.flow.data.music.model.MusicTrack
+import io.github.aedev.flow.player.EnhancedMusicPlayerManager
+import io.github.aedev.flow.plugin.catalog.ProviderEntityReference
 import io.github.aedev.flow.ui.screens.music.CatalogPageViewModel
 import io.github.aedev.flow.ui.tv.catalog.TvCatalogActions
 import io.github.aedev.flow.ui.tv.catalog.TvCatalogEntityHeader
@@ -90,6 +94,9 @@ fun TvCatalogPageScreen(
                 follow = TvCatalogFollow(isFollowing = { following }, toggle = viewModel::toggleFollow),
             )
         }
+    val playingTrack by EnhancedMusicPlayerManager.currentTrack.collectAsStateWithLifecycle()
+    val playingCollection by EnhancedMusicPlayerManager.queueCollection.collectAsStateWithLifecycle()
+    val playingSource by EnhancedMusicPlayerManager.playingFrom.collectAsStateWithLifecycle()
     val blocks = state.blocks
     when {
         state.isLoading && blocks.isEmpty() -> {
@@ -104,7 +111,12 @@ fun TvCatalogPageScreen(
             val cover = (blocks.firstOrNull() as? EntityHeader)?.takeIf { it.style == HeaderStyle.COVER }
             ProvideTvColumnPivot {
                 if (cover != null) {
-                    CoverPage(cover, blocks, actions, modifier)
+                    val collectionId = playingCollection?.let { ProviderEntityReference.decode(it)?.entity?.providerId ?: it }
+                    val currentCollection =
+                        collectionId == cover.entity.providerId || (collectionId == null && playingSource == cover.title)
+                    key(cover.entity) {
+                        CoverPage(cover, blocks, actions, modifier, playingTrack?.videoId.takeIf { currentCollection })
+                    }
                 } else {
                     LazyColumn(
                         modifier = modifier.fillMaxSize(),
@@ -124,17 +136,49 @@ fun TvCatalogPageScreen(
  * buttons, Right goes to the first track and Down to the first shelf, wherever the list is scrolled.
  */
 @Composable
-private fun CoverPage(
+internal fun CoverPage(
     cover: EntityHeader,
     blocks: List<PageBlock>,
     actions: TvCatalogActions,
     modifier: Modifier,
+    playingTrackId: String? = null,
 ) {
     val dimens = LocalTvDimens.current
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val body = remember(blocks) { blocks.drop(1) }
-    val tables = remember { TvCatalogTableLayout(dimens.coverPaneWidth + dimens.rowSpacing, FocusRequester(), FocusRequester()) }
+    val openingTrackId = remember(cover.entity) { playingTrackId }
+    val playingRow =
+        body.firstNotNullOfOrNull { block ->
+            (block as? CollectionBlock)?.takeIf { it.isTrackTable }?.let { table ->
+                table.items
+                    .indexOfFirst { it.track?.ref?.providerId == openingTrackId }
+                    .takeIf { it >= 0 }
+                    ?.let { body.catalogIndexOf(table) + it }
+            }
+        }
+    val playingFocus = remember { FocusRequester() }
+    val paneFocus = remember { FocusRequester() }
+    val tables =
+        remember(openingTrackId) {
+            TvCatalogTableLayout(
+                dimens.coverPaneWidth + dimens.rowSpacing,
+                FocusRequester(),
+                FocusRequester(),
+                openingTrackId,
+                playingFocus,
+                paneFocus,
+            )
+        }
+    var positioned by remember(cover.entity) { androidx.compose.runtime.mutableStateOf(false) }
+    LaunchedEffect(playingRow) {
+        if (!positioned && playingRow != null) {
+            listState.scrollToItem(playingRow)
+            withFrameNanos { }
+            playingFocus.requestFocus()
+            positioned = true
+        }
+    }
     val firstTrackIndex = body.firstOrNull { it.isTrackTable }?.let(body::catalogIndexOf)
     val lastTrackIndex = (body.lastOrNull { it.isTrackTable } as CollectionBlock?)?.let { body.catalogIndexOf(it) + it.items.size - 1 }
     val firstShelfIndex = body.firstOrNull { it is CollectionBlock && !it.isTrackTable }?.let(body::catalogIndexOf)
@@ -158,24 +202,26 @@ private fun CoverPage(
             modifier = Modifier.fillMaxSize().tvAcceleratedDpad(),
             contentPadding = PaddingValues(top = dimens.overscanVertical, bottom = dimens.overscanVertical),
         ) {
-            catalogBlocks(body, actions, horizontalPadding = dimens.overscanHorizontal, tables = tables)
+            catalogBlocks(body, actions, horizontalPadding = dimens.overscanHorizontal, tables = tables, pageHeader = cover)
         }
         TvCatalogEntityHeader(
             header = cover,
             blocks = blocks,
             actions = actions,
+            initialFocus = playingRow == null,
+            onMoveToTracks = { focusItem(firstTrackIndex, tables.firstTrack) },
+            playFocus = paneFocus,
             modifier =
                 Modifier
-                    .offset { IntOffset(0, listState.paneOffset(lastTrackIndex, paneHeight)) }
+                    .offset { IntOffset(0, if (firstShelfIndex == null) 0 else listState.paneOffset(lastTrackIndex, paneHeight)) }
                     .onSizeChanged { paneHeight = it.height }
                     // The pane rides up with the tracks; stepping into it brings all of it back.
                     .onFocusChanged { if (it.hasFocus) scope.launch { listState.animateScrollToItem(0) } }
                     .padding(start = dimens.overscanHorizontal, top = dimens.overscanVertical),
             actionsModifier =
-                Modifier.onPreviewKeyEvent { event ->
+                Modifier.focusGroup().onPreviewKeyEvent { event ->
                     if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                     when (event.nativeKeyEvent.keyCode) {
-                        KeyEvent.KEYCODE_DPAD_RIGHT -> firstTrackIndex?.let { focusItem(it, tables.firstTrack) } != null
                         KeyEvent.KEYCODE_DPAD_DOWN -> firstShelfIndex?.let { focusItem(it, tables.firstShelf) } != null
                         else -> false
                     }

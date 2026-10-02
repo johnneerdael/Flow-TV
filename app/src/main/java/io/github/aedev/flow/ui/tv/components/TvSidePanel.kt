@@ -58,6 +58,7 @@ fun BoxScope.TvSidePanel(
     modifier: Modifier = Modifier,
     onClose: (() -> Unit)? = null,
     containerColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
+    initialContentFocus: Boolean = true,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val dimens = LocalTvDimens.current
@@ -119,7 +120,7 @@ fun BoxScope.TvSidePanel(
                     Modifier
                         .weight(1f)
                         .focusRequester(firstFocusRequester)
-                        .tvInitialFocus(title)
+                        .then(if (initialContentFocus) Modifier.tvInitialFocus(title) else Modifier)
                         .focusGroup(),
                 ) {
                     Column(content = content)
