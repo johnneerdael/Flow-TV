@@ -115,7 +115,7 @@ Open an installed plugin's details to sign in. Web sign-ins use the
 [streamed phone viewer](docs/phone-sign-in-remote-view.md): scan the TV's QR code with a phone on
 the same network, then touch the provider's real page and type on your phone. This includes any
 verification the provider requires. The viewer is for sign-in; browsing and playback use Milkbeat's
-TV interface. See the [Spotify plugin guide](plugins/spotify/README.md) for building and testing.
+TV interface. See the [provider guide](docs/user-guide/providers.md) for sign-in and playback. Provider generation and signing live in the private Milkbeat-Plugins repository.
 
 ### Index playlists before playback
 

@@ -521,7 +521,7 @@ Each phase ships on its own and keeps the app working.
 | **1. Contracts in the core** | A `plugin-api` module (model, errors, roles). `PluginHost` with a **Kotlin plugin adapter**: today's YouTube code wrapped as an in-process plugin behind the same interfaces. The descriptor-based queue and resolution chain. | The UI and player no longer reference YouTube, and a YouTube-less build runs |
 | **2. Local provider** | SD card/USB through the media library, then SMB; local music and local videos (Videos tab); the empty state | Milkbeat works with no streaming at all |
 | **3. Script plugins** | The `.mbplugin` format, installer, signature check, consent screen, runtime, host APIs, Settings > Plugins, updates, developer mode | Third-party plugins install and run |
-| **4. YouTube Music as a file** | The YouTube plugin rewritten in TypeScript under `plugins/youtube-music/`: metadata, radio, audio, sign-in. The solver runs inside the plugin, and PoToken goes through `mb.browser`. CI publishes `youtube-music.mbplugin`. The Kotlin YouTube code leaves the core. | The core ships no provider code |
+| **4. YouTube Music as a file** | The YouTube plugin built in the private Milkbeat-Plugins repository: metadata, radio, audio, sign-in. The solver runs inside the plugin, and PoToken goes through `mb.browser`. CI publishes `youtube-music.mbplugin`. The Kotlin YouTube code leaves the core. | The core ships no provider code |
 | **5. Spotify metadata** | A metadata-only plugin, the match cache (the approved Room change), `matchCollection` in the YouTube plugin | Cross-provider playback |
 | **6. Ecosystem** | A plugin index format (a JSON list of plugin URLs) that can be added like a plugin; SDK and CLI published | Discovery beyond pasted URLs |
 

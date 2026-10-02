@@ -118,30 +118,11 @@ jobs:
           npm ci --no-audit --no-fund
           npm run --workspaces --if-present check
 
-      # First-party plugins ship beside the APK, signed with the plugin author key. Main builds are
-      # published, and a plugin the app cannot verify is useless, so they refuse to go without it.
-      - name: Build and sign first-party plugins
-        env:
-          PLUGIN_SIGNING_KEY: ${{ secrets.PLUGIN_SIGNING_KEY }}
+      - name: Verify published first-party plugins
         run: |
-          set -euo pipefail
-          plugins="youtube-music beatport spotify"
-          for plugin in $plugins; do (cd "plugins/$plugin" && npm test); done
-          if [ -n "$PLUGIN_SIGNING_KEY" ]; then
-            key="$RUNNER_TEMP/plugins-signing.pem"
-            printf '%s\n' "$PLUGIN_SIGNING_KEY" > "$key"
-            chmod 600 "$key"
-            for plugin in $plugins; do (cd "plugins/$plugin" && MBPLUGIN_KEY="$key" npm run pack); done
-            rm -f "$key"
-            # One flat folder, so the release job finds every plugin at the top of its download.
-            mkdir -p plugins/dist
-            for plugin in $plugins; do cp "plugins/$plugin/build/$plugin.mbplugin" plugins/dist/; done
-          elif [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
-            echo "::error::PLUGIN_SIGNING_KEY is unavailable. Refusing to publish unsigned plugins."
-            exit 1
-          else
-            echo "Plugin signing key is not available; plugins are built and tested but not packed."
-          fi
+          cd plugins
+          npm test
+          node scripts/stage-published-plugins.mjs
 
       - name: Upload first-party plugins
         if: ${{ hashFiles('plugins/dist/*.mbplugin') != '' }}
