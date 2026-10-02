@@ -58,3 +58,6 @@ data class TvLibrarySectionState(
             else -> nowMs - loadedAtMs >= freshForMs
         }
 }
+
+internal fun libraryNavigationTabs(tabs: List<TvAccountLibraryTab>): List<TvAccountLibraryTab> =
+    tabs.filterNot { it.section == TvAccountLibrarySection.PLAYLISTS || it.section == TvAccountLibrarySection.LIKED_MUSIC }

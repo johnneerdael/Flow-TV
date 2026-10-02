@@ -3,6 +3,7 @@ package io.github.aedev.flow.plugin.playback
 import com.google.common.truth.Truth.assertThat
 import io.github.aedev.flow.plugin.PluginHost
 import io.github.aedev.flow.plugin.catalog.PluginAccounts
+import io.github.aedev.flow.plugin.catalog.ProviderEntityReference
 import io.github.aedev.flow.plugin.registry.InstalledPlugin
 import io.github.aedev.flow.plugin.registry.PluginRegistry
 import io.github.aedev.flow.plugin.registry.PluginRegistryState
@@ -26,6 +27,8 @@ import nl.neerdael.milkbeat.plugin.AudioDelivery
 import nl.neerdael.milkbeat.plugin.AudioMatches
 import nl.neerdael.milkbeat.plugin.AudioRole
 import nl.neerdael.milkbeat.plugin.AudioStream
+import nl.neerdael.milkbeat.plugin.MetadataRole
+import nl.neerdael.milkbeat.plugin.MetadataSurface
 import nl.neerdael.milkbeat.plugin.PluginError
 import nl.neerdael.milkbeat.plugin.PluginErrorCode
 import nl.neerdael.milkbeat.plugin.PluginManifest
@@ -75,7 +78,7 @@ class PluginAudioRoutingTest {
             PluginCallException("youtube", PluginError(PluginErrorCode.UNAVAILABLE, "recording unavailable"))
         coEvery { host.call("youtube", PluginOperations.resolveAudio, match { it.track.ref == candidate.ref }) } returns stream
         coEvery { host.call("youtube", PluginOperations.reportListen, any()) } returns Unit
-        coEvery { host.call("youtube", PluginOperations.audioRadio, any()) } returns TrackList(emptyList())
+        coEvery { host.call("youtube", PluginOperations.audioRadio, any()) } returns TrackList(listOf(candidate))
     }
 
     @Test
@@ -266,5 +269,145 @@ class PluginAudioRoutingTest {
             coVerify { host.call("youtube", PluginOperations.audioRadio, RadioRequest(unavailable.ref, "continuation")) }
             assertThat(radio.page(EntityRef(EntityKind.PLAYLIST, "spotify:playlist"))).isNull()
             coVerify(exactly = 2) { host.call("youtube", PluginOperations.audioRadio, any()) }
+        }
+
+    @Test fun foreignTrackRadioUsesMatchedAudioEvenWhenYoutubeMetadataIsSelected() =
+        runTest {
+            val youtube =
+                plugin.copy(
+                    manifest =
+                        plugin.manifest.copy(
+                            roles =
+                                plugin.manifest.roles.copy(
+                                    metadata = MetadataRole(setOf(MetadataSurface.RADIO), setOf(EntityKind.TRACK), "youtube"),
+                                ),
+                        ),
+                )
+            every { registry.state } returns
+                MutableStateFlow(PluginRegistryState(listOf(youtube), ProviderSelection("youtube", listOf("youtube"))))
+            coEvery { host.call("youtube", PluginOperations.radio, any()) } returns TrackList(emptyList())
+            coEvery { host.call("youtube", PluginOperations.audioRadio, any()) } returns TrackList(listOf(candidate))
+            val result = radio.page(original.ref, original)!!
+            assertThat(result.fromAudio).isTrue()
+            assertThat(result.seed).isEqualTo(unavailable.ref)
+            coVerify(exactly = 0) { host.call("youtube", PluginOperations.radio, any()) }
+        }
+
+    @Test fun emptyMetadataRadioFallsThroughToAudioRadio() =
+        runTest {
+            val youtube =
+                plugin.copy(
+                    manifest =
+                        plugin.manifest.copy(
+                            roles =
+                                plugin.manifest.roles.copy(
+                                    metadata = MetadataRole(setOf(MetadataSurface.RADIO), setOf(EntityKind.TRACK), "youtube"),
+                                ),
+                        ),
+                )
+            every { registry.state } returns
+                MutableStateFlow(PluginRegistryState(listOf(youtube), ProviderSelection("youtube", listOf("youtube"))))
+            coEvery { host.call("youtube", PluginOperations.radio, any()) } returns TrackList(emptyList())
+            coEvery { host.call("youtube", PluginOperations.audioRadio, any()) } returns TrackList(listOf(candidate))
+            assertThat(radio.page(candidate.ref, candidate)!!.fromAudio).isTrue()
+        }
+
+    @Test fun equalRawIdsFromDifferentNamespacesResolveDifferentAudioAndStayCached() =
+        runTest {
+            val a = original.copy(ref = original.ref.copy(providerId = "same"), title = "First song", ids = mapOf("a" to "same"))
+            val b = a.copy(title = "Second song", ids = mapOf("b" to "same"))
+            val matchedA = candidate.copy(ref = candidate.ref.copy(providerId = "audio-a"), title = a.title)
+            val matchedB = candidate.copy(ref = candidate.ref.copy(providerId = "audio-b"), title = b.title)
+            coEvery { host.call("youtube", PluginOperations.matchAudio, match { it.track == a }) } returns AudioMatches(listOf(matchedA))
+            coEvery { host.call("youtube", PluginOperations.matchAudio, match { it.track == b }) } returns AudioMatches(listOf(matchedB))
+            coEvery { host.call("youtube", PluginOperations.resolveAudio, match { it.track.ref == matchedA.ref }) } returns
+                stream.copy(url = "https://example.invalid/a")
+            coEvery { host.call("youtube", PluginOperations.resolveAudio, match { it.track.ref == matchedB.ref }) } returns
+                stream.copy(url = "https://example.invalid/b")
+            assertThat(audio.resolve(a, null).stream.url).endsWith("/a")
+            assertThat(audio.resolve(b, null).stream.url).endsWith("/b")
+            assertThat(audio.current("same")!!.stream.url).endsWith("/b")
+            assertThat(audio.resolve(a, null).stream.url).endsWith("/a")
+            assertThat(audio.current("same")!!.stream.url).endsWith("/a")
+            assertThat(audio.playableIn(b, "youtube")!!.ref).isEqualTo(matchedB.ref)
+            coVerify(exactly = 2) { host.call("youtube", PluginOperations.resolveAudio, any()) }
+        }
+
+    @Test fun aKnownYoutubeIdSeedsYoutubeRadioInsteadOfThePrimarySpotifyId() =
+        runTest {
+            val youtube =
+                plugin.copy(
+                    manifest =
+                        plugin.manifest.copy(
+                            roles =
+                                plugin.manifest.roles.copy(
+                                    metadata = MetadataRole(setOf(MetadataSurface.RADIO), setOf(EntityKind.TRACK), "youtube"),
+                                ),
+                        ),
+                )
+            every { registry.state } returns
+                MutableStateFlow(PluginRegistryState(listOf(youtube), ProviderSelection("youtube", listOf("youtube"))))
+            val described = original.copy(ids = original.ids + ("youtube" to "known-youtube"))
+            coEvery { host.call("youtube", PluginOperations.radio, any()) } returns TrackList(listOf(candidate))
+            assertThat(radio.page(described.ref, described)!!.seed.providerId).isEqualTo("known-youtube")
+            coVerify { host.call("youtube", PluginOperations.radio, RadioRequest(described.ref.copy(providerId = "known-youtube"))) }
+        }
+
+    @Test fun aScopedPlaybackIdCanReadInvalidateAndReportItsFailedUrl() =
+        runTest {
+            val source =
+                plugin.copy(
+                    manifest =
+                        plugin.manifest.copy(
+                            id = "spotify",
+                            roles =
+                                Roles(
+                                    metadata = MetadataRole(setOf(MetadataSurface.ENTITY), setOf(EntityKind.TRACK), "spotify"),
+                                ),
+                        ),
+                )
+            every { registry.state } returns
+                MutableStateFlow(PluginRegistryState(listOf(plugin, source), ProviderSelection("spotify", listOf("youtube"))))
+            coEvery { host.call("youtube", PluginOperations.matchAudio, any()) } returns AudioMatches(listOf(candidate))
+            val id = ProviderEntityReference.encode("spotify", original.ref)
+            val first = audio.resolve(original, null, playbackId = id)
+            assertThat(audio.current(id)).isSameInstanceAs(first)
+            audio.failed(id, first.stream.url, 403)
+            audio.forget(id)
+            assertThat(audio.current(id)).isNull()
+            coEvery { host.call("youtube", PluginOperations.resolveAudio, any()) } returns
+                stream.copy(url = "https://example.invalid/recovered")
+            assertThat(audio.resolve(original, null).stream.url).endsWith("/recovered")
+            coVerify { host.call("youtube", PluginOperations.resolveAudio, match { it.failure?.status == 403 }) }
+        }
+
+    @Test fun preparingForeignAudioCannotTakeOwnershipOfTheNativePlaybackId() =
+        runTest {
+            val native = original.copy(ref = original.ref.copy(providerId = "same"), ids = mapOf("youtube" to "same"))
+            val foreign = native.copy(title = "Foreign song", ids = mapOf("spotify" to "same"))
+            val matched = matchTrack("foreign-audio", "youtube").copy(title = foreign.title)
+            coEvery {
+                host.call("youtube", PluginOperations.matchAudio, match { it.track == foreign })
+            } returns AudioMatches(listOf(matched))
+            val nativeStream = stream.copy(url = "https://example.invalid/native")
+            val foreignStream = stream.copy(url = "https://example.invalid/foreign")
+            coEvery { host.call("youtube", PluginOperations.resolveAudio, match { it.track.ref == native.ref }) } returns nativeStream
+            coEvery { host.call("youtube", PluginOperations.resolveAudio, match { it.track.ref == matched.ref }) } returns foreignStream
+            audio.resolve(native, null)
+            audio.prepare(foreign, null)
+            assertThat(audio.current("same")!!.stream.url).endsWith("/native")
+            audio.failed("same", "https://example.invalid/native", 403)
+            val id = ProviderEntityReference.encode("spotify", foreign.ref)
+            assertThat(audio.resolve(foreign, null, playbackId = id).stream.url).endsWith("/foreign")
+            assertThat(audio.current("same")).isNull()
+            audio.resolve(native, null)
+            coVerify {
+                host.call(
+                    "youtube",
+                    PluginOperations.resolveAudio,
+                    match { it.track.ref == native.ref && it.failure?.status == 403 },
+                )
+            }
+            coVerify(exactly = 1) { host.call("youtube", PluginOperations.resolveAudio, match { it.track.ref == matched.ref }) }
         }
 }

@@ -64,12 +64,33 @@ class PluginMetadataProvider
         }
 
         /** Calls [operation] on the selected metadata plugin; a failure carries the plugin's reason. */
+        fun scoped(pluginId: String): ScopedPluginCatalog = ScopedPluginCatalog(this, pluginId)
+
+        internal fun accountFor(pluginId: String): Flow<ProviderAccount> =
+            combine(registry.state, accounts.accounts) { registry, accounts ->
+                if (registry.plugin(pluginId) == null) ProviderAccount.Anonymous else accounts[pluginId] ?: ProviderAccount.Anonymous
+            }.distinctUntilChanged()
+
         suspend fun <Request, Response> call(
             operation: PluginOperation<Request, Response>,
             request: Request,
         ): Result<Response> {
             val plugin = selected ?: return Result.failure(NoMetadataPluginException())
-            if (accounts.accounts.value[plugin] == null) runCatching { accounts.refresh(plugin) }
+            return callFor(plugin, operation, request)
+        }
+
+        internal suspend fun <Request, Response> callFor(
+            plugin: String,
+            operation: PluginOperation<Request, Response>,
+            request: Request,
+        ): Result<Response> {
+            if (accounts.accounts.value[plugin] == null) {
+                try {
+                    accounts.refresh(plugin)
+                } catch (error: Exception) {
+                    if (error is kotlinx.coroutines.CancellationException) throw error
+                }
+            }
             return try {
                 Result.success(host.call(plugin, operation, request))
             } catch (e: PluginCallException) {

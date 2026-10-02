@@ -66,7 +66,10 @@ fun TvCatalogPageScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val following by viewModel.following.collectAsStateWithLifecycle()
     val dimens = LocalTvDimens.current
-    LaunchedEffect(viewModel) { viewModel.load() }
+    val sourceIdentity by viewModel.sourceIdentity.collectAsStateWithLifecycle(initialValue = "")
+    LaunchedEffect(viewModel, sourceIdentity) {
+        if (sourceIdentity.isNotEmpty()) viewModel.load(sourceIdentity)
+    }
     val playMix by rememberUpdatedState(onPlayMix)
     val playCollection by rememberUpdatedState(onPlayCollection)
     val open by rememberUpdatedState(onOpen)
@@ -75,7 +78,14 @@ fun TvCatalogPageScreen(
             TvCatalogActions(
                 trackFor = viewModel::track,
                 onPlayMix = { playMix(it) },
-                onPlayList = { track, queue, source, radioPlaylistId -> playCollection(track, queue, source, radioPlaylistId) },
+                onPlayList = {
+                    track,
+                    queue,
+                    source,
+                    radioPlaylistId,
+                    ->
+                    playCollection(track, queue, source, viewModel.radioSeed(radioPlaylistId))
+                },
                 onOpen = { open(it) },
                 follow = TvCatalogFollow(isFollowing = { following }, toggle = viewModel::toggleFollow),
             )

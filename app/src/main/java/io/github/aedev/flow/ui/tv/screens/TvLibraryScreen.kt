@@ -51,9 +51,11 @@ import io.github.aedev.flow.ui.tv.screens.account.TvAccountLibrarySection
 import io.github.aedev.flow.ui.tv.screens.account.TvAccountLibraryViewModel
 import io.github.aedev.flow.ui.tv.screens.account.TvAccountStatus
 import io.github.aedev.flow.ui.tv.screens.account.TvPluginAccountViewModel
+import io.github.aedev.flow.ui.tv.screens.account.libraryNavigationTabs
 import io.github.aedev.flow.ui.tv.screens.folders.TvMusicFoldersContent
 import io.github.aedev.flow.ui.tv.screens.library.TvLibraryMixedContent
-import io.github.aedev.flow.ui.tv.screens.library.TvLibraryPlaylists
+import io.github.aedev.flow.ui.tv.screens.library.TvMergedPlaylistsPane
+import io.github.aedev.flow.ui.tv.screens.library.selectLibraryAccountSection
 import io.github.aedev.flow.ui.tv.theme.LocalTvDimens
 import io.github.aedev.flow.ui.tv.toTvMusicTrack
 import io.github.aedev.flow.ui.tv.toTvVideo
@@ -65,7 +67,7 @@ private enum class TvLibrarySection(
 ) {
     FOLDERS(R.string.music_folders_library),
     HISTORY(R.string.tv_library_history),
-    LIKES(R.string.tv_library_likes),
+    LIKES(R.string.library_liked_songs),
     WATCH_LATER(R.string.tv_library_watch_later),
     PLAYLISTS(R.string.tv_library_playlists),
 }
@@ -87,27 +89,18 @@ fun TvLibraryScreen(
     onPlayCollection: (MusicTrack, List<MusicTrack>, String, String?) -> Unit = { _, _, _, _ -> },
     onOpenCatalog: (EntityRef) -> Unit = {},
     onConfigureFolders: () -> Unit = {},
+    onOpenProviderCatalog: (String, EntityRef) -> Unit = { _, _ -> },
     accountViewModel: TvPluginAccountViewModel = hiltViewModel(),
     accountLibrary: TvAccountLibraryViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
     val historyRepository = remember { ViewHistory.getInstance(context.applicationContext) }
-    val likedRepository = remember { LikedVideosRepository.getInstance(context.applicationContext) }
     val playlistRepository = remember { PlaylistRepository(context.applicationContext) }
     val history by historyRepository
         .getAllHistory()
         .collectAsStateWithLifecycle(initialValue = emptyList())
-    val liked by likedRepository
-        .getAllLikedVideos()
-        .collectAsStateWithLifecycle(initialValue = emptyList())
     val watchLater by playlistRepository
         .getWatchLaterVideosFlow()
-        .collectAsStateWithLifecycle(initialValue = emptyList())
-    val videoPlaylists by playlistRepository
-        .getAllPlaylistsFlow()
-        .collectAsStateWithLifecycle(initialValue = emptyList())
-    val musicPlaylists by playlistRepository
-        .getMusicPlaylistsFlow()
         .collectAsStateWithLifecycle(initialValue = emptyList())
     var selectedSection by rememberSaveable { mutableStateOf(TvLibrarySection.HISTORY) }
     val dimens = LocalTvDimens.current
@@ -115,15 +108,18 @@ fun TvLibraryScreen(
     val signedIn = accountStatus is TvAccountStatus.SignedIn
     var selectedAccountSection by rememberSaveable { mutableStateOf<TvAccountLibrarySection?>(null) }
     var accountOwner by rememberSaveable { mutableStateOf<String?>(null) }
+    var localPaneSelected by rememberSaveable {
+        mutableStateOf(selectedAccountSection == null && (selectedSection != TvLibrarySection.HISTORY || accountOwner != null))
+    }
     val accountIdentity by accountLibrary.accountIdentity.collectAsStateWithLifecycle(initialValue = "")
     val accountTabs by accountLibrary.tabs.collectAsStateWithLifecycle()
     LaunchedEffect(accountViewModel) { accountViewModel.refresh() }
     LaunchedEffect(signedIn, accountIdentity) {
         if (accountIdentity.isNotEmpty()) accountLibrary.accountChanged(accountIdentity)
         if (signedIn && accountIdentity.isNotEmpty()) {
-            if (accountOwner != accountIdentity || selectedAccountSection == null) selectedAccountSection = TvAccountLibrarySection.OVERVIEW
+            selectedAccountSection = selectLibraryAccountSection(localPaneSelected, selectedAccountSection, accountOwner, accountIdentity)
             accountOwner = accountIdentity
-            accountLibrary.open(TvAccountLibrarySection.OVERVIEW)
+            if (selectedAccountSection == TvAccountLibrarySection.OVERVIEW) accountLibrary.open(TvAccountLibrarySection.OVERVIEW)
         } else {
             selectedAccountSection = null
             accountOwner = null
@@ -148,20 +144,29 @@ fun TvLibraryScreen(
                 contentPadding = PaddingValues(horizontal = dimens.overscanHorizontal),
             ) {
                 if (signedIn) {
-                    items(accountTabs, key = { "account-${it.section.name}" }) { tab ->
+                    items(libraryNavigationTabs(accountTabs), key = { "account-${it.section.name}" }) { tab ->
                         val section = tab.section
                         TvFilterChip(
                             label = tab.label ?: stringResource(section.titleRes),
                             selected = selectedAccountSection == section,
-                            onClick = { selectedAccountSection = section },
+                            onClick = {
+                                localPaneSelected = false
+                                selectedAccountSection = section
+                            },
                         )
                     }
                 }
-                items(TvLibrarySection.entries, key = TvLibrarySection::name) { section ->
+                items(TvLibrarySection.entries.filterNot { it == TvLibrarySection.LIKES }, key = TvLibrarySection::name) { section ->
                     TvFilterChip(
                         label = stringResource(section.titleRes),
-                        selected = selectedAccountSection == null && selectedSection == section,
+                        selected =
+                            selectedAccountSection == null &&
+                                (
+                                    selectedSection == section ||
+                                        (section == TvLibrarySection.PLAYLISTS && selectedSection == TvLibrarySection.LIKES)
+                                ),
                         onClick = {
+                            localPaneSelected = true
                             selectedAccountSection = null
                             selectedSection = section
                         },
@@ -205,19 +210,6 @@ fun TvLibraryScreen(
                         )
                     }
 
-                    TvLibrarySection.LIKES -> {
-                        TvLibraryMixedContent(
-                            musicTracks = liked.filter { it.isMusic }.map(LikedVideoInfo::toTvMusicTrack),
-                            musicSource = stringResource(TvLibrarySection.LIKES.titleRes),
-                            videos =
-                                liked
-                                    .filterNot { it.isMusic }
-                                    .map { info -> info.toTvVideo() to null },
-                            onVideoClick = onVideoClick,
-                            onPlayTrack = onPlayTrack,
-                        )
-                    }
-
                     TvLibrarySection.WATCH_LATER -> {
                         TvLibraryMixedContent(
                             musicTracks = watchLater.filter { it.isMusic }.map(Video::toTvMusicTrack),
@@ -228,27 +220,13 @@ fun TvLibraryScreen(
                         )
                     }
 
-                    TvLibrarySection.PLAYLISTS -> {
-                        TvLibraryPlaylists(
-                            videoPlaylists =
-                                videoPlaylists
-                                    .filterNot { it.id == PlaylistRepository.WATCH_LATER_ID || it.id == PlaylistRepository.SAVED_SHORTS_ID }
-                                    .map { info ->
-                                        Playlist(
-                                            id = info.id,
-                                            name = info.name,
-                                            thumbnailUrl = info.thumbnailUrl,
-                                            videoCount = info.videoCount,
-                                            description = info.description,
-                                        )
-                                    },
-                            musicPlaylists =
-                                musicPlaylists
-                                    .filterNot {
-                                        it.id == PlaylistRepository.WATCH_LATER_ID || it.id == PlaylistRepository.SAVED_SHORTS_ID
-                                    },
+                    TvLibrarySection.PLAYLISTS, TvLibrarySection.LIKES -> {
+                        TvMergedPlaylistsPane(
                             onOpenPlaylist = onOpenPlaylist,
                             onOpenMusicCollection = onOpenMusicCollection,
+                            onOpenProviderCatalog = onOpenProviderCatalog,
+                            onPlayTrack = onPlayTrack,
+                            initiallyLiked = selectedSection == TvLibrarySection.LIKES,
                         )
                     }
                 }

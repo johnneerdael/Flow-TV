@@ -1,6 +1,7 @@
 package io.github.aedev.flow.plugin.playback
 
 import io.github.aedev.flow.plugin.PluginHost
+import io.github.aedev.flow.plugin.catalog.ProviderEntityReference
 import io.github.aedev.flow.plugin.registry.PluginRegistry
 import io.github.aedev.flow.plugin.runtime.PluginCallException
 import nl.neerdael.milkbeat.catalog.EntityRef
@@ -54,9 +55,35 @@ class PluginRadio
             seedTrack: TrackDescriptor? = null,
         ): RadioPage? {
             val state = registry.state.value
+            val scoped = ProviderEntityReference.decode(seed.providerId)?.takeIf { seedTrack == null || it.entity == seedTrack.ref }
+            val compatible =
+                state.plugins.filter { plugin ->
+                    plugin.enabled && seedTrack?.ids?.containsKey(
+                        plugin.manifest.roles.metadata
+                            ?.idSpace,
+                    ) == true
+                }
+            val metadataPlugin =
+                scoped?.pluginId ?: if (seedTrack == null) {
+                    state.selection.metadata
+                } else {
+                    compatible.firstOrNull { it.id == state.selection.metadata }?.id ?: compatible.firstOrNull()?.id
+                }
+            val ownSeed =
+                scoped?.entity ?: seedTrack?.let { track ->
+                    val space =
+                        state
+                            .plugin(metadataPlugin)
+                            ?.manifest
+                            ?.roles
+                            ?.metadata
+                            ?.idSpace
+                    val id = space?.let(track.ids::get)?.takeIf(String::isNotBlank)
+                    if (id == null) track.ref else track.ref.copy(providerId = id)
+                } ?: seed
             state
                 .plugin(
-                    state.selection.metadata,
+                    metadataPlugin,
                 )?.takeIf {
                     MetadataSurface.RADIO in
                         it.manifest.roles.metadata
@@ -64,12 +91,8 @@ class PluginRadio
                             .orEmpty()
                 }?.let { plugin ->
                     try {
-                        return RadioPage(
-                            plugin.id,
-                            host.call(plugin.id, PluginOperations.radio, RadioRequest(seed)),
-                            seed,
-                            fromAudio = false,
-                        )
+                        val tracks = host.call(plugin.id, PluginOperations.radio, RadioRequest(ownSeed))
+                        if (tracks.tracks.isNotEmpty()) return RadioPage(plugin.id, tracks, ownSeed, fromAudio = false)
                     } catch (e: PluginCallException) {
                         if (state.selection.audio.isEmpty()) throw e
                     }
@@ -80,13 +103,18 @@ class PluginRadio
                 ) {
                     continue
                 }
-                val own =
-                    when {
-                        plugin.id == state.selection.metadata -> seed
-                        seedTrack != null -> audio.playableIn(seedTrack, plugin.id)?.ref
-                        else -> null
-                    } ?: continue
-                return RadioPage(plugin.id, host.call(plugin.id, PluginOperations.audioRadio, RadioRequest(own)), own, fromAudio = true)
+                try {
+                    val own =
+                        when {
+                            plugin.id == metadataPlugin -> ownSeed
+                            seedTrack != null -> audio.playableIn(seedTrack, plugin.id)?.ref
+                            else -> null
+                        } ?: continue
+                    val tracks = host.call(plugin.id, PluginOperations.audioRadio, RadioRequest(own))
+                    if (tracks.tracks.isNotEmpty()) return RadioPage(plugin.id, tracks, own, fromAudio = true)
+                } catch (_: PluginCallException) {
+                    continue
+                }
             }
             return null
         }

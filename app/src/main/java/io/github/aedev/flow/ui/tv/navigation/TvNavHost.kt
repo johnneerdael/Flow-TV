@@ -65,12 +65,19 @@ fun TvNavHost(
                 listOf(
                     navArgument(CatalogPageViewModel.KIND_ARG) { type = NavType.StringType },
                     navArgument(CatalogPageViewModel.ID_ARG) { type = NavType.StringType },
+                    navArgument(CatalogPageViewModel.PROVIDER_ARG) {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    },
                 ),
-        ) {
+        ) { entry ->
             TvCatalogPageScreen(
                 onPlayMix = onPlayMix,
                 onPlayCollection = onPlayCollection,
-                onOpen = openCatalog,
+                onOpen = { ref ->
+                    navController.navigate(TvRoutes.catalog(ref, entry.arguments?.getString(CatalogPageViewModel.PROVIDER_ARG)))
+                },
                 modifier = Modifier.fillMaxSize(),
             )
         }
@@ -106,6 +113,7 @@ fun TvNavHost(
                 onPlayMix = onPlayMix,
                 onPlayCollection = onPlayCollection,
                 onOpenCatalog = openCatalog,
+                onOpenProviderCatalog = { plugin, entity -> navController.navigate(TvRoutes.catalog(entity, plugin)) },
                 modifier = Modifier.fillMaxSize(),
             )
         }
