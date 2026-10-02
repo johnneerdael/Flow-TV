@@ -214,8 +214,14 @@ configurations.matching { it.name.endsWith("UnitTestRuntimeClasspath") }.configu
     exclude(group = "org.conscrypt", module = "conscrypt-android")
 }
 
+// ProjectM-TV's core engine AAR. "latest" follows ProjectM-TV's newest stable release (re-checked
+// daily, or with --refresh-dependencies); CI passes the exact version it resolved.
+val projectmCoreVersion = providers.gradleProperty("projectmCoreVersion").get()
+
 dependencies {
-    implementation(project(":projectm-core"))
+    implementation("nl.neerdael.projectm:projectM-TV-core:$projectmCoreVersion@aar") {
+        isChanging = projectmCoreVersion == "latest"
+    }
     implementation(project(":plugin-api"))
     implementation(libs.quickjs.kt)
     implementation(libs.smbj)
