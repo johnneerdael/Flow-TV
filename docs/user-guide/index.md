@@ -2,7 +2,7 @@
 
 Milkbeat is an Android TV music player for local files, USB storage, SMB network shares and optional streaming plugins. Folder playback works without a plugin or streaming account.
 
-This guide covers the interface on Milkbeat 0.8.9. Screenshots show the real TV application; available catalog content varies by provider and account. Settings shown in a capture are examples, not a requirement for your setup.
+Most screenshots were captured on Milkbeat 0.8.9; the provider guide also shows the newer download-code interface. All captures show the real TV application. Available catalog content varies by provider and account, and settings shown are examples for that listening setup.
 
 ![Milkbeat playing Spotify metadata through YouTube audio with projectM visuals](images/player-start.png)
 

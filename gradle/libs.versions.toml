@@ -44,8 +44,10 @@ quickjsKt = "1.0.15"
 schemaKenerator = "2.7.2"
 rhino = "1.8.1"
 smbj = "0.15.0"
+jsoup = "1.23.2"
 
 [libraries]
+jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
 smbj = { group = "com.hierynomus", name = "smbj", version.ref = "smbj" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "core-splashscreen" }

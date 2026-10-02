@@ -15,11 +15,27 @@ A plugin can provide more than one role. Local and SMB playback are built in and
 ## Install a plugin
 
 1. Open Settings → Plugins.
-2. Enter the download link for a `.mbplugin` package from a [release](https://github.com/johnneerdael/Milkbeat/releases/latest).
+2. Enter a registered 3-digit code or the download link for a `.mbplugin` package from a [release](https://github.com/johnneerdael/Milkbeat/releases/latest).
 3. Select **Add a plugin**.
 4. Review its author, roles and requested access, then install it.
 
-An address without a scheme defaults to HTTPS. The host verifies the package signature before installation.
+### Download codes
+
+| Code | Plugin |
+| --- | --- |
+| **102** | Beatport |
+| **772** | Spotify |
+| **416** | YouTube Music |
+
+Codes need a Milkbeat build with download-code support; earlier releases accept URLs. Each code identifies a registered download in the app's bundled catalog. An unknown code reports an error; try its full URL or update the app.
+
+![Adding Beatport with its three-digit code](images/plugin-download-code.png)
+
+Full URLs still work, including supported Buzzheavier file pages. An address without a scheme defaults to HTTPS. Milkbeat resolves Buzzheavier's download link, downloads the package, and verifies its signature before offering installation.
+
+![Reviewing the author, roles and access after a coded download](images/plugin-download-consent.png)
+
+These two captures show the code-enabled development build. New catalog entries are delivered in app updates; codes do not automatically update installed plugins.
 
 | Plugin | Metadata | Audio | Video |
 | --- | --- | --- | --- |

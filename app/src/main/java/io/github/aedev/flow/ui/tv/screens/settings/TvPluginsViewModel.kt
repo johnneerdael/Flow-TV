@@ -38,6 +38,7 @@ sealed interface AddPluginState {
 
     data class Failed(
         val message: String,
+        val messageResource: Int? = null,
     ) : AddPluginState
 }
 
@@ -95,7 +96,7 @@ class TvPluginsViewModel
                         try {
                             AddPluginState.Consent(installer.fetch(trimmed))
                         } catch (e: PluginInstallException) {
-                            AddPluginState.Failed(e.message ?: "Could not get the plugin")
+                            AddPluginState.Failed(e.message.orEmpty(), e.messageResource)
                         }
                 }
         }

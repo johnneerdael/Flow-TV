@@ -256,6 +256,7 @@ dependencies {
 
     // Networking
     implementation(libs.okhttp)
+    implementation(libs.jsoup)
 
     // --- Account sign-in: the phone input server and its QR code ---
     implementation(libs.ktor.server.core) {
