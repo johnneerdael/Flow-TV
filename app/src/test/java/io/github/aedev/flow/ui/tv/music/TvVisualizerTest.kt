@@ -2,6 +2,7 @@ package io.github.aedev.flow.ui.tv.music
 
 import android.view.KeyEvent
 import com.google.common.truth.Truth.assertThat
+import nl.neerdael.projectm.core.DeviceProfile
 import org.junit.Test
 
 class TvVisualizerTest {
@@ -20,6 +21,19 @@ class TvVisualizerTest {
         assertThat(frameDivisor(refreshRate = 120f, cap = 60)).isEqualTo(2)
         assertThat(frameDivisor(refreshRate = 120f, cap = 30)).isEqualTo(4)
         assertThat(frameDivisor(refreshRate = 50f, cap = 20)).isEqualTo(2)
+    }
+
+    @Test
+    fun `embedded upstream defaults target 30 fps and skip unwatchable presets on every tier`() {
+        val constructor = DeviceProfile::class.java.getDeclaredConstructor(DeviceProfile.Tier::class.java, Long::class.javaPrimitiveType)
+        constructor.isAccessible = true
+        DeviceProfile.Tier.entries.forEach { tier ->
+            val profile = constructor.newInstance(tier, 4096L)
+            assertThat(profile.defaultFrameRateCap()).isEqualTo(30)
+            assertThat(profile.defaultSkipSlowPresets()).isTrue()
+            assertThat(frameDivisor(60f, profile.defaultFrameRateCap())).isEqualTo(2)
+            assertThat(frameDivisor(120f, profile.defaultFrameRateCap())).isEqualTo(4)
+        }
     }
 
     @Test
