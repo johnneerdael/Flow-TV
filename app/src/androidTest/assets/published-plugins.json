@@ -1,0 +1,38 @@
+{
+  "format": 1,
+  "plugins": [
+    {
+      "id": "nl.neerdael.beatport",
+      "name": "Beatport",
+      "version": "0.1.2",
+      "versionCode": 3,
+      "sha256": "602041e8feeb4e4d6adaf4d28284ccb648fea92b60837e57b3937fb2d7b57bef",
+      "size": 17827,
+      "fingerprint": "39dca3d132c56262c0873ec96faf22cc8ed9ca30c7ed1f135049f8570b943adc",
+      "contentDigest": "e5065e282813388df6ec6c5e419e138d544a943a55272db5e5198cd88c623e47",
+      "code": "393"
+    },
+    {
+      "id": "nl.neerdael.spotify",
+      "name": "Spotify",
+      "version": "0.1.2",
+      "versionCode": 3,
+      "sha256": "e83f82f71b1e202cb4494cf1eab9d448cf930d783fc011e53eac84a03f45fd60",
+      "size": 12935,
+      "fingerprint": "39dca3d132c56262c0873ec96faf22cc8ed9ca30c7ed1f135049f8570b943adc",
+      "contentDigest": "b069f878c72e06b666c032070545628be5178f85ef8cec73d20b4649fbc3707e",
+      "code": "981"
+    },
+    {
+      "id": "nl.neerdael.youtube-music",
+      "name": "YouTube Music",
+      "version": "0.1.3",
+      "versionCode": 4,
+      "sha256": "6769be430e9959be0f196cda1be986b835487a02b023fb49505b08a4e9735faa",
+      "size": 118143,
+      "fingerprint": "39dca3d132c56262c0873ec96faf22cc8ed9ca30c7ed1f135049f8570b943adc",
+      "contentDigest": "dc9bfa88ac2dbfaf9eae41bc20bba3871027e7fb1ea1be9c70ace68fa06942d4",
+      "code": "494"
+    }
+  ]
+}

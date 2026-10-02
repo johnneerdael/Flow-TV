@@ -2,6 +2,7 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
 import { closeSync, existsSync, mkdirSync, openSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const aad = Buffer.from('milkbeat/plugin-download-catalog/1');
 const defaultCatalog = 'app/src/main/assets/plugin-download-catalog.json';
@@ -14,7 +15,7 @@ function normalize(value) {
   return url.href;
 }
 
-function read(file) {
+export function readCatalog(file) {
   if (!existsSync(file)) return { key: randomBytes(32), entries: [] };
   const envelope = JSON.parse(readFileSync(file, 'utf8'));
   if (envelope.format !== 1) throw new Error('Unsupported catalog format');
@@ -64,7 +65,7 @@ function main() {
   file = resolve(file);
   const [command, id, name, input] = args;
   if (command === 'list' && args.length === 1) {
-    for (const entry of read(file).entries) console.log(`${entry.code}  ${entry.name} (${entry.id})`);
+    for (const entry of readCatalog(file).entries) console.log(`${entry.code}  ${entry.name} (${entry.id})`);
     return;
   }
   if (command !== 'add' || args.length !== 4) throw new Error('Usage: plugin-download-codes.mjs add <plugin-id> <name> <url> [--catalog <file>] | list');
@@ -74,7 +75,7 @@ function main() {
   const lock = `${file}.lock`;
   const handle = openSync(lock, 'wx');
   try {
-    const { key, entries } = read(file);
+    const { key, entries } = readCatalog(file);
     const existing = entries.find(x => x.url === url);
     if (existing) {
       if (existing.id !== id) throw new Error('This URL is already assigned to another plugin');
@@ -99,5 +100,7 @@ function main() {
   }
 }
 
-try { main(); }
-catch (error) { console.error(error.message); process.exitCode = 1; }
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  try { main(); }
+  catch (error) { console.error(error.message); process.exitCode = 1; }
+}

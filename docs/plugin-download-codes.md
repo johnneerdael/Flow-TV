@@ -8,6 +8,9 @@ add-plugin deep link's `url` parameter. Full download URLs remain supported.
 | 102 | Beatport |
 | 772 | Spotify |
 | 416 | YouTube Music |
+| 393 | Beatport, private publisher |
+| 981 | Spotify, private publisher |
+| 494 | YouTube Music, private publisher |
 
 ## Register another URL
 
@@ -62,3 +65,9 @@ The protocol was checked against the local Buzzheavier-Keeper and BuzzInstaller
 references, then verified by downloading all three signed packages on an Ugoos
 AM6. jsoup was added because the app's resolved compile classpath contained no
 HTML parser. The existing OkHttp client and crypto implementations are reused.
+
+## Private generation
+
+First-party generation, signing and Buzzheavier uploads run in the private Milkbeat-Plugins repository. The original author identity is pinned. Uploads compare the supported API's mandatory server SHA-256 against the verified package and the actual transmitted stream. Native download checks precede promotion to the Android repository.
+
+Public CI consumes compiled copies with pinned hashes and signatures; it does not need private-repository credentials or an interactive download client. Promote publication metadata, the encrypted catalog and canonical packages together, following `plugins/README.md`.

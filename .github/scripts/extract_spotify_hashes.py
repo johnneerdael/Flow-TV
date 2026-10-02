@@ -41,7 +41,7 @@ def main() -> int:
             fresh.update(extract_hashes(fetch_text(url)))
             if all(name in fresh for name in REQUIRED):
                 break
-        snapshot = Path(__file__).resolve().parents[2] / 'plugins/spotify/assets/hashes.json'
+        snapshot = Path(__file__).resolve().parents[2] / '.github/data/spotify-hashes.json'
         result = registry(fresh, json.loads(snapshot.read_text()))
         args.output.write_text(json.dumps(result, indent=2) + '\n')
         print(f'wrote {len(result)} query hashes to {args.output}', file=sys.stderr)

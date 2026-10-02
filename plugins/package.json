@@ -5,12 +5,13 @@
   "workspaces": [
     "sdk",
     "cli",
-    "fixture",
-    "youtube-music",
-    "beatport",
-    "spotify"
+    "fixture"
   ],
   "engines": {
     "node": ">=22"
+  },
+  "scripts": {
+    "check": "npm run --workspaces --if-present check",
+    "test": "node --test test/*.test.mjs"
   }
 }
