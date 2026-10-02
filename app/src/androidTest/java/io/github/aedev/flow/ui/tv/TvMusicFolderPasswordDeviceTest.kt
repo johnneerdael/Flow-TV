@@ -10,6 +10,8 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.text.TextLayoutResult
@@ -57,5 +59,43 @@ class TvMusicFolderPasswordDeviceTest {
                     .all { it == '•' },
             )
         }
+    }
+
+    @Test fun passwordVisibilityTogglePreservesSymbolsAndRemasks() {
+        var received = ""
+        compose.setContent {
+            TvTheme {
+                var password by remember { mutableStateOf("") }
+                TvSearchField(password, {
+                    password = it
+                    received = it
+                }, {}, secure = true)
+            }
+        }
+        val node = compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.Password))
+        val value = "fixture-$# !"
+        node.performTextInput(value)
+        compose.waitForIdle()
+
+        fun rendered(): String {
+            var text = ""
+            node.performSemanticsAction(SemanticsActions.GetTextLayoutResult) { action ->
+                val layouts = mutableListOf<TextLayoutResult>()
+                assertTrue(action(layouts))
+                text =
+                    layouts
+                        .single()
+                        .layoutInput.text.text
+            }
+            return text
+        }
+        assertEquals("•".repeat(value.length), rendered())
+        compose.onNodeWithContentDescription("Show password").performClick()
+        compose.waitForIdle()
+        assertEquals(value, rendered())
+        compose.onNodeWithContentDescription("Hide password").performClick()
+        compose.waitForIdle()
+        assertEquals("•".repeat(value.length), rendered())
+        assertEquals(value, received)
     }
 }

@@ -14,6 +14,8 @@ import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedSecureTextField
@@ -72,6 +74,7 @@ fun TvSearchField(
     val state = remember { TextFieldState(initialText = query) }
     val currentOnQueryChange by rememberUpdatedState(onQueryChange)
     val fieldFocus = remember { FocusRequester() }
+    var passwordVisible by remember(secure) { mutableStateOf(false) }
 
     // The keyboard may only open on focus while the user asked to type: center re-focuses the field
     // with it allowed, and it is taken back once the keyboard has closed again.
@@ -150,7 +153,7 @@ fun TvSearchField(
                         { Text(label) }
                     },
                 leadingIcon = { Icon(leadingIcon, contentDescription = null) },
-                textObfuscationMode = TextObfuscationMode.Hidden,
+                textObfuscationMode = if (passwordVisible) TextObfuscationMode.Visible else TextObfuscationMode.Hidden,
                 shape = MaterialTheme.shapes.extraLarge,
                 keyboardOptions =
                     KeyboardOptions(
@@ -184,6 +187,13 @@ fun TvSearchField(
                     typing = false
                     onSearch()
                 },
+            )
+        }
+        if (secure) {
+            TvIconButton(
+                icon = if (passwordVisible) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
+                contentDescription = stringResource(if (passwordVisible) R.string.hide_password else R.string.show_password),
+                onClick = { passwordVisible = !passwordVisible },
             )
         }
         if (onVoice != null) {

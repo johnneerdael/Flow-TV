@@ -137,3 +137,16 @@ describe('stations', () => {
     await assert.rejects(call('metadata.radio', { seed: { kind: 'PROFILE', providerId: 'UC1' } }), { code: 'UNSUPPORTED' });
   });
 });
+
+
+test('audio radio continues a matched Spotify track with the same YouTube mix', async () => {
+  const routes = [[nextOf({ videoId: SEED, playlistId: `RDAMVM${SEED}` }), 'next_track']];
+  const audio = offlinePlugin(routes);
+  const metadata = offlinePlugin(routes);
+  const seed = { kind: 'TRACK', providerId: SEED };
+  const fromAudio = await audio.call('audio.radio', { seed });
+  const fromMetadata = await metadata.call('metadata.radio', { seed });
+  assert.deepEqual(fromAudio, fromMetadata);
+  await audio.call('audio.radio', { seed, cursor: fromAudio.next });
+  assert.equal(audio.calls.at(-1).body.playlistId, `RDAMVM${SEED}`);
+});

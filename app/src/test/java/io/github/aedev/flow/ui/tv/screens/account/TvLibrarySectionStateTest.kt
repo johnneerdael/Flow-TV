@@ -36,4 +36,18 @@ class TvLibrarySectionStateTest {
             ).inOrder()
         assertThat(tabs.last().label).isEqualTo("Liked Songs")
     }
+
+    @Test fun mergedLibraryDoesNotDuplicateProviderPlaylistAndLikeTabs() {
+        val tabs =
+            libraryTabs(
+                FilterControl(
+                    listOf(FilterOption("playlists", "Playlists"), FilterOption("liked", "Liked Songs"), FilterOption("history", "Recent")),
+                ),
+            )
+        assertThat(libraryNavigationTabs(tabs).map { it.section })
+            .containsExactly(
+                TvAccountLibrarySection.OVERVIEW,
+                TvAccountLibrarySection.RECENTLY_PLAYED,
+            ).inOrder()
+    }
 }

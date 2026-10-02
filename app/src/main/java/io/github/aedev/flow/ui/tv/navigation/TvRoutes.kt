@@ -20,7 +20,9 @@ object TvRoutes {
     const val MUSIC_COLLECTION_ARG = "collectionId"
     const val MUSIC_COLLECTION = "musicCollection/{$MUSIC_COLLECTION_ARG}"
 
-    const val CATALOG = "catalog/{${CatalogPageViewModel.KIND_ARG}}/{${CatalogPageViewModel.ID_ARG}}"
+    const val CATALOG =
+        "catalog/{${CatalogPageViewModel.KIND_ARG}}/{${CatalogPageViewModel.ID_ARG}}" +
+            "?provider={${CatalogPageViewModel.PROVIDER_ARG}}"
 
     const val PLUGIN_SIGN_IN = "pluginSignIn/{$PLUGIN_ARG}/{$METHOD_ARG}"
 
@@ -37,5 +39,10 @@ object TvRoutes {
 
     fun musicCollection(collectionId: String): String = "musicCollection/${Uri.encode(collectionId)}"
 
-    fun catalog(entity: EntityRef): String = "catalog/${entity.kind.name}/${Uri.encode(entity.providerId)}"
+    fun catalog(
+        entity: EntityRef,
+        providerId: String? = null,
+    ): String =
+        "catalog/${entity.kind.name}/${Uri.encode(entity.providerId)}" +
+            (providerId?.let { "?provider=${Uri.encode(it)}" } ?: "")
 }

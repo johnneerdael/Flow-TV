@@ -351,6 +351,9 @@
     <string name="tv_search_no_plugin_message">Choose one in Settings, Plugins to search here.</string>
     <string name="tv_library_history">History</string>
     <string name="tv_library_playlists">Playlists</string>
+    <string name="library_liked_songs">Liked songs</string>
+    <string name="library_all_providers">All providers</string>
+    <string name="library_provider_unavailable">%1$s is unavailable. Refresh to try again.</string>
     <string name="tv_library_empty">Your library is empty</string>
     <string name="tv_player_close">Close player</string>
     <string name="tv_search_prompt">Search music and videos</string>
@@ -608,6 +611,8 @@
     <string name="music_folders_username">Username</string>
     <string name="music_folders_domain">Domain (optional)</string>
     <string name="music_folders_password">Password</string>
+    <string name="show_password">Show password</string>
+    <string name="hide_password">Hide password</string>
     <string name="music_folders_password_keep">Password (leave unchanged to keep saved password)</string>
     <string name="music_folders_guest">Guest access</string>
     <string name="music_folders_test">Test access</string>

@@ -341,7 +341,8 @@ class DownloadUtil
         ): ResolvedAudio {
             val limits = if (picture) PictureLimits(maxVideoHeight, pictureCodecs(playerPreferences.videoCodecPriority.first())) else null
             val quality = playerPreferences.musicAudioQuality.first()
-            return pluginAudio.resolve(MusicVideoItems.descriptor(uri), limits, AudioQuality.valueOf(quality.name))
+            val descriptor = MusicVideoItems.descriptor(uri)
+            return pluginAudio.resolve(descriptor, limits, AudioQuality.valueOf(quality.name), uri.authority ?: descriptor.ref.providerId)
         }
 
         /** Codecs this TV decodes in hardware, in the listener's order of preference. */
