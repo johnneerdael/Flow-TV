@@ -1,4 +1,0 @@
-[submodule "third_party/projectm-tv"]
-	path = third_party/projectm-tv
-	url = https://github.com/johnneerdael/ProjectM-TV.git
-	ignore = dirty
