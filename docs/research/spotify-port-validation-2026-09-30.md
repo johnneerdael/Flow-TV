@@ -102,7 +102,7 @@ sections, so Home and Library require a signed-in account.
 - `ktlintCheck`, Github debug APK/test builds and Foss debug compilation passed.
 - Three Android tests passed on the API 28 TV: native QuickJS/HMAC catalog reads,
   artist-page rendering and readable YouTube audio for a Spotify track.
-- The package was built and signed with the existing first-party author key.
+- The package was built and signed with the existing signing author key.
 
 The native render test captures the Compose root into
 `debug/spotify-port/spotify-artist-tv.png`. The screenshot was visually inspected:

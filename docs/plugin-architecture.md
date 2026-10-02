@@ -183,7 +183,7 @@ A plugin that fails any step is not stored.
 ### 3.5 Third-party plugin distribution
 
 - **Nothing is bundled.** The APK contains no plugin, and a fresh install has only the Local library.
-- Provider implementations and package building/signing live in the separate private repository on Forgejo. Plugin releases are independent of the app.
+- Third-party plugin packages are distributed separately from the app.
 - Milkbeat releases contain APKs and checksums. The README lists optional third-party downloader codes.
 - Plugins use the generic installer, signature verification, permission review and update APIs.
 
@@ -516,7 +516,7 @@ Each phase ships on its own and keeps the app working.
 | **1. Contracts in the core** | A `plugin-api` module (model, errors, roles). `PluginHost` with a **Kotlin plugin adapter**: today's YouTube code wrapped as an in-process plugin behind the same interfaces. The descriptor-based queue and resolution chain. | The UI and player no longer reference YouTube, and a YouTube-less build runs |
 | **2. Local provider** | SD card/USB through the media library, then SMB; local music and local videos (Videos tab); the empty state | Milkbeat works with no streaming at all |
 | **3. Script plugins** | The `.mbplugin` format, installer, signature check, consent screen, runtime, host APIs, Settings > Plugins, updates, developer mode | Third-party plugins install and run |
-| **4. YouTube Music as a file** | The YouTube plugin built in the private Milkbeat-Plugins repository: metadata, radio, audio, sign-in. The solver runs inside the plugin, and PoToken goes through `mb.browser`. CI publishes `youtube-music.mbplugin`. The Kotlin YouTube code leaves the core. | The core ships no provider code |
+| **4. YouTube Music as a file** | An optional third-party YouTube plugin: metadata, radio, audio, sign-in. The solver runs inside the plugin, and PoToken goes through `mb.browser`. The package is installed through a downloader code or URL. The Kotlin YouTube code leaves the core. | The core ships no provider code |
 | **5. Spotify metadata** | A metadata-only plugin, the match cache (the approved Room change), `matchCollection` in the YouTube plugin | Cross-provider playback |
 | **6. Ecosystem** | A plugin index format (a JSON list of plugin URLs) that can be added like a plugin; SDK and CLI published | Discovery beyond pasted URLs |
 
@@ -531,8 +531,7 @@ Each phase ships on its own and keeps the app working.
 
 Settled with the owner on 2026-09-29:
 
-1. **Nothing is bundled.** First-party plugins are built in this repository and published by CI at
-   stable links for testing (3.5).
+1. **Nothing is bundled.** Optional third-party plugins are installed separately through downloader codes or URLs (3.5).
 2. **The engine is QuickJS** through `quickjs-kt`, for the reasons in 4.1, confirmed on the AM6 by
    phase 0.
 3. **The format is `.mbplugin`.**
@@ -543,6 +542,6 @@ Settled with the owner on 2026-09-29:
 Still open:
 
 - **Plugin signing trust:** any author key (trust on first install, as Android does), or an optional
-  first-party signature that marks verified plugins.
+  trusted publisher signature that marks verified plugins.
 - **Room changes:** the match cache is approved for the Spotify phase. The plugin registry and
   descriptor-based library entries still need explicit approval, and each needs a migration.
