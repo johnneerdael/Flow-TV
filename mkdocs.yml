@@ -1,0 +1,32 @@
+site_name: Milkbeat user guide
+site_description: Play local music, SMB shares and streaming catalogs on Android TV.
+site_url: https://johnneerdael.github.io/Milkbeat/
+repo_url: https://github.com/johnneerdael/Milkbeat
+edit_uri: blob/main/docs/user-guide/
+docs_dir: docs/user-guide
+site_dir: debug/user-guide-site
+theme:
+  name: readthedocs
+  highlightjs: false
+  navigation_depth: 2
+extra_css:
+  - stylesheets/milkbeat.css
+plugins:
+  - search
+markdown_extensions:
+  - tables
+  - toc:
+      permalink: true
+nav:
+  - User guide: index.md
+  - Install and get started: getting-started.md
+  - Local folders and SMB: folders.md
+  - Providers and sign-in: providers.md
+  - Home, Search and Library: library.md
+  - Playback and visuals: playback.md
+  - Settings reference: settings.md
+  - Troubleshooting: troubleshooting.md
+validation:
+  links:
+    not_found: warn
+    anchors: warn
