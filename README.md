@@ -83,11 +83,17 @@ scan of the whole library. Sources can be edited, refreshed or removed in Settin
 
 ## Optional streaming plugins
 
-Add first-party `.mbplugin` packages from the release assets in **Settings > Plugins**.
-Enter **102** for Beatport, **772** for Spotify or **416** for YouTube Music in builds with
-download-code support. You can also paste the package's download URL, including a supported
-Buzzheavier file page; a bare address defaults to HTTPS. Review the plugin's requested permissions,
-then install it.
+Add optional **third-party plugins** in **Settings > Plugins** using their downloader codes:
+
+| Third-party plugin | Downloader code | Original code, still supported |
+| --- | --- | --- |
+| Beatport | **393** | 102 |
+| Spotify | **981** | 772 |
+| YouTube Music | **494** | 416 |
+
+You can also enter a plugin download URL, including a supported Buzzheavier file page; a bare
+address defaults to HTTPS. Review its requested permissions before installing. Plugin packages
+are distributed separately and are not included in Milkbeat releases.
 
 Plugins can provide separate roles:
 
@@ -115,7 +121,7 @@ Open an installed plugin's details to sign in. Web sign-ins use the
 [streamed phone viewer](docs/phone-sign-in-remote-view.md): scan the TV's QR code with a phone on
 the same network, then touch the provider's real page and type on your phone. This includes any
 verification the provider requires. The viewer is for sign-in; browsing and playback use Milkbeat's
-TV interface. See the [provider guide](docs/user-guide/providers.md) for sign-in and playback. Provider generation and signing live in the private Milkbeat-Plugins repository.
+TV interface. See the [provider guide](docs/user-guide/providers.md) for sign-in and playback. Provider generation and signing live in a separate private repository.
 
 ### Index playlists before playback
 

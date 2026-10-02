@@ -12,10 +12,10 @@
 
 A plugin can provide more than one role. Local and SMB playback are built in and need none of these roles.
 
-## Install a plugin
+## Install a third-party plugin
 
 1. Open Settings → Plugins.
-2. Enter a registered 3-digit code or the download link for a `.mbplugin` package from a [release](https://github.com/johnneerdael/Milkbeat/releases/latest).
+2. Enter a registered 3-digit third-party plugin code or a third-party plugin download URL. Plugin packages are distributed separately from Milkbeat app releases.
 3. Select **Add a plugin**.
 4. Review its author, roles and requested access, then install it.
 
@@ -23,9 +23,9 @@ A plugin can provide more than one role. Local and SMB playback are built in and
 
 | Code | Plugin |
 | --- | --- |
-| **102** | Beatport |
-| **772** | Spotify |
-| **416** | YouTube Music |
+| **393** | Beatport |
+| **981** | Spotify |
+| **494** | YouTube Music |
 
 Codes need a Milkbeat build with download-code support; earlier releases accept URLs. Each code identifies a registered download in the app's bundled catalog. An unknown code reports an error; try its full URL or update the app.
 
@@ -78,3 +78,7 @@ Enter its download link again to fetch the current package. Milkbeat presents th
 ![Reviewing a signed YouTube Music plugin update](images/plugin-update-consent.png)
 
 Select an installed plugin to inspect its account, sign out or remove it. Removing a plugin does not remove local music sources.
+
+## Separate plugin releases
+
+Plugin implementations, building and signing live in a separate private repository on Forgejo. Milkbeat app releases contain APKs and checksums; plugin packages are downloaded separately through the codes above. The original codes **102** (Beatport), **772** (Spotify) and **416** (YouTube Music) remain supported.
