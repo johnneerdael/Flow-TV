@@ -40,8 +40,14 @@ These two captures show the code-enabled development build. New catalog entries 
 | Plugin | Metadata | Audio | Video |
 | --- | --- | --- | --- |
 | YouTube Music | Home, Search, artists, albums, playlists, library | Streams, cross-provider matching and radio | YouTube videos, channels and playlists |
-| Spotify | Home, Search, artists, albums, playlists, library | Select a separate audio provider | None |
+| Spotify | Home, Search, artists, albums, playlists, library | **None — select a separate audio provider** | None |
 | Beatport | Catalog, genres, charts, artists, labels, library | Full streams with a streaming subscription | None |
+
+## Sign-in and account requirements
+
+- **YouTube Music:** sign-in is optional. Signing in changes Home into a personalized feed based on the account and makes its library available. Free YouTube accounts are supported; Premium is not required for this personalization.
+- **Spotify:** a metadata provider with **no audio source**. It can technically access catalog metadata without sign-in, but its practical value is your personalized feed, playlists, Liked songs and library after signing in. Select a separate audio provider for playback.
+- **Beatport:** requires sign-in and an active Beatport streaming subscription to be useful in Milkbeat. Without those, it provides no usable listening experience.
 
 ## Select metadata and video
 
