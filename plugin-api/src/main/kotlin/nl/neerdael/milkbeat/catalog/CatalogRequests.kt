@@ -58,4 +58,5 @@ data class TracksRequest(
 data class RadioRequest(
     val seed: EntityRef,
     val cursor: String? = null,
+    val filterId: String? = null,
 )

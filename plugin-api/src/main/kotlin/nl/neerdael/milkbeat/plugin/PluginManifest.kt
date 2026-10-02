@@ -66,6 +66,8 @@ data class MetadataRole(
     val entities: Set<EntityKind>,
     /** The namespace of this plugin's ids, e.g. `ytm`; a track's [nl.neerdael.milkbeat.catalog.TrackDescriptor.ids] key. */
     val idSpace: String,
+    val personalCollections: Boolean = false,
+    val privatePlaylistImport: Boolean = false,
 )
 
 @Serializable

@@ -11,6 +11,7 @@ export type PageBlock = PageBlockCollection | PageBlockHeader;
 export type CollectionLayout = 'HORIZONTAL_SHELF' | 'MULTI_COLUMN_LIST' | 'TRACK_TABLE';
 export type ItemView = 'COVER_CARD' | 'LANDSCAPE_CARD' | 'ARTIST_PORTRAIT' | 'TRACK_ROW';
 export type HeaderStyle = 'PORTRAIT' | 'COVER';
+export type PersonalCollectionKind = 'OWNED_PLAYLIST' | 'LIKED_SONGS';
 export type AudioQuality = 'AUTO' | 'HIGH' | 'MEDIUM' | 'LOW';
 export type FormatType = 'AUDIO' | 'VIDEO';
 export type VideoKind = 'VOD' | 'LIVE' | 'UPCOMING';
@@ -59,6 +60,14 @@ export interface MilkbeatPluginApi {
     'metadata.library': {
       request: LibraryRequest;
       response: MetadataPage;
+    };
+    'metadata.personalCollections': {
+      request: PersonalCollectionsRequest;
+      response: PersonalCollectionsPage;
+    };
+    'metadata.importPrivatePlaylist': {
+      request: PrivatePlaylistImportRequest;
+      response: PrivatePlaylistImportResult;
     };
     'metadata.radio': {
       request: RadioRequest;
@@ -232,6 +241,8 @@ export interface MetadataRole {
   surfaces: MetadataSurface[];
   entities: EntityKind[];
   idSpace: string;
+  personalCollections?: boolean;
+  privatePlaylistImport?: boolean;
 }
 export interface AudioRole {
   idSpaces: string[];
@@ -397,14 +408,43 @@ export interface TrackList {
   tracks: TrackDescriptor[];
   next?: string | null;
   source?: null | EntityRef;
+  filters?: null | FilterControl;
+  selectedFilterId?: string | null;
+  revision?: string | null;
 }
 export interface LibraryRequest {
   section?: string | null;
   cursor?: string | null;
 }
+export interface PersonalCollectionsRequest {
+  cursor?: string | null;
+  expectedAccountKey?: string | null;
+}
+export interface PersonalCollectionsPage {
+  collections: PersonalCollection[];
+  next?: string | null;
+}
+export interface PersonalCollection {
+  ref: EntityRef;
+  title: string;
+  kind: PersonalCollectionKind;
+  revision?: string | null;
+  trackCount?: number | null;
+}
+export interface PrivatePlaylistImportRequest {
+  sourceKey: string;
+  title: string;
+  tracks: EntityRef[];
+  target?: null | EntityRef;
+  expectedAccountKey?: string | null;
+}
+export interface PrivatePlaylistImportResult {
+  ref: EntityRef;
+}
 export interface RadioRequest {
   seed: EntityRef;
   cursor?: string | null;
+  filterId?: string | null;
 }
 export interface ResolveAudioRequest {
   track: TrackDescriptor;
