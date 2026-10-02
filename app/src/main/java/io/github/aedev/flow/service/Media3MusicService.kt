@@ -108,9 +108,6 @@ class Media3MusicService : MediaLibraryService() {
         private const val FAILED_SONGS_CACHE_SIZE = 50
         private const val RECOVERY_SUCCESS_GRACE_MS = 2 * 60 * 1000L
 
-        // Endless radio: append to the real queue when this few tracks remain,
-        // this many at a time, and refill the suggestion pool below this size.
-        // LOW_WATER/BATCH mirror the desktop station (3 / 10).
         // Normalisation only ever turns tracks down, and never by more than this.
         private const val MIN_LOUDNESS_GAIN_DB = -20f
         private const val RADIO_MIN_UPCOMING = 3
@@ -162,6 +159,9 @@ class Media3MusicService : MediaLibraryService() {
 
     // ── Endless radio session (desktop semantics: seeded once per queue, append-only) ──
     private var radioSeedId: String? = null
+    private var radioGeneration = 0L
+    private var radioSeedPending = false
+    private var radioCollectionId: String? = null
     private var radioContinuation: String? = null
     private var radioPage: RadioPage? = null
     private var radioTopUpJob: Job? = null
@@ -519,6 +519,7 @@ class Media3MusicService : MediaLibraryService() {
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
                     updateLocks(isPlaybackActive())
                     if (isPlaying) {
+                        startPendingRadio()
                         if (learnMediaId == null) learnMediaId = player.currentMediaItem?.mediaId
                         if (learnTrack?.videoId != learnMediaId) learnTrack = resolveLearnTrack(learnMediaId)
                         refreshLearnDuration()
@@ -1224,22 +1225,36 @@ class Media3MusicService : MediaLibraryService() {
                 queueIds = queueIds,
                 previousIds = lastQueueIds,
                 explicitSeedId = explicitSeedId,
+                collectionRequested = collectionId != null,
             )
         lastQueueIds = context.knownIds
         if (!context.reseed) {
             maybeExtendRadio()
             return
         }
-        // A song asked for on its own continues with its mix; any other list hands over from its last
-        // track, unless it came from a collection, which continues with that collection's mix.
-        val seedId =
-            if (context.explicit) currentId else queueIds.lastOrNull { !LocalMediaIds.isLocal(it) } ?: currentId
+        radioGeneration++
+        val seedId = currentId
+        manager.queueCollectionState.value = collectionId
         radioSeedId = seedId
         radioContinuation = null
         radioPage = null
         radioResumeWhenAppended = false
         explicitRadioRequest = context.explicit
-        startRadio(seedId, collectionId.takeUnless { context.explicit })
+        automixJob?.cancel()
+        radioTopUpJob?.cancel()
+        manager.updateAutomixItems(emptyList())
+        radioCollectionId = collectionId.takeUnless { context.explicit }
+        radioSeedPending = true
+        manager.setRadioLoading(false)
+        if (player.isPlaying) startPendingRadio()
+    }
+
+    private fun startPendingRadio() {
+        if (!radioSeedPending) return
+        val id = player.currentMediaItem?.mediaId?.takeUnless(LocalMediaIds::isLocal) ?: return
+        radioSeedPending = false
+        radioSeedId = id
+        startRadio(id, radioCollectionId)
     }
 
     /**
@@ -1256,40 +1271,41 @@ class Media3MusicService : MediaLibraryService() {
         // A new session never inherits the last one's suggestions, even when this fetch fails.
         manager.updateAutomixItems(emptyList())
         manager.setRadioLoading(true)
+        val generation = radioGeneration
         automixJob =
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
-                    // A collection continues with its own similar content, a song with its mix.
-                    var result = collectionId?.let { mix(EntityRef(EntityKind.PLAYLIST, it)) }
+                    var result = mix(EntityRef(EntityKind.TRACK, seedId), queuedDescriptor(seedId))
                     if (result == null ||
                         result.tracks.tracks
                             .isEmpty()
                     ) {
-                        result = mix(EntityRef(EntityKind.TRACK, seedId), queuedDescriptor(seedId))
+                        result = collectionId?.let { mix(EntityRef(EntityKind.PLAYLIST, it)) }
                     }
                     val mapped = result?.toRadioTracks(seedId).orEmpty()
-                    radioContinuation = result?.tracks?.next
-                    radioPage = result
-
                     val station = withoutHiddenArtists(mapped)
-                    Log.d(
-                        TAG,
-                        "Radio seeded from ${collectionId ?: seedId} via ${result?.pluginId}: " +
-                            "${station.size} tracks, continuation=${radioContinuation != null}, " +
-                            "opening with ${station.take(3).joinToString { it.title }}",
-                    )
-                    if (station.isNotEmpty()) {
-                        manager.updateAutomixItems(station)
-                        // The queue may already be short (or ended) by the time the
-                        // seed arrives — move pool tracks into it right away.
-                        withContext(Dispatchers.Main) { maybeExtendRadio() }
+                    withContext(Dispatchers.Main) {
+                        if (generation != radioGeneration) return@withContext
+                        radioContinuation = result?.tracks?.next
+                        radioPage = result
+                        Log.i(
+                            TAG,
+                            "Radio seeded from $seedId via ${result?.pluginId}: ${station.size} tracks, " +
+                                "continuation=${radioContinuation != null}",
+                        )
+                        if (station.isNotEmpty()) {
+                            manager.updateAutomixItems(station)
+                            maybeExtendRadio()
+                        }
                     }
                 } catch (e: kotlinx.coroutines.CancellationException) {
                     throw e
                 } catch (e: Exception) {
                     Log.e(TAG, "Error seeding radio", e)
                 } finally {
-                    manager.setRadioLoading(false)
+                    withContext(kotlinx.coroutines.NonCancellable + Dispatchers.Main) {
+                        if (generation == radioGeneration) manager.setRadioLoading(false)
+                    }
                 }
             }
     }
@@ -1344,6 +1360,7 @@ class Media3MusicService : MediaLibraryService() {
      * nothing the user sees is replaced — and refills the pool in the background.
      */
     private fun maybeExtendRadio() {
+        if (radioSeedPending) return
         if (!radioAutoplayEnabled && !explicitRadioRequest) return
         if (!::player.isInitialized) return
         // Repeat already produces an endless queue — matching desktop.
@@ -1389,6 +1406,7 @@ class Media3MusicService : MediaLibraryService() {
         if (radioTopUpJob?.isActive == true || automixJob?.isActive == true) return
         val manager = io.github.aedev.flow.player.EnhancedMusicPlayerManager
         manager.setRadioLoading(true)
+        val generation = radioGeneration
         radioTopUpJob =
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
@@ -1405,28 +1423,37 @@ class Media3MusicService : MediaLibraryService() {
                                     .map { it.videoId }
                                     .firstOrNull { it != radioSeedId && !LocalMediaIds.isLocal(it) }
                                     ?: return@launch
-                            radioSeedId = seedId
+                            val current =
+                                withContext(Dispatchers.Main) {
+                                    if (generation == radioGeneration) {
+                                        radioSeedId = seedId
+                                        true
+                                    } else {
+                                        false
+                                    }
+                                }
+                            if (!current) return@launch
                             mix(EntityRef(EntityKind.TRACK, seedId), queuedDescriptor(seedId))
                         } ?: return@launch
-                    radioContinuation = result.tracks.next
-                    radioPage = result
-
                     val station = withoutHiddenArtists(result.toRadioTracks(seedId = null))
-                    Log.d(TAG, "Radio pool topped up with ${station.size} tracks, continuation=${radioContinuation != null}")
-                    if (station.isNotEmpty()) {
-                        manager.appendAutomixItems(station)
-                        // If the queue ended while this fetch was in flight, feed it
-                        // now — no further transition will ever call maybeExtendRadio.
-                        // Re-entry is safe: this job is still active, so a nested
-                        // extendRadioPool() is a no-op.
-                        withContext(Dispatchers.Main) { maybeExtendRadio() }
+                    withContext(Dispatchers.Main) {
+                        if (generation != radioGeneration) return@withContext
+                        radioContinuation = result.tracks.next
+                        radioPage = result
+                        Log.d(TAG, "Radio pool topped up with ${station.size} tracks, continuation=${radioContinuation != null}")
+                        if (station.isNotEmpty()) {
+                            manager.appendAutomixItems(station)
+                            maybeExtendRadio()
+                        }
                     }
                 } catch (e: kotlinx.coroutines.CancellationException) {
                     throw e
                 } catch (e: Exception) {
                     Log.w(TAG, "Radio top-up failed: ${e.message}")
                 } finally {
-                    manager.setRadioLoading(false)
+                    withContext(kotlinx.coroutines.NonCancellable + Dispatchers.Main) {
+                        if (generation == radioGeneration) manager.setRadioLoading(false)
+                    }
                 }
             }
     }

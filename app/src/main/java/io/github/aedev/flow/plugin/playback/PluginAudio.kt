@@ -75,6 +75,15 @@ class PluginAudio
 
         private fun streamContext(): Any = registry.state.value to accounts.accounts.value
 
+        internal fun needsQueueMatching(track: TrackDescriptor): Boolean {
+            val state = registry.state.value
+            val first =
+                state.selection.audio
+                    .mapNotNull(state::plugin)
+                    .firstOrNull { it.enabled } ?: return false
+            return directAudioTrack(track, first) == null
+        }
+
         internal fun preparationVersion(): Any = streamContext() to cacheGeneration.get()
 
         private val resolutionLocks = ConcurrentHashMap<AudioIdentity, Mutex>()

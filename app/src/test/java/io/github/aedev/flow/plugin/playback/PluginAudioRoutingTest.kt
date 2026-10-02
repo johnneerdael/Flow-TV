@@ -82,6 +82,14 @@ class PluginAudioRoutingTest {
     }
 
     @Test
+    fun `YouTube mix tracks do not need cross-provider queue preparation`() =
+        runTest {
+            assertThat(audio.prepareQueue(candidate, null)).isEqualTo(QueuePreparationResult.Ready)
+            coVerify(exactly = 0) { host.call("youtube", PluginOperations.matchAudio, any()) }
+            coVerify(exactly = 0) { host.call("youtube", PluginOperations.resolveAudio, any()) }
+        }
+
+    @Test
     fun `unavailable matched recording falls back and listen reports the playable identity`() =
         runTest {
             val resolved = audio.resolve(original, null)

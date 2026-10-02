@@ -11,6 +11,20 @@ import org.junit.Test
  */
 class MusicRadioPlannerTest {
     @Test
+    fun `an explicitly opened collection reseeds even when its first played song was in the old queue`() {
+        val context =
+            MusicRadioPlanner.resolveQueueContext(
+                currentId = "shared",
+                queueIds = listOf("shared", "new"),
+                previousIds = listOf("old", "shared"),
+                explicitSeedId = null,
+                collectionRequested = true,
+            )
+        assertThat(context.reseed).isTrue()
+        assertThat(context.explicit).isFalse()
+    }
+
+    @Test
     fun `a track from outside the queue opens a new session`() {
         val context =
             MusicRadioPlanner.resolveQueueContext(

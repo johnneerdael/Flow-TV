@@ -2,6 +2,7 @@ package io.github.aedev.flow.player
 
 data class MusicPlayerState(
     val isPlaying: Boolean = false,
+    val isEnded: Boolean = false,
     val isBuffering: Boolean = false,
     val isPreparing: Boolean = false,
     val isReady: Boolean = false,

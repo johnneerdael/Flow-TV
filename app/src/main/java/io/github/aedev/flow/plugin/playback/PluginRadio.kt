@@ -1,5 +1,6 @@
 package io.github.aedev.flow.plugin.playback
 
+import android.util.Log
 import io.github.aedev.flow.plugin.PluginHost
 import io.github.aedev.flow.plugin.catalog.ProviderEntityReference
 import io.github.aedev.flow.plugin.registry.PluginRegistry
@@ -112,7 +113,8 @@ class PluginRadio
                         } ?: continue
                     val tracks = host.call(plugin.id, PluginOperations.audioRadio, RadioRequest(own))
                     if (tracks.tracks.isNotEmpty()) return RadioPage(plugin.id, tracks, own, fromAudio = true)
-                } catch (_: PluginCallException) {
+                } catch (e: PluginCallException) {
+                    Log.w("PluginRadio", "Audio radio unavailable from ${plugin.id}: ${e.error.code}")
                     continue
                 }
             }

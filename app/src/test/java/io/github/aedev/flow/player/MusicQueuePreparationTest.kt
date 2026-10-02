@@ -96,10 +96,10 @@ class MusicQueuePreparationTest {
         )
 
     @Test
-    fun `whole queue is ordered after current then wraps with a limit of 100`() {
+    fun `whole queue is ordered after current then wraps without a track limit`() {
         load((0..120).map { "$it" }, 2)
         assertThat(manager.preparationTargets().map { Uri.parse(it.uri).authority })
-            .containsExactlyElementsIn((3..102).map { "$it" })
+            .containsExactlyElementsIn(((3..120) + (0..1)).map { "$it" })
             .inOrder()
         load(listOf("one", "two", "three", "four"), 2)
         assertThat(manager.preparationTargets().map { Uri.parse(it.uri).authority })
