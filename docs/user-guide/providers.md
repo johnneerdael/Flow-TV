@@ -85,6 +85,6 @@ Enter its download link again to fetch the current package. Milkbeat presents th
 
 Select an installed plugin to inspect its account, sign out or remove it. Removing a plugin does not remove local music sources.
 
-## Separate plugin releases
+## Third-party plugin downloads
 
-Plugin implementations, building and signing live in a separate private repository on Forgejo. Milkbeat app releases contain APKs and checksums; plugin packages are downloaded separately through the codes above. The original codes **102** (Beatport), **772** (Spotify) and **416** (YouTube Music) remain supported.
+Third-party plugins are optional downloads and are not included in Milkbeat app releases. Install them through the codes above or a plugin download URL. The original codes **102** (Beatport), **772** (Spotify) and **416** (YouTube Music) remain supported.

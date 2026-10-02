@@ -66,8 +66,6 @@ references, then verified by downloading all three signed packages on an Ugoos
 AM6. jsoup was added because the app's resolved compile classpath contained no
 HTML parser. The existing OkHttp client and crypto implementations are reused.
 
-## Private generation
+## Third-party plugin downloads
 
-Third-party plugin generation, signing and Buzzheavier uploads run in the separate private Milkbeat-Plugins repository on Forgejo. The original author identity is pinned. Uploads compare the supported API's mandatory server SHA-256 against the verified package and the actual transmitted stream. Native download checks precede promotion to the Android repository.
-
-Milkbeat app releases contain APKs and checksums. They do not contain plugin packages or package creation tools. The public API/SDK contract and the generic runtime, installer, updater and downloader-code support remain available. The README lists third-party codes; the encrypted catalog provides their URLs.
+Milkbeat app releases contain APKs and checksums. Third-party plugins are installed separately through a downloader code or URL. The public API/SDK contract and the generic runtime, installer, updater and downloader-code support remain available. The README lists third-party codes; the encrypted catalog resolves them to download URLs.
