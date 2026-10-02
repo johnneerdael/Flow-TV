@@ -2,7 +2,7 @@
 
 <img src="docs/banner.jpg" alt="Milkbeat" width="720">
 
-**A music player for Android TV, with content plugins and MilkDrop visuals behind every track.**
+**An Android TV music player for local files, network shares and streaming services, with MilkDrop visuals.**
 
 <a href="https://github.com/johnneerdael/Milkbeat/releases/latest">
   <img src="https://img.shields.io/github/v/release/johnneerdael/Milkbeat?style=for-the-badge&color=8355FB&label=Latest%20build">
@@ -19,15 +19,28 @@
 
 ---
 
-Milkbeat turns your TV into a music player. Choose a plugin for your catalog and another for
-audio, with shelves and track pages built for the remote.
+Milkbeat plays music from your TV's storage, USB drives and SMB network shares without plugins.
+Add optional metadata, audio and video plugins to browse streaming catalogs, match tracks across
+services and play music videos. Everything is built for the TV remote.
+
+- **Your own music:** local folders and SMB 2/3 shares, with embedded tags and album artwork.
+- **Streaming catalogs:** YouTube Music, Spotify and Beatport plugins are available now.
+- **One library:** app and provider playlists together, including Liked songs; folder music has
+  its own Folders section.
+- **Ordered audio providers:** try one provider first, then fall back to the next.
+- **Playback preparation:** index provider playlists in advance and resolve upcoming queue tracks
+  one at a time.
+- **MilkDrop visuals:** projectM reacts to the audio from Milkbeat's player.
 
 Behind the music runs [projectM](https://github.com/projectM-visualizer/projectm), the open-source
 MilkDrop. It reacts to the track you are playing, and a music video can take its place whenever you like.
 
 <p align="center">
-  <img src="docs/screenshots/now-playing.jpg" alt="Now playing: a MilkDrop preset fills the screen behind the track's cover and title" width="100%">
+  <img src="docs/user-guide/images/player-start.png" alt="Now playing: a MilkDrop preset fills the screen behind the track's cover and title" width="100%">
 </p>
+
+**[Read the illustrated user guide](docs/user-guide/index.md)** for setup, remote controls,
+providers, local/SMB music, every settings category and troubleshooting.
 
 ## Install on Android TV
 
@@ -47,56 +60,93 @@ and tested on an Ugoos AM6 (Amlogic S922X, 32-bit) and an Ugoos AM9 Pro (64-bit,
 Milkbeat, then uninstall MusicViz. Downloader code `4718521` and the old `musicviz-universal.apk`
 link still work, and now install Milkbeat.
 
-## Choose your providers
+## Play local files and network shares
 
-Add first-party `.mbplugin` packages from the release assets in Settings > Plugins,
-then choose the metadata provider and your audio providers:
+No plugin or streaming account is needed for folder playback.
 
-| Plugin | Metadata | Audio |
+1. Open **Settings > Music folders**.
+2. Choose **Choose local folder** for a folder on the TV or an attached USB drive. Access depends
+   on the storage locations exposed by the device's folder picker.
+3. For a NAS or computer, choose **Add SMB share**. Enter a name, the server's hostname or IP
+   address, the share name and, optionally, a folder within the share. SMB 2/3 is supported;
+   the default port is 445.
+4. Enter the share's credentials, or enable **Guest access** if the server permits it. Select
+   **Test access**, then **Save**.
+5. Open **Library > Folders**, select the source and browse its folders. Play a track or choose
+   **Play folder** to queue the music in the current folder.
+
+MP3, FLAC and M4A files have been tested, including playback, seeking and embedded artwork.
+Other audio formats depend on the codecs available on your device. Embedded title, artist,
+album, duration and cover art are read in the background as tracks become visible or play.
+Metadata and artwork use a bounded memory cache; this is folder browsing, not a persistent
+scan of the whole library. Sources can be edited, refreshed or removed in Settings.
+
+## Optional streaming plugins
+
+Add first-party `.mbplugin` packages from the release assets in **Settings > Plugins**.
+Paste the package's download URL; a bare address is accepted and defaults to HTTPS.
+Review the plugin's requested permissions, then install it.
+
+Plugins can provide separate roles:
+
+- **Metadata:** Home, Search, artists, albums, playlists and account libraries.
+- **Audio:** playable streams, including matches for another provider's tracks.
+- **Video:** video search and playback.
+
+| Plugin | Metadata | Audio | Video |
+| --- | --- | --- | --- |
+| YouTube Music | Home, Search, artists, albums, playlists and account library | YouTube streams, matching and mixes | YouTube videos, channels and playlists |
+| Beatport | Catalog, genres, charts, artists, labels and account library | Full-length streams with a streaming subscription | — |
+| Spotify | Home, Search, artists, albums, playlists and account library | Use another audio provider | — |
+
+### Provider selection and phone sign-in
+
+Choose your metadata provider and video provider in **Settings > Plugins**. Under **Audio**, enable
+providers and put them in priority order. For example, try YouTube Music first and Beatport second:
+if the first cannot find or play a track, Milkbeat tries the next.
+
+For Spotify, select **Spotify** for metadata and **YouTube Music** for audio. Spotify provides the
+catalog; the audio provider supplies playback. Spotify tracks can continue with YouTube's mix
+through their matched YouTube track.
+
+Open an installed plugin's details to sign in. Web sign-ins use the
+[streamed phone viewer](docs/phone-sign-in-remote-view.md): scan the TV's QR code with a phone on
+the same network, then touch the provider's real page and type on your phone. This includes any
+verification the provider requires. The viewer is for sign-in; browsing and playback use Milkbeat's
+TV interface. See the [Spotify plugin guide](plugins/spotify/README.md) for building and testing.
+
+### Index playlists before playback
+
+In a signed-in metadata plugin's details, select **Index playlists**. Milkbeat matches playlist
+tracks and Liked songs against your audio providers in priority order and keeps the matches for
+later playback. You can cancel indexing without losing completed matches. Start indexing again
+if the account or audio-provider order changes.
+
+### Updates
+
+The GitHub app build has an automatic app updater, configured under **Settings > About**.
+Plugin updates are separate: enter the plugin's download link again in **Settings > Plugins**
+to fetch and review the available package. An update must have the same plugin ID and signing
+author; older versions are rejected. An app update does not by itself guarantee that installed
+plugins have been updated.
+
+## Home from three metadata providers
+
+Choose YouTube Music, Spotify or Beatport for metadata. Each supplies its own feed, rendered
+through Milkbeat's TV interface. Your selected audio providers handle playback independently.
+
+| YouTube Music | Spotify | Beatport |
 | --- | --- | --- |
-| YouTube Music | Home, Search, artists, albums, playlists and your library | YouTube Music streams and matching |
-| Beatport | Catalog, genres, charts and your library | Full-length streams with a streaming subscription |
-| Spotify | Home, Search, artists, albums, playlists and your library | Use another audio provider |
+| ![YouTube Music Home](docs/user-guide/images/home-youtube.png) | ![Spotify Home](docs/user-guide/images/home-spotify.png) | ![Beatport Home](docs/user-guide/images/home-beatport.png) |
 
-For Spotify, select **Spotify** for metadata and **YouTube Music** for audio.
-Sign in through the phone login to browse personalized Home and your library.
-Milkbeat matches Spotify tracks through the selected audio provider when you play.
-All plugin web sign-ins use the [streamed phone viewer](docs/phone-sign-in-remote-view.md):
-scan the TV QR code, then touch the real provider page and type on your phone.
-See the [Spotify plugin guide](plugins/spotify/README.md) for building and testing.
+YouTube Music supplies mood chips, Quick picks, albums, mixes, artist portraits and music-video
+shelves. Spotify supplies its recommendations and catalog. Beatport supplies genre filters,
+recommendations, charts and releases. Personalized content depends on the signed-in account.
 
-## Your YouTube Music home
+![Audio providers in priority order](docs/user-guide/images/audio-priority.png)
 
-The Music tab shows your YouTube Music home: mood chips first, then every shelf, loaded to the end.
-Each shelf keeps the style it has on YouTube Music:
-
-- Quick picks as a grid of rows
-- square cards for albums, mixes and playlists
-- round cards for artists
-- wide cards for music videos and live performances
-- "Similar to" and "Listen again" shelves under their artist or account header
-
-Moving down enters each shelf at its first item. Play all sits in the shelf header.
-
-<table>
-  <tr>
-    <td><img src="docs/screenshots/home.jpg" alt="Music home: mood chips, Quick picks and a Similar to shelf"></td>
-    <td><img src="docs/screenshots/home-videos.jpg" alt="Music videos for you as wide cards, then From the community"></td>
-  </tr>
-  <tr>
-    <td><img src="docs/screenshots/home-listen-again.jpg" alt="Listen again under the account header, then New releases"></td>
-    <td><img src="docs/screenshots/search.jpg" alt="Music search with suggestions and the top result"></td>
-  </tr>
-</table>
-
-**Sign in with your phone:** go to Settings > Account > *Sign in with phone* on the TV. It shows a
-QR code: scan it with a phone on the same network and log in there. Once signed in:
-
-- Music and Library show your own feeds.
-- Tracks you play for 30 seconds or more go to your YouTube history, so the recommendations learn
-  your taste. You can switch this off in Settings > Account.
-
-Without an account you get the regular YouTube Music home.
+See the [Home and Library guide](docs/user-guide/library.md) for full-size captures and the
+[provider guide](docs/user-guide/providers.md) for selection, sign-in and playlist indexing.
 
 ## Artists, albums and playlists
 
@@ -119,23 +169,29 @@ Pages are laid out like YouTube Music on the web:
   </tr>
 </table>
 
-## A queue that continues like YouTube Music
+## Queues, mixes and playback preparation
 
-The queue never shuffles in random tracks. It follows what YouTube Music itself queues:
+With YouTube Music, a song can continue with the mix YouTube builds for it. Albums and playlists
+play through before handing over to related content. Spotify tracks use the matched audio
+provider's radio when their metadata provider does not supply one. Artists you hide stay out of mixes.
 
-- **A song** plays its own mix, the same radio YouTube Music builds for it.
-- **An album or playlist** plays through, then continues with YouTube Music's similar content for
-  that collection. This applies to 100-track playlists too.
-- **Artists you hide** stay out of every mix.
+During playback, Milkbeat prepares up to **100 upcoming queue entries**, one at a time, following
+the playback order. Jumping elsewhere in the queue updates that preparation window. Confirmed
+unmatched tracks can be removed; temporary provider failures remain retryable. This prepares audio
+before transitions, but network availability and the provider still affect playback.
 
-Tracks follow each other without a gap. The queue panel shows what is coming and lets you jump
-anywhere in it.
+The queue panel shows what is coming and lets you jump to a track. Hold **Up** or **Down** to move
+through a long queue; scrolling accelerates while the button remains held.
 
 ## Now playing: visuals or the music video
 
 The player fills the screen with projectM: 9,606 presets from Jason Fletcher's *Cream of the
 Crop* collection, blending from one to the next. The visuals take their sound straight from
 Milkbeat's player, so they follow the track you hear and not the TV's output.
+
+The embedded ProjectM TV core uses its upstream defaults: a 30 fps target, automatic render
+resolution and transitions, memory limits and slow-preset skipping. Rendering stops when the
+visualizer leaves the screen or the app goes into the background.
 
 - **Left and Right** step through presets while the controls are hidden.
 - **OK** shows the controls: seek bar, shuffle, previous, play/pause, next, repeat, like, the
@@ -147,8 +203,8 @@ Milkbeat's player, so they follow the track you hear and not the TV's output.
 
 <table>
   <tr>
-    <td><img src="docs/screenshots/now-playing-controls.jpg" alt="The controls bar over a preset"></td>
-    <td><img src="docs/screenshots/queue.jpg" alt="The queue panel beside the visuals"></td>
+    <td><img src="docs/user-guide/images/player-controls.png" alt="The controls bar over a preset"></td>
+    <td><img src="docs/user-guide/images/queue-open.png" alt="The queue panel beside the visuals"></td>
   </tr>
 </table>
 
@@ -164,25 +220,29 @@ playing. It is dimmed on tracks without a video.
 <table>
   <tr>
     <td><img src="docs/screenshots/music-video.jpg" alt="A live performance playing as full-screen video"></td>
-    <td><img src="docs/screenshots/settings-visualizations.jpg" alt="Settings > Visualizations with the music video and timing options"></td>
+    <td><img src="docs/user-guide/images/settings-visualizations-enabled.png" alt="Settings > Visualizations with the music video and timing options"></td>
   </tr>
 </table>
 
 ## Search and Library
 
-- **Search** opens on Music, with filters for songs, artists and albums, and search suggestions. **Videos** covers everything else (channels, playlists, live) and is handy for DJ sets and
-  concert recordings.
-- **Library** has your history, likes and playlists, plus your YouTube Music library when you are
-  signed in.
-- Background playback is on by default, so the music keeps going when you leave the app.
-- There are no ads, analytics or tracking. An on-device recommendation engine works alongside
-  YouTube's own recommendations.
+- **Search** uses your selected metadata provider for music and your selected video provider for
+  videos, with the filters and suggestions each provider supports.
+- **Library > Playlists** combines app playlists with playlists from every enabled, signed-in
+  metadata provider. **Liked songs** brings music likes together; liked videos are omitted.
+  Opening a provider playlist keeps its original provider, even if another is selected for Home.
+- **Library > Folders** browses configured local and SMB sources. History and Watch later remain
+  separate sections.
+- Background playback is on by default, so music can keep playing when you leave the app.
+- Milkbeat's recommendation engine runs on the device. Optional provider play-history reporting
+  is controlled in plugin settings.
 
-## Where it's heading
+## How the player fits together
 
-Home and the artist, album and playlist pages are built through a metadata provider contract, and
-YouTube Music is its first provider. Other catalogs can plug into the same pages later. The next
-planned provider is Spotify metadata, played through YouTube.
+Local and SMB playback are built into Milkbeat. Streaming plugins extend it through metadata,
+audio and video contracts. Metadata pages share the same TV components, while audio providers
+resolve or match tracks in the order you choose. YouTube Music, Spotify and Beatport already use
+these contracts; adding another catalog does not require a separate browsing interface.
 
 ## Verifying authenticity
 <a id="cert"></a>
@@ -217,7 +277,6 @@ It also builds on:
 ## License
 
 Milkbeat is free software under the **GNU General Public License v3**: see [License](License).
-Any project that uses this source code, including the recommendation engine, must also be
-released under the GPLv3.
+See the license for the terms governing copying, modification and distribution.
 
 Copyright © 2025-2026 A-EDev (Flow) · Copyright © 2026 John Neerdael (Milkbeat changes)
