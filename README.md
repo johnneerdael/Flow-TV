@@ -84,8 +84,10 @@ scan of the whole library. Sources can be edited, refreshed or removed in Settin
 ## Optional streaming plugins
 
 Add first-party `.mbplugin` packages from the release assets in **Settings > Plugins**.
-Paste the package's download URL; a bare address is accepted and defaults to HTTPS.
-Review the plugin's requested permissions, then install it.
+Enter **102** for Beatport, **772** for Spotify or **416** for YouTube Music in builds with
+download-code support. You can also paste the package's download URL, including a supported
+Buzzheavier file page; a bare address defaults to HTTPS. Review the plugin's requested permissions,
+then install it.
 
 Plugins can provide separate roles:
 

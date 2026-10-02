@@ -1,5 +1,6 @@
 package io.github.aedev.flow.plugin.install
 
+import io.github.aedev.flow.R
 import io.github.aedev.flow.plugin.pkg.PluginPackage
 import io.github.aedev.flow.plugin.pkg.PluginPackageException
 import io.github.aedev.flow.plugin.pkg.PluginPackageReader
@@ -7,14 +8,9 @@ import io.github.aedev.flow.plugin.registry.InstalledPlugin
 import io.github.aedev.flow.plugin.registry.PluginRegistry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.CacheControl
 import okhttp3.OkHttpClient
-import okhttp3.Request
-import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
-
-private const val MAX_DOWNLOAD_BYTES = 64L * 1024 * 1024
 
 /** A verified plugin waiting for the listener's consent, with what installing it would change. */
 class PendingInstall(
@@ -30,8 +26,9 @@ class PendingInstall(
 }
 
 class PluginInstallException(
-    message: String,
+    message: String? = null,
     cause: Throwable? = null,
+    val messageResource: Int? = null,
 ) : Exception(message, cause)
 
 /**
@@ -44,17 +41,23 @@ class PluginInstaller
     constructor(
         private val client: OkHttpClient,
         private val registry: PluginRegistry,
+        private val codes: PluginDownloadCodes,
     ) {
         suspend fun fetch(url: String): PendingInstall {
-            val sourceUrl = pluginUrl(url)?.toString() ?: throw PluginInstallException("$url is not a web address")
-            val bytes = download(sourceUrl)
+            val source = codes.resolve(url)
+            val bytes = downloadPlugin(client, source.url)
             val pack =
-                try {
-                    PluginPackageReader.read(bytes.inputStream())
-                } catch (e: PluginPackageException) {
-                    throw PluginInstallException(e.message ?: "Not a valid plugin", e)
+                withContext(Dispatchers.IO) {
+                    try {
+                        PluginPackageReader.read(bytes.inputStream())
+                    } catch (e: PluginPackageException) {
+                        throw PluginInstallException(e.message ?: "Not a valid plugin", e)
+                    }
                 }
-            return check(pack, sourceUrl)
+            if (source.pluginId != null && pack.manifest.id != source.pluginId) {
+                throw PluginInstallException(messageResource = R.string.tv_plugins_code_package_mismatch)
+            }
+            return check(pack, source.url)
         }
 
         fun check(
@@ -83,33 +86,4 @@ class PluginInstaller
                 grantedNetwork = pending.pack.manifest.permissions.network,
                 grantedBrowser = pending.pack.manifest.permissions.browser,
             )
-
-        private suspend fun download(url: String): ByteArray =
-            withContext(Dispatchers.IO) {
-                val request =
-                    try {
-                        Request
-                            .Builder()
-                            .url(url)
-                            .cacheControl(CacheControl.FORCE_NETWORK)
-                            .build()
-                    } catch (e: IllegalArgumentException) {
-                        throw PluginInstallException("$url is not a web address", e)
-                    }
-                try {
-                    client.newCall(request).execute().use { response ->
-                        if (!response.isSuccessful) throw PluginInstallException("Download failed: HTTP ${response.code}")
-                        val length = response.body.contentLength()
-                        if (length > MAX_DOWNLOAD_BYTES) throw PluginInstallException("The plugin is too large")
-                        val source = response.body.source()
-                        if (!source.request(MAX_DOWNLOAD_BYTES + 1)) {
-                            source.buffer.readByteArray()
-                        } else {
-                            throw PluginInstallException("The plugin is too large")
-                        }
-                    }
-                } catch (e: IOException) {
-                    throw PluginInstallException("Download failed: ${e.message}", e)
-                }
-            }
     }

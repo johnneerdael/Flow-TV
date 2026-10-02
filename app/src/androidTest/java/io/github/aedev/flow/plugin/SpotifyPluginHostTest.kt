@@ -19,6 +19,7 @@ import io.github.aedev.flow.data.local.AppDatabase
 import io.github.aedev.flow.plugin.catalog.PluginAccounts
 import io.github.aedev.flow.plugin.catalog.toMusicTrack
 import io.github.aedev.flow.plugin.host.WebLoginRefresher
+import io.github.aedev.flow.plugin.install.PluginDownloadCodes
 import io.github.aedev.flow.plugin.install.PluginInstaller
 import io.github.aedev.flow.plugin.pkg.PluginPackageReader
 import io.github.aedev.flow.plugin.playback.PluginAudio
@@ -124,7 +125,8 @@ class SpotifyPluginHostTest {
             val assets = InstrumentationRegistry.getInstrumentation().context.assets
             assumeTrue("pack YouTube Music into build/android-test-assets first", assets.list("")!!.contains("youtube-music.mbplugin"))
             withPlugin { host, spotify, registry, client ->
-                val installer = PluginInstaller(client, registry)
+                val installer =
+                    PluginInstaller(client, registry, PluginDownloadCodes(InstrumentationRegistry.getInstrumentation().targetContext))
                 val pack = assets.open("youtube-music.mbplugin").use(PluginPackageReader::read)
                 val youtube = installer.install(installer.check(pack, "test://youtube-music"))
                 val database =
@@ -191,7 +193,7 @@ class SpotifyPluginHostTest {
             }
         val registry = PluginRegistry(context)
         val client = OkHttpClient()
-        val installer = PluginInstaller(client, registry)
+        val installer = PluginInstaller(client, registry, PluginDownloadCodes(context))
         val pack = assets.open("spotify.mbplugin").use(PluginPackageReader::read)
         val plugin = installer.install(installer.check(pack, "test://spotify"))
         val host = PluginHost(context, registry, client, WebLoginRefresher(context))

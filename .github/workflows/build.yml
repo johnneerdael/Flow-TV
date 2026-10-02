@@ -112,6 +112,7 @@ jobs:
       - name: Check the plugin API contract
         run: |
           node --test .github/scripts/test_phone_viewer.mjs
+          node --test tools/plugin-download-codes.test.mjs
           ./gradlew :plugin-api:test --build-cache --stacktrace
           cd plugins
           npm ci --no-audit --no-fund

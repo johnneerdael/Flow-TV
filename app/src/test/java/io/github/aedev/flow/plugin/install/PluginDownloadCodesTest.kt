@@ -1,0 +1,74 @@
+package io.github.aedev.flow.plugin.install
+
+import com.google.common.truth.Truth.assertThat
+import io.github.aedev.flow.sync.crypto.SyncCrypto
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import org.junit.Assert.assertThrows
+import org.junit.Test
+import java.io.File
+import java.util.Base64
+
+class PluginDownloadCodesTest {
+    @Test
+    fun `the generated encrypted catalog resolves the three registered packages`() {
+        val catalog = decodePluginDownloadCatalog(File("src/main/assets/plugin-download-catalog.json").readText())
+        assertThat(pluginDownloadSource("102") { catalog }.url).isEqualTo("https://buzzheavier.com/j8i6nbdomf9d")
+        assertThat(pluginDownloadSource("772") { catalog }.pluginId).isEqualTo("nl.neerdael.spotify")
+        assertThat(pluginDownloadSource("416") { catalog }.pluginId).isEqualTo("nl.neerdael.youtube-music")
+    }
+
+    @Test
+    fun `ordinary URLs do not require decrypting the catalog`() {
+        val source = pluginDownloadSource("  ntsk.app/spot  ") { error("Catalog must stay unloaded") }
+        assertThat(source.url).isEqualTo("https://ntsk.app/spot")
+        assertThat(source.pluginId).isNull()
+    }
+
+    @Test
+    fun `unknown and malformed numeric codes never become numeric hostnames`() {
+        listOf("000", "42", "1234", "-12").forEach { input ->
+            assertThrows(PluginInstallException::class.java) { pluginDownloadSource(input) { emptyMap() } }
+        }
+    }
+
+    @Test
+    fun `leading zero codes are preserved when resolving a valid catalog`() {
+        val catalog =
+            decodePluginDownloadCatalog(
+                sealed("""[{"code":"007","id":"dev.example.one","name":"One","url":"https://example.com/one.mbplugin"}]"""),
+            )
+        assertThat(pluginDownloadSource(" 007 ") { catalog }.url).isEqualTo("https://example.com/one.mbplugin")
+    }
+
+    @Test
+    fun `duplicate codes and invalid catalog URLs are rejected`() {
+        val one = """{"code":"007","id":"dev.example.one","name":"One","url":"https://example.com/one.mbplugin"}"""
+        assertThrows(IllegalArgumentException::class.java) { decodePluginDownloadCatalog(sealed("[$one,$one]")) }
+        assertThrows(IllegalArgumentException::class.java) {
+            decodePluginDownloadCatalog(sealed("[$one]".replace("https://example.com/one.mbplugin", "javascript:alert(1)")))
+        }
+    }
+
+    @Test
+    fun `tampering with the encrypted catalog fails authentication`() {
+        val raw = File("src/main/assets/plugin-download-catalog.json").readText()
+        val envelope = Json.parseToJsonElement(raw).jsonObject.toMutableMap()
+        val payload = Base64.getDecoder().decode(envelope.getValue("payload").jsonPrimitive.content)
+        payload[0] = (payload[0].toInt() xor 1).toByte()
+        envelope["payload"] = JsonPrimitive(Base64.getEncoder().encodeToString(payload))
+        assertThrows(Exception::class.java) { decodePluginDownloadCatalog(Json.encodeToString(envelope)) }
+    }
+
+    private fun sealed(plaintext: String): String {
+        val key = SyncCrypto.randomBytes(32)
+        val nonce = SyncCrypto.randomNonce()
+        val payload = SyncCrypto.seal(key, nonce, plaintext.toByteArray(), "milkbeat/plugin-download-catalog/1".toByteArray())
+        val base64 = Base64.getEncoder()
+        return """{"format":1,"key":"${base64.encodeToString(
+            key,
+        )}","nonce":"${base64.encodeToString(nonce)}","payload":"${base64.encodeToString(payload)}"}"""
+    }
+}

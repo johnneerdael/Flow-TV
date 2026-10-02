@@ -210,9 +210,19 @@ private fun LazyListScope.overviewItems(
         )
     }
     when (val adding = state.adding) {
-        AddPluginState.Fetching -> item(key = "add-status") { StatusText(stringResource(R.string.tv_plugins_fetching)) }
-        is AddPluginState.Failed -> item(key = "add-status") { StatusText(adding.message, error = true) }
-        else -> Unit
+        AddPluginState.Fetching -> {
+            item(key = "add-status") { StatusText(stringResource(R.string.tv_plugins_fetching)) }
+        }
+
+        is AddPluginState.Failed -> {
+            item(key = "add-status") {
+                StatusText(adding.messageResource?.let { stringResource(it) } ?: adding.message, error = true)
+            }
+        }
+
+        else -> {
+            Unit
+        }
     }
 }
 
