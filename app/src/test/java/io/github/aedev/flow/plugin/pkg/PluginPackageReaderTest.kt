@@ -33,10 +33,8 @@ class PluginPackageReaderTest {
 
     @Test
     fun `a package packed and signed by mbplugin verifies here`() {
-        val fixture = java.io.File("../plugins/fixture/build/fixture.mbplugin")
-        org.junit.Assume.assumeTrue("run npm run build in plugins/fixture first", fixture.isFile)
-
-        val plugin = fixture.inputStream().use(PluginPackageReader::read)
+        val fixture = checkNotNull(javaClass.getResourceAsStream("/plugins/fixture-signed.mbplugin"))
+        val plugin = fixture.use(PluginPackageReader::read)
 
         assertThat(plugin.manifest.id).isEqualTo("dev.milkbeat.fixture")
         assertThat(plugin.files.keys).containsExactly("manifest.json", "plugin.js", "assets/page.html")

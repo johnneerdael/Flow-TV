@@ -180,17 +180,12 @@ A plugin that fails any step is not stored.
 - **A broken update never strands the listener.** The previous version is kept until the new one has
   started successfully once.
 
-### 3.5 First-party plugins
+### 3.5 Third-party plugin distribution
 
 - **Nothing is bundled.** The APK contains no plugin, and a fresh install has only the Local library.
-- **Built and ready for testing:** first-party plugins, YouTube Music first, live in this repository
-  under `plugins/<name>/`. CI builds, validates and signs them on every push, and publishes each
-  `.mbplugin` as a release asset next to the APKs.
-- **Stable link to add:**
-  `https://github.com/johnneerdael/Milkbeat/releases/latest/download/youtube-music.mbplugin`.
-  The plugin's `updateUrl` points to the same link, so tester installs update themselves.
-- **No shortcuts:** first-party plugins take the same install path as any third-party plugin. That
-  is how the API gets tested.
+- Provider implementations and package building/signing live in the separate private repository on Forgejo. Plugin releases are independent of the app.
+- Milkbeat releases contain APKs and checksums. The README lists optional third-party downloader codes.
+- Plugins use the generic installer, signature verification, permission review and update APIs.
 
 ## 4. The runtime
 

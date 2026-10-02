@@ -118,21 +118,12 @@ jobs:
           npm ci --no-audit --no-fund
           npm run --workspaces --if-present check
 
-      - name: Verify published first-party plugins
+      - name: Verify third-party publication data
         run: |
           cd plugins
+          cp published.json ../app/src/androidTest/assets/published-plugins.json
           npm test
           node scripts/stage-published-plugins.mjs
-
-      - name: Upload first-party plugins
-        if: ${{ hashFiles('plugins/dist/*.mbplugin') != '' }}
-        uses: actions/upload-artifact@v7
-        with:
-          name: milkbeat-plugins
-          path: plugins/dist/*.mbplugin
-          if-no-files-found: error
-          retention-days: 14
-          compression-level: 0
 
       # Instrumentation tests are not executed in CI, but they must still
       # compile: breakage here otherwise lands on main unnoticed.
@@ -270,12 +261,6 @@ jobs:
           path: dist/
           merge-multiple: true
 
-      - name: Download first-party plugins
-        uses: actions/download-artifact@v8
-        with:
-          name: milkbeat-plugins
-          path: dist/
-
       - name: Rename APKs for release
         run: |
           set -euo pipefail
@@ -284,7 +269,7 @@ jobs:
           mv dist/app-github-armeabi-v7a-release.apk   dist/milkbeat-armeabi-v7a.apk
           # Downloader code 4718521 and older links point at the MusicViz-era name; keep serving it.
           cp dist/milkbeat-universal.apk dist/musicviz-universal.apk
-          cd dist && sha256sum milkbeat*.apk *.mbplugin > checksums.txt && cat checksums.txt
+          cd dist && sha256sum milkbeat*.apk > checksums.txt && cat checksums.txt
 
       - name: Write release notes
         env:
@@ -310,11 +295,11 @@ jobs:
             echo
             echo "## Plugins"
             echo
-            echo "Milkbeat plays nothing until a plugin is added (Settings > Plugins > Add a plugin):"
+            echo "Local and SMB music works without plugins. Optional third-party streaming plugins can be added in Settings > Plugins:"
             echo
-            echo "- **YouTube Music and YouTube:** $latest/youtube-music.mbplugin"
-            echo "- **Beatport** (full-length streaming needs a Beatport streaming subscription): $latest/beatport.mbplugin"
-            echo "- **Spotify** (metadata; select YouTube Music for audio): $latest/spotify.mbplugin"
+            echo "- **YouTube Music and YouTube:** downloader code \`494\`"
+            echo "- **Beatport** (full-length streaming needs a Beatport streaming subscription): downloader code \`393\`"
+            echo "- **Spotify** (metadata; select YouTube Music for audio): downloader code \`981\`"
             if [ -n "$prev" ]; then
               echo
               echo "**Full changelog:** https://github.com/$REPO/compare/$prev...$TAG"
@@ -335,9 +320,6 @@ jobs:
             dist/milkbeat-arm64-v8a.apk
             dist/milkbeat-armeabi-v7a.apk
             dist/musicviz-universal.apk
-            dist/youtube-music.mbplugin
-            dist/beatport.mbplugin
-            dist/spotify.mbplugin
             dist/checksums.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

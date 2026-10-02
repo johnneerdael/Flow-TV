@@ -3,9 +3,7 @@
   "private": true,
   "type": "module",
   "workspaces": [
-    "sdk",
-    "cli",
-    "fixture"
+    "sdk"
   ],
   "engines": {
     "node": ">=22"
@@ -13,5 +11,8 @@
   "scripts": {
     "check": "npm run --workspaces --if-present check",
     "test": "node --test test/*.test.mjs"
+  },
+  "devDependencies": {
+    "fflate": "0.8.3"
   }
 }
