@@ -5,8 +5,13 @@ import androidx.lifecycle.ViewModelStore
 import com.google.common.truth.Truth.assertThat
 import io.github.aedev.flow.data.catalog.CatalogPlayback
 import io.github.aedev.flow.data.local.SubscriptionRepository
+import io.github.aedev.flow.plugin.catalog.toMusicTrack
+import io.github.aedev.flow.plugin.mirror.MirrorKey
+import io.github.aedev.flow.plugin.mirror.PlaylistMirrorCoordinator
+import io.github.aedev.flow.plugin.mirror.PlaylistMirrorState
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -35,6 +40,7 @@ import nl.neerdael.milkbeat.catalog.MetadataItem
 import nl.neerdael.milkbeat.catalog.MetadataPage
 import nl.neerdael.milkbeat.catalog.MetadataProvider
 import nl.neerdael.milkbeat.catalog.ProviderAccount
+import nl.neerdael.milkbeat.catalog.TrackDescriptor
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -60,6 +66,8 @@ class CatalogPageViewModelTest {
 
     private fun viewModel(
         accountState: MutableStateFlow<ProviderAccount> = MutableStateFlow(ProviderAccount.Anonymous),
+        mirrors: PlaylistMirrorCoordinator? = null,
+        playback: CatalogPlayback = CatalogPlayback { null },
         pages: suspend (String?) -> Result<MetadataPage>,
     ) = CatalogPageViewModel(
         SavedStateHandle(
@@ -79,8 +87,9 @@ class CatalogPageViewModelTest {
                 return pages(cursor)
             }
         },
-        CatalogPlayback { null },
+        playback,
         mockk<SubscriptionRepository> { every { isSubscribed(any()) } returns flowOf(false) },
+        mirrors = mirrors,
     ).also { vm ->
         stores += ViewModelStore().apply { put("catalog", vm) }
         collectors += CoroutineScope(dispatcher).launch { vm.state.collect {} }
@@ -96,6 +105,17 @@ class CatalogPageViewModelTest {
         stores.forEach(ViewModelStore::clear)
         collectors.forEach(Job::cancel)
         Dispatchers.resetMain()
+    }
+
+    @Test
+    fun `default provider routes carry provider identity into playlist playback`() {
+        val vm = viewModel { Result.success(MetadataPage("playlist", emptyList())) }
+        val seed = checkNotNull(vm.radioSeed(playlist.providerId))
+        val scoped =
+            io.github.aedev.flow.plugin.catalog.ProviderEntityReference
+                .decode(seed)
+        assertThat(scoped?.pluginId).isEqualTo("fake")
+        assertThat(scoped?.entity).isEqualTo(playlist)
     }
 
     @Test
@@ -215,5 +235,146 @@ class CatalogPageViewModelTest {
                         .single() as CollectionBlock
                 ).items.single().title,
             ).isEqualTo("b")
+        }
+
+    private val mirrorKey = MirrorKey("fake", "a", "target", "b", playlist)
+
+    private fun coordinator(
+        selected: MutableStateFlow<MirrorKey?>,
+        states: Map<MirrorKey, MutableStateFlow<PlaylistMirrorState>>,
+    ) = mockk<PlaylistMirrorCoordinator>(relaxed = true) {
+        every { observeSelectedKey(any(), any()) } returns selected
+        every { state(any()) } answers { checkNotNull(states[firstArg()]) }
+    }
+
+    @Test
+    fun `ready mirror status clears when the selected pair becomes unavailable`() =
+        runTest(dispatcher) {
+            val selected = MutableStateFlow<MirrorKey?>(mirrorKey)
+            val progress = MutableStateFlow(PlaylistMirrorState(ready = true, matched = 3))
+            val mirrors = coordinator(selected, mapOf(mirrorKey to progress))
+            val vm = viewModel(mirrors = mirrors) { Result.success(MetadataPage("p", listOf(header, tracks("a")))) }
+            vm.load()
+            runCurrent()
+            assertThat(vm.mirror.value.ready).isTrue()
+
+            selected.value = null
+            runCurrent()
+            assertThat(vm.mirror.value).isEqualTo(PlaylistMirrorState())
+            assertThat(
+                vm.state.value.blocks
+                    .first(),
+            ).isEqualTo(header)
+            assertThat((vm.state.value.blocks[1] as CollectionBlock).items.map { it.entity.providerId }).containsExactly("a")
+            assertThat(requests).containsExactly(null)
+            progress.value = PlaylistMirrorState(error = "late failure")
+            runCurrent()
+            assertThat(vm.mirror.value).isEqualTo(PlaylistMirrorState())
+            verify(exactly = 1) { mirrors.open(any(), any(), any(), any()) }
+        }
+
+    @Test
+    fun `failed mirror status clears when a target becomes unavailable`() =
+        runTest(dispatcher) {
+            val selected = MutableStateFlow<MirrorKey?>(mirrorKey)
+            val mirrors = coordinator(selected, mapOf(mirrorKey to MutableStateFlow(PlaylistMirrorState(error = "offline"))))
+            val vm = viewModel(mirrors = mirrors) { Result.success(MetadataPage("p", listOf(header))) }
+            vm.load()
+            runCurrent()
+            assertThat(vm.mirror.value.error).isEqualTo("offline")
+
+            selected.value = null
+            runCurrent()
+            assertThat(vm.mirror.value).isEqualTo(PlaylistMirrorState())
+            assertThat(vm.state.value.blocks).containsExactly(header)
+            assertThat(requests).containsExactly(null)
+        }
+
+    @Test
+    fun `account changes clear mirror status before a replacement page is loaded`() =
+        runTest(dispatcher) {
+            val account = MutableStateFlow<ProviderAccount>(ProviderAccount.SignedIn("a"))
+            val selected = MutableStateFlow<MirrorKey?>(mirrorKey)
+            val progress = MutableStateFlow(PlaylistMirrorState(ready = true))
+            val mirrors = coordinator(selected, mapOf(mirrorKey to progress))
+            val vm = viewModel(account, mirrors) { Result.success(MetadataPage("p", listOf(header))) }
+            vm.load()
+            runCurrent()
+            assertThat(vm.mirror.value.ready).isTrue()
+
+            account.value = ProviderAccount.SignedIn("other")
+            runCurrent()
+            assertThat(vm.mirror.value).isEqualTo(PlaylistMirrorState())
+            assertThat(vm.state.value.blocks).isEmpty()
+            assertThat(requests).containsExactly(null)
+            progress.value = PlaylistMirrorState(error = "retired account")
+            runCurrent()
+            assertThat(vm.mirror.value).isEqualTo(PlaylistMirrorState())
+            verify(exactly = 1) { mirrors.open(any(), any(), any(), any()) }
+        }
+
+    @Test
+    fun `a replaced mirror collector cannot overwrite the current selection`() =
+        runTest(dispatcher) {
+            val replacement = mirrorKey.copy(targetPlugin = "replacement")
+            val selected = MutableStateFlow<MirrorKey?>(mirrorKey)
+            val retired = MutableStateFlow(PlaylistMirrorState(ready = true))
+            val current = MutableStateFlow(PlaylistMirrorState(isPreparing = true, total = 3))
+            val mirrors = coordinator(selected, mapOf(mirrorKey to retired, replacement to current))
+            val vm = viewModel(mirrors = mirrors) { Result.success(MetadataPage("p", listOf(header))) }
+            vm.load()
+            runCurrent()
+            assertThat(vm.mirror.value.ready).isTrue()
+
+            selected.value = replacement
+            runCurrent()
+            assertThat(vm.mirror.value).isEqualTo(current.value)
+            retired.value = PlaylistMirrorState(error = "retired target")
+            runCurrent()
+            assertThat(vm.mirror.value).isEqualTo(current.value)
+            current.value = PlaylistMirrorState(ready = true, matched = 3)
+            runCurrent()
+            assertThat(vm.mirror.value).isEqualTo(current.value)
+            assertThat(vm.state.value.blocks).containsExactly(header)
+            assertThat(requests).containsExactly(null)
+            verify(exactly = 2) { mirrors.open(any(), any(), any(), any()) }
+        }
+
+    @Test
+    fun `repeated tracks retain their row positions when the same item id is reused`() =
+        runTest(dispatcher) {
+            val table = tracks("a", "b", "a")
+            val vm =
+                viewModel(playback = CatalogPlayback { TrackDescriptor(it.entity, it.title).toMusicTrack("fake") }) {
+                    Result.success(MetadataPage("p", listOf(header, table)))
+                }
+            vm.load()
+            runCurrent()
+            val rows = (vm.state.value.blocks[1] as CollectionBlock).items
+
+            assertThat(rows.map { vm.track(it)?.sourcePosition }).containsExactly(0, 1, 2).inOrder()
+            assertThat(rows.map { vm.track(it)?.videoId }).containsExactly("a", "b", "a").inOrder()
+        }
+
+    @Test
+    fun `repeated track occurrences on continuation pages remain selectable at their own positions`() =
+        runTest(dispatcher) {
+            val vm =
+                viewModel(playback = CatalogPlayback { TrackDescriptor(it.entity, it.title).toMusicTrack("fake") }) { cursor ->
+                    Result.success(
+                        if (cursor == null) {
+                            MetadataPage("p", listOf(header, tracks("a", "b")), nextCursor = "next")
+                        } else {
+                            MetadataPage("next", listOf(tracks("a", "c", "a")))
+                        },
+                    )
+                }
+            vm.load()
+            runCurrent()
+            val rows = (vm.state.value.blocks[1] as CollectionBlock).items
+
+            assertThat(rows.map { it.entity.providerId }).containsExactly("a", "b", "a", "c", "a").inOrder()
+            assertThat(rows.map { vm.track(it)?.sourcePosition }).containsExactly(0, 1, 2, 3, 4).inOrder()
+            assertThat(requests).containsExactly(null, "next").inOrder()
         }
 }

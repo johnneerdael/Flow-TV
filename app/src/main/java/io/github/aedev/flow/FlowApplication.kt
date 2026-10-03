@@ -41,6 +41,9 @@ class FlowApplication :
     @Inject
     lateinit var downloadUtil: dagger.Lazy<io.github.aedev.flow.data.download.DownloadUtil>
 
+    @Inject
+    lateinit var mirrorJobs: dagger.Lazy<io.github.aedev.flow.plugin.mirror.PlaylistMirrorJobs>
+
     override fun newImageLoader(context: PlatformContext): ImageLoader = imageLoader
 
     /**
@@ -86,6 +89,7 @@ class FlowApplication :
         super.onCreate()
         appContext = applicationContext
 
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch { mirrorJobs.get().start(this) }
         val playerPreferences = PlayerPreferences(this)
 
         // Injects modern TLS/SSL certificates so OkHttp and Ktor don't crash

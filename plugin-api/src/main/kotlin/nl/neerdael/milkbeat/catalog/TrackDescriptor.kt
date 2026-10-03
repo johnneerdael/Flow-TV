@@ -32,4 +32,7 @@ data class TrackList(
     val tracks: List<TrackDescriptor>,
     val next: String? = null,
     val source: EntityRef? = null,
+    val filters: FilterControl? = null,
+    val selectedFilterId: String? = null,
+    val revision: String? = null,
 )

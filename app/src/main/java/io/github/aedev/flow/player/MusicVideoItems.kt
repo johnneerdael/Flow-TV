@@ -28,6 +28,7 @@ object MusicVideoItems {
         track.descriptor?.let { json ->
             builder.appendQueryParameter(DESCRIPTOR_PARAM, Base64.getUrlEncoder().withoutPadding().encodeToString(json.toByteArray()))
         }
+        track.playbackContext?.audioProviderId?.let { builder.appendQueryParameter("provider", it) }
         return builder.build()
     }
 
@@ -55,6 +56,8 @@ object MusicVideoItems {
                 ids =
                     mapOf(LEGACY_ID_SPACE to track.videoId),
             )
+
+    fun preferredProvider(uri: Uri): String? = uri.getQueryParameter("provider")
 
     fun videoKey(videoId: String): String = videoId + VIDEO_KEY_SUFFIX
 

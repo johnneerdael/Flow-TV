@@ -68,6 +68,7 @@ fun TvMusicNowPlayingScreen(
     modifier: Modifier = Modifier,
     visualizer: TvNowPlayingVisual? = null,
 ) {
+    val tuning by viewModel.radioTuning.state.collectAsStateWithLifecycle()
     val manager = EnhancedMusicPlayerManager
     val context = LocalContext.current
     val track by manager.currentTrack.collectAsStateWithLifecycle()
@@ -373,6 +374,8 @@ fun TvMusicNowPlayingScreen(
             manager = manager,
             onPlayRadioTrack = viewModel::playRadioTrack,
             onClose = { panel = TvMusicPanel.NONE },
+            tuning = tuning,
+            onTune = viewModel.radioTuning::select,
         )
     }
 }

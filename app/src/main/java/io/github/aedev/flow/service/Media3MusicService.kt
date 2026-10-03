@@ -45,7 +45,6 @@ import io.github.aedev.flow.data.download.DownloadUtil
 import io.github.aedev.flow.data.localmedia.LocalMediaIds
 import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.data.recommendation.music.MusicBrainEngine
-import io.github.aedev.flow.data.recommendation.music.primaryArtistKey
 import io.github.aedev.flow.extensions.setOffloadEnabled
 import io.github.aedev.flow.platform.DeviceFormFactor
 import io.github.aedev.flow.platform.DeviceFormFactorDetector
@@ -65,11 +64,12 @@ import io.github.aedev.flow.player.audio.visualizer.VisualizerEngine
 import io.github.aedev.flow.player.audio.visualizer.VisualizerTapProcessor
 import io.github.aedev.flow.player.audio.visualizer.followPlayerClock
 import io.github.aedev.flow.player.factory.LoadControlFactory
+import io.github.aedev.flow.player.replaceFutureRadio
 import io.github.aedev.flow.player.sessionArtworkBitmapLoader
 import io.github.aedev.flow.plugin.catalog.PluginAccounts
-import io.github.aedev.flow.plugin.catalog.toMusicTrack
 import io.github.aedev.flow.plugin.playback.PluginAudio
 import io.github.aedev.flow.plugin.playback.PluginRadio
+import io.github.aedev.flow.plugin.playback.RadioFilterSelection
 import io.github.aedev.flow.plugin.playback.RadioPage
 import io.github.aedev.flow.plugin.runtime.PluginCallException
 import io.github.aedev.flow.utils.NetworkConnectivityObserver
@@ -156,6 +156,7 @@ class Media3MusicService : MediaLibraryService() {
     private var lockReleaseJob: Job? = null
 
     private var automixJob: Job? = null
+    private val radioModeTuner by lazy { RadioModeTuner(pluginRadio, radioTuning, pluginAudio, musicBrain) }
 
     // ── Endless radio session (desktop semantics: seeded once per queue, append-only) ──
     private var radioSeedId: String? = null
@@ -221,9 +222,15 @@ class Media3MusicService : MediaLibraryService() {
     @Inject
     lateinit var pluginRadio: PluginRadio
 
+    @Inject
+    lateinit var radioTuning: io.github.aedev.flow.plugin.playback.RadioTuningCoordinator
+
     @OptIn(UnstableApi::class)
     override fun onCreate() {
         super.onCreate()
+        lifecycleScope.launch {
+            radioTuning.requests.collect { selection -> switchRadioMode(selection) }
+        }
         EnhancedMusicPlayerManager.prefetcher = downloadUtil::prefetch
 
         recordForegroundStartFailures("music-service")
@@ -362,7 +369,11 @@ class Media3MusicService : MediaLibraryService() {
         val playerDataSourceFactory = downloadUtil.getPlayerDataSourceFactory()
         val mediaSourceFactory =
             MusicMediaSourceFactory(DefaultMediaSourceFactory(playerDataSourceFactory), playerDataSourceFactory) { item ->
-                item.localConfiguration?.uri?.let { pluginAudio.deliveryFor(MusicVideoItems.descriptor(it)) == AudioDelivery.HLS } == true
+                item.localConfiguration?.uri?.let {
+                    pluginAudio.deliveryFor(MusicVideoItems.descriptor(it), MusicVideoItems.preferredProvider(it)) ==
+                        AudioDelivery.HLS
+                } ==
+                    true
             }
 
         val renderersFactory =
@@ -1233,8 +1244,11 @@ class Media3MusicService : MediaLibraryService() {
             return
         }
         radioGeneration++
+        radioTuning.reset(radioGeneration)
         val seedId = currentId
-        manager.queueCollectionState.value = collectionId
+        manager.queueCollectionState.value = manager.currentTrack.value
+            ?.playbackContext
+            ?.sourceCollectionId ?: collectionId
         radioSeedId = seedId
         radioContinuation = null
         radioPage = null
@@ -1243,7 +1257,12 @@ class Media3MusicService : MediaLibraryService() {
         automixJob?.cancel()
         radioTopUpJob?.cancel()
         manager.updateAutomixItems(emptyList())
-        radioCollectionId = collectionId.takeUnless { context.explicit }
+        radioCollectionId =
+            (
+                manager.currentTrack.value
+                    ?.playbackContext
+                    ?.radioCollectionId ?: collectionId
+            ).takeUnless { context.explicit }
         radioSeedPending = true
         manager.setRadioLoading(false)
         if (player.isPlaying) startPendingRadio()
@@ -1275,7 +1294,14 @@ class Media3MusicService : MediaLibraryService() {
         automixJob =
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
-                    var result = mix(EntityRef(EntityKind.TRACK, seedId), queuedDescriptor(seedId))
+                    val nativeCollection =
+                        manager.currentTrack.value
+                            ?.playbackContext
+                            ?.takeIf { it.preferCollectionRadio }
+                            ?.radioCollectionId
+                    var result =
+                        nativeCollection?.let { mix(EntityRef(EntityKind.PLAYLIST, it)) }
+                            ?: mix(EntityRef(EntityKind.TRACK, seedId), queuedDescriptor(seedId))
                     if (result == null ||
                         result.tracks.tracks
                             .isEmpty()
@@ -1283,11 +1309,12 @@ class Media3MusicService : MediaLibraryService() {
                         result = collectionId?.let { mix(EntityRef(EntityKind.PLAYLIST, it)) }
                     }
                     val mapped = result?.toRadioTracks(seedId).orEmpty()
-                    val station = withoutHiddenArtists(mapped)
+                    val station = radioModeTuner.withoutHiddenArtists(mapped)
                     withContext(Dispatchers.Main) {
                         if (generation != radioGeneration) return@withContext
                         radioContinuation = result?.tracks?.next
                         radioPage = result
+                        radioTuning.station(result, generation)
                         Log.i(
                             TAG,
                             "Radio seeded from $seedId via ${result?.pluginId}: ${station.size} tracks, " +
@@ -1343,15 +1370,38 @@ class Media3MusicService : MediaLibraryService() {
     }
 
     private fun RadioPage.toRadioTracks(seedId: String?): List<MusicTrack> =
-        tracks.tracks
-            .map { it.toMusicTrack(pluginId) }
-            .filterNot { it.videoId == seedId }
-            .distinctBy { it.videoId }
+        radioModeTuner.eligibleTracks(
+            page = this,
+            tracks = radioModeTuner.tracks(this),
+            queue = EnhancedMusicPlayerManager.queue.value,
+            seedId = seedId,
+        )
 
-    private suspend fun withoutHiddenArtists(tracks: List<MusicTrack>): List<MusicTrack> {
-        musicBrain.ensureInitialized()
-        val hidden = musicBrain.hiddenArtists.value
-        return if (hidden.isEmpty()) tracks else tracks.filterNot { it.primaryArtistKey() in hidden }
+    private fun switchRadioMode(selection: RadioFilterSelection) {
+        if (selection.generation != radioGeneration || !radioTuning.valid(selection)) return
+        radioGeneration++
+        val generation = radioGeneration
+        automixJob?.cancel()
+        radioTopUpJob?.cancel()
+        val manager = EnhancedMusicPlayerManager
+        automixJob =
+            radioModeTuner.launch(
+                scope = lifecycleScope,
+                selection = selection,
+                generation = generation,
+                isCurrent = { generation == radioGeneration },
+                applyStation = { result, station ->
+                    manager.replaceFutureRadio()
+                    lastQueueIds = manager.queue.value.map { it.videoId }
+                    manager.updateAutomixItems(radioModeTuner.eligibleTracks(result, station, manager.queue.value))
+                    radioPage = result
+                    radioContinuation = result.tracks.next
+                    radioTuning.reset(generation)
+                    radioTuning.station(result, generation)
+                    maybeExtendRadio()
+                },
+                setLoading = manager::setRadioLoading,
+            )
     }
 
     /**
@@ -1435,11 +1485,12 @@ class Media3MusicService : MediaLibraryService() {
                             if (!current) return@launch
                             mix(EntityRef(EntityKind.TRACK, seedId), queuedDescriptor(seedId))
                         } ?: return@launch
-                    val station = withoutHiddenArtists(result.toRadioTracks(seedId = null))
+                    val station = radioModeTuner.withoutHiddenArtists(result.toRadioTracks(seedId = null))
                     withContext(Dispatchers.Main) {
                         if (generation != radioGeneration) return@withContext
                         radioContinuation = result.tracks.next
                         radioPage = result
+                        radioTuning.station(result, generation)
                         Log.d(TAG, "Radio pool topped up with ${station.size} tracks, continuation=${radioContinuation != null}")
                         if (station.isNotEmpty()) {
                             manager.appendAutomixItems(station)

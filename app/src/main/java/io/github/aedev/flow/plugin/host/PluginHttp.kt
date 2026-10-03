@@ -1,15 +1,21 @@
 package io.github.aedev.flow.plugin.host
 
+import android.util.Log
+import io.github.aedev.flow.BuildConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.jsonObject
+import nl.neerdael.milkbeat.plugin.HttpBodyEncoding
 import nl.neerdael.milkbeat.plugin.HttpRequest
 import nl.neerdael.milkbeat.plugin.HttpResponse
+import nl.neerdael.milkbeat.plugin.PluginJson
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
+import java.util.Base64
 import java.util.concurrent.TimeUnit
 
 private const val DEFAULT_TIMEOUT_MS = 20_000L
@@ -42,12 +48,22 @@ internal class PluginHttp(
             val method = request.method.uppercase()
             val url = checked(Request.Builder().url(request.url).build()).url
             val body =
-                request.body?.takeUnless { method in BODYLESS_METHODS }?.toRequestBody(
-                    request.headers.entries
-                        .firstOrNull { it.key.equals("content-type", ignoreCase = true) }
-                        ?.value
-                        ?.toMediaTypeOrNull(),
-                )
+                request.body
+                    ?.takeUnless { method in BODYLESS_METHODS }
+                    ?.let { data ->
+                        if (request.bodyEncoding ==
+                            HttpBodyEncoding.BASE64
+                        ) {
+                            Base64.getDecoder().decode(data)
+                        } else {
+                            data.toByteArray(Charsets.UTF_8)
+                        }
+                    }?.toRequestBody(
+                        request.headers.entries
+                            .firstOrNull { it.key.equals("content-type", ignoreCase = true) }
+                            ?.value
+                            ?.toMediaTypeOrNull(),
+                    )
             val call =
                 client
                     .newBuilder()
@@ -68,6 +84,31 @@ internal class PluginHttp(
                 if (length > MAX_RESPONSE_BYTES) throw PluginHttpException("Response of $length bytes is too large")
                 val source = response.body.source()
                 if (source.request(MAX_RESPONSE_BYTES + 1)) throw PluginHttpException("Response is too large")
+                val bytes = source.buffer.readByteArray()
+                val responseText =
+                    if (request.responseEncoding == HttpBodyEncoding.BASE64) {
+                        Base64.getEncoder().encodeToString(bytes)
+                    } else {
+                        bytes.toString(Charsets.UTF_8)
+                    }
+                if (BuildConfig.DEBUG && url.host == "music.youtube.com" && url.encodedPath.endsWith("/browse") &&
+                    request.body?.contains("\"browseId\":\"VL") == true
+                ) {
+                    Log.i(
+                        "PlaylistMirrorHttp",
+                        "Playlist response: " +
+                            "status=${response.code}, keys=${runCatching {
+                                PluginJson
+                                    .parseToJsonElement(
+                                        responseText,
+                                    ).jsonObject.keys
+                            }.getOrNull()}, " +
+                            "editable=${responseText.contains("musicEditablePlaylistDetailHeaderRenderer")}, " +
+                            "marker=${responseText.contains("[milkbeat-mirror:")}, " +
+                            "legacyHeader=${responseText.contains("musicDetailHeaderRenderer")}, " +
+                            "responsiveHeader=${responseText.contains("musicResponsiveHeaderRenderer")}",
+                    )
+                }
                 HttpResponse(
                     status = response.code,
                     url = response.request.url.toString(),
@@ -76,7 +117,7 @@ internal class PluginHttp(
                             val lower = name.lowercase()
                             lower to response.headers.values(name).joinToString(if (lower == "set-cookie") "\n" else ", ")
                         },
-                    body = source.buffer.readUtf8(),
+                    body = responseText,
                 )
             }
         }

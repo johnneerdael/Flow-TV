@@ -59,6 +59,7 @@ fun BoxScope.TvSidePanel(
     onClose: (() -> Unit)? = null,
     containerColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
     initialContentFocus: Boolean = true,
+    showHeader: Boolean = true,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val dimens = LocalTvDimens.current
@@ -95,24 +96,26 @@ fun BoxScope.TvSidePanel(
                             vertical = dimens.overscanVertical,
                         ),
             ) {
-                Row(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.headlineSmall,
-                        modifier = Modifier.weight(1f),
-                    )
-                    onClose?.let {
-                        TvIconButton(
-                            icon = Icons.Outlined.Close,
-                            contentDescription = stringResource(R.string.close),
-                            onClick = it,
+                if (showHeader) {
+                    Row(
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.headlineSmall,
+                            modifier = Modifier.weight(1f),
                         )
+                        onClose?.let {
+                            TvIconButton(
+                                icon = Icons.Outlined.Close,
+                                contentDescription = stringResource(R.string.close),
+                                onClick = it,
+                            )
+                        }
                     }
                 }
                 // Focus lands on the content's first row, not the close button.

@@ -3,6 +3,7 @@ package io.github.aedev.flow.ui.tv.screens
 import android.view.KeyEvent
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
@@ -10,6 +11,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -35,6 +38,7 @@ import io.github.aedev.flow.R
 import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.player.EnhancedMusicPlayerManager
 import io.github.aedev.flow.plugin.catalog.ProviderEntityReference
+import io.github.aedev.flow.plugin.mirror.PlaylistMirrorState
 import io.github.aedev.flow.ui.screens.music.CatalogPageViewModel
 import io.github.aedev.flow.ui.tv.catalog.TvCatalogActions
 import io.github.aedev.flow.ui.tv.catalog.TvCatalogEntityHeader
@@ -42,7 +46,9 @@ import io.github.aedev.flow.ui.tv.catalog.TvCatalogFollow
 import io.github.aedev.flow.ui.tv.catalog.TvCatalogTableLayout
 import io.github.aedev.flow.ui.tv.catalog.catalogBlocks
 import io.github.aedev.flow.ui.tv.catalog.catalogIndexOf
+import io.github.aedev.flow.ui.tv.catalog.catalogPlayingRow
 import io.github.aedev.flow.ui.tv.catalog.isTrackTable
+import io.github.aedev.flow.ui.tv.components.TvButton
 import io.github.aedev.flow.ui.tv.components.TvLoadingState
 import io.github.aedev.flow.ui.tv.components.TvMessageState
 import io.github.aedev.flow.ui.tv.focus.ProvideTvColumnPivot
@@ -68,6 +74,7 @@ fun TvCatalogPageScreen(
     viewModel: CatalogPageViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val mirror by viewModel.mirror.collectAsStateWithLifecycle()
     val following by viewModel.following.collectAsStateWithLifecycle()
     val dimens = LocalTvDimens.current
     val sourceIdentity by viewModel.sourceIdentity.collectAsStateWithLifecycle(initialValue = "")
@@ -113,7 +120,18 @@ fun TvCatalogPageScreen(
                 if (cover != null) {
                     val currentCollection = cover.isPlaying(blocks, playingCollection, playingSource)
                     key(cover.entity) {
-                        CoverPage(cover, blocks, actions, modifier, playingTrack?.videoId.takeIf { currentCollection })
+                        CoverPage(
+                            cover,
+                            blocks,
+                            actions,
+                            modifier,
+                            playingTrack?.videoId.takeIf {
+                                currentCollection
+                            },
+                            playingTrack?.sourcePosition.takeIf { currentCollection },
+                        ) {
+                            TvPlaylistMirrorStatus(mirror, viewModel::retryMirror)
+                        }
                     }
                 } else {
                     LazyColumn(
@@ -125,6 +143,28 @@ fun TvCatalogPageScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun TvPlaylistMirrorStatus(
+    state: PlaylistMirrorState,
+    retry: () -> Unit,
+) {
+    if (!state.isPreparing && !state.ready && state.error == null) return
+    Column {
+        Text(
+            text =
+                when {
+                    state.error != null -> stringResource(R.string.playlist_mirror_failed)
+                    state.ready -> stringResource(R.string.playlist_mirror_ready, state.matched, state.missing)
+                    state.total == 0 -> stringResource(R.string.playlist_mirror_starting)
+                    else -> stringResource(R.string.playlist_mirror_progress, state.matched, state.total, state.missing)
+                },
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        if (state.error != null) TvButton(text = stringResource(R.string.playlist_mirror_retry), onClick = retry)
     }
 }
 
@@ -156,25 +196,20 @@ internal fun CoverPage(
     actions: TvCatalogActions,
     modifier: Modifier,
     playingTrackId: String? = null,
+    playingTrackPosition: Int? = null,
+    status: @Composable () -> Unit = {},
 ) {
     val dimens = LocalTvDimens.current
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val body = remember(blocks) { blocks.drop(1) }
     val openingTrackId = remember(cover.entity) { playingTrackId }
-    val playingRow =
-        body.firstNotNullOfOrNull { block ->
-            (block as? CollectionBlock)?.takeIf { it.isTrackTable }?.let { table ->
-                table.items
-                    .indexOfFirst { it.track?.ref?.providerId == openingTrackId }
-                    .takeIf { it >= 0 }
-                    ?.let { body.catalogIndexOf(table) + it }
-            }
-        }
+    val openingTrackPosition = remember(cover.entity) { playingTrackPosition }
+    val playingRow = body.catalogPlayingRow(openingTrackPosition, openingTrackId)
     val playingFocus = remember { FocusRequester() }
     val paneFocus = remember { FocusRequester() }
     val tables =
-        remember(openingTrackId) {
+        remember(openingTrackId, openingTrackPosition) {
             TvCatalogTableLayout(
                 dimens.coverPaneWidth + dimens.rowSpacing,
                 FocusRequester(),
@@ -182,6 +217,7 @@ internal fun CoverPage(
                 openingTrackId,
                 playingFocus,
                 paneFocus,
+                openingTrackPosition,
             )
         }
     var positioned by remember(cover.entity) { androidx.compose.runtime.mutableStateOf(false) }
@@ -232,6 +268,7 @@ internal fun CoverPage(
                     // The pane rides up with the tracks; stepping into it brings all of it back.
                     .onFocusChanged { if (it.hasFocus) scope.launch { listState.animateScrollToItem(0) } }
                     .padding(start = dimens.overscanHorizontal, top = dimens.overscanVertical),
+            status = status,
             actionsModifier =
                 Modifier.focusGroup().onPreviewKeyEvent { event ->
                     if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false

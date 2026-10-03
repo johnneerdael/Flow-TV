@@ -75,10 +75,13 @@ class PluginAudio
 
         private fun streamContext(): Any = registry.state.value to accounts.accounts.value
 
-        internal fun needsQueueMatching(track: TrackDescriptor): Boolean {
+        internal fun needsQueueMatching(
+            track: TrackDescriptor,
+            preferredProviderId: String? = null,
+        ): Boolean {
             val state = registry.state.value
             val first =
-                state.selection.audio
+                (listOfNotNull(preferredProviderId) + state.selection.audio)
                     .mapNotNull(state::plugin)
                     .firstOrNull { it.enabled } ?: return false
             return directAudioTrack(track, first) == null
@@ -95,26 +98,29 @@ class PluginAudio
             picture: PictureLimits?,
             quality: AudioQuality = AudioQuality.AUTO,
             playbackId: String = track.ref.providerId,
+            preferredProviderId: String? = null,
         ): ResolvedAudio {
             playbackIds[playbackId] = track.audioIdentity()
-            return resolveLocked(track, picture, quality, strict = false)
+            return resolveLocked(track, picture, quality, strict = false, preferredProviderId)
         }
 
         suspend fun prepare(
             track: TrackDescriptor,
             picture: PictureLimits?,
             quality: AudioQuality = AudioQuality.AUTO,
-        ): ResolvedAudio = resolveLocked(track, picture, quality, strict = true)
+            preferredProviderId: String? = null,
+        ): ResolvedAudio = resolveLocked(track, picture, quality, strict = true, preferredProviderId)
 
         private suspend fun resolveLocked(
             track: TrackDescriptor,
             picture: PictureLimits?,
             quality: AudioQuality,
             strict: Boolean,
+            preferredProviderId: String?,
         ): ResolvedAudio {
             val key = track.audioIdentity()
             return resolutionLocks.getOrPut(key) { Mutex() }.withLock {
-                resolveStream(track, picture, quality, strict)
+                resolveStream(track, picture, quality, strict, preferredProviderId)
             }
         }
 
@@ -123,11 +129,13 @@ class PluginAudio
             picture: PictureLimits?,
             quality: AudioQuality,
             strict: Boolean,
+            preferredProviderId: String?,
         ): ResolvedAudio {
             val context = streamContext()
             val version = context to cacheGeneration.get()
             val key = track.audioIdentity()
-            val attempts = audioProviderAttempts(registry.state.value, track, withPicture = picture != null)
+            val attempts =
+                audioProviderAttempts(registry.state.value, track, withPicture = picture != null, preferredProviderId = preferredProviderId)
             val order = attempts.map { "${it.plugin.id}:${it.plugin.manifest.versionCode}" }
             resolved[key]
                 ?.takeIf {
@@ -232,14 +240,22 @@ class PluginAudio
         }
 
         /** How the first audio plugin that would play [track] delivers its streams. */
-        fun deliveryFor(track: TrackDescriptor): AudioDelivery =
-            audioProviderAttempts(registry.state.value, track)
+        fun deliveryFor(
+            track: TrackDescriptor,
+            preferredProviderId: String? = null,
+        ): AudioDelivery =
+            audioProviderAttempts(registry.state.value, track, preferredProviderId = preferredProviderId)
                 .firstOrNull()
                 ?.plugin
                 ?.manifest
                 ?.roles
                 ?.audio
                 ?.delivery ?: AudioDelivery.PROGRESSIVE
+
+        fun knownAliases(track: TrackDescriptor): Set<String> {
+            val native = resolved[track.audioIdentity()]?.track ?: return emptySet()
+            return setOf(native.ref.providerId) + native.ids.filterKeys { it != "isrc" }.values
+        }
 
         /** What was resolved for track [id], if anything still is: its loudness, tracking token and plugin. */
         fun current(id: String): ResolvedAudio? = playbackIds[id]?.let(resolved::get)

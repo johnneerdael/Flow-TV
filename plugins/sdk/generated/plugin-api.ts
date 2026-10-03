@@ -11,10 +11,13 @@ export type PageBlock = PageBlockCollection | PageBlockHeader;
 export type CollectionLayout = 'HORIZONTAL_SHELF' | 'MULTI_COLUMN_LIST' | 'TRACK_TABLE';
 export type ItemView = 'COVER_CARD' | 'LANDSCAPE_CARD' | 'ARTIST_PORTRAIT' | 'TRACK_ROW';
 export type HeaderStyle = 'PORTRAIT' | 'COVER';
+export type PersonalCollectionKind = 'OWNED_PLAYLIST' | 'LIKED_SONGS';
+export type PrivatePlaylistImportMode = 'REPLACE' | 'ENSURE' | 'APPEND';
 export type AudioQuality = 'AUTO' | 'HIGH' | 'MEDIUM' | 'LOW';
 export type FormatType = 'AUDIO' | 'VIDEO';
 export type VideoKind = 'VOD' | 'LIVE' | 'UPCOMING';
 export type ProviderAccount = ProviderAccountAnonymous | ProviderAccountExpired | ProviderAccountSignedIn;
+export type HttpBodyEncoding = 'UTF8' | 'BASE64';
 export type HashAlgorithm = 'SHA1' | 'SHA256';
 export type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
 export type PluginErrorCode =
@@ -29,7 +32,7 @@ export type PluginErrorCode =
   | 'INTERNAL';
 
 /**
- * Plugin API v2, generated from the plugin-api module. Do not edit.
+ * Plugin API v3, generated from the plugin-api module. Do not edit.
  */
 export interface MilkbeatPluginApi {
   manifest: PluginManifest;
@@ -59,6 +62,14 @@ export interface MilkbeatPluginApi {
     'metadata.library': {
       request: LibraryRequest;
       response: MetadataPage;
+    };
+    'metadata.personalCollections': {
+      request: PersonalCollectionsRequest;
+      response: PersonalCollectionsPage;
+    };
+    'metadata.importPrivatePlaylist': {
+      request: PrivatePlaylistImportRequest;
+      response: PrivatePlaylistImportResult;
     };
     'metadata.radio': {
       request: RadioRequest;
@@ -232,6 +243,8 @@ export interface MetadataRole {
   surfaces: MetadataSurface[];
   entities: EntityKind[];
   idSpace: string;
+  personalCollections?: boolean;
+  privatePlaylistImport?: boolean;
 }
 export interface AudioRole {
   idSpaces: string[];
@@ -397,14 +410,55 @@ export interface TrackList {
   tracks: TrackDescriptor[];
   next?: string | null;
   source?: null | EntityRef;
+  filters?: null | FilterControl;
+  selectedFilterId?: string | null;
+  revision?: string | null;
 }
 export interface LibraryRequest {
   section?: string | null;
   cursor?: string | null;
 }
+export interface PersonalCollectionsRequest {
+  cursor?: string | null;
+  expectedAccountKey?: string | null;
+}
+export interface PersonalCollectionsPage {
+  collections: PersonalCollection[];
+  next?: string | null;
+}
+export interface PersonalCollection {
+  ref: EntityRef;
+  title: string;
+  kind: PersonalCollectionKind;
+  revision?: string | null;
+  trackCount?: number | null;
+  artwork?: null | Artwork;
+}
+export interface PrivatePlaylistImportRequest {
+  sourceKey: string;
+  title: string;
+  tracks: EntityRef[];
+  target?: null | EntityRef;
+  expectedAccountKey?: string | null;
+  cursor?: string | null;
+  mode?: PrivatePlaylistImportMode;
+  startIndex?: number | null;
+  artwork?: null | PlaylistArtwork;
+}
+export interface PlaylistArtwork {
+  dataBase64: string;
+  mimeType: string;
+  sizeBytes: number;
+}
+export interface PrivatePlaylistImportResult {
+  ref?: null | EntityRef;
+  next?: string | null;
+  retryAfterMs?: number | null;
+}
 export interface RadioRequest {
   seed: EntityRef;
   cursor?: string | null;
+  filterId?: string | null;
 }
 export interface ResolveAudioRequest {
   track: TrackDescriptor;
@@ -606,6 +660,8 @@ export interface HttpRequest {
   body?: string | null;
   timeoutMs?: number | null;
   followRedirects?: boolean;
+  bodyEncoding?: HttpBodyEncoding;
+  responseEncoding?: HttpBodyEncoding;
 }
 export interface HttpResponse {
   status: number;

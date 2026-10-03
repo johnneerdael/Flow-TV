@@ -9,9 +9,12 @@ import com.google.common.truth.Truth.assertThat
 import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.player.EnhancedMusicPlayerManager
 import io.github.aedev.flow.player.MusicPlayerState
+import io.github.aedev.flow.plugin.playback.RadioTuningState
 import io.github.aedev.flow.ui.screens.music.MusicPlayerViewModel
 import io.github.aedev.flow.ui.tv.theme.TvTheme
+import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.After
 import org.junit.Rule
 import org.junit.Test
@@ -38,6 +41,7 @@ class TvMusicCompletionTest {
         manager.playbackState.value = MusicPlayerState()
         manager.radioLoadingState.value = false
         val viewModel = mockk<MusicPlayerViewModel>(relaxed = true)
+        every { viewModel.radioTuning.state } returns MutableStateFlow(RadioTuningState())
         compose.setContent {
             val input = LocalInputModeManager.current
             SideEffect { input.requestInputMode(InputMode.Keyboard) }

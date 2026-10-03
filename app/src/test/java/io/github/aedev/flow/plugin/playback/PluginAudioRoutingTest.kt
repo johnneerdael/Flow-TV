@@ -82,6 +82,40 @@ class PluginAudioRoutingTest {
     }
 
     @Test
+    fun `mirrored native id resolves directly in YouTube ahead of another preferred global provider`() =
+        runTest {
+            val beatport =
+                plugin.copy(
+                    manifest = plugin.manifest.copy(id = "beatport", roles = Roles(audio = AudioRole(setOf("beatport"), match = true))),
+                )
+            every { registry.state } returns
+                MutableStateFlow(PluginRegistryState(listOf(beatport, plugin), ProviderSelection(audio = listOf("beatport", "youtube"))))
+            val mirrored = original.copy(ids = original.ids + ("youtube" to candidate.ref.providerId))
+            val resolved = audio.resolve(mirrored, null, preferredProviderId = "youtube")
+            assertThat(resolved.pluginId).isEqualTo("youtube")
+            assertThat(resolved.track.ref).isEqualTo(candidate.ref)
+            coVerify(exactly = 0) { host.call(any(), PluginOperations.matchAudio, any()) }
+            coVerify(exactly = 0) { host.call("beatport", PluginOperations.resolveAudio, any()) }
+            coVerify(exactly = 1) { host.call("youtube", PluginOperations.resolveAudio, match { it.track.ref == candidate.ref }) }
+        }
+
+    @Test
+    fun `native session delivery follows its preferred provider before global HLS choice`() {
+        val beatport =
+            plugin.copy(
+                manifest =
+                    plugin.manifest.copy(
+                        id = "beatport",
+                        roles = Roles(audio = AudioRole(setOf("beatport"), match = true, delivery = AudioDelivery.HLS)),
+                    ),
+            )
+        every { registry.state } returns
+            MutableStateFlow(PluginRegistryState(listOf(beatport, plugin), ProviderSelection(audio = listOf("beatport", "youtube"))))
+        assertThat(audio.deliveryFor(candidate, "youtube")).isEqualTo(AudioDelivery.PROGRESSIVE)
+        assertThat(audio.deliveryFor(candidate)).isEqualTo(AudioDelivery.HLS)
+    }
+
+    @Test
     fun `YouTube mix tracks do not need cross-provider queue preparation`() =
         runTest {
             assertThat(audio.prepareQueue(candidate, null)).isEqualTo(QueuePreparationResult.Ready)

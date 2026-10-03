@@ -4,6 +4,9 @@ import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.utils.ThumbnailUrlResolver
 import kotlinx.serialization.Serializable
 
+@Serializable
+enum class MusicQueueOrigin { USER, RADIO }
+
 enum class MusicItemType { SONG, ALBUM, PLAYLIST, ARTIST }
 
 /**
@@ -46,6 +49,10 @@ data class MusicTrack(
     val provider: String? = null,
     /** The plugin's `TrackDescriptor`, as PluginJson text, so the queue survives a restart intact. */
     val descriptor: String? = null,
+    val playbackContext: io.github.aedev.flow.player.MusicPlaybackContext? = null,
+    val queueOrigin: MusicQueueOrigin = MusicQueueOrigin.USER,
+    val sourcePosition: Int? = null,
+    val shuffleRequested: Boolean = false,
 ) {
     val highResThumbnailUrl: String
         get() = ThumbnailUrlResolver.resolveMusicThumbnail(videoId, thumbnailUrl, 1080)
@@ -71,8 +78,9 @@ data class MusicArtist(
  */
 fun MusicTrack.withTypedArtists(): MusicTrack {
     val raw: List<*>? = artists
-    if (raw == null) return copy(artists = emptyList())
-    return if (raw.all { it is MusicArtist }) this else copy(artists = raw.filterIsInstance<MusicArtist>())
+    val origin: MusicQueueOrigin? = queueOrigin
+    if (raw != null && raw.all { it is MusicArtist } && origin != null) return this
+    return copy(artists = raw.orEmpty().filterIsInstance<MusicArtist>(), queueOrigin = origin ?: MusicQueueOrigin.USER)
 }
 
 data class MusicPlaylist(

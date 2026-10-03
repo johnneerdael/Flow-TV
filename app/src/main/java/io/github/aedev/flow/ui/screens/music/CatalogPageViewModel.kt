@@ -18,6 +18,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
@@ -25,6 +26,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import nl.neerdael.milkbeat.catalog.CollectionBlock
+import nl.neerdael.milkbeat.catalog.CollectionLayout
 import nl.neerdael.milkbeat.catalog.EntityHeader
 import nl.neerdael.milkbeat.catalog.EntityKind
 import nl.neerdael.milkbeat.catalog.EntityRef
@@ -51,28 +54,18 @@ class CatalogPageViewModel
         defaultPlayback: CatalogPlayback,
         private val subscriptions: SubscriptionRepository,
         pluginCatalog: PluginMetadataProvider? = null,
+        private val mirrors: io.github.aedev.flow.plugin.mirror.PlaylistMirrorCoordinator? = null,
     ) : ViewModel() {
         val sourcePluginId: String? = savedStateHandle.get<String>(PROVIDER_ARG)
         private val scoped = sourcePluginId?.let { checkNotNull(pluginCatalog).scoped(it) }
         private val provider: MetadataProvider = scoped ?: defaultProvider
         private val playback: CatalogPlayback = scoped ?: defaultPlayback
 
-        fun radioSeed(id: String?): String? =
-            id?.let { value ->
-                sourcePluginId?.let {
-                    ProviderEntityReference.encode(
-                        it,
-                        if (value ==
-                            entity.providerId
-                        ) {
-                            entity
-                        } else {
-                            EntityRef(EntityKind.PLAYLIST, value)
-                        },
-                    )
-                }
-                    ?: value
-            }
+        fun radioSeed(id: String?): String? {
+            val value = id ?: return null
+            val ref = if (value == entity.providerId) entity else EntityRef(EntityKind.PLAYLIST, value)
+            return ProviderEntityReference.encode(provider.id, ref)
+        }
 
         private val entity =
             EntityRef(
@@ -99,6 +92,49 @@ class CatalogPageViewModel
             }
 
         private var job: Job? = null
+        private val _mirror =
+            MutableStateFlow(
+                io.github.aedev.flow.plugin.mirror
+                    .PlaylistMirrorState(),
+            )
+        val mirror: StateFlow<io.github.aedev.flow.plugin.mirror.PlaylistMirrorState> = _mirror
+        private var mirrorJob: Job? = null
+
+        fun retryMirror() {
+            val header =
+                _state.value.blocks
+                    .filterIsInstance<EntityHeader>()
+                    .firstOrNull() ?: return
+            prepareMirror(header.title, header.artwork)
+        }
+
+        private fun prepareMirror(
+            title: String,
+            artwork: nl.neerdael.milkbeat.catalog.Artwork?,
+        ) {
+            mirrorJob?.cancel()
+            _mirror.value =
+                io.github.aedev.flow.plugin.mirror
+                    .PlaylistMirrorState()
+            val coordinator = mirrors ?: return
+            val identity = _state.value.sourceKey
+            mirrorJob =
+                viewModelScope.launch {
+                    combine(coordinator.observeSelectedKey(provider.id, entity), sourceIdentity) { key, currentIdentity ->
+                        key.takeIf { currentIdentity == identity }
+                    }.distinctUntilChanged().collectLatest { key ->
+                        _mirror.value =
+                            io.github.aedev.flow.plugin.mirror
+                                .PlaylistMirrorState()
+                        if (key == null) return@collectLatest
+                        coordinator.open(provider.id, entity, title, artwork)
+                        coordinator.state(key).collect { progress ->
+                            currentCoroutineContext().ensureActive()
+                            if (_state.value.sourceKey == identity) _mirror.value = progress
+                        }
+                    }
+                }
+        }
 
         /** Whether this artist is followed in the app's library; nothing else can be followed. */
         val following: StateFlow<Boolean> =
@@ -110,7 +146,16 @@ class CatalogPageViewModel
                 MutableStateFlow(false)
             }
 
-        fun track(item: MetadataItem): MusicTrack? = playback.track(item)
+        fun track(item: MetadataItem): MusicTrack? {
+            val position =
+                _state.value.blocks
+                    .filterIsInstance<CollectionBlock>()
+                    .filter { it.layout == CollectionLayout.TRACK_TABLE }
+                    .flatMap { it.items }
+                    .indexOf(item)
+                    .takeIf { it >= 0 }
+            return playback.track(item)?.copy(sourcePosition = position)
+        }
 
         fun toggleFollow(header: EntityHeader) {
             if (header.entity.kind != EntityKind.ARTIST) return
@@ -149,6 +194,10 @@ class CatalogPageViewModel
                     currentCoroutineContext().ensureActive()
                     if (sourceKey(provider.account.first()) != identity) return@launch
                     _state.update { it.copy(blocks = emptyList<PageBlock>().withPage(first.blocks), isLoading = false) }
+                    first.blocks
+                        .filterIsInstance<EntityHeader>()
+                        .firstOrNull()
+                        ?.let { prepareMirror(it.title, it.artwork) }
                     var cursor = first.nextCursor
                     val seen = mutableSetOf<String>()
                     var pages = 0

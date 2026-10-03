@@ -12,6 +12,10 @@ import nl.neerdael.milkbeat.catalog.LiveChatBatch
 import nl.neerdael.milkbeat.catalog.LiveChatRequest
 import nl.neerdael.milkbeat.catalog.MetadataPage
 import nl.neerdael.milkbeat.catalog.PageRequest
+import nl.neerdael.milkbeat.catalog.PersonalCollectionsPage
+import nl.neerdael.milkbeat.catalog.PersonalCollectionsRequest
+import nl.neerdael.milkbeat.catalog.PrivatePlaylistImportRequest
+import nl.neerdael.milkbeat.catalog.PrivatePlaylistImportResult
 import nl.neerdael.milkbeat.catalog.ProviderAccount
 import nl.neerdael.milkbeat.catalog.RadioRequest
 import nl.neerdael.milkbeat.catalog.SearchRequest
@@ -45,6 +49,14 @@ object PluginOperations {
     val entity = PluginOperation("metadata.entity", PageRequest.serializer(), MetadataPage.serializer())
     val tracks = PluginOperation("metadata.tracks", TracksRequest.serializer(), TrackList.serializer())
     val library = PluginOperation("metadata.library", LibraryRequest.serializer(), MetadataPage.serializer())
+    val personalCollections =
+        PluginOperation("metadata.personalCollections", PersonalCollectionsRequest.serializer(), PersonalCollectionsPage.serializer())
+    val importPrivatePlaylist =
+        PluginOperation(
+            "metadata.importPrivatePlaylist",
+            PrivatePlaylistImportRequest.serializer(),
+            PrivatePlaylistImportResult.serializer(),
+        )
     val radio = PluginOperation("metadata.radio", RadioRequest.serializer(), TrackList.serializer())
 
     val resolveAudio = PluginOperation("audio.resolve", ResolveAudioRequest.serializer(), AudioStream.serializer())
@@ -79,6 +91,8 @@ object PluginOperations {
             entity,
             tracks,
             library,
+            personalCollections,
+            importPrivatePlaylist,
             radio,
             resolveAudio,
             matchAudio,

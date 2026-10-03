@@ -332,7 +332,7 @@ class DownloadUtil
             val picture = uri.scheme == MusicVideoItems.SCHEME
             val limits = if (picture) PictureLimits(maxVideoHeight, pictureCodecs(playerPreferences.videoCodecPriority.first())) else null
             val quality = AudioQuality.valueOf(playerPreferences.musicAudioQuality.first().name)
-            return pluginAudio.prepareQueue(descriptor, limits, quality)
+            return pluginAudio.prepareQueue(descriptor, limits, quality, MusicVideoItems.preferredProvider(uri))
         }
 
         private suspend fun resolveForPlayback(
@@ -342,7 +342,13 @@ class DownloadUtil
             val limits = if (picture) PictureLimits(maxVideoHeight, pictureCodecs(playerPreferences.videoCodecPriority.first())) else null
             val quality = playerPreferences.musicAudioQuality.first()
             val descriptor = MusicVideoItems.descriptor(uri)
-            return pluginAudio.resolve(descriptor, limits, AudioQuality.valueOf(quality.name), uri.authority ?: descriptor.ref.providerId)
+            return pluginAudio.resolve(
+                descriptor,
+                limits,
+                AudioQuality.valueOf(quality.name),
+                uri.authority ?: descriptor.ref.providerId,
+                MusicVideoItems.preferredProvider(uri),
+            )
         }
 
         /** Codecs this TV decodes in hardware, in the listener's order of preference. */

@@ -1,7 +1,7 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "title": "MilkbeatPluginApi",
-    "description": "Plugin API v2, generated from the plugin-api module. Do not edit.",
+    "description": "Plugin API v3, generated from the plugin-api module. Do not edit.",
     "type": "object",
     "properties": {
         "manifest": {
@@ -110,6 +110,38 @@
                         },
                         "response": {
                             "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.MetadataPage"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "metadata.personalCollections": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.PersonalCollectionsRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.PersonalCollectionsPage"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "response"
+                    ],
+                    "additionalProperties": false
+                },
+                "metadata.importPrivatePlaylist": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.PrivatePlaylistImportRequest"
+                        },
+                        "response": {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.PrivatePlaylistImportResult"
                         }
                     },
                     "required": [
@@ -397,6 +429,8 @@
                 "metadata.entity",
                 "metadata.tracks",
                 "metadata.library",
+                "metadata.personalCollections",
+                "metadata.importPrivatePlaylist",
                 "metadata.radio",
                 "audio.resolve",
                 "audio.match",
@@ -1482,6 +1516,224 @@
             },
             "title": "PageRequest"
         },
+        "nl.neerdael.milkbeat.catalog.PersonalCollection": {
+            "type": "object",
+            "required": [
+                "ref",
+                "title",
+                "kind"
+            ],
+            "properties": {
+                "ref": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "kind": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.PersonalCollectionKind"
+                },
+                "revision": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "trackCount": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                },
+                "artwork": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.Artwork"
+                        }
+                    ]
+                }
+            },
+            "title": "PersonalCollection"
+        },
+        "nl.neerdael.milkbeat.catalog.PersonalCollectionKind": {
+            "enum": [
+                "OWNED_PLAYLIST",
+                "LIKED_SONGS"
+            ],
+            "title": "PersonalCollectionKind"
+        },
+        "nl.neerdael.milkbeat.catalog.PersonalCollectionsPage": {
+            "type": "object",
+            "required": [
+                "collections"
+            ],
+            "properties": {
+                "collections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.PersonalCollection"
+                    }
+                },
+                "next": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "PersonalCollectionsPage"
+        },
+        "nl.neerdael.milkbeat.catalog.PersonalCollectionsRequest": {
+            "type": "object",
+            "required": [],
+            "properties": {
+                "cursor": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "expectedAccountKey": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "PersonalCollectionsRequest"
+        },
+        "nl.neerdael.milkbeat.catalog.PlaylistArtwork": {
+            "type": "object",
+            "required": [
+                "dataBase64",
+                "mimeType",
+                "sizeBytes"
+            ],
+            "properties": {
+                "dataBase64": {
+                    "type": "string"
+                },
+                "mimeType": {
+                    "type": "string"
+                },
+                "sizeBytes": {
+                    "type": "integer",
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                }
+            },
+            "title": "PlaylistArtwork"
+        },
+        "nl.neerdael.milkbeat.catalog.PrivatePlaylistImportMode": {
+            "enum": [
+                "REPLACE",
+                "ENSURE",
+                "APPEND"
+            ],
+            "title": "PrivatePlaylistImportMode"
+        },
+        "nl.neerdael.milkbeat.catalog.PrivatePlaylistImportRequest": {
+            "type": "object",
+            "required": [
+                "sourceKey",
+                "title",
+                "tracks"
+            ],
+            "properties": {
+                "sourceKey": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "tracks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
+                    }
+                },
+                "target": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
+                        }
+                    ]
+                },
+                "expectedAccountKey": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "cursor": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "mode": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.PrivatePlaylistImportMode"
+                },
+                "startIndex": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                },
+                "artwork": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.PlaylistArtwork"
+                        }
+                    ]
+                }
+            },
+            "title": "PrivatePlaylistImportRequest"
+        },
+        "nl.neerdael.milkbeat.catalog.PrivatePlaylistImportResult": {
+            "type": "object",
+            "required": [],
+            "properties": {
+                "ref": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
+                        }
+                    ]
+                },
+                "next": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "retryAfterMs": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
+                }
+            },
+            "title": "PrivatePlaylistImportResult"
+        },
         "nl.neerdael.milkbeat.catalog.ProviderAccount": {
             "anyOf": [
                 {
@@ -1506,6 +1758,12 @@
                     "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
                 },
                 "cursor": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "filterId": {
                     "type": [
                         "string",
                         "null"
@@ -1683,6 +1941,28 @@
                         {
                             "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
                         }
+                    ]
+                },
+                "filters": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.FilterControl"
+                        }
+                    ]
+                },
+                "selectedFilterId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "revision": {
+                    "type": [
+                        "string",
+                        "null"
                     ]
                 }
             },
@@ -2207,6 +2487,13 @@
             },
             "title": "HostEnvironment"
         },
+        "nl.neerdael.milkbeat.plugin.HttpBodyEncoding": {
+            "enum": [
+                "UTF8",
+                "BASE64"
+            ],
+            "title": "HttpBodyEncoding"
+        },
         "nl.neerdael.milkbeat.plugin.HttpRequest": {
             "type": "object",
             "required": [
@@ -2241,6 +2528,12 @@
                 },
                 "followRedirects": {
                     "type": "boolean"
+                },
+                "bodyEncoding": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.HttpBodyEncoding"
+                },
+                "responseEncoding": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.HttpBodyEncoding"
                 }
             },
             "title": "HttpRequest"
@@ -2466,6 +2759,12 @@
                 },
                 "idSpace": {
                     "type": "string"
+                },
+                "personalCollections": {
+                    "type": "boolean"
+                },
+                "privatePlaylistImport": {
+                    "type": "boolean"
                 }
             },
             "title": "MetadataRole"

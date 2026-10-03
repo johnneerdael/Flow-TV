@@ -11,6 +11,9 @@ import kotlinx.serialization.builtins.serializer
  * [HttpResponse.headers] `set-cookie`, or a [WebLoginResult]) itself.
  */
 @Serializable
+enum class HttpBodyEncoding { UTF8, BASE64 }
+
+@Serializable
 data class HttpRequest(
     val url: String,
     val method: String = "GET",
@@ -19,6 +22,8 @@ data class HttpRequest(
     val timeoutMs: Long? = null,
     /** Answer with the redirect itself instead of following it, e.g. to read a `Location` header. */
     val followRedirects: Boolean = true,
+    val bodyEncoding: HttpBodyEncoding = HttpBodyEncoding.UTF8,
+    val responseEncoding: HttpBodyEncoding = HttpBodyEncoding.UTF8,
 )
 
 @Serializable

@@ -13,8 +13,9 @@ internal fun audioProviderAttempts(
     state: PluginRegistryState,
     track: TrackDescriptor,
     withPicture: Boolean = false,
+    preferredProviderId: String? = null,
 ): List<AudioProviderAttempt> =
-    state.selection.audio.distinct().mapNotNull { id ->
+    (listOfNotNull(preferredProviderId) + state.selection.audio).distinct().mapNotNull { id ->
         val plugin = state.plugin(id) ?: return@mapNotNull null
         val role = plugin.manifest.roles.audio ?: return@mapNotNull null
         if (withPicture && !role.musicVideo) return@mapNotNull null

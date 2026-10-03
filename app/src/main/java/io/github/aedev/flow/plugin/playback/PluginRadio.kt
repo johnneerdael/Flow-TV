@@ -2,6 +2,7 @@ package io.github.aedev.flow.plugin.playback
 
 import android.util.Log
 import io.github.aedev.flow.plugin.PluginHost
+import io.github.aedev.flow.plugin.catalog.PluginAccounts
 import io.github.aedev.flow.plugin.catalog.ProviderEntityReference
 import io.github.aedev.flow.plugin.registry.PluginRegistry
 import io.github.aedev.flow.plugin.runtime.PluginCallException
@@ -10,6 +11,9 @@ import nl.neerdael.milkbeat.catalog.RadioRequest
 import nl.neerdael.milkbeat.catalog.TrackDescriptor
 import nl.neerdael.milkbeat.catalog.TrackList
 import nl.neerdael.milkbeat.plugin.MetadataSurface
+import nl.neerdael.milkbeat.plugin.PluginError
+import nl.neerdael.milkbeat.plugin.PluginErrorCode
+import nl.neerdael.milkbeat.plugin.PluginOperation
 import nl.neerdael.milkbeat.plugin.PluginOperations
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -39,15 +43,43 @@ class PluginRadio
         private val host: PluginHost,
         private val registry: PluginRegistry,
         private val audio: PluginAudio,
+        private val accounts: PluginAccounts? = null,
     ) {
+        private suspend fun request(
+            plugin: String,
+            operation: PluginOperation<RadioRequest, TrackList>,
+            request: RadioRequest,
+        ): TrackList {
+            val account = accounts?.accounts?.value?.get(plugin)
+            val installed = registry.state.value.plugin(plugin)
+            val tracks = host.call(plugin, operation, request)
+            if (account != accounts?.accounts?.value?.get(plugin) || installed != registry.state.value.plugin(plugin)) {
+                throw PluginCallException(plugin, PluginError(PluginErrorCode.UNAVAILABLE, "Radio provider changed during the request"))
+            }
+            return tracks
+        }
+
         /** The next page of [previous], from the same plugin and the same seed. */
         suspend fun next(
             previous: RadioPage,
             cursor: String,
         ): RadioPage {
             val operation = if (previous.fromAudio) PluginOperations.audioRadio else PluginOperations.radio
-            val tracks = host.call(previous.pluginId, operation, RadioRequest(previous.seed, cursor))
-            return RadioPage(previous.pluginId, tracks, previous.seed, previous.fromAudio)
+            val tracks = request(previous.pluginId, operation, RadioRequest(previous.seed, cursor))
+            return RadioPage(previous.pluginId, RadioContinuationPolicy.merge(previous.tracks, tracks), previous.seed, previous.fromAudio)
+        }
+
+        suspend fun tune(
+            previous: RadioPage,
+            filterId: String,
+        ): RadioPage {
+            val operation = if (previous.fromAudio) PluginOperations.audioRadio else PluginOperations.radio
+            return RadioPage(
+                previous.pluginId,
+                request(previous.pluginId, operation, RadioRequest(previous.seed, filterId = filterId)),
+                previous.seed,
+                previous.fromAudio,
+            )
         }
 
         /** The first page of the radio seeded from [seed]; [seedTrack] describes it when it is a track. */
@@ -92,7 +124,7 @@ class PluginRadio
                             .orEmpty()
                 }?.let { plugin ->
                     try {
-                        val tracks = host.call(plugin.id, PluginOperations.radio, RadioRequest(ownSeed))
+                        val tracks = request(plugin.id, PluginOperations.radio, RadioRequest(ownSeed))
                         if (tracks.tracks.isNotEmpty()) return RadioPage(plugin.id, tracks, ownSeed, fromAudio = false)
                     } catch (e: PluginCallException) {
                         if (state.selection.audio.isEmpty()) throw e
@@ -111,7 +143,7 @@ class PluginRadio
                             seedTrack != null -> audio.playableIn(seedTrack, plugin.id)?.ref
                             else -> null
                         } ?: continue
-                    val tracks = host.call(plugin.id, PluginOperations.audioRadio, RadioRequest(own))
+                    val tracks = request(plugin.id, PluginOperations.audioRadio, RadioRequest(own))
                     if (tracks.tracks.isNotEmpty()) return RadioPage(plugin.id, tracks, own, fromAudio = true)
                 } catch (e: PluginCallException) {
                     Log.w("PluginRadio", "Audio radio unavailable from ${plugin.id}: ${e.error.code}")

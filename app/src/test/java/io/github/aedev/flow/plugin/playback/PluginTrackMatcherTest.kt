@@ -51,6 +51,16 @@ class PluginTrackMatcherTest {
         }
 
     @Test
+    fun `fresh matcher reads a saved match without searching the provider again`() =
+        runTest {
+            assertThat(matcher.matchForIndexing(original, "youtube")).isEqualTo(candidate)
+            val restoredDao = MemoryTrackMatches().apply { row = dao.row!!.copy() }
+            val restarted = PluginTrackMatcher(host, restoredDao)
+            assertThat(restarted.matchForIndexing(original, "youtube")).isEqualTo(candidate)
+            coVerify(exactly = 1) { host.call("youtube", PluginOperations.matchAudio, any()) }
+        }
+
+    @Test
     fun `expired and malformed cached results trigger a fresh lookup`() =
         runTest {
             for ((value, age) in listOf("bad-json" to 0L, null to TimeUnit.DAYS.toMillis(2))) {

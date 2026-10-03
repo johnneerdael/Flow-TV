@@ -67,6 +67,7 @@ internal class TvCatalogTableLayout(
     val playingTrackId: String? = null,
     val playingTrackFocus: FocusRequester? = null,
     val paneFocus: FocusRequester? = null,
+    val playingTrackPosition: Int? = null,
 )
 
 /**
@@ -85,6 +86,7 @@ internal fun LazyListScope.catalogBlocks(
 ) {
     val firstTable = blocks.firstOrNull { it.isTrackTable }
     val firstShelf = blocks.firstOrNull { it is CollectionBlock && !it.isTrackTable }
+    var trackOffset = 0
     blocks.forEachIndexed { index, block ->
         val blockModifier = if (index == 0) firstBlockModifier else Modifier
         when (block) {
@@ -109,7 +111,9 @@ internal fun LazyListScope.catalogBlocks(
                         playingTrackId = tables?.playingTrackId,
                         playingTrackFocus = tables?.playingTrackFocus,
                         paneFocus = tables?.paneFocus,
+                        playingTrackPosition = tables?.playingTrackPosition?.minus(trackOffset),
                     )
+                    trackOffset += block.items.size
                 } else {
                     val shelfModifier =
                         if (block === firstShelf &&
@@ -130,6 +134,21 @@ internal fun LazyListScope.catalogBlocks(
 internal fun List<PageBlock>.catalogIndexOf(block: PageBlock): Int {
     val before = take(indexOf(block)).sumOf { it.catalogItemCount }
     return if (block is CollectionBlock && block.isTrackTable && block.header != null) before + 1 else before
+}
+
+internal fun List<PageBlock>.catalogPlayingRow(
+    sourcePosition: Int?,
+    trackId: String?,
+): Int? {
+    if (sourcePosition == null && trackId == null) return null
+    var trackOffset = 0
+    for (block in this) {
+        if (block !is CollectionBlock || !block.isTrackTable) continue
+        val row = sourcePosition?.minus(trackOffset) ?: block.items.indexOfFirst { it.track?.ref?.providerId == trackId }
+        if (row in block.items.indices) return catalogIndexOf(block) + row
+        trackOffset += block.items.size
+    }
+    return null
 }
 
 private val PageBlock.catalogItemCount: Int
@@ -169,6 +188,7 @@ internal fun TvCatalogEntityHeader(
     initialFocus: Boolean = true,
     onMoveToTracks: (() -> Unit)? = null,
     playFocus: FocusRequester? = null,
+    status: @Composable () -> Unit = {},
 ) {
     val table = remember(blocks) { blocks.firstOrNull { it.isTrackTable } as CollectionBlock? }
     val tracks = remember(table) { table?.items.orEmpty().mapNotNull(actions.trackFor) }
@@ -190,7 +210,7 @@ internal fun TvCatalogEntityHeader(
                 text = stringResource(R.string.shuffle),
                 onClick = {
                     val shuffled = tracks.shuffled()
-                    actions.onPlayList(shuffled.first(), shuffled, header.title, queueId)
+                    actions.onPlayList(shuffled.first().copy(shuffleRequested = true), shuffled, header.title, queueId)
                 },
                 icon = Icons.Outlined.Shuffle,
                 modifier = if (header.station == null && onMoveToTracks != null) Modifier.moveRightToTracks(onMoveToTracks) else Modifier,
@@ -216,7 +236,7 @@ internal fun TvCatalogEntityHeader(
     }
     when (header.style) {
         HeaderStyle.PORTRAIT -> TvCatalogPortraitHeader(header, modifier, actionsModifier, buttons)
-        HeaderStyle.COVER -> TvCatalogCoverPane(header, actions.onOpen, modifier, actionsModifier, buttons)
+        HeaderStyle.COVER -> TvCatalogCoverPane(header, actions.onOpen, modifier, actionsModifier, status = status, actions = buttons)
     }
 }
 
