@@ -13,7 +13,7 @@ class MusicQueuePreparerTest {
     private fun target(id: String) = QueuePreparationTarget(id, "music://$id")
 
     @Test
-    fun `prepares at most 100 entries sequentially`() =
+    fun `prepares the entire queue sequentially`() =
         runTest {
             val targets = (1..120).map { target("$it") }
             val calls = mutableListOf<String>()
@@ -32,7 +32,7 @@ class MusicQueuePreparerTest {
             assertThat(calls).hasSize(1)
             gate.complete(Unit)
             runCurrent()
-            assertThat(calls).containsExactlyElementsIn(targets.take(100).map { it.uri }).inOrder()
+            assertThat(calls).containsExactlyElementsIn(targets.map { it.uri }).inOrder()
         }
 
     @Test
@@ -112,7 +112,7 @@ class MusicQueuePreparerTest {
         }
 
     @Test
-    fun `removing misses does not expand a pass beyond 100 requests`() =
+    fun `removes confirmed misses throughout the entire queue`() =
         runTest {
             var targets = (1..120).map { target("$it") }
             var calls = 0
@@ -123,8 +123,8 @@ class MusicQueuePreparerTest {
                 }, { targets = targets - it })
             preparer.schedule()
             runCurrent()
-            assertThat(calls).isEqualTo(100)
-            assertThat(targets).hasSize(20)
+            assertThat(calls).isEqualTo(120)
+            assertThat(targets).isEmpty()
         }
 
     @Test
@@ -145,7 +145,7 @@ class MusicQueuePreparerTest {
         }
 
     @Test
-    fun `queue replacement during the last request starts a new bounded pass`() =
+    fun `queue replacement during the last request starts a new pass`() =
         runTest {
             var targets = (1..100).map { target("$it") }
             val gate = CompletableDeferred<Unit>()

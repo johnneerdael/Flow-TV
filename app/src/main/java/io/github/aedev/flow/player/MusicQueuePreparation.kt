@@ -46,7 +46,7 @@ internal fun EnhancedMusicPlayerManager.preparationTargets(): List<QueuePreparat
     val window = Timeline.Window()
     return buildList {
         var index = timeline.getNextWindowIndex(current, Player.REPEAT_MODE_ALL, controller.shuffleModeEnabled)
-        while (index != current && index != -1 && size < MusicQueuePreparer.MAX_TRACKS) {
+        while (index != current && index != -1) {
             val track = tracks.getOrNull(index) ?: break
             val item = controller.getMediaItemAt(index)
             val uri = item.mediaMetadata.extras?.getString(QUEUE_PREPARATION_URI)
