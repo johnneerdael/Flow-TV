@@ -26,12 +26,68 @@ import nl.neerdael.milkbeat.catalog.TracksRequest
 import nl.neerdael.milkbeat.plugin.ApiRange
 import nl.neerdael.milkbeat.plugin.AudioRole
 import nl.neerdael.milkbeat.plugin.MetadataRole
+import nl.neerdael.milkbeat.plugin.PluginJson
 import nl.neerdael.milkbeat.plugin.PluginManifest
 import nl.neerdael.milkbeat.plugin.PluginOperations
 import nl.neerdael.milkbeat.plugin.Roles
 import org.junit.Test
 
 class PlaylistMirrorRunnerTest {
+    @Test
+    fun `fresh runner reuses persisted destination and matches after checking source`() =
+        runTest {
+            val initial = Fixture(3)
+            val prepared = initial.runner.prepare(initial.key, "Playlist")
+            val restarted = Fixture(3)
+            restarted.stored =
+                PluginJson.decodeFromString(MirrorRecord.serializer(), PluginJson.encodeToString(MirrorRecord.serializer(), prepared))
+            val events = mutableListOf<String>()
+            coEvery { restarted.host.call("source", PluginOperations.tracks, any()) } answers {
+                events += "source"
+                TrackList(restarted.tracks, revision = restarted.revision)
+            }
+            coEvery { restarted.host.call("target", PluginOperations.importPrivatePlaylist, any()) } answers {
+                val request = thirdArg<PrivatePlaylistImportRequest>()
+                assertThat(request.target).isEqualTo(prepared.destination)
+                events += request.mode.name
+                PrivatePlaylistImportResult(prepared.destination)
+            }
+            val result = restarted.runner.prepare(restarted.key, "Playlist")
+            assertThat(events).containsExactly("source", "REPLACE").inOrder()
+            assertThat(result.destination).isEqualTo(prepared.destination)
+            assertThat(result.matches).isEqualTo(prepared.matches)
+            assertThat(result.ready).isTrue()
+            assertThat(restarted.calls).isEmpty()
+        }
+
+    @Test
+    fun `refresh after restart changes order additions and removals on the saved destination`() =
+        runTest {
+            val initial = Fixture(3)
+            val prepared = initial.runner.prepare(initial.key, "Playlist")
+            val restarted = Fixture(4)
+            restarted.stored =
+                PluginJson.decodeFromString(MirrorRecord.serializer(), PluginJson.encodeToString(MirrorRecord.serializer(), prepared))
+            restarted.tracks = listOf(restarted.tracks[2], restarted.tracks[0], restarted.tracks[3], restarted.tracks[0])
+            restarted.revision = "r2"
+            val imports = mutableListOf<PrivatePlaylistImportRequest>()
+            coEvery { restarted.host.call("target", PluginOperations.importPrivatePlaylist, any()) } answers {
+                val request = thirdArg<PrivatePlaylistImportRequest>()
+                imports += request
+                assertThat(request.target).isEqualTo(prepared.destination)
+                PrivatePlaylistImportResult(prepared.destination)
+            }
+            val result = restarted.runner.prepare(restarted.key, "Renamed")
+            assertThat(result.destination).isEqualTo(prepared.destination)
+            assertThat(result.title).isEqualTo("Renamed")
+            assertThat(result.ready).isTrue()
+            assertThat(
+                imports.last().tracks.map {
+                    it.providerId
+                },
+            ).containsExactly("nativetrack2", "nativetrack0", "nativetrack3", "nativetrack0").inOrder()
+        }
+
     @Test
     fun `new playlist availability waits suspend instead of polling immediately`() =
         runTest {
