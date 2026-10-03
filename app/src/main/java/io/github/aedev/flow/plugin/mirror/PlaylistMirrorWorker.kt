@@ -118,6 +118,7 @@ class PlaylistMirrorWorker(
         } catch (e: MirrorPreparationException) {
             if (e.reason == MirrorFailure.SOURCE_CHANGED) Result.retry() else Result.failure()
         } catch (e: PluginCallException) {
+            if (e.error.code == PluginErrorCode.SIGN_IN_EXPIRED) accounts.expired(e.pluginId)
             if (e.error.code in
                 setOf(PluginErrorCode.NETWORK, PluginErrorCode.RATE_LIMITED, PluginErrorCode.TIMEOUT, PluginErrorCode.UNAVAILABLE)
             ) {

@@ -171,6 +171,21 @@ fun TvPluginsSettingsPane(
     }
 }
 
+@Composable
+private fun TvPlaylistMirrorOption(
+    target: InstalledPlugin,
+    enabled: Boolean,
+    available: Boolean,
+    onEnabled: (Boolean) -> Unit,
+) {
+    TvToggleRow(
+        label = stringResource(R.string.playlist_mirror_option, target.manifest.name),
+        checked = enabled,
+        onCheckedChange = { if (available || !it) onEnabled(it) },
+        supportingText = stringResource(if (available) R.string.playlist_mirror_description else R.string.playlist_mirror_sign_in),
+    )
+}
+
 private fun LazyListScope.overviewItems(
     state: TvPluginsState,
     url: String,
