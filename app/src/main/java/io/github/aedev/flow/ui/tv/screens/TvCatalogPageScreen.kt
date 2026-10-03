@@ -112,9 +112,7 @@ fun TvCatalogPageScreen(
             val cover = (blocks.firstOrNull() as? EntityHeader)?.takeIf { it.style == HeaderStyle.COVER }
             ProvideTvColumnPivot {
                 if (cover != null) {
-                    val collectionId = playingCollection?.let { ProviderEntityReference.decode(it)?.entity?.providerId ?: it }
-                    val currentCollection =
-                        collectionId == cover.entity.providerId || (collectionId == null && playingSource == cover.title)
+                    val currentCollection = cover.isPlaying(blocks, playingCollection, playingSource)
                     key(cover.entity) {
                         CoverPage(
                             cover,
@@ -141,6 +139,22 @@ fun TvCatalogPageScreen(
             }
         }
     }
+}
+
+/**
+ * Whether the queue was started from this page. Play and the track rows seed the queue with the page's
+ * track collection, which for an album can be a playlist distinct from the album itself.
+ */
+internal fun EntityHeader.isPlaying(
+    blocks: List<PageBlock>,
+    playingCollection: String?,
+    playingSource: String,
+): Boolean {
+    val collectionId =
+        playingCollection?.let { ProviderEntityReference.decode(it)?.entity?.providerId ?: it }
+            ?: return playingSource == title
+    val queueId = (tracks ?: (blocks.firstOrNull { it.isTrackTable } as CollectionBlock?)?.showAll)?.providerId
+    return collectionId == entity.providerId || collectionId == queueId
 }
 
 /**

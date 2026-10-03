@@ -18,6 +18,7 @@ import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.pressKey
 import com.google.common.truth.Truth.assertThat
+import io.github.aedev.flow.plugin.catalog.ProviderEntityReference
 import io.github.aedev.flow.plugin.catalog.toMusicTrack
 import io.github.aedev.flow.ui.tv.catalog.TvCatalogActions
 import io.github.aedev.flow.ui.tv.theme.TvTheme
@@ -101,5 +102,20 @@ class TvCatalogPlayingPositionTest {
         compose.onNodeWithText("Play").assertIsFocused()
         compose.onNodeWithText("Play").performKeyInput { pressKey(Key.DirectionRight) }
         compose.onNodeWithText("Shuffle").assertIsFocused()
+    }
+
+    @Test
+    fun `an album is playing when the queue came from its separate track collection`() {
+        val album = EntityRef(EntityKind.ALBUM, "MPREb_album")
+        val tracks = EntityRef(EntityKind.PLAYLIST, "OLAK5uy_tracks")
+        val cover = EntityHeader("cover", HeaderStyle.COVER, album, "Album", tracks = tracks)
+        val blocks = listOf(cover)
+        assertThat(cover.isPlaying(blocks, ProviderEntityReference.encode("youtube-music", tracks), "Album")).isTrue()
+        assertThat(cover.isPlaying(blocks, ProviderEntityReference.encode("youtube-music", album), "Album")).isTrue()
+        assertThat(
+            cover.isPlaying(blocks, ProviderEntityReference.encode("youtube-music", EntityRef(EntityKind.PLAYLIST, "other")), "Album"),
+        ).isFalse()
+        assertThat(cover.isPlaying(blocks, null, "Album")).isTrue()
+        assertThat(cover.isPlaying(blocks, null, "Other")).isFalse()
     }
 }
