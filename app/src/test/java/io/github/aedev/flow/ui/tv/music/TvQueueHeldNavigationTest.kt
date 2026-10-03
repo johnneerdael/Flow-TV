@@ -40,6 +40,25 @@ class TvQueueHeldNavigationTest {
 
     @After fun cleanup() {
         manager.queueState.value = emptyList()
+        manager.currentQueueIndexState.value = 0
+    }
+
+    @Test
+    fun `opening near the end focuses the playing row and preserves that focus`() {
+        manager.queueState.value = (0..49).map { MusicTrack("$it", "Song $it", "Artist", "", 120) }
+        manager.automixState.value = emptyList()
+        manager.currentQueueIndexState.value = 48
+        compose.setContent {
+            val input = LocalInputModeManager.current
+            SideEffect { input.requestInputMode(InputMode.Keyboard) }
+            TvTheme {
+                Box(Modifier.width(650.dp).height(600.dp)) {
+                    TvMusicQueuePanel(true, manager, {}, {})
+                }
+            }
+        }
+        compose.mainClock.advanceTimeBy(3000)
+        compose.onNodeWithText("Song 48").assertIsFocused()
     }
 
     @Test

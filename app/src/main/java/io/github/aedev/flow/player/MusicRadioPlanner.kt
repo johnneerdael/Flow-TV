@@ -21,9 +21,10 @@ internal object MusicRadioPlanner {
         queueIds: List<String>,
         previousIds: List<String>?,
         explicitSeedId: String?,
+        collectionRequested: Boolean = false,
     ): QueueContext {
-        if (explicitSeedId == currentId) {
-            return QueueContext(reseed = true, explicit = true, knownIds = queueIds)
+        if (explicitSeedId == currentId || collectionRequested) {
+            return QueueContext(reseed = true, explicit = explicitSeedId == currentId, knownIds = queueIds)
         }
 
         val previous =

@@ -20,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -71,6 +72,13 @@ fun TvMusicNowPlayingScreen(
     val context = LocalContext.current
     val track by manager.currentTrack.collectAsStateWithLifecycle()
     val playerState by manager.playerState.collectAsStateWithLifecycle()
+    val radioLoading by manager.radioLoading.collectAsStateWithLifecycle()
+    LaunchedEffect(playerState.isEnded, radioLoading) {
+        if (playerState.isEnded && !radioLoading) {
+            withFrameNanos { }
+            if (manager.playerState.value.isEnded && !manager.radioLoading.value) onCollapse()
+        }
+    }
     val shuffleEnabled by manager.shuffleEnabled.collectAsStateWithLifecycle()
     val repeatMode by manager.repeatMode.collectAsStateWithLifecycle()
     val isLiked by manager.isLiked.collectAsStateWithLifecycle()
@@ -84,7 +92,7 @@ fun TvMusicNowPlayingScreen(
     val backgroundStyle by playerPreferences.musicPlayerBackgroundStyle.collectAsState(
         initial = MusicPlayerBackgroundStyle.BLUR_GRADIENT,
     )
-    val artworkUrl = track?.highResThumbnailUrl ?: track?.thumbnailUrl
+    val artworkUrl = track?.highResThumbnailUrl
     val palette = rememberMediaPalette(artworkUrl)
     // Translucent chips over the always-dark backdrop; latched toggles
     // (like, shuffle, repeat, panels) light up with the artwork accent.
@@ -107,7 +115,7 @@ fun TvMusicNowPlayingScreen(
         rememberCornerHandOver(
             current = CornerTrack(track?.artist.orEmpty(), track?.title.orEmpty(), artworkUrl),
             trackKey = track?.videoId,
-            upcoming = upcoming?.let { CornerTrack(it.artist, it.title, it.highResThumbnailUrl ?: it.thumbnailUrl) },
+            upcoming = upcoming?.let { CornerTrack(it.artist, it.title, it.highResThumbnailUrl) },
             isPlaying = playerState.isPlaying,
             positionMs = playerState.position,
             durationMs = playerState.duration,

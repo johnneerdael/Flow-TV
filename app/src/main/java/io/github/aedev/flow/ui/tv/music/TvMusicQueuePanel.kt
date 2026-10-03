@@ -5,11 +5,17 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -19,7 +25,6 @@ import io.github.aedev.flow.player.EnhancedMusicPlayerManager
 import io.github.aedev.flow.ui.tv.components.TvMusicTrackRow
 import io.github.aedev.flow.ui.tv.components.TvSidePanel
 import io.github.aedev.flow.ui.tv.focus.tvAcceleratedDpad
-import io.github.aedev.flow.ui.tv.focus.tvInitialFocus
 
 private const val QUEUE_PANEL_ALPHA = 0.5f
 
@@ -38,10 +43,22 @@ fun BoxScope.TvMusicQueuePanel(
     val automix by manager.automixItems.collectAsStateWithLifecycle()
     val currentIndex by manager.currentQueueIndex.collectAsStateWithLifecycle()
 
+    val openingIndex = remember(visible) { currentIndex.coerceIn(0, (queue.size - 1).coerceAtLeast(0)) }
+    val listState = rememberLazyListState()
+    val openingFocus = remember { FocusRequester() }
+    LaunchedEffect(visible, queue.isNotEmpty()) {
+        if (visible && queue.isNotEmpty()) {
+            listState.scrollToItem(openingIndex)
+            withFrameNanos { }
+            openingFocus.requestFocus()
+        }
+    }
+
     TvSidePanel(
         visible = visible,
         title = stringResource(R.string.tv_player_queue),
         onClose = onClose,
+        initialContentFocus = queue.isEmpty(),
         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = QUEUE_PANEL_ALPHA),
     ) {
         if (queue.isEmpty() && automix.isEmpty()) {
@@ -53,13 +70,15 @@ fun BoxScope.TvMusicQueuePanel(
             return@TvSidePanel
         }
         LazyColumn(
-            modifier = Modifier.fillMaxSize().tvInitialFocus().tvAcceleratedDpad(),
+            state = listState,
+            modifier = Modifier.fillMaxSize().tvAcceleratedDpad(),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             itemsIndexed(queue, key = { index, item -> "queue:$index:${item.videoId}" }) { index, item ->
                 TvMusicTrackRow(
                     track = item,
                     selected = index == currentIndex,
+                    modifier = if (index == openingIndex) Modifier.focusRequester(openingFocus) else Modifier,
                     onClick = { manager.playFromQueue(index) },
                     containerAlpha = QUEUE_ROW_ALPHA,
                 )

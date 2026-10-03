@@ -175,6 +175,8 @@ object EnhancedMusicPlayerManager {
     internal val repeatModeState = MutableStateFlow(RepeatMode.OFF)
     val repeatMode: StateFlow<RepeatMode> = repeatModeState.asStateFlow()
 
+    internal val queueCollectionState = MutableStateFlow<String?>(null)
+    val queueCollection: StateFlow<String?> = queueCollectionState.asStateFlow()
     internal val playingFromState = MutableStateFlow("Flow Music")
     val playingFrom: StateFlow<String> = playingFromState.asStateFlow()
 
@@ -274,8 +276,6 @@ object EnhancedMusicPlayerManager {
 
                 override fun onPlaybackStateChanged(playbackState: Int) {
                     updatePlayerState()
-                    if (playbackState == Player.STATE_ENDED) {
-                    }
                 }
 
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -368,6 +368,7 @@ object EnhancedMusicPlayerManager {
             playbackState.value =
                 playbackState.value.copy(
                     isPlaying = p.isPlaying,
+                    isEnded = p.playbackState == Player.STATE_ENDED,
                     isBuffering = p.playbackState == Player.STATE_BUFFERING,
                     duration = if (p.duration > 0) p.duration else playbackState.value.duration,
                     position = p.currentPosition,

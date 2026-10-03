@@ -1,5 +1,6 @@
 package io.github.aedev.flow.ui.tv.catalog
 
+import android.view.KeyEvent
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.lazy.LazyListScope
@@ -14,6 +15,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -60,6 +64,9 @@ internal class TvCatalogTableLayout(
     val startInset: Dp,
     val firstTrack: FocusRequester,
     val firstShelf: FocusRequester,
+    val playingTrackId: String? = null,
+    val playingTrackFocus: FocusRequester? = null,
+    val paneFocus: FocusRequester? = null,
 )
 
 /**
@@ -74,8 +81,8 @@ internal fun LazyListScope.catalogBlocks(
     firstBlockModifier: Modifier = Modifier,
     tables: TvCatalogTableLayout? = null,
     gridBlockId: String? = null,
+    pageHeader: EntityHeader? = blocks.firstNotNullOfOrNull { it as? EntityHeader },
 ) {
-    val pageHeader = blocks.firstNotNullOfOrNull { it as? EntityHeader }
     val firstTable = blocks.firstOrNull { it.isTrackTable }
     val firstShelf = blocks.firstOrNull { it is CollectionBlock && !it.isTrackTable }
     blocks.forEachIndexed { index, block ->
@@ -99,6 +106,9 @@ internal fun LazyListScope.catalogBlocks(
                         endPadding = horizontalPadding,
                         firstRowFocus = tables?.firstTrack.takeIf { block === firstTable },
                         onShowAllFilter = actions.onShowAllFilter,
+                        playingTrackId = tables?.playingTrackId,
+                        playingTrackFocus = tables?.playingTrackFocus,
+                        paneFocus = tables?.paneFocus,
                     )
                 } else {
                     val shelfModifier =
@@ -156,6 +166,9 @@ internal fun TvCatalogEntityHeader(
     actions: TvCatalogActions,
     modifier: Modifier = Modifier,
     actionsModifier: Modifier = Modifier,
+    initialFocus: Boolean = true,
+    onMoveToTracks: (() -> Unit)? = null,
+    playFocus: FocusRequester? = null,
 ) {
     val table = remember(blocks) { blocks.firstOrNull { it.isTrackTable } as CollectionBlock? }
     val tracks = remember(table) { table?.items.orEmpty().mapNotNull(actions.trackFor) }
@@ -169,7 +182,9 @@ internal fun TvCatalogEntityHeader(
                 text = stringResource(R.string.play),
                 onClick = { actions.onPlayList(first, tracks, header.title, queueId) },
                 icon = Icons.Outlined.PlayArrow,
-                modifier = Modifier.tvInitialFocus(header.id),
+                modifier =
+                    (if (playFocus != null) Modifier.focusRequester(playFocus) else Modifier)
+                        .then(if (initialFocus) Modifier.tvInitialFocus(header.id) else Modifier),
             )
             TvButton(
                 text = stringResource(R.string.shuffle),
@@ -178,12 +193,14 @@ internal fun TvCatalogEntityHeader(
                     actions.onPlayList(shuffled.first(), shuffled, header.title, queueId)
                 },
                 icon = Icons.Outlined.Shuffle,
+                modifier = if (header.station == null && onMoveToTracks != null) Modifier.moveRightToTracks(onMoveToTracks) else Modifier,
             )
             header.station?.let { station ->
                 TvButton(
                     text = stringResource(R.string.tv_catalog_mix),
                     onClick = { actions.onPlayList(first, listOf(first), header.title, station.providerId) },
                     icon = Icons.Outlined.Radio,
+                    modifier = if (onMoveToTracks != null) Modifier.moveRightToTracks(onMoveToTracks) else Modifier,
                 )
             }
         }
@@ -226,3 +243,13 @@ private fun TvCatalogShelfBlock(
         onShowAllFilter = actions.onShowAllFilter,
     )
 }
+
+private fun Modifier.moveRightToTracks(move: () -> Unit): Modifier =
+    onPreviewKeyEvent { event ->
+        if (event.type == KeyEventType.KeyDown && event.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+            move()
+            true
+        } else {
+            false
+        }
+    }

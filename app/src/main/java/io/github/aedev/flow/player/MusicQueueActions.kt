@@ -25,6 +25,7 @@ internal fun EnhancedMusicPlayerManager.performSetPendingTrack(
     playbackState.value =
         playbackState.value.copy(
             isPlaying = false,
+            isEnded = false,
             isBuffering = false,
             isPreparing = true,
             position = 0,
@@ -57,7 +58,7 @@ internal fun EnhancedMusicPlayerManager.performPlayTrack(
     player?.clearMediaItems()
     clearPendingPlayNext()
 
-    playbackState.value = playbackState.value.copy(isPreparing = false)
+    playbackState.value = playbackState.value.copy(isPreparing = false, isEnded = false)
 
     val activeQueue = if (queue.isNotEmpty()) queue else listOf(track)
     queueState.value = activeQueue
@@ -276,6 +277,7 @@ internal fun EnhancedMusicPlayerManager.performClearCurrentTrack() {
         currentQueueIndexState.value = 0
         clearPendingPlayNext()
         currentPositionState.value = 0L
+        queueCollectionState.value = null
         playingFromState.value = "Flow Music"
         playbackState.value = MusicPlayerState()
         appContext?.let { context ->
