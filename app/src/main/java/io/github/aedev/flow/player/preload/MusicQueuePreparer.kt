@@ -23,11 +23,10 @@ internal class MusicQueuePreparer(
         scope.launch {
             for (request in requests) {
                 val visited = HashSet<QueuePreparationTarget>()
-                var candidates = ArrayDeque(targets())
-                while (true) {
-                    if (requests.tryReceive().isSuccess) candidates = ArrayDeque(targets())
-                    while (candidates.isNotEmpty() && candidates.first() in visited) candidates.removeFirst()
-                    val target = candidates.removeFirstOrNull() ?: break
+                var candidates = targets().take(MAX_TRACKS)
+                while (visited.size < MAX_TRACKS) {
+                    if (requests.tryReceive().isSuccess) candidates = targets().take(MAX_TRACKS)
+                    val target = candidates.firstOrNull { it !in visited } ?: break
                     visited += target
                     val result =
                         try {
@@ -37,11 +36,11 @@ internal class MusicQueuePreparer(
                         } catch (_: Exception) {
                             QueuePreparationResult.Retryable
                         }
-                    if (result is QueuePreparationResult.Unmatched && target in targets() &&
+                    if (result is QueuePreparationResult.Unmatched && target in targets().take(MAX_TRACKS) &&
                         result.isCurrent()
                     ) {
                         remove(target)
-                        candidates = ArrayDeque(targets())
+                        candidates = targets().take(MAX_TRACKS)
                     }
                 }
             }
@@ -50,5 +49,9 @@ internal class MusicQueuePreparer(
 
     fun schedule() {
         requests.trySend(Unit)
+    }
+
+    companion object {
+        const val MAX_TRACKS = 100
     }
 }
