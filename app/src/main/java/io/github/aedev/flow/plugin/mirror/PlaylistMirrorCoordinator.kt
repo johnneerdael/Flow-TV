@@ -8,9 +8,12 @@ import io.github.aedev.flow.plugin.runtime.PluginCallException
 import io.github.aedev.flow.utils.PerformanceDispatcher
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -40,10 +43,16 @@ class PlaylistMirrorCoordinator
 
         private class Preparation(
             val job: Deferred<MirrorRecord>,
+            val context: Any,
+            val generation: Long,
+            var foregroundRequested: Boolean = false,
+            var playbackRequested: Boolean = false,
             var consumers: Int = 0,
         )
 
         private val tasks = mutableMapOf<String, Preparation>()
+        private val playbackHandoff = MirrorPlaybackHandoff()
+        private var generation = 0L
         private val states = ConcurrentHashMap<String, MutableStateFlow<PlaylistMirrorState>>()
 
         fun state(key: MirrorKey): StateFlow<PlaylistMirrorState> = states.getOrPut(key.id) { MutableStateFlow(PlaylistMirrorState()) }
@@ -132,44 +141,85 @@ class PlaylistMirrorCoordinator
                 }
             }
 
+        private fun verificationContext(key: MirrorKey): Any =
+            listOf(
+                registry.state.value.plugin(key.sourcePlugin),
+                registry.state.value.plugin(key.targetPlugin),
+                accounts.accounts.value[key.sourcePlugin],
+                accounts.accounts.value[key.targetPlugin],
+            )
+
         private suspend fun awaitPreparation(
             key: MirrorKey,
             title: String,
             background: Boolean,
             artwork: Artwork?,
+            forPlayback: Boolean = false,
         ): MirrorRecord {
             val preparation =
                 synchronized(tasks) {
+                    if (forPlayback && tasks[key.id]?.job?.isActive != true) {
+                        playbackHandoff.take(key, title, verificationContext(key))?.let {
+                            tasks[key.id]?.playbackRequested = true
+                            return it
+                        }
+                    }
                     val active =
-                        tasks[key.id]?.takeIf { it.job.isActive } ?: Preparation(
-                            scope.async {
-                                val flow = states.getOrPut(key.id) { MutableStateFlow(PlaylistMirrorState()) }
-                                var latest = PlaylistMirrorState(isPreparing = true)
-                                var lastPublishedMs = 0L
-                                flow.value = latest
-                                try {
-                                    runner.prepare(key, title, { progress ->
-                                        latest = progress.copy(isPreparing = !progress.ready)
-                                        val now =
-                                            java.util.concurrent.TimeUnit.NANOSECONDS
-                                                .toMillis(System.nanoTime())
-                                        if (latest.ready || now - lastPublishedMs >= 1_000L) {
-                                            flow.value = latest
-                                            lastPublishedMs = now
+                        tasks[key.id]?.takeIf { it.job.isActive } ?: run {
+                            val context = verificationContext(key)
+                            val startedGeneration = generation
+                            if (background) playbackHandoff.invalidate(key) else playbackHandoff.clear()
+                            Preparation(
+                                scope.async(start = CoroutineStart.LAZY) {
+                                    val flow = states.getOrPut(key.id) { MutableStateFlow(PlaylistMirrorState()) }
+                                    var latest = PlaylistMirrorState(isPreparing = true)
+                                    var lastPublishedMs = 0L
+                                    flow.value = latest
+                                    try {
+                                        runner
+                                            .prepare(key, title, { progress ->
+                                                latest = progress.copy(isPreparing = !progress.ready)
+                                                val now =
+                                                    java.util.concurrent.TimeUnit.NANOSECONDS
+                                                        .toMillis(System.nanoTime())
+                                                if (latest.ready || now - lastPublishedMs >= 1_000L) {
+                                                    flow.value = latest
+                                                    lastPublishedMs = now
+                                                }
+                                            }, background, artwork)
+                                            .also { record ->
+                                                val job = currentCoroutineContext()[Job]
+                                                synchronized(tasks) {
+                                                    val owner = tasks[key.id]
+                                                    if (owner != null && owner.job === job && owner.foregroundRequested &&
+                                                        !owner.playbackRequested &&
+                                                        generation == owner.generation && owner.context == verificationContext(key)
+                                                    ) {
+                                                        playbackHandoff.offer(record, owner.context)
+                                                    }
+                                                }
+                                            }
+                                    } catch (e: Exception) {
+                                        if (e is PluginCallException && e.error.code == PluginErrorCode.SIGN_IN_EXPIRED) {
+                                            accounts.expired(e.pluginId)
                                         }
-                                    }, background, artwork)
-                                } catch (e: Exception) {
-                                    if (e is PluginCallException && e.error.code == PluginErrorCode.SIGN_IN_EXPIRED) {
-                                        accounts.expired(e.pluginId)
+                                        if (e !is CancellationException) Log.w("PlaylistMirror", "Preparation failed", e)
+                                        flow.value =
+                                            latest.copy(isPreparing = false, error = e.message.takeUnless { e is CancellationException })
+                                        throw e
                                     }
-                                    if (e !is CancellationException) Log.w("PlaylistMirror", "Preparation failed", e)
-                                    flow.value =
-                                        latest.copy(isPreparing = false, error = e.message.takeUnless { e is CancellationException })
-                                    throw e
-                                }
-                            },
-                        ).also { tasks[key.id] = it }
+                                },
+                                context,
+                                startedGeneration,
+                            )
+                        }.also { tasks[key.id] = it }
+                    if (!background) active.foregroundRequested = true
+                    if (forPlayback) {
+                        active.playbackRequested = true
+                        playbackHandoff.invalidate(key)
+                    }
                     active.consumers++
+                    active.job.start()
                     active
                 }
             return try {
@@ -197,6 +247,18 @@ class PlaylistMirrorCoordinator
                 gate.foreground(key.id) { awaitPreparation(key, title, false, artwork) }
             }
 
+        suspend fun prepareForPlayback(
+            key: MirrorKey,
+            title: String,
+        ): MirrorRecord =
+            gate.foreground(key.id) {
+                if (selectedKey(key.sourcePlugin, key.source) != key) {
+                    synchronized(tasks) { playbackHandoff.clear() }
+                    throw MirrorPreparationException(MirrorFailure.UNSUPPORTED)
+                }
+                awaitPreparation(key, title, false, null, forPlayback = true)
+            }
+
         fun open(
             source: String,
             entity: EntityRef,
@@ -208,6 +270,8 @@ class PlaylistMirrorCoordinator
 
         fun cancelObsolete() =
             synchronized(tasks) {
+                generation++
+                playbackHandoff.clear()
                 tasks.values.filter { it.job.isActive }.forEach { it.job.cancel() }
             }
     }

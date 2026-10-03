@@ -334,7 +334,12 @@ class MusicPlayerViewModel
                             if (asRadio) {
                                 songRadioPlayback(track)
                             } else {
-                                mirrorPreparation.prepare(track, queue, radioPlaylistId, finalSourceName)
+                                mirrorPreparation.prepare(
+                                    track,
+                                    queue,
+                                    radioPlaylistId,
+                                    displaySourceName?.takeIf { it.isNotBlank() } ?: finalSourceName,
+                                )
                             }
                         } catch (e: kotlinx.coroutines.CancellationException) {
                             val ownsLoading = loadTrackJob == kotlinx.coroutines.currentCoroutineContext()[Job]

@@ -3,18 +3,68 @@ package io.github.aedev.flow.ui.screens.music
 import com.google.common.truth.Truth.assertThat
 import io.github.aedev.flow.player.MusicPlaybackContext
 import io.github.aedev.flow.player.MusicVideoItems
+import io.github.aedev.flow.plugin.catalog.ProviderEntityReference
 import io.github.aedev.flow.plugin.catalog.toMusicTrack
 import io.github.aedev.flow.plugin.mirror.MirrorKey
 import io.github.aedev.flow.plugin.mirror.MirrorMatch
 import io.github.aedev.flow.plugin.mirror.MirrorRecord
+import io.github.aedev.flow.plugin.mirror.PlaylistMirrorCoordinator
+import io.github.aedev.flow.plugin.registry.InstalledPlugin
+import io.github.aedev.flow.plugin.registry.PluginRegistry
+import io.github.aedev.flow.plugin.registry.PluginRegistryState
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.test.runTest
 import nl.neerdael.milkbeat.catalog.Artwork
 import nl.neerdael.milkbeat.catalog.EntityKind
 import nl.neerdael.milkbeat.catalog.EntityRef
 import nl.neerdael.milkbeat.catalog.TrackDescriptor
+import nl.neerdael.milkbeat.plugin.MetadataRole
 import nl.neerdael.milkbeat.plugin.PluginJson
 import org.junit.Test
 
 class MirrorPlaybackPreparationTest {
+    @Test
+    fun `playback uses the verified handoff and keeps its native collection context`() =
+        runTest {
+            val key = MirrorKey("spotify", "a", "youtube", "b", EntityRef(EntityKind.PLAYLIST, "source"))
+            val descriptor = TrackDescriptor(EntityRef(EntityKind.TRACK, "spotify-song"), "Song")
+            val native = descriptor.copy(ref = EntityRef(EntityKind.TRACK, "youtube-song"))
+            val record =
+                MirrorRecord(
+                    key,
+                    "my_playlist",
+                    "r1",
+                    listOf(descriptor),
+                    listOf(MirrorMatch(0, descriptor, native)),
+                    destination = EntityRef(EntityKind.PLAYLIST, "private-copy"),
+                    ready = true,
+                )
+            val mirrors = mockk<PlaylistMirrorCoordinator>()
+            coEvery { mirrors.selectedKey("spotify", key.source) } returns key
+            coEvery { mirrors.prepareForPlayback(key, "my_playlist") } returns record
+            val plugin = mockk<InstalledPlugin>(relaxed = true)
+            every { plugin.id } returns "youtube"
+            every { plugin.enabled } returns true
+            every { plugin.manifest.roles.metadata } returns MetadataRole(emptySet(), emptySet(), "ytm")
+            val registry = mockk<PluginRegistry>()
+            every { registry.state } returns MutableStateFlow(PluginRegistryState(listOf(plugin)))
+            val sourceId = ProviderEntityReference.encode("spotify", key.source)
+            val track = descriptor.toMusicTrack("spotify").copy(sourcePosition = 0)
+            assertThat(musicSourceLabel(mockk(), "my_playlist", track)).isEqualTo("My Playlist")
+            val result = MirrorPlaybackPreparation(mirrors, registry).prepare(track, listOf(track), sourceId, "my_playlist")
+            assertThat(
+                result.track.playbackContext?.radioCollectionId,
+            ).isEqualTo(ProviderEntityReference.encode("youtube", record.destination!!))
+            assertThat(result.track.playbackContext?.audioProviderId).isEqualTo("youtube")
+            assertThat(MusicVideoItems.descriptor(result.track).ids["ytm"]).isEqualTo("youtube-song")
+            coVerify(exactly = 1) { mirrors.prepareForPlayback(key, "my_playlist") }
+            coVerify(exactly = 0) { mirrors.prepare(any(), any(), any(), any()) }
+        }
+
     @Test
     fun `explicit song radio clears mirrored collection context`() {
         val track =
