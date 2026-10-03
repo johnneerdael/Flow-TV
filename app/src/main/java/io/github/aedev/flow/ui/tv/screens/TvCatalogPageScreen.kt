@@ -46,6 +46,7 @@ import io.github.aedev.flow.ui.tv.catalog.TvCatalogFollow
 import io.github.aedev.flow.ui.tv.catalog.TvCatalogTableLayout
 import io.github.aedev.flow.ui.tv.catalog.catalogBlocks
 import io.github.aedev.flow.ui.tv.catalog.catalogIndexOf
+import io.github.aedev.flow.ui.tv.catalog.catalogPlayingRow
 import io.github.aedev.flow.ui.tv.catalog.isTrackTable
 import io.github.aedev.flow.ui.tv.components.TvButton
 import io.github.aedev.flow.ui.tv.components.TvLoadingState
@@ -204,20 +205,11 @@ internal fun CoverPage(
     val body = remember(blocks) { blocks.drop(1) }
     val openingTrackId = remember(cover.entity) { playingTrackId }
     val openingTrackPosition = remember(cover.entity) { playingTrackPosition }
-    val playingRow =
-        body.firstNotNullOfOrNull { block ->
-            (block as? CollectionBlock)?.takeIf { it.isTrackTable }?.let { table ->
-                (
-                    openingTrackPosition?.takeIf { it in table.items.indices }
-                        ?: table.items.indexOfFirst { it.track?.ref?.providerId == openingTrackId }
-                ).takeIf { it >= 0 }
-                    ?.let { body.catalogIndexOf(table) + it }
-            }
-        }
+    val playingRow = body.catalogPlayingRow(openingTrackPosition, openingTrackId)
     val playingFocus = remember { FocusRequester() }
     val paneFocus = remember { FocusRequester() }
     val tables =
-        remember(openingTrackId) {
+        remember(openingTrackId, openingTrackPosition) {
             TvCatalogTableLayout(
                 dimens.coverPaneWidth + dimens.rowSpacing,
                 FocusRequester(),
@@ -225,6 +217,7 @@ internal fun CoverPage(
                 openingTrackId,
                 playingFocus,
                 paneFocus,
+                openingTrackPosition,
             )
         }
     var positioned by remember(cover.entity) { androidx.compose.runtime.mutableStateOf(false) }

@@ -14,6 +14,7 @@ import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.pressKey
@@ -117,5 +118,67 @@ class TvCatalogPlayingPositionTest {
         ).isFalse()
         assertThat(cover.isPlaying(blocks, null, "Album")).isTrue()
         assertThat(cover.isPlaying(blocks, null, "Other")).isFalse()
+    }
+
+    @Test
+    fun `playing position focuses the later repeated track across tables`() {
+        val cover = EntityHeader("cover", HeaderStyle.COVER, EntityRef(EntityKind.PLAYLIST, "playlist"), "Playlist")
+        val shared = EntityRef(EntityKind.TRACK, "shared")
+        val tables =
+            (0..1).map { table ->
+                val items =
+                    (0..49).map { index ->
+                        val ref = if (index == 46) shared else EntityRef(EntityKind.TRACK, "track$table-$index")
+                        val title = "Song $table-$index"
+                        MetadataItem("row$index", ref, title, track = TrackDescriptor(ref, title))
+                    }
+                CollectionBlock("tracks$table", null, CollectionLayout.TRACK_TABLE, ItemView.TRACK_ROW, items)
+            }
+        var picked: String? = null
+        val actions = TvCatalogActions({ it.track?.toMusicTrack("spotify") }, {}, { track, _, _, _ -> picked = track.title }, {})
+        compose.setContent {
+            val input = LocalInputModeManager.current
+            SideEffect { input.requestInputMode(InputMode.Keyboard) }
+            TvTheme {
+                CoverPage(
+                    cover,
+                    listOf(cover) + tables,
+                    actions,
+                    Modifier.fillMaxSize(),
+                    playingTrackId = "shared",
+                    playingTrackPosition = 96,
+                )
+            }
+        }
+        compose.mainClock.advanceTimeBy(1000)
+        compose
+            .onNodeWithText("Song 1-46")
+            .assertIsDisplayed()
+            .assertIsFocused()
+            .performClick()
+        assertThat(picked).isEqualTo("Song 1-46")
+    }
+
+    @Test
+    fun `repeated provider item ids have separate focusable lazy rows`() {
+        val cover = EntityHeader("cover", HeaderStyle.COVER, EntityRef(EntityKind.PLAYLIST, "playlist"), "Playlist")
+        val shared = EntityRef(EntityKind.TRACK, "shared")
+        val rows =
+            (0..7).map { index ->
+                val ref = if (index == 1 || index == 4) shared else EntityRef(EntityKind.TRACK, "track$index")
+                val title = "Song $index"
+                MetadataItem(ref.providerId, ref, title, track = TrackDescriptor(ref, title))
+            }
+        val table = CollectionBlock("tracks", null, CollectionLayout.TRACK_TABLE, ItemView.TRACK_ROW, rows)
+        val actions = TvCatalogActions({ it.track?.toMusicTrack("spotify") }, {}, { _, _, _, _ -> }, {})
+        compose.setContent {
+            val input = LocalInputModeManager.current
+            SideEffect { input.requestInputMode(InputMode.Keyboard) }
+            TvTheme {
+                CoverPage(cover, listOf(cover, table), actions, Modifier.fillMaxSize(), playingTrackId = "shared", playingTrackPosition = 4)
+            }
+        }
+        compose.mainClock.advanceTimeBy(1000)
+        compose.onNodeWithText("Song 4").assertIsDisplayed().assertIsFocused()
     }
 }

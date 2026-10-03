@@ -38,6 +38,10 @@ internal class MirrorPlaybackHandoff(
         if (prepared?.record?.key == key) prepared = null
     }
 
+    fun retainIf(isValid: (MirrorKey, Any) -> Boolean) {
+        prepared = prepared?.takeIf { isValid(it.record.key, it.context) }
+    }
+
     fun clear(record: MirrorRecord? = null) {
         if (record == null || prepared?.record === record) prepared = null
     }

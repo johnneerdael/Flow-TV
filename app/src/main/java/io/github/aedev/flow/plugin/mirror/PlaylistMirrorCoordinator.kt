@@ -43,8 +43,8 @@ class PlaylistMirrorCoordinator
 
         private class Preparation(
             val job: Deferred<MirrorRecord>,
+            val key: MirrorKey,
             val context: Any,
-            val generation: Long,
             var foregroundRequested: Boolean = false,
             var playbackRequested: Boolean = false,
             var consumers: Int = 0,
@@ -52,7 +52,6 @@ class PlaylistMirrorCoordinator
 
         private val tasks = mutableMapOf<String, Preparation>()
         private val playbackHandoff = MirrorPlaybackHandoff()
-        private var generation = 0L
         private val states = ConcurrentHashMap<String, MutableStateFlow<PlaylistMirrorState>>()
 
         fun state(key: MirrorKey): StateFlow<PlaylistMirrorState> = states.getOrPut(key.id) { MutableStateFlow(PlaylistMirrorState()) }
@@ -93,7 +92,7 @@ class PlaylistMirrorCoordinator
             entity: EntityRef,
         ): MirrorKey? = key(source, target, entity, registry.state.value, accounts.accounts.value)
 
-        private fun key(
+        internal fun key(
             source: String,
             target: String,
             entity: EntityRef,
@@ -167,7 +166,6 @@ class PlaylistMirrorCoordinator
                     val active =
                         tasks[key.id]?.takeIf { it.job.isActive } ?: run {
                             val context = verificationContext(key)
-                            val startedGeneration = generation
                             if (background) playbackHandoff.invalidate(key) else playbackHandoff.clear()
                             Preparation(
                                 scope.async(start = CoroutineStart.LAZY) {
@@ -193,7 +191,7 @@ class PlaylistMirrorCoordinator
                                                     val owner = tasks[key.id]
                                                     if (owner != null && owner.job === job && owner.foregroundRequested &&
                                                         !owner.playbackRequested &&
-                                                        generation == owner.generation && owner.context == verificationContext(key)
+                                                        owner.context == verificationContext(key)
                                                     ) {
                                                         playbackHandoff.offer(record, owner.context)
                                                     }
@@ -209,8 +207,8 @@ class PlaylistMirrorCoordinator
                                         throw e
                                     }
                                 },
+                                key,
                                 context,
-                                startedGeneration,
                             )
                         }.also { tasks[key.id] = it }
                     if (!background) active.foregroundRequested = true
@@ -268,10 +266,21 @@ class PlaylistMirrorCoordinator
             scope.async { selectedKey(source, entity)?.let { prepare(it, title, artwork = artwork) } }
         }
 
-        fun cancelObsolete() =
+        fun cancelObsolete(survivingPairs: Collection<MirrorKey> = emptyList()) =
             synchronized(tasks) {
-                generation++
-                playbackHandoff.clear()
-                tasks.values.filter { it.job.isActive }.forEach { it.job.cancel() }
+                fun survives(
+                    key: MirrorKey,
+                    context: Any,
+                ): Boolean =
+                    survivingPairs.any { pair ->
+                        pair.sourcePlugin == key.sourcePlugin && pair.sourceAccount == key.sourceAccount &&
+                            pair.targetPlugin == key.targetPlugin && pair.targetAccount == key.targetAccount
+                    } && context == verificationContext(key)
+
+                playbackHandoff.retainIf(::survives)
+                tasks.filterValues { !survives(it.key, it.context) }.forEach { (id, preparation) ->
+                    tasks.remove(id)
+                    preparation.job.cancel()
+                }
             }
     }

@@ -33,25 +33,34 @@ class PlaylistMirrorJobs
     ) {
         fun start(scope: CoroutineScope) {
             scope.launch {
-                var previous = emptySet<String>()
-                combine(store.enabledPairs, accounts.accounts, registry.state) { pairs, _, _ ->
-                    pairs.mapNotNull { pair ->
-                        val parts = pair.split('|')
-                        if (parts.size != 2) return@mapNotNull null
-                        coordinator.key(
-                            parts[0],
-                            parts[1],
-                            nl.neerdael.milkbeat.catalog
-                                .EntityRef(nl.neerdael.milkbeat.catalog.EntityKind.PLAYLIST, "owned"),
-                        )
-                    }
-                }.distinctUntilChanged().collect { keys ->
-                    coordinator.cancelObsolete()
+                var previous = emptyMap<MirrorKey, List<Any?>>()
+                combine(store.enabledPairs, accounts.accounts, registry.state) { pairs, accountStates, registryState ->
+                    pairs
+                        .mapNotNull { pair ->
+                            val parts = pair.split('|')
+                            if (parts.size != 2) return@mapNotNull null
+                            coordinator.key(
+                                parts[0],
+                                parts[1],
+                                nl.neerdael.milkbeat.catalog
+                                    .EntityRef(nl.neerdael.milkbeat.catalog.EntityKind.PLAYLIST, "owned"),
+                                registryState,
+                                accountStates,
+                            )
+                        }.associateWith { key ->
+                            listOf(
+                                registryState.plugin(key.sourcePlugin),
+                                registryState.plugin(key.targetPlugin),
+                                accountStates[key.sourcePlugin],
+                                accountStates[key.targetPlugin],
+                            )
+                        }
+                }.distinctUntilChanged().collect { current ->
+                    coordinator.cancelObsolete(current.keys)
                     val work = WorkManager.getInstance(context)
-                    val current = keys.mapTo(mutableSetOf()) { it.id }
-                    (previous - current).forEach { work.cancelAllWorkByTag("mirror:$it") }
-                    (current - previous).forEach { id ->
-                        val key = keys.first { it.id == id }
+                    (previous.keys - current.keys).forEach { work.cancelAllWorkByTag("mirror:${it.id}") }
+                    current.filter { (key, context) -> previous[key] != context }.forEach { (key, _) ->
+                        val id = key.id
                         val input =
                             workDataOf(
                                 "source" to key.sourcePlugin,
@@ -68,7 +77,7 @@ class PlaylistMirrorJobs
                                 .build()
                         work.enqueueUniqueWork(
                             "mirror-now:$id",
-                            ExistingWorkPolicy.KEEP,
+                            if (key in previous) ExistingWorkPolicy.REPLACE else ExistingWorkPolicy.KEEP,
                             OneTimeWorkRequestBuilder<PlaylistMirrorWorker>()
                                 .setInputData(input)
                                 .setConstraints(constraints)

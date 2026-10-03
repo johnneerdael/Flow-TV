@@ -152,7 +152,7 @@ class CatalogPageViewModel
                     .filterIsInstance<CollectionBlock>()
                     .filter { it.layout == CollectionLayout.TRACK_TABLE }
                     .flatMap { it.items }
-                    .indexOfFirst { it.id == item.id }
+                    .indexOf(item)
                     .takeIf { it >= 0 }
             return playback.track(item)?.copy(sourcePosition = position)
         }

@@ -41,6 +41,7 @@ internal fun LazyListScope.catalogTrackTable(
     playingTrackId: String? = null,
     playingTrackFocus: FocusRequester? = null,
     paneFocus: FocusRequester? = null,
+    playingTrackPosition: Int? = null,
 ) {
     // A column most rows leave empty is noise; YouTube names the album only on some playlist tracks.
     val showAlbum = collection.items.count { it.album != null } * 2 >= collection.items.size
@@ -57,7 +58,13 @@ internal fun LazyListScope.catalogTrackTable(
         }
     }
     // Row keys carry the table's id: two tables of one page may list the same track.
-    itemsIndexed(collection.items, key = { _, item -> "${collection.id}/${item.id}" }) { index, item ->
+    itemsIndexed(collection.items, key = { index, _ -> "${collection.id}/row/$index" }) { index, item ->
+        val isPlaying =
+            if (playingTrackPosition != null) {
+                index == playingTrackPosition
+            } else {
+                playingTrackId != null && item.track?.ref?.providerId == playingTrackId
+            }
         val rowModifier =
             (if (index == 0 && firstRowFocus != null) padding.focusRequester(firstRowFocus) else padding)
                 .focusProperties { left = paneFocus ?: FocusRequester.Default }
@@ -66,7 +73,7 @@ internal fun LazyListScope.catalogTrackTable(
             showAlbum = showAlbum,
             onClick = { onItemClick(item) },
             modifier =
-                if (playingTrackFocus != null && item.track?.ref?.providerId == playingTrackId) {
+                if (playingTrackFocus != null && isPlaying) {
                     rowModifier.focusRequester(playingTrackFocus)
                 } else {
                     rowModifier

@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelStore
 import com.google.common.truth.Truth.assertThat
 import io.github.aedev.flow.data.catalog.CatalogPlayback
 import io.github.aedev.flow.data.local.SubscriptionRepository
+import io.github.aedev.flow.plugin.catalog.toMusicTrack
 import io.github.aedev.flow.plugin.mirror.MirrorKey
 import io.github.aedev.flow.plugin.mirror.PlaylistMirrorCoordinator
 import io.github.aedev.flow.plugin.mirror.PlaylistMirrorState
@@ -39,6 +40,7 @@ import nl.neerdael.milkbeat.catalog.MetadataItem
 import nl.neerdael.milkbeat.catalog.MetadataPage
 import nl.neerdael.milkbeat.catalog.MetadataProvider
 import nl.neerdael.milkbeat.catalog.ProviderAccount
+import nl.neerdael.milkbeat.catalog.TrackDescriptor
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -65,6 +67,7 @@ class CatalogPageViewModelTest {
     private fun viewModel(
         accountState: MutableStateFlow<ProviderAccount> = MutableStateFlow(ProviderAccount.Anonymous),
         mirrors: PlaylistMirrorCoordinator? = null,
+        playback: CatalogPlayback = CatalogPlayback { null },
         pages: suspend (String?) -> Result<MetadataPage>,
     ) = CatalogPageViewModel(
         SavedStateHandle(
@@ -84,7 +87,7 @@ class CatalogPageViewModelTest {
                 return pages(cursor)
             }
         },
-        CatalogPlayback { null },
+        playback,
         mockk<SubscriptionRepository> { every { isSubscribed(any()) } returns flowOf(false) },
         mirrors = mirrors,
     ).also { vm ->
@@ -258,7 +261,11 @@ class CatalogPageViewModelTest {
             selected.value = null
             runCurrent()
             assertThat(vm.mirror.value).isEqualTo(PlaylistMirrorState())
-            assertThat(vm.state.value.blocks).containsExactly(header, tracks("a")).inOrder()
+            assertThat(
+                vm.state.value.blocks
+                    .first(),
+            ).isEqualTo(header)
+            assertThat((vm.state.value.blocks[1] as CollectionBlock).items.map { it.entity.providerId }).containsExactly("a")
             assertThat(requests).containsExactly(null)
             progress.value = PlaylistMirrorState(error = "late failure")
             runCurrent()
@@ -331,5 +338,43 @@ class CatalogPageViewModelTest {
             assertThat(vm.state.value.blocks).containsExactly(header)
             assertThat(requests).containsExactly(null)
             verify(exactly = 2) { mirrors.open(any(), any(), any(), any()) }
+        }
+
+    @Test
+    fun `repeated tracks retain their row positions when the same item id is reused`() =
+        runTest(dispatcher) {
+            val table = tracks("a", "b", "a")
+            val vm =
+                viewModel(playback = CatalogPlayback { TrackDescriptor(it.entity, it.title).toMusicTrack("fake") }) {
+                    Result.success(MetadataPage("p", listOf(header, table)))
+                }
+            vm.load()
+            runCurrent()
+            val rows = (vm.state.value.blocks[1] as CollectionBlock).items
+
+            assertThat(rows.map { vm.track(it)?.sourcePosition }).containsExactly(0, 1, 2).inOrder()
+            assertThat(rows.map { vm.track(it)?.videoId }).containsExactly("a", "b", "a").inOrder()
+        }
+
+    @Test
+    fun `repeated track occurrences on continuation pages remain selectable at their own positions`() =
+        runTest(dispatcher) {
+            val vm =
+                viewModel(playback = CatalogPlayback { TrackDescriptor(it.entity, it.title).toMusicTrack("fake") }) { cursor ->
+                    Result.success(
+                        if (cursor == null) {
+                            MetadataPage("p", listOf(header, tracks("a", "b")), nextCursor = "next")
+                        } else {
+                            MetadataPage("next", listOf(tracks("a", "c", "a")))
+                        },
+                    )
+                }
+            vm.load()
+            runCurrent()
+            val rows = (vm.state.value.blocks[1] as CollectionBlock).items
+
+            assertThat(rows.map { it.entity.providerId }).containsExactly("a", "b", "a", "c", "a").inOrder()
+            assertThat(rows.map { vm.track(it)?.sourcePosition }).containsExactly(0, 1, 2, 3, 4).inOrder()
+            assertThat(requests).containsExactly(null, "next").inOrder()
         }
 }

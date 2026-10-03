@@ -66,7 +66,7 @@ class PluginRadio
         ): RadioPage {
             val operation = if (previous.fromAudio) PluginOperations.audioRadio else PluginOperations.radio
             val tracks = request(previous.pluginId, operation, RadioRequest(previous.seed, cursor))
-            return RadioPage(previous.pluginId, tracks, previous.seed, previous.fromAudio)
+            return RadioPage(previous.pluginId, RadioContinuationPolicy.merge(previous.tracks, tracks), previous.seed, previous.fromAudio)
         }
 
         suspend fun tune(
