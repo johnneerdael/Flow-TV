@@ -3,6 +3,7 @@ package io.github.aedev.flow.ui.tv.music
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,6 +25,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.aedev.flow.R
 import io.github.aedev.flow.data.music.model.MusicTrack
 import io.github.aedev.flow.player.EnhancedMusicPlayerManager
+import io.github.aedev.flow.plugin.playback.RadioTuningState
+import io.github.aedev.flow.ui.tv.components.TvFilterChip
 import io.github.aedev.flow.ui.tv.components.TvMusicTrackRow
 import io.github.aedev.flow.ui.tv.components.TvSidePanel
 import io.github.aedev.flow.ui.tv.focus.tvAcceleratedDpad
@@ -109,6 +112,19 @@ fun BoxScope.TvMusicQueuePanel(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun TvRadioFilterControls(
+    state: RadioTuningState,
+    onSelect: (String) -> Unit,
+) {
+    if (state.choices.isEmpty()) return
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        state.choices.forEach { option ->
+            TvFilterChip(option.label, option.id == state.selectedId, { if (!state.loading) onSelect(option.id) }, compact = true)
         }
     }
 }

@@ -3,6 +3,7 @@ package io.github.aedev.flow.plugin.mirror
 import android.util.Log
 import io.github.aedev.flow.plugin.catalog.PluginAccounts
 import io.github.aedev.flow.plugin.registry.PluginRegistry
+import io.github.aedev.flow.plugin.registry.PluginRegistryState
 import io.github.aedev.flow.plugin.runtime.PluginCallException
 import io.github.aedev.flow.utils.PerformanceDispatcher
 import kotlinx.coroutines.CancellationException
@@ -10,8 +11,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import nl.neerdael.milkbeat.catalog.Artwork
 import nl.neerdael.milkbeat.catalog.EntityKind
@@ -47,37 +51,52 @@ class PlaylistMirrorCoordinator
         fun available(
             source: String,
             target: String,
+        ): Boolean = available(source, target, registry.state.value, accounts.accounts.value)
+
+        private fun available(
+            source: String,
+            target: String,
+            registryState: PluginRegistryState,
+            accountStates: Map<String, ProviderAccount>,
         ): Boolean =
-            source != target && registry.state.value
+            source != target && registryState
                 .plugin(source)
                 ?.manifest
                 ?.roles
                 ?.metadata
                 ?.personalCollections == true &&
-                registry.state.value
+                registryState
                     .plugin(target)
                     ?.manifest
                     ?.roles
                     ?.metadata
                     ?.privatePlaylistImport == true &&
-                registry.state.value
+                registryState
                     .plugin(target)
                     ?.manifest
                     ?.roles
                     ?.audio != null &&
-                accounts.accounts.value[source] is ProviderAccount.SignedIn && accounts.accounts.value[target] is ProviderAccount.SignedIn
+                accountStates[source] is ProviderAccount.SignedIn && accountStates[target] is ProviderAccount.SignedIn
 
         fun key(
             source: String,
             target: String,
             entity: EntityRef,
+        ): MirrorKey? = key(source, target, entity, registry.state.value, accounts.accounts.value)
+
+        private fun key(
+            source: String,
+            target: String,
+            entity: EntityRef,
+            registryState: PluginRegistryState,
+            accountStates: Map<String, ProviderAccount>,
         ): MirrorKey? {
-            if (!available(source, target) || entity.kind != EntityKind.PLAYLIST) return null
+            if (!available(source, target, registryState, accountStates) || entity.kind != EntityKind.PLAYLIST) return null
             return MirrorKey(
                 source,
-                (accounts.accounts.value[source] as ProviderAccount.SignedIn).key,
+                (accountStates[source] as ProviderAccount.SignedIn).key,
                 target,
-                (accounts.accounts.value[target] as ProviderAccount.SignedIn).key,
+                (accountStates[target] as ProviderAccount.SignedIn).key,
                 entity,
             )
         }
@@ -85,9 +104,32 @@ class PlaylistMirrorCoordinator
         suspend fun selectedKey(
             source: String,
             entity: EntityRef,
+        ): MirrorKey? {
+            val enabledPairs = store.enabledPairs.first()
+            return selectedKey(source, entity, registry.state.value, accounts.accounts.value, enabledPairs)
+        }
+
+        fun observeSelectedKey(
+            source: String,
+            entity: EntityRef,
+        ): Flow<MirrorKey?> =
+            combine(registry.state, accounts.accounts, store.enabledPairs) { registryState, accountStates, enabledPairs ->
+                selectedKey(source, entity, registryState, accountStates, enabledPairs)
+            }.distinctUntilChanged()
+
+        private fun selectedKey(
+            source: String,
+            entity: EntityRef,
+            registryState: PluginRegistryState,
+            accountStates: Map<String, ProviderAccount>,
+            enabledPairs: Set<String>,
         ): MirrorKey? =
-            registry.state.value.plugins.firstNotNullOfOrNull { target ->
-                if (PlaylistMirrorStore.pairId(source, target.id) in store.enabledPairs.first()) key(source, target.id, entity) else null
+            registryState.plugins.firstNotNullOfOrNull { target ->
+                if (PlaylistMirrorStore.pairId(source, target.id) in enabledPairs) {
+                    key(source, target.id, entity, registryState, accountStates)
+                } else {
+                    null
+                }
             }
 
         private suspend fun awaitPreparation(

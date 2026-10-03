@@ -18,6 +18,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
@@ -111,13 +112,27 @@ class CatalogPageViewModel
             title: String,
             artwork: nl.neerdael.milkbeat.catalog.Artwork?,
         ) {
-            val coordinator = mirrors ?: return
             mirrorJob?.cancel()
+            _mirror.value =
+                io.github.aedev.flow.plugin.mirror
+                    .PlaylistMirrorState()
+            val coordinator = mirrors ?: return
+            val identity = _state.value.sourceKey
             mirrorJob =
                 viewModelScope.launch {
-                    val key = coordinator.selectedKey(provider.id, entity) ?: return@launch
-                    launch { coordinator.state(key).collect { _mirror.value = it } }
-                    coordinator.open(provider.id, entity, title, artwork)
+                    combine(coordinator.observeSelectedKey(provider.id, entity), sourceIdentity) { key, currentIdentity ->
+                        key.takeIf { currentIdentity == identity }
+                    }.distinctUntilChanged().collectLatest { key ->
+                        _mirror.value =
+                            io.github.aedev.flow.plugin.mirror
+                                .PlaylistMirrorState()
+                        if (key == null) return@collectLatest
+                        coordinator.open(provider.id, entity, title, artwork)
+                        coordinator.state(key).collect { progress ->
+                            currentCoroutineContext().ensureActive()
+                            if (_state.value.sourceKey == identity) _mirror.value = progress
+                        }
+                    }
                 }
         }
 
