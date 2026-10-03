@@ -1,7 +1,7 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "title": "MilkbeatPluginApi",
-    "description": "Plugin API v2, generated from the plugin-api module. Do not edit.",
+    "description": "Plugin API v3, generated from the plugin-api module. Do not edit.",
     "type": "object",
     "properties": {
         "manifest": {
@@ -1546,6 +1546,16 @@
                     ],
                     "minimum": -2147483648,
                     "maximum": 2147483647
+                },
+                "artwork": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.Artwork"
+                        }
+                    ]
                 }
             },
             "title": "PersonalCollection"
@@ -1597,6 +1607,36 @@
             },
             "title": "PersonalCollectionsRequest"
         },
+        "nl.neerdael.milkbeat.catalog.PlaylistArtwork": {
+            "type": "object",
+            "required": [
+                "dataBase64",
+                "mimeType",
+                "sizeBytes"
+            ],
+            "properties": {
+                "dataBase64": {
+                    "type": "string"
+                },
+                "mimeType": {
+                    "type": "string"
+                },
+                "sizeBytes": {
+                    "type": "integer",
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                }
+            },
+            "title": "PlaylistArtwork"
+        },
+        "nl.neerdael.milkbeat.catalog.PrivatePlaylistImportMode": {
+            "enum": [
+                "REPLACE",
+                "ENSURE",
+                "APPEND"
+            ],
+            "title": "PrivatePlaylistImportMode"
+        },
         "nl.neerdael.milkbeat.catalog.PrivatePlaylistImportRequest": {
             "type": "object",
             "required": [
@@ -1632,18 +1672,64 @@
                         "string",
                         "null"
                     ]
+                },
+                "cursor": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "mode": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.PrivatePlaylistImportMode"
+                },
+                "startIndex": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                },
+                "artwork": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.PlaylistArtwork"
+                        }
+                    ]
                 }
             },
             "title": "PrivatePlaylistImportRequest"
         },
         "nl.neerdael.milkbeat.catalog.PrivatePlaylistImportResult": {
             "type": "object",
-            "required": [
-                "ref"
-            ],
+            "required": [],
             "properties": {
                 "ref": {
-                    "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/nl.neerdael.milkbeat.catalog.EntityRef"
+                        }
+                    ]
+                },
+                "next": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "retryAfterMs": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
                 }
             },
             "title": "PrivatePlaylistImportResult"
@@ -2401,6 +2487,13 @@
             },
             "title": "HostEnvironment"
         },
+        "nl.neerdael.milkbeat.plugin.HttpBodyEncoding": {
+            "enum": [
+                "UTF8",
+                "BASE64"
+            ],
+            "title": "HttpBodyEncoding"
+        },
         "nl.neerdael.milkbeat.plugin.HttpRequest": {
             "type": "object",
             "required": [
@@ -2435,6 +2528,12 @@
                 },
                 "followRedirects": {
                     "type": "boolean"
+                },
+                "bodyEncoding": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.HttpBodyEncoding"
+                },
+                "responseEncoding": {
+                    "$ref": "#/$defs/nl.neerdael.milkbeat.plugin.HttpBodyEncoding"
                 }
             },
             "title": "HttpRequest"

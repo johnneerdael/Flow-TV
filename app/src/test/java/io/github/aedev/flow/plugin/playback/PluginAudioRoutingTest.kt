@@ -82,6 +82,22 @@ class PluginAudioRoutingTest {
     }
 
     @Test
+    fun `native session delivery follows its preferred provider before global HLS choice`() {
+        val beatport =
+            plugin.copy(
+                manifest =
+                    plugin.manifest.copy(
+                        id = "beatport",
+                        roles = Roles(audio = AudioRole(setOf("beatport"), match = true, delivery = AudioDelivery.HLS)),
+                    ),
+            )
+        every { registry.state } returns
+            MutableStateFlow(PluginRegistryState(listOf(beatport, plugin), ProviderSelection(audio = listOf("beatport", "youtube"))))
+        assertThat(audio.deliveryFor(candidate, "youtube")).isEqualTo(AudioDelivery.PROGRESSIVE)
+        assertThat(audio.deliveryFor(candidate)).isEqualTo(AudioDelivery.HLS)
+    }
+
+    @Test
     fun `YouTube mix tracks do not need cross-provider queue preparation`() =
         runTest {
             assertThat(audio.prepareQueue(candidate, null)).isEqualTo(QueuePreparationResult.Ready)

@@ -21,6 +21,7 @@ fun TvFilterChip(
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    compact: Boolean = false,
 ) {
     var focused by remember { mutableStateOf(false) }
 
@@ -44,7 +45,8 @@ fun TvFilterChip(
         Text(
             text = label,
             modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp),
-            style = MaterialTheme.typography.labelLarge,
+            style = if (compact) MaterialTheme.typography.labelMedium else MaterialTheme.typography.labelLarge,
+            maxLines = if (compact) 1 else Int.MAX_VALUE,
         )
     }
 }

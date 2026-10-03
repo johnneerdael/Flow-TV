@@ -2,7 +2,9 @@ package io.github.aedev.flow.ui.tv.music
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -38,6 +40,10 @@ fun BoxScope.TvMusicQueuePanel(
     manager: EnhancedMusicPlayerManager,
     onPlayRadioTrack: (MusicTrack) -> Unit,
     onClose: () -> Unit,
+    tuning: io.github.aedev.flow.plugin.playback.RadioTuningState =
+        io.github.aedev.flow.plugin.playback
+            .RadioTuningState(),
+    onTune: (String) -> Unit = {},
 ) {
     val queue by manager.queue.collectAsStateWithLifecycle()
     val automix by manager.automixItems.collectAsStateWithLifecycle()
@@ -59,6 +65,7 @@ fun BoxScope.TvMusicQueuePanel(
         title = stringResource(R.string.tv_player_queue),
         onClose = onClose,
         initialContentFocus = queue.isEmpty(),
+        showHeader = false,
         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = QUEUE_PANEL_ALPHA),
     ) {
         if (queue.isEmpty() && automix.isEmpty()) {
@@ -69,34 +76,37 @@ fun BoxScope.TvMusicQueuePanel(
             )
             return@TvSidePanel
         }
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.fillMaxSize().tvAcceleratedDpad(),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            itemsIndexed(queue, key = { index, item -> "queue:$index:${item.videoId}" }) { index, item ->
-                TvMusicTrackRow(
-                    track = item,
-                    selected = index == currentIndex,
-                    modifier = if (index == openingIndex) Modifier.focusRequester(openingFocus) else Modifier,
-                    onClick = { manager.playFromQueue(index) },
-                    containerAlpha = QUEUE_ROW_ALPHA,
-                )
-            }
-            if (automix.isNotEmpty()) {
-                item(key = "automix-header") {
-                    Text(
-                        text = stringResource(R.string.tv_music_radio),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                itemsIndexed(automix, key = { index, item -> "automix:$index:${item.videoId}" }) { _, item ->
+        Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            TvRadioFilterControls(tuning, onTune)
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.weight(1f).fillMaxWidth().tvAcceleratedDpad(),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                itemsIndexed(queue, key = { index, item -> "queue:$index:${item.videoId}" }) { index, item ->
                     TvMusicTrackRow(
                         track = item,
-                        onClick = { onPlayRadioTrack(item) },
+                        selected = index == currentIndex,
+                        modifier = if (index == openingIndex) Modifier.focusRequester(openingFocus) else Modifier,
+                        onClick = { manager.playFromQueue(index) },
                         containerAlpha = QUEUE_ROW_ALPHA,
                     )
+                }
+                if (automix.isNotEmpty()) {
+                    item(key = "automix-header") {
+                        Text(
+                            text = stringResource(R.string.tv_music_radio),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    itemsIndexed(automix, key = { index, item -> "automix:$index:${item.videoId}" }) { _, item ->
+                        TvMusicTrackRow(
+                            track = item,
+                            onClick = { onPlayRadioTrack(item) },
+                            containerAlpha = QUEUE_ROW_ALPHA,
+                        )
+                    }
                 }
             }
         }

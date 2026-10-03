@@ -330,3 +330,14 @@ internal fun EnhancedMusicPlayerManager.performMoveMediaItem(
         }
     }
 }
+
+@OptIn(UnstableApi::class)
+internal fun EnhancedMusicPlayerManager.replaceFutureRadio() {
+    val remove = RadioQueuePolicy.removable(queueState.value, player?.currentMediaItemIndex ?: currentQueueIndexState.value)
+    if (remove.isEmpty()) return
+    val removal = remove.toSet()
+    queueState.value = queueState.value.filterIndexed { index, _ -> index !in removal }
+    remove.asReversed().forEach { index -> if (index < (player?.mediaItemCount ?: 0)) player?.removeMediaItem(index) }
+    clearPendingPlayNext()
+    triggerQueueSave()
+}

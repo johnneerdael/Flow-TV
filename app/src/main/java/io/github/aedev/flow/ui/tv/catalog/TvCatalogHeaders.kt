@@ -80,6 +80,7 @@ internal fun TvCatalogCoverPane(
     onOpen: (EntityRef) -> Unit,
     modifier: Modifier = Modifier,
     actionsModifier: Modifier = Modifier,
+    status: @Composable () -> Unit = {},
     actions: @Composable RowScope.() -> Unit,
 ) {
     val dimens = LocalTvDimens.current
@@ -116,6 +117,7 @@ internal fun TvCatalogCoverPane(
             overflow = TextOverflow.Ellipsis,
         )
         HeaderDetails(header, centered = true)
+        status()
         Row(
             modifier = actionsModifier.padding(top = 8.dp).focusGroup(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),

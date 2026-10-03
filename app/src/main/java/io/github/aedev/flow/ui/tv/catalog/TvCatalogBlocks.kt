@@ -169,6 +169,7 @@ internal fun TvCatalogEntityHeader(
     initialFocus: Boolean = true,
     onMoveToTracks: (() -> Unit)? = null,
     playFocus: FocusRequester? = null,
+    status: @Composable () -> Unit = {},
 ) {
     val table = remember(blocks) { blocks.firstOrNull { it.isTrackTable } as CollectionBlock? }
     val tracks = remember(table) { table?.items.orEmpty().mapNotNull(actions.trackFor) }
@@ -190,7 +191,7 @@ internal fun TvCatalogEntityHeader(
                 text = stringResource(R.string.shuffle),
                 onClick = {
                     val shuffled = tracks.shuffled()
-                    actions.onPlayList(shuffled.first(), shuffled, header.title, queueId)
+                    actions.onPlayList(shuffled.first().copy(shuffleRequested = true), shuffled, header.title, queueId)
                 },
                 icon = Icons.Outlined.Shuffle,
                 modifier = if (header.station == null && onMoveToTracks != null) Modifier.moveRightToTracks(onMoveToTracks) else Modifier,
@@ -216,7 +217,7 @@ internal fun TvCatalogEntityHeader(
     }
     when (header.style) {
         HeaderStyle.PORTRAIT -> TvCatalogPortraitHeader(header, modifier, actionsModifier, buttons)
-        HeaderStyle.COVER -> TvCatalogCoverPane(header, actions.onOpen, modifier, actionsModifier, buttons)
+        HeaderStyle.COVER -> TvCatalogCoverPane(header, actions.onOpen, modifier, actionsModifier, status = status, actions = buttons)
     }
 }
 

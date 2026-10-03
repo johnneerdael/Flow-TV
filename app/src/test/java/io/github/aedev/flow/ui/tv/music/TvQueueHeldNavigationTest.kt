@@ -12,14 +12,12 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.platform.LocalInputModeManager
-import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.isFocused
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.unit.dp
 import com.google.common.truth.Truth.assertThat
 import io.github.aedev.flow.data.music.model.MusicTrack
@@ -75,8 +73,7 @@ class TvQueueHeldNavigationTest {
             }
         }
         compose.mainClock.advanceTimeBy(3000)
-        compose.onNodeWithContentDescription("Close").performSemanticsAction(SemanticsActions.RequestFocus) { it() }
-        compose.onNodeWithContentDescription("Close").assertIsFocused()
+        compose.onNodeWithContentDescription("Close").assertDoesNotExist()
         compose.runOnIdle {
             manager.queueState.value = listOf(MusicTrack("late", "Late song", "Artist", "", 120))
         }

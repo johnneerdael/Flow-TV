@@ -45,6 +45,8 @@ class MusicPlayerViewModel
         private val viewHistory: ViewHistory,
         private val musicBrain: MusicBrainEngine,
         private val folderMetadata: MusicFolderPlaybackMetadata,
+        private val mirrorPreparation: MirrorPlaybackPreparation,
+        val radioTuning: io.github.aedev.flow.plugin.playback.RadioTuningCoordinator,
     ) : ViewModel() {
         private val _uiState = MutableStateFlow(MusicPlayerUiState())
         val uiState: StateFlow<MusicPlayerUiState> = _uiState.asStateFlow()
@@ -298,7 +300,10 @@ class MusicPlayerViewModel
         ) {
             // Tapping the song that is already loaded, from any list, keeps it going instead of
             // fetching and restarting it; a paused one resumes. The queue is left as it is.
-            if (!asRadio && isLoadedInPlayer(track.videoId)) {
+            if (!asRadio && isLoadedInPlayer(track.videoId) &&
+                track.sourcePosition == EnhancedMusicPlayerManager.currentTrack.value?.sourcePosition &&
+                (radioPlaylistId == null || radioPlaylistId == EnhancedMusicPlayerManager.queueCollection.value)
+            ) {
                 EnhancedMusicPlayerManager.play()
                 return
             }
@@ -323,7 +328,24 @@ class MusicPlayerViewModel
             loadTrackJob =
                 viewModelScope.launch {
                     val finalSourceName = musicSourceLabel(context, displaySourceName, track)
-                    val activeQueue = if (queue.isNotEmpty()) queue else listOf(track)
+                    _uiState.update { it.copy(isLoading = true, error = null) }
+                    val prepared =
+                        try {
+                            if (asRadio) {
+                                songRadioPlayback(track)
+                            } else {
+                                mirrorPreparation.prepare(track, queue, radioPlaylistId, finalSourceName)
+                            }
+                        } catch (e: kotlinx.coroutines.CancellationException) {
+                            val ownsLoading = loadTrackJob == kotlinx.coroutines.currentCoroutineContext()[Job]
+                            if (ownsLoading) _uiState.update { it.copy(isLoading = false) }
+                            throw e
+                        } catch (e: Exception) {
+                            _uiState.update { it.copy(isLoading = false, error = context.getString(R.string.playlist_mirror_failed)) }
+                            return@launch
+                        }
+                    val playbackTrack = prepared.track
+                    val activeQueue = prepared.queue.ifEmpty { listOf(playbackTrack) }
                     val localUriOverrides =
                         withContext(PerformanceDispatcher.diskIO) {
                             activeQueue
@@ -342,7 +364,7 @@ class MusicPlayerViewModel
                     // ─── PHASE 1: Instant start ───────────────────────────────────────────
                     _uiState.update {
                         it.copy(
-                            currentTrack = track,
+                            currentTrack = playbackTrack,
                             isLoading = true,
                             error = null,
                             playingFrom = finalSourceName,
@@ -357,8 +379,9 @@ class MusicPlayerViewModel
 
                     withContext(kotlinx.coroutines.Dispatchers.Main) {
                         EnhancedMusicPlayerManager.playTrack(
-                            track = track,
-                            audioUrl = "music://${track.videoId}",
+                            track = playbackTrack,
+                            startIndex = prepared.startIndex,
+                            audioUrl = "music://${playbackTrack.videoId}",
                             queue = activeQueue,
                             sourceName = finalSourceName,
                             localUriOverrides = localUriOverrides,
@@ -371,15 +394,15 @@ class MusicPlayerViewModel
                     // ─── PHASE 2: Background — does NOT block audio ───────────────────────
                     supervisorScope {
                         launch(PerformanceDispatcher.diskIO) {
-                            playlistRepository.addToHistory(track)
+                            playlistRepository.addToHistory(playbackTrack)
                             viewHistory.savePlaybackPosition(
-                                videoId = track.videoId,
+                                videoId = playbackTrack.videoId,
                                 position = 0,
-                                duration = track.duration.toLong() * 1000,
-                                title = track.title,
-                                thumbnailUrl = track.thumbnailUrl,
-                                channelName = track.artist,
-                                channelId = track.channelId,
+                                duration = playbackTrack.duration.toLong() * 1000,
+                                title = playbackTrack.title,
+                                thumbnailUrl = playbackTrack.thumbnailUrl,
+                                channelName = playbackTrack.artist,
+                                channelId = playbackTrack.channelId,
                                 isMusic = true,
                             )
                         }
@@ -412,7 +435,7 @@ class MusicPlayerViewModel
         }
 
         fun addRadioTrackToQueue(track: MusicTrack) {
-            EnhancedMusicPlayerManager.addToQueue(track)
+            EnhancedMusicPlayerManager.addToQueue(track.copy(queueOrigin = io.github.aedev.flow.data.music.model.MusicQueueOrigin.USER))
             EnhancedMusicPlayerManager.removeAutomixItem(track.videoId)
         }
 

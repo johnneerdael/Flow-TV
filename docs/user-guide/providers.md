@@ -67,6 +67,21 @@ For example, YouTube Music first and Beatport second means Milkbeat tries YouTub
 
 Select Spotify for metadata and YouTube Music for audio. Spotify supplies the catalog and playlists; YouTube supplies a matched recording. The playing recording can differ from the catalog entry. Supported YouTube audio radio can continue with the matched track's mix.
 
+## Prepare private playlists
+
+This option is **off by default** and requires Milkbeat 0.9.0 or later and current Spotify and YouTube Music plugins, with both enabled and signed in.
+
+1. Open **Settings → Plugins → Spotify**.
+2. Enable **Prepare private playlists in YouTube Music**.
+3. Let your own Spotify playlists and Liked Songs prepare in the background. Other playlists, including generated mixes, begin preparing when you open them.
+4. Select Play or a track. Playback waits for preparation if needed; the page shows matched and unavailable counts. Select **Retry preparation** if it fails.
+
+Milkbeat creates private YouTube copies with the source playlist cover and adds songs as they are matched, one at a time. It refreshes copies from Spotify in one direction and preserves track order and duplicate occurrences. Confidently unmatched songs are left out of the copy; temporary connection failures remain retryable. Spotify's playlists are not edited. Background refresh is scheduled approximately every six hours, subject to network and device constraints; opening a playlist checks its source again.
+
+Prepared playback uses known YouTube IDs and native collection autoplay, while displaying Spotify's song metadata and artwork. Choosing a missing song starts at the next available match. Initial preparation can delay playback, especially for large playlists. Interrupted work resumes from checkpoints.
+
+Disable the option to return to normal matching and radio based on the first playing song. Existing private copies remain in your YouTube library. While Spotify is selected for metadata, Library hides managed copies that duplicate their source playlists.
+
 ## Sign in on your phone
 
 Open the installed plugin's details and choose its sign-in method. Scan the TV's QR code with a phone on the same network. The phone viewer streams the actual provider page on the TV: use touch and typing to complete sign-in and provider verification.

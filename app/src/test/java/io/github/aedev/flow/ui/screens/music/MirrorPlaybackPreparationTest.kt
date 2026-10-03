@@ -1,0 +1,100 @@
+package io.github.aedev.flow.ui.screens.music
+
+import com.google.common.truth.Truth.assertThat
+import io.github.aedev.flow.player.MusicPlaybackContext
+import io.github.aedev.flow.player.MusicVideoItems
+import io.github.aedev.flow.plugin.catalog.toMusicTrack
+import io.github.aedev.flow.plugin.mirror.MirrorKey
+import io.github.aedev.flow.plugin.mirror.MirrorMatch
+import io.github.aedev.flow.plugin.mirror.MirrorRecord
+import nl.neerdael.milkbeat.catalog.Artwork
+import nl.neerdael.milkbeat.catalog.EntityKind
+import nl.neerdael.milkbeat.catalog.EntityRef
+import nl.neerdael.milkbeat.catalog.TrackDescriptor
+import nl.neerdael.milkbeat.plugin.PluginJson
+import org.junit.Test
+
+class MirrorPlaybackPreparationTest {
+    @Test
+    fun `explicit song radio clears mirrored collection context`() {
+        val track =
+            io.github.aedev.flow.data.music.model.MusicTrack(
+                "song",
+                "Song",
+                "Artist",
+                "",
+                120,
+                playbackContext = MusicPlaybackContext("source", "native", "youtube"),
+                sourcePosition = 98,
+            )
+        val result = songRadioPlayback(track)
+        assertThat(result.track.playbackContext).isNull()
+        assertThat(result.track.sourcePosition).isNull()
+        assertThat(result.queue).containsExactly(result.track)
+    }
+
+    @Test
+    fun `partial UI pages still play the complete 122 occurrence mirror`() {
+        val tracks = (0..121).map { TrackDescriptor(EntityRef(EntityKind.TRACK, "source$it"), "Song $it") }
+        val key = MirrorKey("spotify", "a", "youtube", "b", EntityRef(EntityKind.PLAYLIST, "source"))
+        val matches =
+            tracks.mapIndexed {
+                index,
+                track,
+                ->
+                MirrorMatch(index, track, track.copy(ref = track.ref.copy(providerId = "native$index")))
+            }
+        val record = MirrorRecord(key, "Playlist", "r1", tracks, matches, ready = true)
+        val queue = tracks.take(50).map { it.toMusicTrack("spotify") }
+        val result = prepareMirrorPlayback(record, queue[0], queue, "ytm", MusicPlaybackContext("source", "native", "youtube"))
+        assertThat(result.queue).hasSize(122)
+    }
+
+    @Test
+    fun `later duplicate occurrence stays selected`() {
+        val tracks = listOf("A", "B", "A", "C").map { TrackDescriptor(EntityRef(EntityKind.TRACK, it), it) }
+        val key = MirrorKey("spotify", "a", "youtube", "b", EntityRef(EntityKind.PLAYLIST, "source"))
+        val matches =
+            tracks.mapIndexed {
+                index,
+                track,
+                ->
+                MirrorMatch(index, track, track.copy(ref = track.ref.copy(providerId = "native${track.title}")))
+            }
+        val record = MirrorRecord(key, "Playlist", "r1", tracks, matches, ready = true)
+        val queue = tracks.mapIndexed { index, track -> track.toMusicTrack("spotify").copy(sourcePosition = index) }
+        val result = prepareMirrorPlayback(record, queue[2], queue, "ytm", MusicPlaybackContext("source", "native", "youtube"))
+        assertThat(result.startIndex).isEqualTo(2)
+        assertThat(result.track.sourcePosition).isEqualTo(2)
+    }
+
+    @Test
+    fun `prepared queue retains source artwork and identity and starts at next available match`() {
+        val tracks =
+            (0..3).map {
+                TrackDescriptor(EntityRef(EntityKind.TRACK, "source$it"), "Source $it", artwork = Artwork("https://source.test/$it"))
+            }
+        val key = MirrorKey("spotify", "a", "youtube", "b", EntityRef(EntityKind.PLAYLIST, "source"))
+        val matches = listOf(0, 2, 3).map { MirrorMatch(it, tracks[it], tracks[it].copy(ref = EntityRef(EntityKind.TRACK, "native$it"))) }
+        val record = MirrorRecord(key, "Playlist", "r1", tracks, matches, ready = true)
+        val context = MusicPlaybackContext("source", "native", "youtube")
+        val queue = tracks.map { it.toMusicTrack("spotify") }
+        val prepared = prepareMirrorPlayback(record, queue[1], queue, "ytm", context)
+        assertThat(prepared.track.videoId).isEqualTo("source2")
+        assertThat(prepared.queue.map { it.videoId }).containsExactly("source0", "source2", "source3").inOrder()
+        assertThat(prepared.track.thumbnailUrl).isEqualTo("https://source.test/2")
+        assertThat(prepared.track.title).isEqualTo("Source 2")
+        assertThat(MusicVideoItems.descriptor(prepared.track).ids["ytm"]).isEqualTo("native2")
+        val restored =
+            PluginJson.decodeFromString(
+                io.github.aedev.flow.data.music.model.MusicTrack
+                    .serializer(),
+                PluginJson.encodeToString(
+                    io.github.aedev.flow.data.music.model.MusicTrack
+                        .serializer(),
+                    prepared.track,
+                ),
+            )
+        assertThat(restored.playbackContext).isEqualTo(context)
+    }
+}

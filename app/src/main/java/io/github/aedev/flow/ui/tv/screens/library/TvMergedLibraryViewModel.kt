@@ -42,6 +42,7 @@ internal class TvMergedLibraryViewModel
         private val metadata: PluginMetadataProvider,
         playlists: PlaylistRepository,
         likes: LikedVideosRepository,
+        private val mirrorStore: io.github.aedev.flow.plugin.mirror.PlaylistMirrorStore,
     ) : ViewModel() {
         val localPlaylists = playlists.getAllPlaylistsFlow()
         val localMusicPlaylists = playlists.getMusicPlaylistsFlow()
@@ -79,13 +80,24 @@ internal class TvMergedLibraryViewModel
                 }
             }.distinctUntilChanged()
 
+        private val hiddenCopies =
+            combine(mirrorStore.records, registry.state, accounts.accounts) { records, registry, accounts ->
+                records
+                    .filter { record ->
+                        record.ready && record.key.sourcePlugin == registry.selection.metadata &&
+                            (accounts[record.key.sourcePlugin] as? ProviderAccount.SignedIn)?.key == record.key.sourceAccount &&
+                            (accounts[record.key.targetPlugin] as? ProviderAccount.SignedIn)?.key == record.key.targetAccount
+                    }.mapNotNull { record -> record.destination?.let { "${record.key.targetPlugin}:${it.kind}:${it.providerId}" } }
+                    .toSet()
+            }.distinctUntilChanged()
+
         val providerPlaylists = pages("playlists")
         val providerLikedSongs = pages("liked")
 
         @OptIn(ExperimentalCoroutinesApi::class)
         private fun pages(section: String) =
-            combine(sources, generation) { sources, generation -> sources to generation }
-                .flatMapLatest { (sources, epoch) ->
+            combine(sources, generation, hiddenCopies) { sources, generation, hidden -> Triple(sources, generation, hidden) }
+                .flatMapLatest { (sources, epoch, hidden) ->
                     Pager(PagingConfig(pageSize = 30, enablePlaceholders = false)) {
                         MergedLibraryPagingSource(sources, section, { plugin, request ->
                             metadata.callFor(plugin, PluginOperations.library, request)
@@ -93,7 +105,7 @@ internal class TvMergedLibraryViewModel
                             if (generation.value == epoch) errors.update { it + (provider.name to error.listenerMessage) }
                         }, { provider ->
                             if (generation.value == epoch) errors.update { it - provider.name }
-                        })
+                        }, hiddenCopies = hidden)
                     }.flow
                 }.cachedIn(viewModelScope)
 

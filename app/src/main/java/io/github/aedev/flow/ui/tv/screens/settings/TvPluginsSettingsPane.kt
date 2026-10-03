@@ -120,6 +120,28 @@ fun TvPluginsSettingsPane(
                     ) {
                         item(key = "preload-${plugin.id}") { TvPlaylistPreloadItem(plugin, viewModel.preloadJobs) }
                     }
+                    if (plugin.manifest.roles.metadata
+                            ?.personalCollections == true
+                    ) {
+                        state.plugins
+                            .filter {
+                                it.enabled && it.manifest.roles.metadata
+                                    ?.privatePlaylistImport == true &&
+                                    it.manifest.roles.audio != null
+                            }.forEach { target ->
+                                item(key = "mirror-${target.id}") {
+                                    TvPlaylistMirrorOption(
+                                        target,
+                                        io.github.aedev.flow.plugin.mirror.PlaylistMirrorStore.pairId(
+                                            plugin.id,
+                                            target.id,
+                                        ) in state.mirrorPairs,
+                                        viewModel.mirrors.available(plugin.id, target.id),
+                                        { viewModel.setMirrorEnabled(plugin.id, target.id, it) },
+                                    )
+                                }
+                            }
+                    }
                     detailItems(
                         plugin = plugin,
                         account = state.accounts[plugin.id],

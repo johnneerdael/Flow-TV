@@ -99,6 +99,17 @@ class CatalogPageViewModelTest {
     }
 
     @Test
+    fun `default provider routes carry provider identity into playlist playback`() {
+        val vm = viewModel { Result.success(MetadataPage("playlist", emptyList())) }
+        val seed = checkNotNull(vm.radioSeed(playlist.providerId))
+        val scoped =
+            io.github.aedev.flow.plugin.catalog.ProviderEntityReference
+                .decode(seed)
+        assertThat(scoped?.pluginId).isEqualTo("fake")
+        assertThat(scoped?.entity).isEqualTo(playlist)
+    }
+
+    @Test
     fun `a long playlist's further pages extend its tracks, in order`() =
         runTest(dispatcher) {
             val vm =

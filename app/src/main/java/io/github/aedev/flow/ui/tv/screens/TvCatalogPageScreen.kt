@@ -68,6 +68,7 @@ fun TvCatalogPageScreen(
     viewModel: CatalogPageViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val mirror by viewModel.mirror.collectAsStateWithLifecycle()
     val following by viewModel.following.collectAsStateWithLifecycle()
     val dimens = LocalTvDimens.current
     val sourceIdentity by viewModel.sourceIdentity.collectAsStateWithLifecycle(initialValue = "")
@@ -115,7 +116,19 @@ fun TvCatalogPageScreen(
                     val currentCollection =
                         collectionId == cover.entity.providerId || (collectionId == null && playingSource == cover.title)
                     key(cover.entity) {
-                        CoverPage(cover, blocks, actions, modifier, playingTrack?.videoId.takeIf { currentCollection })
+                        CoverPage(
+                            cover,
+                            blocks,
+                            actions,
+                            modifier,
+                            playingTrack?.videoId.takeIf {
+                                currentCollection
+                            },
+                            playingTrack?.sourcePosition.takeIf { currentCollection },
+                        ) {
+                            io.github.aedev.flow.ui.tv.catalog
+                                .TvPlaylistMirrorStatus(mirror, viewModel::retryMirror)
+                        }
                     }
                 } else {
                     LazyColumn(
@@ -142,18 +155,22 @@ internal fun CoverPage(
     actions: TvCatalogActions,
     modifier: Modifier,
     playingTrackId: String? = null,
+    playingTrackPosition: Int? = null,
+    status: @Composable () -> Unit = {},
 ) {
     val dimens = LocalTvDimens.current
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val body = remember(blocks) { blocks.drop(1) }
     val openingTrackId = remember(cover.entity) { playingTrackId }
+    val openingTrackPosition = remember(cover.entity) { playingTrackPosition }
     val playingRow =
         body.firstNotNullOfOrNull { block ->
             (block as? CollectionBlock)?.takeIf { it.isTrackTable }?.let { table ->
-                table.items
-                    .indexOfFirst { it.track?.ref?.providerId == openingTrackId }
-                    .takeIf { it >= 0 }
+                (
+                    openingTrackPosition?.takeIf { it in table.items.indices }
+                        ?: table.items.indexOfFirst { it.track?.ref?.providerId == openingTrackId }
+                ).takeIf { it >= 0 }
                     ?.let { body.catalogIndexOf(table) + it }
             }
         }
@@ -218,6 +235,7 @@ internal fun CoverPage(
                     // The pane rides up with the tracks; stepping into it brings all of it back.
                     .onFocusChanged { if (it.hasFocus) scope.launch { listState.animateScrollToItem(0) } }
                     .padding(start = dimens.overscanHorizontal, top = dimens.overscanVertical),
+            status = status,
             actionsModifier =
                 Modifier.focusGroup().onPreviewKeyEvent { event ->
                     if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false

@@ -12,10 +12,12 @@ export type CollectionLayout = 'HORIZONTAL_SHELF' | 'MULTI_COLUMN_LIST' | 'TRACK
 export type ItemView = 'COVER_CARD' | 'LANDSCAPE_CARD' | 'ARTIST_PORTRAIT' | 'TRACK_ROW';
 export type HeaderStyle = 'PORTRAIT' | 'COVER';
 export type PersonalCollectionKind = 'OWNED_PLAYLIST' | 'LIKED_SONGS';
+export type PrivatePlaylistImportMode = 'REPLACE' | 'ENSURE' | 'APPEND';
 export type AudioQuality = 'AUTO' | 'HIGH' | 'MEDIUM' | 'LOW';
 export type FormatType = 'AUDIO' | 'VIDEO';
 export type VideoKind = 'VOD' | 'LIVE' | 'UPCOMING';
 export type ProviderAccount = ProviderAccountAnonymous | ProviderAccountExpired | ProviderAccountSignedIn;
+export type HttpBodyEncoding = 'UTF8' | 'BASE64';
 export type HashAlgorithm = 'SHA1' | 'SHA256';
 export type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
 export type PluginErrorCode =
@@ -30,7 +32,7 @@ export type PluginErrorCode =
   | 'INTERNAL';
 
 /**
- * Plugin API v2, generated from the plugin-api module. Do not edit.
+ * Plugin API v3, generated from the plugin-api module. Do not edit.
  */
 export interface MilkbeatPluginApi {
   manifest: PluginManifest;
@@ -430,6 +432,7 @@ export interface PersonalCollection {
   kind: PersonalCollectionKind;
   revision?: string | null;
   trackCount?: number | null;
+  artwork?: null | Artwork;
 }
 export interface PrivatePlaylistImportRequest {
   sourceKey: string;
@@ -437,9 +440,20 @@ export interface PrivatePlaylistImportRequest {
   tracks: EntityRef[];
   target?: null | EntityRef;
   expectedAccountKey?: string | null;
+  cursor?: string | null;
+  mode?: PrivatePlaylistImportMode;
+  startIndex?: number | null;
+  artwork?: null | PlaylistArtwork;
+}
+export interface PlaylistArtwork {
+  dataBase64: string;
+  mimeType: string;
+  sizeBytes: number;
 }
 export interface PrivatePlaylistImportResult {
-  ref: EntityRef;
+  ref?: null | EntityRef;
+  next?: string | null;
+  retryAfterMs?: number | null;
 }
 export interface RadioRequest {
   seed: EntityRef;
@@ -646,6 +660,8 @@ export interface HttpRequest {
   body?: string | null;
   timeoutMs?: number | null;
   followRedirects?: boolean;
+  bodyEncoding?: HttpBodyEncoding;
+  responseEncoding?: HttpBodyEncoding;
 }
 export interface HttpResponse {
   status: number;

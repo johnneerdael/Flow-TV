@@ -47,6 +47,7 @@ data class TvPluginsState(
     val selection: ProviderSelection = ProviderSelection(),
     val accounts: Map<String, ProviderAccount> = emptyMap(),
     val adding: AddPluginState = AddPluginState.Idle,
+    val mirrorPairs: Set<String> = emptySet(),
 )
 
 /** Settings, Plugins: what is installed, which plugin provides what, adding, signing in and removing. */
@@ -61,13 +62,14 @@ class TvPluginsViewModel
         links: PluginLinks,
         val preloadJobs: PlaylistPreloadJobs,
         private val savedState: SavedStateHandle,
+        val mirrors: io.github.aedev.flow.plugin.mirror.PlaylistMirrorCoordinator,
     ) : ViewModel() {
         private val adding = MutableStateFlow<AddPluginState>(AddPluginState.Idle)
         private var fetchJob: Job? = null
 
         val state: StateFlow<TvPluginsState> =
-            combine(registry.state, accounts.accounts, adding) { registryState, known, add ->
-                TvPluginsState(registryState.plugins, registryState.selection, known, add)
+            combine(registry.state, accounts.accounts, adding, mirrors.store.enabledPairs) { registryState, known, add, pairs ->
+                TvPluginsState(registryState.plugins, registryState.selection, known, add, pairs)
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TvPluginsState())
 
         init {
@@ -146,6 +148,15 @@ class TvPluginsViewModel
 
         fun setPlayHistoryEnabled(enabled: Boolean) {
             viewModelScope.launch { playHistory.setEnabled(enabled) }
+        }
+
+        fun setMirrorEnabled(
+            source: String,
+            target: String,
+            enabled: Boolean,
+        ) {
+            if (enabled && !mirrors.available(source, target)) return
+            viewModelScope.launch { mirrors.store.setEnabled(source, target, enabled) }
         }
 
         fun signOut(id: String) {

@@ -18,6 +18,7 @@ data class PersonalCollection(
     val kind: PersonalCollectionKind,
     val revision: String? = null,
     val trackCount: Int? = null,
+    val artwork: Artwork? = null,
 )
 
 @Serializable
@@ -27,15 +28,31 @@ data class PersonalCollectionsPage(
 )
 
 @Serializable
+enum class PrivatePlaylistImportMode { REPLACE, ENSURE, APPEND }
+
+@Serializable
+data class PlaylistArtwork(
+    val dataBase64: String,
+    val mimeType: String,
+    val sizeBytes: Int,
+)
+
+@Serializable
 data class PrivatePlaylistImportRequest(
     val sourceKey: String,
     val title: String,
     val tracks: List<EntityRef>,
     val target: EntityRef? = null,
     val expectedAccountKey: String? = null,
+    val cursor: String? = null,
+    val mode: PrivatePlaylistImportMode = PrivatePlaylistImportMode.REPLACE,
+    val startIndex: Int? = null,
+    val artwork: PlaylistArtwork? = null,
 )
 
 @Serializable
 data class PrivatePlaylistImportResult(
-    val ref: EntityRef,
+    val ref: EntityRef? = null,
+    val next: String? = null,
+    val retryAfterMs: Long? = null,
 )

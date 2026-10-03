@@ -10,7 +10,7 @@ Press OK in the full music player to show seeking, shuffle, previous, play/pause
 
 ## Queues and preparation
 
-Open the queue to inspect upcoming tracks or jump to one. Holding Up or Down accelerates scrolling. Queue preparation follows playback order and resolves up to 100 upcoming entries one at a time while music plays. Jumping elsewhere updates that window.
+Open the queue to inspect upcoming tracks or jump to one. Holding Up or Down accelerates scrolling. Queue preparation follows playback order and matches the entire remaining queue one track at a time while music plays. Jumping elsewhere gives the new playback position priority. Tracks with native audio IDs do not need cross-provider matching.
 
 Confirmed unmatched tracks can be removed from the future queue. Temporary failures remain retryable. Preparation reduces the work needed at a transition, but does not guarantee gapless playback under every network, format or provider condition.
 
@@ -18,7 +18,9 @@ Confirmed unmatched tracks can be removed from the future queue. Temporary failu
 
 ## Mixes
 
-YouTube Music tracks can continue with their YouTube mix. Albums and playlists can hand over to related content after their listed tracks. When the metadata provider has no radio, Milkbeat tries compatible audio providers in priority order. Spotify tracks can use the mix of their matched YouTube recording.
+Streaming queues seed a mix from the first song that actually starts playing. When the metadata provider has no radio, Milkbeat tries compatible audio providers in priority order. Spotify tracks can use the mix of their matched YouTube recording. Enabling [private playlist preparation](providers.md#prepare-private-playlists) lets a prepared collection use YouTube's native playlist autoplay instead.
+
+When the provider offers them, **All**, **Familiar**, **Popular** and **Discover** controls appear above the queue. Changing the mode replaces upcoming radio-added songs while keeping the playing song, the original playlist and tracks you added yourself. Continuations stay in the selected mode.
 
 Local folder playback is independent of provider radio. **Play folder** queues tracks from the current folder.
 
